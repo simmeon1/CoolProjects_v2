@@ -52,10 +52,7 @@ namespace ClassLibrary
 
         public bool ConfirmTokenAgainstCurrentToken(ISpotifyToken tokenToConfirm)
         {
-            return tokenToConfirm.GetAccessToken().Equals(SpotifyToken.GetAccessToken()) &&
-                tokenToConfirm.GetExpiresIn() == SpotifyToken.GetExpiresIn() &&
-                tokenToConfirm.GetScope().Equals(SpotifyToken.GetScope()) &&
-                tokenToConfirm.GetTokenType().Equals(SpotifyToken.GetTokenType());
+            return ISpotifyTokenWorker.TokensHaveTheSameData(tokenToConfirm, SpotifyToken);
         }
     }
 }
