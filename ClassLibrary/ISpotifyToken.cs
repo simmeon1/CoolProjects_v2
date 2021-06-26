@@ -1,4 +1,6 @@
-﻿namespace ClassLibrary
+﻿using System;
+
+namespace ClassLibrary
 {
     public interface ISpotifyToken
     {
@@ -6,5 +8,6 @@
         string GetTokenType();
         int GetExpiresIn();
         string GetScope();
+        DateTime? GetDateTimeCreated();
     }
 }
