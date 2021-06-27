@@ -1,32 +1,30 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace ClassLibrary
 {
     public class JsonParser : IJsonParser
     {
-        private JObject JObject { get; set; }
-        public JsonParser(string json = null)
+        public T GetPropertyValue<T>(string json, params object[] propertyPath)
         {
-            SetJObjectBasedOnJson(json);
-        }
-
-        private void SetJObjectBasedOnJson(string json)
-        {
-            JObject = json == null ? null : JObject.Parse(json);
-        }
-
-        public void SetJsonToParse(string json)
-        {
-            SetJObjectBasedOnJson(json);
-        }
-
-        public T GetPropertyValue<T>(params object[] propertyPath)
-        {
-            JToken result = JObject;
-            foreach (object propSubPath in propertyPath) result = result[propSubPath];
+            JToken result = GetJson(json, propertyPath);
             return result.ToObject<T>();
         }
 
+        private static JToken GetJson(string json, object[] propertyPath)
+        {
+            JToken result = JObject.Parse(json);
+            foreach (object propSubPath in propertyPath) result = result[propSubPath];
+            return result;
+        }
+
+        public List<string> GetArrayJsons(string json, params object[] arrayPath)
+        {
+            List<string> list = new();
+            JToken jsons = GetJson(json, arrayPath);
+            foreach (JToken jsonText in jsons) list.Add(jsonText.ToString());
+            return list;
+        }
     }
 }

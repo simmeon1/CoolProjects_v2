@@ -50,11 +50,10 @@ namespace ClassLibrary
 
         private ISpotifyToken GetSpotifyTokenFromResponse(string responseText, DateTime dateTimeJustBeforeRequest)
         {
-            JsonParser.SetJsonToParse(responseText);
-            string accessToken = JsonParser.GetPropertyValue<string>("access_token");
-            int expiresIn = JsonParser.GetPropertyValue<int>("expires_in");
-            string tokenType = JsonParser.GetPropertyValue<string>("token_type");
-            string scope = JsonParser.GetPropertyValue<string>("scope");
+            string accessToken = JsonParser.GetPropertyValue<string>(responseText, "access_token");
+            int expiresIn = JsonParser.GetPropertyValue<int>(responseText, "expires_in");
+            string tokenType = JsonParser.GetPropertyValue<string>(responseText, "token_type");
+            string scope = JsonParser.GetPropertyValue<string>(responseText, "scope");
             return TokenWorker.CreateTokenObject(accessToken, expiresIn, scope, tokenType, dateTimeJustBeforeRequest);
         }
 
@@ -74,10 +73,22 @@ namespace ClassLibrary
             HttpResponseMessage response = await HttpClient.SendRequest(requestMessage);
             string responseText = await response.Content.ReadAsStringAsync();
             if (response.StatusCode != HttpStatusCode.OK) ThrowExceptionDueToBadAPIResponse("The GetPlaylists request was not successful.", response, responseText);
+            List<Playlist> playlists = GetPlaylistsFromJson(responseText);
+            return playlists;
+        }
 
-            //BUILD ME UP
-            Playlist playlist = new Playlist("testPlaylistId", "testPlaylistName", "testPlaylistDesc");
-            return new List<Playlist>() { playlist };
+        public List<Playlist> GetPlaylistsFromJson(string json)
+        {
+            List<Playlist> playlists = new();
+            List<string> playlistJsons = JsonParser.GetArrayJsons(json, "items");
+            foreach (string playlistJson in playlistJsons)
+            {
+                playlists.Add(new Playlist(
+                    JsonParser.GetPropertyValue<string>(playlistJson, "id"),
+                    JsonParser.GetPropertyValue<string>(playlistJson, "name"),
+                    JsonParser.GetPropertyValue<string>(playlistJson, "description")));
+            }
+            return playlists;
         }
 
         private async Task UpdateAccessTokenIfNeededAsync()

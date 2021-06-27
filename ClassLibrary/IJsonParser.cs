@@ -1,8 +1,10 @@
-﻿namespace ClassLibrary
+﻿using System.Collections.Generic;
+
+namespace ClassLibrary
 {
     public interface IJsonParser
     {
-        void SetJsonToParse(string responseText);
-        T GetPropertyValue<T>(params object[] propertyPath);
+        T GetPropertyValue<T>(string json, params object[] propertyPath);
+        List<string> GetArrayJsons(string json, params object[] arrayPath);
     }
 }
