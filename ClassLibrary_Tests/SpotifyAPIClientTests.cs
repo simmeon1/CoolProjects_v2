@@ -63,6 +63,17 @@ namespace ClassLibrary_Tests
             Mock<IDateTimeProvider> dateTimeProviderMock = GetDateTimeProviderMockThatReturnsFakeDateTimeNow(fakeDateTime1950);
             Assert.IsFalse(tokenWorker.TokenIsStillValid(null, dateTimeProviderMock.Object));
         }
+        
+        [TestMethod]
+        public void CreateTokenObjectFromTokenInterface_Success()
+        {
+            ISpotifyToken token = tokenWorker.CreateTokenObject(fakeAccessToken, fakeExpiresIn, fakeScope, fakeTokenType, fakeDateTime1950);
+            Assert.IsTrue(token.GetAccessToken().Equals(fakeAccessToken));
+            Assert.IsTrue(token.GetDateTimeCreated().Value.CompareTo(fakeDateTime1950) == 0);
+            Assert.IsTrue(token.GetExpiresIn() == fakeExpiresIn);
+            Assert.IsTrue(token.GetScope().Equals(fakeScope));
+            Assert.IsTrue(token.GetTokenType().Equals(fakeTokenType));
+        }
 
         [TestMethod]
         public async Task GetAndSetNewAccessToken_ReturnsSuccessfulResponseAndToken()

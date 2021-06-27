@@ -55,7 +55,7 @@ namespace ClassLibrary
             int expiresIn = JsonParser.GetPropertyValue<int>("expires_in");
             string tokenType = JsonParser.GetPropertyValue<string>("token_type");
             string scope = JsonParser.GetPropertyValue<string>("scope");
-            return new SpotifyToken(accessToken, expiresIn, scope, tokenType, dateTimeJustBeforeRequest);
+            return TokenWorker.CreateTokenObject(accessToken, expiresIn, scope, tokenType, dateTimeJustBeforeRequest);
         }
 
         public bool ConfirmTokenAgainstCurrentToken(ISpotifyToken tokenToConfirm)

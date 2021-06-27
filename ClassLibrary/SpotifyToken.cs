@@ -4,7 +4,7 @@ namespace ClassLibrary
 {
     public class SpotifyToken : ISpotifyToken
     {
-        public SpotifyToken(string accessToken, int expiresIn, string scope, string tokenType, DateTime dateTimeCreated)
+        public SpotifyToken(string accessToken, int expiresIn, string scope, string tokenType, DateTime? dateTimeCreated)
         {
             AccessToken = accessToken;
             ExpiresIn = expiresIn;

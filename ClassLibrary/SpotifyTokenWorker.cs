@@ -24,5 +24,10 @@ namespace ClassLibrary
             DateTime tokenExpirationTime = token.GetDateTimeCreated().Value.AddSeconds(token.GetExpiresIn());
             return dateTimeProvider.GetDateTimeNow().CompareTo(tokenExpirationTime) <= 0;
         }
+
+        public ISpotifyToken CreateTokenObject(string accessToken, int expiresIn, string scope, string tokenType, DateTime? dateTimeCreated)
+        {
+            return new SpotifyToken(accessToken, expiresIn, scope, tokenType, dateTimeCreated);
+        }
     }
 }
