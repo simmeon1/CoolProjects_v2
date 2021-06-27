@@ -21,13 +21,14 @@ namespace ClassLibrary_Tests
         private const string fakeScope = "fakeScope";
         private DateTime fakeDateTime1950 = new(1950, 1, 1);
         private string successfulResponse = @"{""access_token"":" + $"{fakeAccessToken}" + @",""token_type"":" + $"{fakeTokenType}" + @",""expires_in"":" + $"{fakeExpiresIn}" + @",""scope"":" + $"{fakeScope}" + "}";
+        private ISpotifyTokenWorker tokenWorker = new SpotifyTokenWorker();
 
         [TestMethod]
         public void TokensHaveTheSameData_ExpectedSuccessfulMatch()
         {
             SpotifyToken tokenOne = new(fakeAccessToken, fakeExpiresIn, fakeScope, fakeTokenType, fakeDateTime1950);
             SpotifyToken tokenTwo = new(fakeAccessToken, fakeExpiresIn, fakeScope, fakeTokenType, fakeDateTime1950);
-            Assert.IsTrue(ISpotifyTokenWorker.TokensHaveTheSameData(tokenOne, tokenTwo));
+            Assert.IsTrue(tokenWorker.TokensHaveTheSameData(tokenOne, tokenTwo));
         }
 
         [TestMethod]
@@ -35,7 +36,7 @@ namespace ClassLibrary_Tests
         {
             SpotifyToken tokenOne = new(fakeAccessToken, fakeExpiresIn, fakeScope, fakeTokenType, fakeDateTime1950);
             SpotifyToken tokenTwo = new("asd", 0, "asd", "asd", fakeDateTime1950.AddSeconds(1));
-            Assert.IsFalse(ISpotifyTokenWorker.TokensHaveTheSameData(tokenOne, tokenTwo));
+            Assert.IsFalse(tokenWorker.TokensHaveTheSameData(tokenOne, tokenTwo));
         }
 
         [DataTestMethod]
@@ -45,7 +46,7 @@ namespace ClassLibrary_Tests
         {
             SpotifyToken token = new(fakeAccessToken, fakeExpiresIn, fakeScope, fakeTokenType, fakeDateTime1950);
             Mock<IDateTimeProvider> dateTimeProviderMock = GetDateTimeProviderMockThatReturnsFakeDateTimeNow(fakeDateTime1950.AddSeconds(fakeExpiresIn + secondsToAddToDateTimeNowAlongWithExpiresInSeconds));
-            Assert.IsTrue(ISpotifyTokenWorker.TokenIsStillValid(token, dateTimeProviderMock.Object));
+            Assert.IsTrue(tokenWorker.TokenIsStillValid(token, dateTimeProviderMock.Object));
         }
 
         [TestMethod]
@@ -53,14 +54,14 @@ namespace ClassLibrary_Tests
         {
             SpotifyToken token = new(fakeAccessToken, fakeExpiresIn, fakeScope, fakeTokenType, fakeDateTime1950);
             Mock<IDateTimeProvider> dateTimeProviderMock = GetDateTimeProviderMockThatReturnsFakeDateTimeNow(fakeDateTime1950.AddSeconds(fakeExpiresIn + 1));
-            Assert.IsFalse(ISpotifyTokenWorker.TokenIsStillValid(token, dateTimeProviderMock.Object));
+            Assert.IsFalse(tokenWorker.TokenIsStillValid(token, dateTimeProviderMock.Object));
         }
         
         [TestMethod]
         public void TokenIsStillValid_TokenIsNull()
         {
             Mock<IDateTimeProvider> dateTimeProviderMock = GetDateTimeProviderMockThatReturnsFakeDateTimeNow(fakeDateTime1950);
-            Assert.IsFalse(ISpotifyTokenWorker.TokenIsStillValid(null, dateTimeProviderMock.Object));
+            Assert.IsFalse(tokenWorker.TokenIsStillValid(null, dateTimeProviderMock.Object));
         }
 
         [TestMethod]
@@ -71,7 +72,7 @@ namespace ClassLibrary_Tests
             Mock<IJsonParser> jsonParserMock = GetJsonParserMockThatReturnsFakeTokenData();
             Mock<IDateTimeProvider> dateTimeProviderMock = GetDateTimeProviderMockThatReturnsFakeDateTimeNow(fakeDateTime1950);
 
-            SpotifyAPIClient spotifyClient = new(spotifyCredentialsMock.Object, httpClientMock.Object, jsonParserMock.Object, dateTimeProviderMock.Object);
+            SpotifyAPIClient spotifyClient = new(spotifyCredentialsMock.Object, httpClientMock.Object, jsonParserMock.Object, dateTimeProviderMock.Object, tokenWorker);
             await spotifyClient.GetAndSetNewAccessToken();
 
             SpotifyToken tokenToCompare = new(fakeAccessToken, fakeExpiresIn, fakeScope, fakeTokenType, fakeDateTime1950);
@@ -94,7 +95,7 @@ namespace ClassLibrary_Tests
             Mock<IHttpClient> httpClientMock = GetHttpClientMockThatReturnsAGivenStatusCodeAndMessage(responseCode, failResponse);
             Mock<IJsonParser> jsonParserMock = new();
             Mock<IDateTimeProvider> dateTimeProviderMock = GetDateTimeProviderMockThatReturnsFakeDateTimeNow(fakeDateTime1950);
-            SpotifyAPIClient spotifyClient = new(spotifyCredentialsMock.Object, httpClientMock.Object, jsonParserMock.Object, dateTimeProviderMock.Object);
+            SpotifyAPIClient spotifyClient = new(spotifyCredentialsMock.Object, httpClientMock.Object, jsonParserMock.Object, dateTimeProviderMock.Object, tokenWorker);
 
             try
             {
@@ -122,7 +123,7 @@ namespace ClassLibrary_Tests
             Mock<IJsonParser> jsonParserMock = GetJsonParserMockThatReturnsFakeTokenData();
 
             Mock<IDateTimeProvider> dateTimeProviderMock = GetDateTimeProviderMockThatReturnsFakeDateTimeNow(fakeDateTime1950);
-            SpotifyAPIClient spotifyClient = new(spotifyCredentialsMock.Object, httpClientMock.Object, jsonParserMock.Object, dateTimeProviderMock.Object);
+            SpotifyAPIClient spotifyClient = new(spotifyCredentialsMock.Object, httpClientMock.Object, jsonParserMock.Object, dateTimeProviderMock.Object, tokenWorker);
             List<Playlist> playlists = await spotifyClient.GetPlaylists();
 
             Assert.IsTrue(playlists.Count == 1);

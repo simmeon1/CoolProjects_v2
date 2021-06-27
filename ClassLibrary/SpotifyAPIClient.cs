@@ -14,16 +14,18 @@ namespace ClassLibrary
     {
         private IHttpClient HttpClient { get; set; }
         private ISpotifyCredentials Credentials { get; set; }
-        private ISpotifyToken SpotifyToken { get; set; }
+        private ISpotifyToken Token { get; set; }
+        private ISpotifyTokenWorker TokenWorker { get; set; }
         private IDateTimeProvider DateTimeProvider { get; set; }
         private IJsonParser JsonParser { get; set; }
 
-        public SpotifyAPIClient(ISpotifyCredentials credentials, IHttpClient httpClient, IJsonParser jsonParser, IDateTimeProvider dateTimeProvider, ISpotifyToken spotifyToken = null)
+        public SpotifyAPIClient(ISpotifyCredentials credentials, IHttpClient httpClient, IJsonParser jsonParser, IDateTimeProvider dateTimeProvider, ISpotifyTokenWorker tokenWorker, ISpotifyToken token = null)
         {
             HttpClient = httpClient;
             Credentials = credentials;
             JsonParser = jsonParser;
-            SpotifyToken = spotifyToken;
+            Token = token;
+            TokenWorker = tokenWorker;
             DateTimeProvider = dateTimeProvider;
         }
 
@@ -36,7 +38,7 @@ namespace ClassLibrary
             HttpResponseMessage response = await HttpClient.SendRequest(requestMessage);
             string responseText = await response.Content.ReadAsStringAsync();
             if (response.StatusCode != HttpStatusCode.OK) ThrowExceptionDueToBadAPIResponse("The token request was not successful.", response, responseText);
-            SpotifyToken = GetSpotifyTokenFromResponse(responseText, dateTimeJustBeforeRequest);
+            Token = GetSpotifyTokenFromResponse(responseText, dateTimeJustBeforeRequest);
         }
 
         private void ThrowExceptionDueToBadAPIResponse(string leadingMessage, HttpResponseMessage response, string responseText)
@@ -58,7 +60,7 @@ namespace ClassLibrary
 
         public bool ConfirmTokenAgainstCurrentToken(ISpotifyToken tokenToConfirm)
         {
-            return ISpotifyTokenWorker.TokensHaveTheSameData(tokenToConfirm, SpotifyToken);
+            return TokenWorker.TokensHaveTheSameData(tokenToConfirm, Token);
         }
 
         public async Task<List<Playlist>> GetPlaylists()
@@ -66,7 +68,7 @@ namespace ClassLibrary
             await UpdateAccessTokenIfNeededAsync();
             HttpRequestMessage requestMessage = new(HttpMethod.Get, "https://api.spotify.com/v1/me/playlists");
             requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            requestMessage.Headers.Authorization = new AuthenticationHeaderValue(SpotifyToken.GetTokenType(), SpotifyToken.GetAccessToken());
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue(Token.GetTokenType(), Token.GetAccessToken());
             requestMessage.Content = new StringContent("");
             requestMessage.Content.Headers.ContentType = new("application/json");
             HttpResponseMessage response = await HttpClient.SendRequest(requestMessage);
@@ -80,7 +82,7 @@ namespace ClassLibrary
 
         private async Task UpdateAccessTokenIfNeededAsync()
         {
-            if (!ISpotifyTokenWorker.TokenIsStillValid(SpotifyToken, DateTimeProvider)) await GetAndSetNewAccessToken();
+            if (!TokenWorker.TokenIsStillValid(Token, DateTimeProvider)) await GetAndSetNewAccessToken();
         }
     }
 }
