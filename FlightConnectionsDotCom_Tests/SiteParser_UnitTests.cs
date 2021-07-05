@@ -8,7 +8,7 @@ using System.Linq;
 namespace FlightConnectionsDotCom_Tests
 {
     [TestClass]
-    public class SiteParser_Tests
+    public class SiteParser_UnitTests
     {
         [TestMethod]
         public void GetAirportsAndTheirConnections()
@@ -27,7 +27,7 @@ namespace FlightConnectionsDotCom_Tests
         }
 
         [TestMethod]
-        public void GetAirportsAndTheirConnections2()
+        public void CollectAirports_ReturnsExpectedAirports()
         {
             Mock<IWebDriver> driverMock = new();
             Mock<IJavaScriptExecutor> jsExecutorMock = new();
@@ -64,8 +64,8 @@ namespace FlightConnectionsDotCom_Tests
             SiteParser siteParser = new(driverMock.Object, jsExecutorMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object);
             List<Airport> results = siteParser.CollectAirports(commands);
             Assert.IsTrue(results.Count == 4);
-            Assert.IsTrue(results[3].Equals(airport2));
             Assert.IsTrue(results[0].Equals(airport1));
+            Assert.IsTrue(results[3].Equals(airport2));
             Assert.IsTrue(results[2].Equals(airport3));
             Assert.IsTrue(results[1].Equals(airport4));
         }

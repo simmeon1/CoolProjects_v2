@@ -2,6 +2,7 @@
 using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -65,10 +66,10 @@ namespace FlightConnectionsDotCom_ClassLibrary
             INavigation navigation = Driver.Navigate();
             NavigationWorker.GoToUrl(navigation, ("https://www.flightconnections.com/airport-codes"));
 
-            List<IWebElement> airportLists = (List<IWebElement>)JSExecutor.ExecuteScript(commands.GetAirportLists);
+            ReadOnlyCollection<IWebElement> airportLists = (ReadOnlyCollection<IWebElement>)JSExecutor.ExecuteScript(commands.GetAirportLists);
             foreach (IWebElement airportList in airportLists)
             {
-                List<IWebElement> airportListEntries = (List<IWebElement>)JSExecutor.ExecuteScript(commands.GetAirportListEntries, airportList);
+                ReadOnlyCollection<IWebElement> airportListEntries = (ReadOnlyCollection<IWebElement>)JSExecutor.ExecuteScript(commands.GetAirportListEntries, airportList);
                 foreach (IWebElement airportListEntry in airportListEntries)
                 {
                     string code = (string)JSExecutor.ExecuteScript(commands.GetAirportCodeFromEntry, airportListEntry);

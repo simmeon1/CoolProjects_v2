@@ -4,6 +4,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
 {
     public interface INavigationWorker
     {
-        void GoToUrl(INavigation navigation, string v);
+        void GoToUrl(INavigation navigation, string path);
     }
 }
