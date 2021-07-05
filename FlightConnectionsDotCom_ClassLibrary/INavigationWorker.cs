@@ -1,9 +1,10 @@
 ﻿using OpenQA.Selenium;
+using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
     public interface INavigationWorker
     {
-        void GoToUrl(INavigation navigation, string path);
+        Task GoToUrl(INavigation navigation, string path);
     }
 }

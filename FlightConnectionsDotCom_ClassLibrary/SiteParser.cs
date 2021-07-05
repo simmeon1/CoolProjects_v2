@@ -11,6 +11,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
 {
     public class SiteParser
     {
+        private IWebDriver Driver { get; set; }
+        private IJavaScriptExecutor JSExecutor { get; set; }
+        private INavigationWorker NavigationWorker { get; set; }
+        private IDelayer Delayer { get; set; }
+        private IWebElementWorker WebElementWorker { get; set; }
         public SiteParser(IWebDriver driver, IJavaScriptExecutor jSExecutor, INavigationWorker navigationWorker, IDelayer delayer, IWebElementWorker webElementWorker)
         {
             Driver = driver;
@@ -19,12 +24,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Delayer = delayer;
             WebElementWorker = webElementWorker;
         }
-
-        private IWebDriver Driver { get; set; }
-        private IJavaScriptExecutor JSExecutor { get; set; }
-        private INavigationWorker NavigationWorker { get; set; }
-        private IDelayer Delayer { get; set; }
-        private IWebElementWorker WebElementWorker { get; set; }
 
         public async Task<Dictionary<Airport, HashSet<Airport>>> GetAirportsAndTheirConnections(List<Airport> airports, GetAirportsAndTheirConnectionsCommands commands)
         {
@@ -35,7 +34,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             foreach (Airport airport in airports)
             {
                 INavigation navigation = Driver.Navigate();
-                NavigationWorker.GoToUrl(navigation, (airport.Link));
+                await NavigationWorker.GoToUrl(navigation, (airport.Link));
 
                 IWebElement showMoreButton = (IWebElement)JSExecutor.ExecuteScript(commands.GetShowMoreButton);
                 if (showMoreButton != null)
@@ -57,6 +56,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 results.Add(airport, destinations);
             }
             return results;
+        }
+
+        public Task GetAirportsAndTheirConnections(GetAirportsAndTheirConnectionsCommands getAirportsAndTheirConnectionsCommands)
+        {
+            throw new NotImplementedException();
         }
 
         public List<Airport> CollectAirports(CollectAirportCommands commands)
