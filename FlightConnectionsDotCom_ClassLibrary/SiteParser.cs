@@ -66,20 +66,17 @@ namespace FlightConnectionsDotCom_ClassLibrary
             INavigation navigation = Driver.Navigate();
             NavigationWorker.GoToUrl(navigation, ("https://www.flightconnections.com/airport-codes"));
 
-            ReadOnlyCollection<IWebElement> airportLists = (ReadOnlyCollection<IWebElement>)JSExecutor.ExecuteScript(commands.GetAirportLists);
-            foreach (IWebElement airportList in airportLists)
+            ReadOnlyCollection<IWebElement> airportListEntries = (ReadOnlyCollection<IWebElement>)JSExecutor.ExecuteScript(commands.GetAirportListEntries);
+            foreach (IWebElement airportListEntry in airportListEntries)
             {
-                ReadOnlyCollection<IWebElement> airportListEntries = (ReadOnlyCollection<IWebElement>)JSExecutor.ExecuteScript(commands.GetAirportListEntries, airportList);
-                foreach (IWebElement airportListEntry in airportListEntries)
-                {
-                    string code = (string)JSExecutor.ExecuteScript(commands.GetAirportCodeFromEntry, airportListEntry);
-                    string airportCityAndCountry = (string)JSExecutor.ExecuteScript(commands.GetAirportCityAndCountryFromEntry, airportListEntry);
-                    Match match = Regex.Match(airportCityAndCountry, "(.*?), (.*)");
-                    string city = match.Groups[1].Value;
-                    string country = match.Groups[2].Value;
-                    string name = (string)JSExecutor.ExecuteScript(commands.GetAirportNameFromEntry, airportListEntry);
-                    airports.Add(new Airport(code, city, country, name));
-                }
+                string code = (string)JSExecutor.ExecuteScript(commands.GetAirportCodeFromEntry, airportListEntry);
+                string airportCityAndCountry = (string)JSExecutor.ExecuteScript(commands.GetAirportCityAndCountryFromEntry, airportListEntry);
+                Match match = Regex.Match(airportCityAndCountry, "(.*?), (.*)");
+                string city = match.Groups[1].Value;
+                string country = match.Groups[2].Value;
+                string name = (string)JSExecutor.ExecuteScript(commands.GetAirportNameFromEntry, airportListEntry);
+                string link = (string)JSExecutor.ExecuteScript(commands.GetAirportLinkFromEntry, airportListEntry);
+                airports.Add(new Airport(code, city, country, name, link));
             }
             return airports.OrderBy(a => a.Code).ToList();
         }

@@ -22,7 +22,9 @@ namespace FlightConnectionsDotCom_Tests
         [TestInitialize]
         public void TestInitialize()
         {
-            chromeDriver = new();
+            ChromeOptions chromeOptions = new();
+            chromeOptions.AddArgument("headless");
+            chromeDriver = new(chromeOptions);
             navigationWorker = new();
             delayer = new();
             webElementWorker = new();
