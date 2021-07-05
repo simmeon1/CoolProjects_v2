@@ -26,37 +26,36 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private IDelayer Delayer { get; set; }
         private IWebElementWorker WebElementWorker { get; set; }
 
-        public async Task<Dictionary<string, List<string>>> GetAirportsAndTheirConnections()
+        public async Task<Dictionary<Airport, HashSet<Airport>>> GetAirportsAndTheirConnections(List<Airport> airports, GetAirportsAndTheirConnectionsCommands commands)
         {
-            INavigation navigation = Driver.Navigate();
-            NavigationWorker.GoToUrl(navigation, ("https://www.flightconnections.com/"));
+            Dictionary<Airport, HashSet<Airport>> results = new();
+            Dictionary<string, Airport> codesAndAirports = new();
+            foreach (Airport airport in airports) codesAndAirports.Add(airport.Code, airport);
 
-            IWebElement fromDiv = (IWebElement)JSExecutor.ExecuteScript("return document.querySelector('#from')");
-            WebElementWorker.Click(fromDiv);
-            await Delayer.Delay(200);
-
-            IWebElement fromDivInput = (IWebElement)JSExecutor.ExecuteScript("return document.querySelector('#from-input')");
-            WebElementWorker.Click(fromDivInput);
-            await Delayer.Delay(200);
-
-            WebElementWorker.SendKeys(fromDivInput, "EDI");
-            await Delayer.Delay(500);
-
-            IWebElement fromDropdownList = (IWebElement)JSExecutor.ExecuteScript("return document.querySelector('#ui-id-1')");
-            if (fromDropdownList != null)
+            foreach (Airport airport in airports)
             {
-                int fromDropdownCount = (int)JSExecutor.ExecuteScript("return document.querySelector('#ui-id-1').getElementsByTagName('li').length");
-                if (fromDropdownCount > 0)
-                {
-                    IWebElement fromDropdownFirstOption = (IWebElement)JSExecutor.ExecuteScript("return document.querySelector('#ui-id-1').querySelectorAll('li')[0]");
-                    WebElementWorker.Click(fromDropdownFirstOption);
-                    await Delayer.Delay(500);
-                }
-            }
+                INavigation navigation = Driver.Navigate();
+                NavigationWorker.GoToUrl(navigation, (airport.Link));
 
-            Dictionary<string, List<string>> results = new();
-            results.Add("EDI", new List<string>() { "SOF" });
-            results.Add("SOF", new List<string>() { "EDI" });
+                IWebElement showMoreButton = (IWebElement)JSExecutor.ExecuteScript(commands.GetShowMoreButton);
+                if (showMoreButton != null)
+                {
+                    WebElementWorker.Click(showMoreButton);
+                    await Delayer.Delay(1000);
+                }
+
+                IWebElement popularDestinationsDiv = (IWebElement)JSExecutor.ExecuteScript(commands.GetPopularDestinationsDiv);
+                ReadOnlyCollection<IWebElement> popularDestinationsEntries = (ReadOnlyCollection<IWebElement>)JSExecutor.ExecuteScript(commands.GetPopularDestinationsEntries, popularDestinationsDiv);
+
+                HashSet<Airport> destinations = new();
+                foreach (IWebElement entry in popularDestinationsEntries)
+                {
+                    string destination = (string)JSExecutor.ExecuteScript(commands.GetDestinationFromEntry, entry);
+                    string code = Regex.Match(destination, @"\((...)\)$").Groups[1].Value;
+                    destinations.Add(codesAndAirports[code]);
+                }
+                results.Add(airport, destinations);
+            }
             return results;
         }
 

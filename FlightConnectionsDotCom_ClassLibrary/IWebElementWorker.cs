@@ -4,7 +4,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 {
     public interface IWebElementWorker
     {
-        void Click(IWebElement fromField);
-        void SendKeys(IWebElement fromDivInput, string v);
+        void Click(IWebElement element);
+        void SendKeys(IWebElement element, string keys);
     }
 }
