@@ -27,9 +27,20 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
             chromeDriver = new(chromeOptions);
             delayer = new Delayer();
             javaScriptExecutorWithDelayer = new JavaScriptExecutorWithDelayer(chromeDriver, delayer, 10);
-            navigationWorker = new(javaScriptExecutorWithDelayer, new ClosePrivacyPopupCommands());
+            navigationWorker = new(javaScriptExecutorWithDelayer, chromeDriver, new ClosePrivacyPopupCommands());
         }
 
+        [TestMethod]
+        public async Task UnexpectedAlertIsHandled()
+        {
+            //Dismiss privacy message
+            INavigation navigation = chromeDriver.Navigate();
+            await navigationWorker.GoToUrl(navigation, "https://www.flightconnections.com/");
+
+            INavigation navigation2 = chromeDriver.Navigate();
+            await navigationWorker.GoToUrl(navigation2, "https://www.flightconnections.com/flights-to-qurghonteppa-kqt");
+            Assert.IsTrue(true);
+        }
 
         [TestMethod]
         public async Task ClosePrivacyPopup_NoExceptions()

@@ -37,7 +37,7 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
             getAirportsAndTheirConnectionsCommands = new();
             logger = new();
             jsExecutorWithDelay = new(chromeDriver, delayer, 10);
-            navigationWorker = new(jsExecutorWithDelay, new ClosePrivacyPopupCommands());
+            navigationWorker = new(jsExecutorWithDelay, chromeDriver, new ClosePrivacyPopupCommands());
             siteParser = new(chromeDriver, jsExecutorWithDelay, navigationWorker, delayer, webElementWorker, logger);
         }
 
@@ -53,22 +53,12 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
         public async Task GetAirportsAndTheirConnections_ReturnsValues()
         {
             Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "https://www.flightconnections.com/flights-to-aberdeen-abz");
-            Airport airport2 = new("AMS", "Amsterdam", "Netherlands", "Schiphol Airport", "https://www.flightconnections.com/flights-to-amsterdam-ams");
+            Airport airport2 = new("KQT", "asd", "asd", "asd", "https://www.flightconnections.com/flights-to-qurghonteppa-kqt");
             List<Airport> airports = new() { airport1, airport2 };
             Dictionary<Airport, HashSet<Airport>> results = await siteParser.GetAirportsAndTheirConnections(airports, getAirportsAndTheirConnectionsCommands);
             Assert.IsTrue(results.Count == 2);
             Assert.IsTrue(results[airport1].Count > 0);
             Assert.IsTrue(results[airport2].Count > 0);
-        }
-
-        [Ignore]
-        [TestMethod]
-        public async Task UnexpectedAlertIsHandled()
-        {
-            Airport airport1 = new("KQT", "ss", "ss", "ss", "https://www.flightconnections.com/flights-to-qurghonteppa-kqt");
-            List<Airport> airports = new() { airport1 };
-            Dictionary<Airport, HashSet<Airport>> results = await siteParser.GetAirportsAndTheirConnections(airports, getAirportsAndTheirConnectionsCommands);
-            Assert.IsTrue(results.Count == 1);
         }
         
         [Ignore]
