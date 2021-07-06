@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -40,9 +41,9 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
 
 
         [TestMethod]
-        public void CollectAirports_ReturnsValues()
+        public async Task CollectAirports_ReturnsValues()
         {
-            HashSet<Airport> results = siteParser.CollectAirports(collectAirportCommands);
+            HashSet<Airport> results = await siteParser.CollectAirports(collectAirportCommands);
             Assert.IsTrue(results.Count > 0);
         }
         
@@ -56,6 +57,21 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
             Assert.IsTrue(results.Count == 2);
             Assert.IsTrue(results[airport1].Count > 0);
             Assert.IsTrue(results[airport2].Count > 0);
+        }
+        
+        [Ignore]
+        [TestMethod]
+        public async Task FullTest_JsonsReceived()
+        {
+            HashSet<Airport> airports = await siteParser.CollectAirports(new CollectAirportCommands());
+            List<Airport> airportsList = airports.OrderBy(x => x.Code).ToList();
+            string airportsListJson = JsonConvert.SerializeObject(airportsList, Formatting.Indented);
+            File.WriteAllText("airportsListJson.json", airportsListJson);
+
+            Dictionary<Airport, HashSet<Airport>> results = await siteParser.GetAirportsAndTheirConnections(airportsList, getAirportsAndTheirConnectionsCommands);
+            string resultsListJson = JsonConvert.SerializeObject(results, Formatting.Indented);
+            File.WriteAllText("resultsListJson.json", resultsListJson);
+            Assert.IsTrue(results.Count > 0);
         }
 
         [TestCleanup]

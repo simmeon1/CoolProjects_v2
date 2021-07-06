@@ -28,7 +28,10 @@ namespace FlightConnectionsDotCom_ClassLibrary
             if (PolicyPopupHasBeenClosed) return;
 
             await Delayer.Delay(1000);
-            ReadOnlyCollection<IWebElement> buttons = (ReadOnlyCollection<IWebElement>)JSExecutor.ExecuteScript(ClosePrivacyPopupCommands.GetAllButtonsOnPage);
+            object scriptResult = JSExecutor.ExecuteScript(ClosePrivacyPopupCommands.GetAllButtonsOnPage);
+            if (scriptResult is not ReadOnlyCollection<IWebElement>) return;
+
+            ReadOnlyCollection<IWebElement> buttons = (ReadOnlyCollection<IWebElement>)scriptResult;
             foreach (IWebElement button in buttons)
             {
                 string buttonText = (string)JSExecutor.ExecuteScript(ClosePrivacyPopupCommands.GetButtonText, button);

@@ -93,12 +93,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return percentageAndCountString;
         }
 
-        public HashSet<Airport> CollectAirports(CollectAirportCommands commands)
+        public async Task<HashSet<Airport>> CollectAirports(CollectAirportCommands commands)
         {
             Logger.Log($"Navigating to airports page...");
             HashSet<Airport> airports = new();
             INavigation navigation = Driver.Navigate();
-            NavigationWorker.GoToUrl(navigation, ("https://www.flightconnections.com/airport-codes"));
+            await NavigationWorker.GoToUrl(navigation, ("https://www.flightconnections.com/airport-codes"));
 
             ReadOnlyCollection<IWebElement> airportListEntries = (ReadOnlyCollection<IWebElement>)JSExecutor.ExecuteScript(commands.GetAirportListEntries);
             Logger.Log($"{collectingAirports} {airportListEntries.Count} airports...");

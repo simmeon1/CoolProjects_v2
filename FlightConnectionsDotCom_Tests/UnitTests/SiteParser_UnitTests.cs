@@ -75,7 +75,7 @@ namespace FlightConnectionsDotCom_Tests_UnitTests
         }
 
         [TestMethod]
-        public void CollectAirports_ReturnsExpectedAirports()
+        public async Task CollectAirports_ReturnsExpectedAirports()
         {
             InitialiseMockObjects();
             CollectAirportCommands commands = new();
@@ -94,7 +94,7 @@ namespace FlightConnectionsDotCom_Tests_UnitTests
             );
 
             SiteParser siteParser = new(driverMock.Object, jsExecutorMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object, logger.Object);
-            HashSet<Airport> results = siteParser.CollectAirports(commands);
+            HashSet<Airport> results = await siteParser.CollectAirports(commands);
             Assert.IsTrue(results.Count == 4);
             Assert.IsTrue(results.Contains(airport1));
             Assert.IsTrue(results.Contains(airport2));
