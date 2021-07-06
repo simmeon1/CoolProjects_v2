@@ -60,9 +60,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return results;
         }
 
-        public List<Airport> CollectAirports(CollectAirportCommands commands)
+        public HashSet<Airport> CollectAirports(CollectAirportCommands commands)
         {
-            List<Airport> airports = new();
+            HashSet<Airport> airports = new();
             INavigation navigation = Driver.Navigate();
             NavigationWorker.GoToUrl(navigation, ("https://www.flightconnections.com/airport-codes"));
 
@@ -78,7 +78,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 string link = (string)JSExecutor.ExecuteScript(commands.GetAirportLinkFromEntry, airportListEntry);
                 airports.Add(new Airport(code, city, country, name, link));
             }
-            return airports.OrderBy(a => a.Code).ToList();
+            return airports;
         }
     }
 }

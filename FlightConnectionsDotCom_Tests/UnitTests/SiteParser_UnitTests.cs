@@ -83,12 +83,12 @@ namespace FlightConnectionsDotCom_Tests_UnitTests
             );
 
             SiteParser siteParser = new(driverMock.Object, jsExecutorMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object);
-            List<Airport> results = siteParser.CollectAirports(commands);
+            HashSet<Airport> results = siteParser.CollectAirports(commands);
             Assert.IsTrue(results.Count == 4);
-            Assert.IsTrue(results[0].Equals(airport1));
-            Assert.IsTrue(results[3].Equals(airport2));
-            Assert.IsTrue(results[2].Equals(airport3));
-            Assert.IsTrue(results[1].Equals(airport4));
+            Assert.IsTrue(results.Contains(airport1));
+            Assert.IsTrue(results.Contains(airport2));
+            Assert.IsTrue(results.Contains(airport3));
+            Assert.IsTrue(results.Contains(airport4));
         }
 
         private void InitialiseMockObjects()

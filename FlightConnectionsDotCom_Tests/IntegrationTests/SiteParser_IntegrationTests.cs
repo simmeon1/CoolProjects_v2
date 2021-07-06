@@ -40,7 +40,7 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
         [TestMethod]
         public void CollectAirports_ReturnsValues()
         {
-            List<Airport> results = siteParser.CollectAirports(collectAirportCommands);
+            HashSet<Airport> results = siteParser.CollectAirports(collectAirportCommands);
             Assert.IsTrue(results.Count > 0);
         }
         
