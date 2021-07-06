@@ -12,7 +12,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
     public class SiteParser
     {
         private IWebDriver Driver { get; set; }
-        private IJavaScriptExecutor JSExecutor { get; set; }
+        private IJavaScriptExecutorWithDelayer JSExecutorWithDelayer { get; set; }
         private INavigationWorker NavigationWorker { get; set; }
         private IDelayer Delayer { get; set; }
         private IWebElementWorker WebElementWorker { get; set; }
@@ -22,11 +22,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private const string collectingAirportDestinationsFromEachAirportPage = "Collecting airport destinations from each airport page";
         private const string collectingAirportDestinationsFromCurrentAirportPage = "Collecting airport destinations from current airport page";
         private const string collectingAirports = "Collecting airports";
+        public const int delayTime10 = 10;
 
-        public SiteParser(IWebDriver driver, IJavaScriptExecutor jSExecutor, INavigationWorker navigationWorker, IDelayer delayer, IWebElementWorker webElementWorker, ILogger logger)
+        public SiteParser(IWebDriver driver, IJavaScriptExecutorWithDelayer jSExecutorWithDelayer, INavigationWorker navigationWorker, IDelayer delayer, IWebElementWorker webElementWorker, ILogger logger)
         {
             Driver = driver;
-            JSExecutor = jSExecutor;
+            JSExecutorWithDelayer = jSExecutorWithDelayer;
             NavigationWorker = navigationWorker;
             Delayer = delayer;
             WebElementWorker = webElementWorker;
@@ -54,29 +55,34 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 INavigation navigation = Driver.Navigate();
                 await NavigationWorker.GoToUrl(navigation, (airport.Link));
 
-                IWebElement showMoreButton = (IWebElement)JSExecutor.ExecuteScript(commands.GetShowMoreButton);
+                IWebElement showMoreButton = (IWebElement)await JSExecutorWithDelayer.ExecuteScriptAndWait(commands.GetShowMoreButton, delayTime10);
                 if (showMoreButton != null)
                 {
                     WebElementWorker.Click(showMoreButton);
                     await Delayer.Delay(1000);
                 }
 
-                IWebElement popularDestinationsDiv = (IWebElement)JSExecutor.ExecuteScript(commands.GetPopularDestinationsDiv);
-                ReadOnlyCollection<IWebElement> popularDestinationsEntries = (ReadOnlyCollection<IWebElement>)JSExecutor.ExecuteScript(commands.GetPopularDestinationsEntries, popularDestinationsDiv);
-
-                Logger.Log($"{collectingAirportDestinationsFromCurrentAirportPage} for airport {airport.Code} ({popularDestinationsEntries.Count} destinations)");
                 HashSet<Airport> destinations = new();
-                for (int j = 0; j < popularDestinationsEntries.Count; j++)
+                IWebElement popularDestinationsDiv = (IWebElement)await JSExecutorWithDelayer.ExecuteScriptAndWait(commands.GetPopularDestinationsDiv, delayTime10);
+                if (popularDestinationsDiv == null)
                 {
-                    IWebElement entry = popularDestinationsEntries[j];
-                    string destination = (string)JSExecutor.ExecuteScript(commands.GetDestinationFromEntry, entry);
-                    Match match = Regex.Match(destination, @"(.*?) \((...)\)$");
-                    string name = match.Groups[1].Value;
-                    string code = match.Groups[2].Value;
-                    destinations.Add(codesAndAirports.ContainsKey(code) ? codesAndAirports[code] : new Airport(code, "", "", name, ""));
+                    Logger.Log($"There was a problem with locating the popular destinations div for {airport.GetFullString()}");
+                }
+                else
+                {
+                    ReadOnlyCollection<IWebElement> popularDestinationsEntries = (ReadOnlyCollection<IWebElement>)await JSExecutorWithDelayer.ExecuteScriptAndWait(commands.GetPopularDestinationsEntries, delayTime10, popularDestinationsDiv);
+                    for (int j = 0; j < popularDestinationsEntries.Count; j++)
+                    {
+                        IWebElement entry = popularDestinationsEntries[j];
+                        string destination = (string)await JSExecutorWithDelayer.ExecuteScriptAndWait(commands.GetDestinationFromEntry, delayTime10, entry);
+                        Match match = Regex.Match(destination, @"(.*?) \((...)\)$");
+                        string name = match.Groups[1].Value;
+                        string code = match.Groups[2].Value;
+                        destinations.Add(codesAndAirports.ContainsKey(code) ? codesAndAirports[code] : new Airport(code, "", "", name, ""));
+                    }
                 }
                 results.Add(airport, destinations);
-                Logger.Log($"Finished {collectingAirportDestinationsFromCurrentAirportPage} ({destinations.Count} destinations for airport {airport.Code}, {GetPercentageAndCountString(i, airports.Count)} airports done).");
+                Logger.Log($"Finished {collectingAirportDestinationsFromCurrentAirportPage} ({GetPercentageAndCountString(i, airports.Count)} airports done, {destinations.Count} destinations for airport {airport.GetFullString()}).");
             }
             Logger.Log($"Finished {collectingAirportDestinationsFromEachAirportPage} for {airports.Count} airports.");
             Logger.Log($"Finished {gettingAirportsAndTheirConnections} for {airports.Count} airports.");
@@ -100,21 +106,21 @@ namespace FlightConnectionsDotCom_ClassLibrary
             INavigation navigation = Driver.Navigate();
             await NavigationWorker.GoToUrl(navigation, ("https://www.flightconnections.com/airport-codes"));
 
-            ReadOnlyCollection<IWebElement> airportListEntries = (ReadOnlyCollection<IWebElement>)JSExecutor.ExecuteScript(commands.GetAirportListEntries);
+            ReadOnlyCollection<IWebElement> airportListEntries = (ReadOnlyCollection<IWebElement>)await JSExecutorWithDelayer.ExecuteScriptAndWait(commands.GetAirportListEntries, delayTime10);
             Logger.Log($"{collectingAirports} {airportListEntries.Count} airports...");
             for (int i = 0; i < airportListEntries.Count; i++)
             {
                 IWebElement airportListEntry = airportListEntries[i];
-                string code = (string)JSExecutor.ExecuteScript(commands.GetAirportCodeFromEntry, airportListEntry);
-                string airportCityAndCountry = (string)JSExecutor.ExecuteScript(commands.GetAirportCityAndCountryFromEntry, airportListEntry);
+                string code = (string)await JSExecutorWithDelayer.ExecuteScriptAndWait(commands.GetAirportCodeFromEntry, delayTime10, airportListEntry);
+                string airportCityAndCountry = (string)await JSExecutorWithDelayer.ExecuteScriptAndWait(commands.GetAirportCityAndCountryFromEntry, delayTime10, airportListEntry);
                 Match match = Regex.Match(airportCityAndCountry, "(.*?), (.*)");
                 string city = match.Groups[1].Value;
                 string country = match.Groups[2].Value;
-                string name = (string)JSExecutor.ExecuteScript(commands.GetAirportNameFromEntry, airportListEntry);
-                string link = (string)JSExecutor.ExecuteScript(commands.GetAirportLinkFromEntry, airportListEntry);
+                string name = (string)await JSExecutorWithDelayer.ExecuteScriptAndWait(commands.GetAirportNameFromEntry, delayTime10, airportListEntry);
+                string link = (string)await JSExecutorWithDelayer.ExecuteScriptAndWait(commands.GetAirportLinkFromEntry, delayTime10, airportListEntry);
                 Airport airport = new(code, city, country, name, link);
                 airports.Add(airport);
-                Logger.Log($"Collected airport ({airport.Code} ({GetPercentageAndCountString(i, airportListEntries.Count)} airports done).");
+                Logger.Log($"Collected airport ({airport.GetFullString()} ({GetPercentageAndCountString(i, airportListEntries.Count)} airports done).");
             }
             Logger.Log($"Finished {collectingAirports} ({airportListEntries.Count} airports).");
             return airports;

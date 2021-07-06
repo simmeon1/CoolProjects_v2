@@ -23,6 +23,7 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
         GetAirportsAndTheirConnectionsCommands getAirportsAndTheirConnectionsCommands;
         SiteParser siteParser;
         Logger_Debug logger;
+        JavaScriptExecutorWithDelayer jsExecutorWithDelay;
 
         [TestInitialize]
         public void TestInitialize()
@@ -35,8 +36,9 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
             collectAirportCommands = new();
             getAirportsAndTheirConnectionsCommands = new();
             logger = new();
+            jsExecutorWithDelay = new(chromeDriver, delayer);
             navigationWorker = new(chromeDriver, delayer, new ClosePrivacyPopupCommands());
-            siteParser = new(chromeDriver, chromeDriver, navigationWorker, delayer, webElementWorker, logger);
+            siteParser = new(chromeDriver, jsExecutorWithDelay, navigationWorker, delayer, webElementWorker, logger);
         }
 
 
@@ -59,14 +61,27 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
             Assert.IsTrue(results[airport2].Count > 0);
         }
         
-        [Ignore]
+        [TestMethod]
+        public async Task UnexpectedAlertIsHandled()
+        {
+            Airport airport1 = new("KQT", "ss", "ss", "ss", "https://www.flightconnections.com/flights-to-qurghonteppa-kqt");
+            List<Airport> airports = new() { airport1 };
+            Dictionary<Airport, HashSet<Airport>> results = await siteParser.GetAirportsAndTheirConnections(airports, getAirportsAndTheirConnectionsCommands);
+            Assert.IsTrue(results.Count == 1);
+        }
+        
+        //[Ignore]
         [TestMethod]
         public async Task FullTest_JsonsReceived()
         {
-            HashSet<Airport> airports = await siteParser.CollectAirports(new CollectAirportCommands());
-            List<Airport> airportsList = airports.OrderBy(x => x.Code).ToList();
+            const string airportListJsonFileName = "airportsListJson.json";
+
+            //HashSet<Airport> airports = await siteParser.CollectAirports(new CollectAirportCommands());
+            //List<Airport> airportsList = airports.OrderBy(x => x.Code).ToList();
+            List<Airport> airportsList = JsonConvert.DeserializeObject<List<Airport>>(File.ReadAllText(airportListJsonFileName));
+
             string airportsListJson = JsonConvert.SerializeObject(airportsList, Formatting.Indented);
-            File.WriteAllText("airportsListJson.json", airportsListJson);
+            File.WriteAllText(airportListJsonFileName, airportsListJson);
 
             Dictionary<Airport, HashSet<Airport>> results = await siteParser.GetAirportsAndTheirConnections(airportsList, getAirportsAndTheirConnectionsCommands);
             string resultsListJson = JsonConvert.SerializeObject(results, Formatting.Indented);
