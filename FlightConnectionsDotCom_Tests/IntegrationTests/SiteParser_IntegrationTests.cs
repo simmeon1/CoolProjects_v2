@@ -21,6 +21,7 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
         CollectAirportCommands collectAirportCommands;
         GetAirportsAndTheirConnectionsCommands getAirportsAndTheirConnectionsCommands;
         SiteParser siteParser;
+        Logger_Debug logger;
 
         [TestInitialize]
         public void TestInitialize()
@@ -32,8 +33,9 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
             webElementWorker = new();
             collectAirportCommands = new();
             getAirportsAndTheirConnectionsCommands = new();
+            logger = new();
             navigationWorker = new(chromeDriver, delayer, new ClosePrivacyPopupCommands());
-            siteParser = new(chromeDriver, chromeDriver, navigationWorker, delayer, webElementWorker);
+            siteParser = new(chromeDriver, chromeDriver, navigationWorker, delayer, webElementWorker, logger);
         }
 
 
@@ -48,7 +50,7 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
         public async Task GetAirportsAndTheirConnections_ReturnsValues()
         {
             Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "https://www.flightconnections.com/flights-to-aberdeen-abz");
-            Airport airport2 = new("SOF", "Sofia", "Bulgaria", "Sofia Airport", "https://www.flightconnections.com/flights-to-sofia-sof");
+            Airport airport2 = new("AMS", "Amsterdam", "Netherlands", "Schiphol Airport", "https://www.flightconnections.com/flights-to-amsterdam-ams");
             List<Airport> airports = new() { airport1, airport2 };
             Dictionary<Airport, HashSet<Airport>> results = await siteParser.GetAirportsAndTheirConnections(airports, getAirportsAndTheirConnectionsCommands);
             Assert.IsTrue(results.Count == 2);

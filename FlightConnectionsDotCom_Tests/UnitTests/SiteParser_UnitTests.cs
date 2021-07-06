@@ -17,6 +17,17 @@ namespace FlightConnectionsDotCom_Tests_UnitTests
         Mock<INavigationWorker> navigationWorkerMock;
         Mock<IDelayer> delayerMock;
         Mock<IWebElementWorker> webElementWorker;
+        Mock<ILogger> logger;
+
+        private void InitialiseMockObjects()
+        {
+            driverMock = new();
+            jsExecutorMock = new();
+            navigationWorkerMock = new();
+            delayerMock = new();
+            webElementWorker = new();
+            logger = new();
+        }
 
         [TestMethod]
         public async Task GetAirportsAndTheirConnections_ReturnsExpectedResults()
@@ -53,7 +64,7 @@ namespace FlightConnectionsDotCom_Tests_UnitTests
             jsExecutorMock.Setup(x => x.ExecuteScript(commands.GetDestinationFromEntry, mockEntry2)).Returns($"cc ({airport2.Code})");
             jsExecutorMock.Setup(x => x.ExecuteScript(commands.GetDestinationFromEntry, mockEntry3)).Returns($"dd ({airport3.Code})");
 
-            SiteParser siteParser = new(driverMock.Object, jsExecutorMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object);
+            SiteParser siteParser = new(driverMock.Object, jsExecutorMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object, logger.Object);
             Dictionary<Airport, HashSet<Airport>> result = await siteParser.GetAirportsAndTheirConnections(airports, commands);
             Assert.IsTrue(result[airport1].Count == 2);
             Assert.IsTrue(result[airport1].Contains(airport2));
@@ -82,22 +93,13 @@ namespace FlightConnectionsDotCom_Tests_UnitTests
                 new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { airportListEntryObject1, airportListEntryObject2, airportListEntryObject3, airportListEntryObject4 })
             );
 
-            SiteParser siteParser = new(driverMock.Object, jsExecutorMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object);
+            SiteParser siteParser = new(driverMock.Object, jsExecutorMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object, logger.Object);
             HashSet<Airport> results = siteParser.CollectAirports(commands);
             Assert.IsTrue(results.Count == 4);
             Assert.IsTrue(results.Contains(airport1));
             Assert.IsTrue(results.Contains(airport2));
             Assert.IsTrue(results.Contains(airport3));
             Assert.IsTrue(results.Contains(airport4));
-        }
-
-        private void InitialiseMockObjects()
-        {
-            driverMock = new();
-            jsExecutorMock = new();
-            navigationWorkerMock = new();
-            delayerMock = new();
-            webElementWorker = new();
         }
 
         private IWebElement SetUpAirportListEntryData(CollectAirportCommands commands, Airport airport)
