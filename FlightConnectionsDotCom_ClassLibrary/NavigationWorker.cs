@@ -11,14 +11,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
     public class NavigationWorker : INavigationWorker
     {
         public bool PolicyPopupHasBeenClosed { get; set; }
-        private IJavaScriptExecutor JSExecutor { get; set; }
-        private IDelayer Delayer { get; set; }
+        private IJavaScriptExecutorWithDelayer JSExecutorWithDelayer { get; set; }
         private ClosePrivacyPopupCommands ClosePrivacyPopupCommands { get; set; }
 
-        public NavigationWorker(IJavaScriptExecutor jSExecutor, IDelayer delayer, ClosePrivacyPopupCommands closePrivacyPopupCommands)
+        public NavigationWorker(IJavaScriptExecutorWithDelayer jSExecutorWithDelayer, ClosePrivacyPopupCommands closePrivacyPopupCommands)
         {
-            JSExecutor = jSExecutor;
-            Delayer = delayer;
+            JSExecutorWithDelayer = jSExecutorWithDelayer;
             ClosePrivacyPopupCommands = closePrivacyPopupCommands;
         }
 
@@ -27,14 +25,23 @@ namespace FlightConnectionsDotCom_ClassLibrary
             navigation.GoToUrl(path);
             if (PolicyPopupHasBeenClosed) return;
 
-            await Delayer.Delay(1000);
-            object scriptResult = JSExecutor.ExecuteScript(ClosePrivacyPopupCommands.GetAllButtonsOnPage);
+            await JSExecutorWithDelayer.GetDelayer().Delay(1000);
+            object scriptResult;
+            try
+            {
+                scriptResult = await JSExecutorWithDelayer.ExecuteScriptAndWait(script: ClosePrivacyPopupCommands.GetAllButtonsOnPage);
+            }
+            catch (UnhandledAlertException ex)
+            {
+                throw;
+            }
+            scriptResult = await JSExecutorWithDelayer.ExecuteScriptAndWait(ClosePrivacyPopupCommands.GetAllButtonsOnPage);
             if (scriptResult is not ReadOnlyCollection<IWebElement>) return;
 
             ReadOnlyCollection<IWebElement> buttons = (ReadOnlyCollection<IWebElement>)scriptResult;
             foreach (IWebElement button in buttons)
             {
-                string buttonText = (string)JSExecutor.ExecuteScript(ClosePrivacyPopupCommands.GetButtonText, button);
+                string buttonText = (string) await JSExecutorWithDelayer.ExecuteScriptAndWait(ClosePrivacyPopupCommands.GetButtonText, button);
                 if (buttonText.Contains("AGREE"))
                 {
                     button.Click();

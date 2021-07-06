@@ -36,8 +36,8 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
             collectAirportCommands = new();
             getAirportsAndTheirConnectionsCommands = new();
             logger = new();
-            jsExecutorWithDelay = new(chromeDriver, delayer);
-            navigationWorker = new(chromeDriver, delayer, new ClosePrivacyPopupCommands());
+            jsExecutorWithDelay = new(chromeDriver, delayer, 10);
+            navigationWorker = new(jsExecutorWithDelay, new ClosePrivacyPopupCommands());
             siteParser = new(chromeDriver, jsExecutorWithDelay, navigationWorker, delayer, webElementWorker, logger);
         }
 
@@ -60,7 +60,8 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
             Assert.IsTrue(results[airport1].Count > 0);
             Assert.IsTrue(results[airport2].Count > 0);
         }
-        
+
+        [Ignore]
         [TestMethod]
         public async Task UnexpectedAlertIsHandled()
         {
@@ -70,7 +71,7 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
             Assert.IsTrue(results.Count == 1);
         }
         
-        //[Ignore]
+        [Ignore]
         [TestMethod]
         public async Task FullTest_JsonsReceived()
         {

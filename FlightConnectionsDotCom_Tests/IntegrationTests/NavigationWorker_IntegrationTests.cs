@@ -17,6 +17,7 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
         ChromeDriver chromeDriver;
         NavigationWorker navigationWorker;
         Delayer delayer;
+        JavaScriptExecutorWithDelayer javaScriptExecutorWithDelayer;
 
         [TestInitialize]
         public void TestInitialize()
@@ -25,7 +26,8 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
             chromeOptions.AddArgument("headless");
             chromeDriver = new(chromeOptions);
             delayer = new Delayer();
-            navigationWorker = new(chromeDriver, delayer, new ClosePrivacyPopupCommands());
+            javaScriptExecutorWithDelayer = new JavaScriptExecutorWithDelayer(chromeDriver, delayer, 10);
+            navigationWorker = new(javaScriptExecutorWithDelayer, new ClosePrivacyPopupCommands());
         }
 
 

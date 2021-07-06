@@ -1,9 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using OpenQA.Selenium;
+using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
     public interface IJavaScriptExecutorWithDelayer
     {
-        Task<object> ExecuteScriptAndWait(string script, int millisecondsDelay, params object[] args);
+        int GetDefaultDelay();
+        Task<object> ExecuteScriptAndWait(string script, params object[] args);
+        Task<object> ExecuteScriptAndWait(int millisecondsDelay, string script, params object[] args);
+        IDelayer GetDelayer();
+        IJavaScriptExecutor GetJsExecutor();
     }
 }
