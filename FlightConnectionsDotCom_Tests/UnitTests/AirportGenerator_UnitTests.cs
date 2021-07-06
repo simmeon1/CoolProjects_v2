@@ -3,10 +3,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FlightConnectionsDotCom_Tests
+namespace FlightConnectionsDotCom_Tests_UnitTests
 {
     [TestClass]
-    public class AirportGenerator_Tests
+    public class AirportGenerator_UnitTests
     {
         [TestMethod]
         public void GetAllPossiblePermutationsOfLetters_ReturnsAllPermutationsOfABC()

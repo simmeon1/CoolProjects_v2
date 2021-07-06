@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace FlightConnectionsDotCom_Tests
+namespace FlightConnectionsDotCom_Tests_UnitTests
 {
     [TestClass]
     public class NavigationWorker_UnitTests

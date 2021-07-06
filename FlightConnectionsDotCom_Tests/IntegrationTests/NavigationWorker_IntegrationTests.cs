@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace FlightConnectionsDotCom_Tests
+namespace FlightConnectionsDotCom_Tests_IntegrationTests
 {
     [TestClass]
     public class NavigationWorker_IntegrationTests
