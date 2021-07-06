@@ -32,12 +32,12 @@ namespace FlightConnectionsDotCom_Tests
             IWebElement popularDestinationsDivMock2 = new Mock<IWebElement>().Object;
             IWebElement popularDestinationsDivMock3 = new Mock<IWebElement>().Object;
             
-            IWebElement mockEntry1_1 = new Mock<IWebElement>().Object;
-            IWebElement mockEntry1_2 = new Mock<IWebElement>().Object;
-            IWebElement mockEntry2_1 = new Mock<IWebElement>().Object;
+            IWebElement mockEntry1 = new Mock<IWebElement>().Object;
+            IWebElement mockEntry2 = new Mock<IWebElement>().Object;
+            IWebElement mockEntry3 = new Mock<IWebElement>().Object;
 
-            ReadOnlyCollection<IWebElement> entries1 = new(new List<IWebElement>() { mockEntry1_1, mockEntry1_2 });
-            ReadOnlyCollection<IWebElement> entries2 = new(new List<IWebElement>() { mockEntry2_1 });
+            ReadOnlyCollection<IWebElement> entries1 = new(new List<IWebElement>() { mockEntry2, mockEntry3 });
+            ReadOnlyCollection<IWebElement> entries2 = new(new List<IWebElement>() { mockEntry1 });
             ReadOnlyCollection<IWebElement> entries3 = new(new List<IWebElement>());
 
             jsExecutorMock.SetupSequence(x => x.ExecuteScript(commands.GetPopularDestinationsDiv))
@@ -49,9 +49,9 @@ namespace FlightConnectionsDotCom_Tests
             jsExecutorMock.Setup(x => x.ExecuteScript(commands.GetPopularDestinationsEntries, popularDestinationsDivMock2)).Returns(entries2);
             jsExecutorMock.Setup(x => x.ExecuteScript(commands.GetPopularDestinationsEntries, popularDestinationsDivMock3)).Returns(entries3);
             
-            jsExecutorMock.Setup(x => x.ExecuteScript(commands.GetDestinationFromEntry, mockEntry1_1)).Returns($"({airport2.Code})");
-            jsExecutorMock.Setup(x => x.ExecuteScript(commands.GetDestinationFromEntry, mockEntry1_2)).Returns($"({airport3.Code})");
-            jsExecutorMock.Setup(x => x.ExecuteScript(commands.GetDestinationFromEntry, mockEntry2_1)).Returns($"({airport3.Code})");
+            jsExecutorMock.Setup(x => x.ExecuteScript(commands.GetDestinationFromEntry, mockEntry1)).Returns($"gg ({airport1.Code})");
+            jsExecutorMock.Setup(x => x.ExecuteScript(commands.GetDestinationFromEntry, mockEntry2)).Returns($"cc ({airport2.Code})");
+            jsExecutorMock.Setup(x => x.ExecuteScript(commands.GetDestinationFromEntry, mockEntry3)).Returns($"dd ({airport3.Code})");
 
             SiteParser siteParser = new(driverMock.Object, jsExecutorMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object);
             Dictionary<Airport, HashSet<Airport>> result = await siteParser.GetAirportsAndTheirConnections(airports, commands);
@@ -59,7 +59,7 @@ namespace FlightConnectionsDotCom_Tests
             Assert.IsTrue(result[airport1].Contains(airport2));
             Assert.IsTrue(result[airport1].Contains(airport3));
             Assert.IsTrue(result[airport2].Count == 1);
-            Assert.IsTrue(result[airport2].Contains(airport3));
+            Assert.IsTrue(result[airport2].Contains(airport1));
             Assert.IsTrue(result[airport3].Count == 0);
         }
 

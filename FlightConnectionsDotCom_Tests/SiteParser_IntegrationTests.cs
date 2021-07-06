@@ -26,7 +26,7 @@ namespace FlightConnectionsDotCom_Tests
         public void TestInitialize()
         {
             ChromeOptions chromeOptions = new();
-            //chromeOptions.AddArgument("headless");
+            chromeOptions.AddArgument("headless");
             chromeDriver = new(chromeOptions);
             delayer = new();
             webElementWorker = new();
@@ -45,7 +45,7 @@ namespace FlightConnectionsDotCom_Tests
         }
         
         [TestMethod]
-        public async Task GetAirportsAndTheirConnections_ReturnsValuesAsync()
+        public async Task GetAirportsAndTheirConnections_ReturnsValues()
         {
             Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "https://www.flightconnections.com/flights-to-aberdeen-abz");
             Airport airport2 = new("SOF", "Sofia", "Bulgaria", "Sofia Airport", "https://www.flightconnections.com/flights-to-sofia-sof");

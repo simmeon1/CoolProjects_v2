@@ -50,17 +50,14 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 foreach (IWebElement entry in popularDestinationsEntries)
                 {
                     string destination = (string)JSExecutor.ExecuteScript(commands.GetDestinationFromEntry, entry);
-                    string code = Regex.Match(destination, @"\((...)\)$").Groups[1].Value;
-                    destinations.Add(codesAndAirports[code]);
+                    Match match = Regex.Match(destination, @"(.*?) \((...)\)$");
+                    string name = match.Groups[1].Value;
+                    string code = match.Groups[2].Value;
+                    destinations.Add(codesAndAirports.ContainsKey(code) ? codesAndAirports[code] : new Airport(code, "", "", name, ""));
                 }
                 results.Add(airport, destinations);
             }
             return results;
-        }
-
-        public Task GetAirportsAndTheirConnections(GetAirportsAndTheirConnectionsCommands getAirportsAndTheirConnectionsCommands)
-        {
-            throw new NotImplementedException();
         }
 
         public List<Airport> CollectAirports(CollectAirportCommands commands)
