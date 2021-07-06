@@ -55,10 +55,10 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
             Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "https://www.flightconnections.com/flights-to-aberdeen-abz");
             Airport airport2 = new("KQT", "asd", "asd", "asd", "https://www.flightconnections.com/flights-to-qurghonteppa-kqt");
             List<Airport> airports = new() { airport1, airport2 };
-            Dictionary<Airport, HashSet<Airport>> results = await siteParser.GetAirportsAndTheirConnections(airports, getAirportsAndTheirConnectionsCommands);
+            Dictionary<string, HashSet<string>> results = await siteParser.GetAirportsAndTheirConnections(airports, getAirportsAndTheirConnectionsCommands);
             Assert.IsTrue(results.Count == 2);
-            Assert.IsTrue(results[airport1].Count > 0);
-            Assert.IsTrue(results[airport2].Count > 0);
+            Assert.IsTrue(results[airport1.Code].Count > 0);
+            Assert.IsTrue(results[airport2.Code].Count > 0);
         }
         
         [Ignore]
@@ -74,8 +74,8 @@ namespace FlightConnectionsDotCom_Tests_IntegrationTests
             string airportsListJson = JsonConvert.SerializeObject(airportsList, Formatting.Indented);
             File.WriteAllText(airportListJsonFileName, airportsListJson);
 
-            Dictionary<Airport, HashSet<Airport>> results = await siteParser.GetAirportsAndTheirConnections(airportsList, getAirportsAndTheirConnectionsCommands);
-            string resultsListJson = JsonConvert.SerializeObject(results, Formatting.Indented);
+            Dictionary<string, HashSet<string>> results = await siteParser.GetAirportsAndTheirConnections(airportsList, getAirportsAndTheirConnectionsCommands);
+            string resultsListJson = JsonConvert.SerializeObject(results);
             File.WriteAllText("resultsListJson.json", resultsListJson);
             Assert.IsTrue(results.Count > 0);
         }

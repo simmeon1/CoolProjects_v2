@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium;
+﻿using Newtonsoft.Json;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
@@ -33,12 +34,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Logger = logger;
         }
 
-        public async Task<Dictionary<Airport, HashSet<Airport>>> GetAirportsAndTheirConnections(List<Airport> airports, GetAirportsAndTheirConnectionsCommands commands)
+        public async Task<Dictionary<string, HashSet<string>>> GetAirportsAndTheirConnections(List<Airport> airports, GetAirportsAndTheirConnectionsCommands commands)
         {
             Logger.Log($"{gettingAirportsAndTheirConnections} for {airports.Count} airports...");
 
             Logger.Log($"{buildingDictionaryWithCodesAndAirports}...");
-            Dictionary<Airport, HashSet<Airport>> results = new();
+            Dictionary<string, HashSet<string>> results = new();
             Dictionary<string, Airport> codesAndAirports = new();
             for (int i = 0; i < airports.Count; i++)
             {
@@ -61,7 +62,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                     await Delayer.Delay(1000);
                 }
 
-                HashSet<Airport> destinations = new();
+                HashSet<string> destinations = new();
                 IWebElement popularDestinationsDiv = (IWebElement)await JSExecutorWithDelayer.ExecuteScriptAndWait(commands.GetPopularDestinationsDiv);
                 if (popularDestinationsDiv == null)
                 {
@@ -77,10 +78,10 @@ namespace FlightConnectionsDotCom_ClassLibrary
                         Match match = Regex.Match(destination, @"(.*?) \((...)\)$");
                         string name = match.Groups[1].Value;
                         string code = match.Groups[2].Value;
-                        destinations.Add(codesAndAirports.ContainsKey(code) ? codesAndAirports[code] : new Airport(code, "", "", name, ""));
+                        destinations.Add(code);
                     }
                 }
-                results.Add(airport, destinations);
+                results.Add(airport.Code, destinations);
                 Logger.Log($"Finished {collectingAirportDestinationsFromCurrentAirportPage} ({GetPercentageAndCountString(i, airports.Count)} airports done, {destinations.Count} destinations for airport {airport.GetFullString()}).");
             }
             Logger.Log($"Finished {collectingAirportDestinationsFromEachAirportPage} for {airports.Count} airports.");

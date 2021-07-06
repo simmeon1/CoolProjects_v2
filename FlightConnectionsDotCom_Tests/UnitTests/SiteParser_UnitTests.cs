@@ -65,13 +65,13 @@ namespace FlightConnectionsDotCom_Tests_UnitTests
             jsExecutorWithDelayerMock.Setup(x => x.ExecuteScriptAndWait(commands.GetDestinationFromEntry, mockEntry3).Result).Returns($"dd ({airport3.Code})");
 
             SiteParser siteParser = new(driverMock.Object, jsExecutorWithDelayerMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object, logger.Object);
-            Dictionary<Airport, HashSet<Airport>> result = await siteParser.GetAirportsAndTheirConnections(airports, commands);
-            Assert.IsTrue(result[airport1].Count == 2);
-            Assert.IsTrue(result[airport1].Contains(airport2));
-            Assert.IsTrue(result[airport1].Contains(airport3));
-            Assert.IsTrue(result[airport2].Count == 1);
-            Assert.IsTrue(result[airport2].Contains(airport1));
-            Assert.IsTrue(result[airport3].Count == 0);
+            Dictionary<string, HashSet<string>> result = await siteParser.GetAirportsAndTheirConnections(airports, commands);
+            Assert.IsTrue(result[airport1.Code].Count == 2);
+            Assert.IsTrue(result[airport1.Code].Contains(airport2.Code));
+            Assert.IsTrue(result[airport1.Code].Contains(airport3.Code));
+            Assert.IsTrue(result[airport2.Code].Count == 1);
+            Assert.IsTrue(result[airport2.Code].Contains(airport1.Code));
+            Assert.IsTrue(result[airport3.Code].Count == 0);
         }
 
         [TestMethod]
