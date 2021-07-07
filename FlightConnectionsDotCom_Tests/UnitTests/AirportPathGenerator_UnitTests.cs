@@ -27,7 +27,17 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                 { codeEDI, new HashSet<string>() { codeSOF } }
             };
             AirportPathGenerator generator = new(airportList, airportAndDestinationsList);
-            List<List<string>> paths = generator.GeneratePaths(codeABZ, codeSOF);
+
+            List<List<string>> paths = generator.GeneratePaths(codeABZ, codeSOF, 0);
+            Assert.IsTrue(paths.Count == 0);
+            
+            paths = generator.GeneratePaths(codeABZ, codeSOF, 1);
+            Assert.IsTrue(paths.Count == 1);
+            Assert.IsTrue(paths[0].Count == 2);
+            Assert.IsTrue(paths[0][0].Equals(codeABZ));
+            Assert.IsTrue(paths[0][1].Equals(codeSOF));
+            
+            paths = generator.GeneratePaths(codeABZ, codeSOF, 3);
             Assert.IsTrue(paths.Count == 2);
             Assert.IsTrue(paths[0].Count == 2);
             Assert.IsTrue(paths[0][0].Equals(codeABZ));

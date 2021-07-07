@@ -15,34 +15,30 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             AirportDestinations = airportDestinations;
         }
 
-        public List<List<string>> GeneratePaths(string origin, string destination)
+        public List<List<string>> GeneratePaths(string origin, string target, int maxFlights)
         {
             List<List<string>> paths = new();
-            ICollection<string> destinations1 = AirportDestinations[origin];
-            foreach (string destination1 in destinations1)
+            LinkedList<string> currentPath = new();
+            currentPath.AddLast(origin);
+            int depthScanned = 0;
+            GeneratePath(origin, target, paths, ref depthScanned, maxFlights, currentPath);
+            return paths;
+        }
+
+        private void GeneratePath(string origin, string target, List<List<string>> paths, ref int depthScanned, int maxFlights, LinkedList<string> currentPath)
+        {
+            while (depthScanned < maxFlights)
             {
-                if (destination1.Equals(destination))
+                HashSet<string> destinations = AirportDestinations[origin];
+                foreach (string destination in destinations)
                 {
-                    paths.Add(new List<string>() { origin, destination1 });
-                }
-                ICollection<string> destinations2 = AirportDestinations[destination1];
-                foreach (string destination2 in destinations2)
-                {
-                    if (destination2.Equals(destination))
-                    {
-                        paths.Add(new List<string>() { origin, destination1, destination2 });
-                    }
-                    ICollection<string> destinations3 = AirportDestinations[destination2];
-                    foreach (string destination3 in destinations3)
-                    {
-                        if (destination3.Equals(destination))
-                        {
-                            paths.Add(new List<string>() { origin, destination1, destination2, destination3 });
-                        }
-                    }
+                    if (destination.Equals(target)) paths.Add(new List<string>(currentPath) { destination });
+                    depthScanned++;
+                    currentPath.AddLast(destination);
+                    GeneratePath(destination, target, paths, ref depthScanned, maxFlights, currentPath);
+                    currentPath.RemoveLast();
                 }
             }
-            return paths;
         }
     }
 }
