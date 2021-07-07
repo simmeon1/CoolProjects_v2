@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace FlightConnectionsDotCom_ClassLibrary
+namespace FlightConnectionsDotCom_ClassLibrary.Interfaces
 {
     public interface IAirportGenerator
     {

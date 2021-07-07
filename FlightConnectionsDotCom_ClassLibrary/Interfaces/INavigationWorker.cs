@@ -1,7 +1,7 @@
 ﻿using OpenQA.Selenium;
 using System.Threading.Tasks;
 
-namespace FlightConnectionsDotCom_ClassLibrary
+namespace FlightConnectionsDotCom_ClassLibrary.Interfaces
 {
     public interface INavigationWorker
     {

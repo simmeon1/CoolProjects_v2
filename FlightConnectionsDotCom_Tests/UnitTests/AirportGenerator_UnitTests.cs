@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FlightConnectionsDotCom_Tests_UnitTests
+namespace FlightConnectionsDotCom_Tests.UnitTests
 {
     [TestClass]
     public class AirportGenerator_UnitTests

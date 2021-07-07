@@ -1,4 +1,5 @@
 ﻿using FlightConnectionsDotCom_ClassLibrary;
+using FlightConnectionsDotCom_ClassLibrary.Interfaces;
 using OpenQA.Selenium;
 using System.Threading.Tasks;
 

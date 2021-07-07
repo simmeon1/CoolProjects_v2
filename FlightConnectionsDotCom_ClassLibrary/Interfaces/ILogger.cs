@@ -1,4 +1,4 @@
-﻿namespace FlightConnectionsDotCom_ClassLibrary
+﻿namespace FlightConnectionsDotCom_ClassLibrary.Interfaces
 {
     public interface ILogger
     {
