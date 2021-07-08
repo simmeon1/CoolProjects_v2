@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace FlightConnectionsDotCom_Tests.UnitTests
 {
@@ -11,7 +12,6 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         private LinkedList<string> CurrentPath { get; set; }
         private int MaxFlights { get; set; }
         private List<List<string>> Paths { get; set; }
-        private string Origin { get; set; }
         private string Target { get; set; }
 
         public AirportPathGenerator(IDictionary<string, HashSet<string>> airportDestinations)
@@ -21,36 +21,45 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
 
         public List<List<string>> GeneratePaths(string origin, string target, int maxFlights)
         {
-            Initialise(origin, target, maxFlights);
+            Initialise(target, maxFlights);
             UpdateCurrentPathAndScanItIfNeeded(origin, target);
-            return Paths;
+            return Paths.OrderBy(p => p.Count).ThenBy(p => GetPathAsString(p)).ToList();
         }
 
-        private void UpdateCurrentPathAndScanItIfNeeded(string origin, string target)
-        {
-            if (CurrentPath.Count >= MaxFlights || (CurrentPath.Last != null && CurrentPath.Last.Value.Equals(Target))) return;
-            
-            CurrentPath.AddLast(origin);
-            Dictionary<string, int> airportOccurences = new();
-            foreach (string airport in CurrentPath)
-            {
-                if (airportOccurences.ContainsKey(airport)) airportOccurences[airport]++;
-                else airportOccurences.Add(airport, 1);
-            }
-            if (!airportOccurences.Values.Any(c => c > 1))
-            {
-                ScanCurrentPath(origin, target);
-            }
-            CurrentPath.RemoveLast();
-        }
-
-        private void Initialise(string origin, string target, int maxFlights)
+        private void Initialise(string target, int maxFlights)
         {
             Paths = new List<List<string>>();
             CurrentPath = new LinkedList<string>();
             MaxFlights = maxFlights;
-            Origin = origin;
             Target = target;
+        }
+
+        private void UpdateCurrentPathAndScanItIfNeeded(string origin, string target)
+        {
+            if (CurrentPathHasReachedTargetOrExceededMaxFlightCount()) return;
+            CurrentPath.AddLast(origin);
+            if (!CurrentPathContainsRepeatedAirport()) ScanCurrentPath(origin, target);
+            CurrentPath.RemoveLast();
+        }
+
+        private bool CurrentPathHasReachedTargetOrExceededMaxFlightCount()
+        {
+            return CurrentPath.Count >= MaxFlights || (CurrentPath.Last != null && CurrentPath.Last.Value.Equals(Target));
+        }
+
+        private bool CurrentPathContainsRepeatedAirport()
+        {
+            Dictionary<string, int> airportOccurences = new();
+            foreach (string airport in CurrentPath)
+            {
+                if (airportOccurences.ContainsKey(airport))
+                {
+                    airportOccurences[airport]++;
+                    if (airportOccurences[airport] > 1) return true;
+                }
+                else airportOccurences.Add(airport, 1);
+            }
+            return false;
         }
 
         private void ScanCurrentPath(string origin, string target)
@@ -61,6 +70,17 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                 if (destination.Equals(target)) Paths.Add(new List<string>(CurrentPath) { destination });
                 UpdateCurrentPathAndScanItIfNeeded(destination, target);
             }
+        }
+
+        private string GetPathAsString(List<string> path)
+        {
+            StringBuilder sb = new();
+            foreach (string airport in path)
+            {
+                if (sb.Length > 0) sb.Append("-");
+                sb.Append(airport);
+            }
+            return sb.ToString();
         }
     }
 }
