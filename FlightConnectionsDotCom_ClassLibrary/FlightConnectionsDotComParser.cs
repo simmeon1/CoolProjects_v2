@@ -59,7 +59,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 IWebElement showMoreButton = (IWebElement)await JSExecutorWithDelayer.ExecuteScriptAndWait(commands.GetShowMoreButton);
                 if (showMoreButton != null)
                 {
-                    WebElementWorker.Click(showMoreButton);
+                    showMoreButton.Click();
                     await Delayer.Delay(1000);
                 }
 
