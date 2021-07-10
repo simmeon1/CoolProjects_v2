@@ -5,6 +5,6 @@ namespace FlightConnectionsDotCom_ClassLibrary.Interfaces
 {
     public interface INavigationWorker
     {
-        Task GoToUrl(INavigation navigation, string path, bool openInNewTab = false);
+        Task GoToUrl(INavigation navigation, string path);
     }
 }

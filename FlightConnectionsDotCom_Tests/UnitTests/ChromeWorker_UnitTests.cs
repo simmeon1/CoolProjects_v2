@@ -34,16 +34,16 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                 logger = new();
             }
 
-            [TestMethod]
-            public async Task OpenLinks()
-            {
-                //List<string> path1 = new() { "ABZ", "SOF" };
-                //List<string> path2 = new() { "ABZ", "EDI", "SOF" };
-                //List<List<string>> paths = new List<List<string>>() { path1, path2 };
-                //ChromeWorker chromeWorker = new();
-                //chromeWorker.OpenPaths(paths);
-                //Assert.IsTrue(true);
-            }
+            //[TestMethod]
+            //public async Task OpenLinks()
+            //{
+            //    List<string> path1 = new() { "ABZ", "SOF" };
+            //    List<string> path2 = new() { "ABZ", "EDI", "SOF" };
+            //    List<List<string>> paths = new List<List<string>>() { path1, path2 };
+            //    ChromeWorker chromeWorker = new();
+            //    chromeWorker.OpenPaths(paths);
+            //    Assert.IsTrue(true);
+            //}
         }
     }
 }

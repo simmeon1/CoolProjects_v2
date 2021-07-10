@@ -51,7 +51,7 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
             List<string> path2 = new() { "ABZ", "EDI", "SOF" };
             List<List<string>> paths = new() { path1, path2 };
 
-            ChromeWorker chromeWorker = new(chromeDriver, jsExecutorWithDelay, navigationWorker, delayer, webElementWorker, logger);
+            ChromeWorker chromeWorker = new(chromeDriver, jsExecutorWithDelay);
             await chromeWorker.OpenPaths(paths, DateTime.Today);
         }
 

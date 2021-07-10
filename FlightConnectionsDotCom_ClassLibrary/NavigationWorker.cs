@@ -23,13 +23,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
             ClosePrivacyPopupCommands = closePrivacyPopupCommands;
         }
 
-        public async Task GoToUrl(INavigation navigation, string path, bool openInNewTab = false)
+        public async Task GoToUrl(INavigation navigation, string path)
         {
-            if (openInNewTab)
-            {
-                await JSExecutorWithDelayer.ExecuteScriptAndWait("window.open();");
-                WebDriver.SwitchTo().Window(WebDriver.WindowHandles[WebDriver.WindowHandles.Count - 1]);
-            }
             navigation.GoToUrl(path);
             await JSExecutorWithDelayer.GetDelayer().Delay(500);
 
