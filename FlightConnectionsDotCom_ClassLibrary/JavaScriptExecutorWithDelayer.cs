@@ -1,6 +1,7 @@
 ﻿using FlightConnectionsDotCom_ClassLibrary;
 using FlightConnectionsDotCom_ClassLibrary.Interfaces;
 using OpenQA.Selenium;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_ClassLibrary
@@ -18,23 +19,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
             DefaultDelay = defaultDelay;
         }
 
-        public async Task<object> ExecuteScriptAndWait(int millisecondsDelay, string script, params object[] args)
-        {
-            return await ExecuteWithDelay(millisecondsDelay, script, args);
-        }
-
-        public async Task<object> ExecuteScriptAndWait(string script, params object[] args)
-        {
-            return await ExecuteWithDelay(GetDefaultDelay(), script, args);
-        }
-
-        private async Task<object> ExecuteWithDelay(int millisecondsDelay, string script, object[] args)
-        {
-            object result = JSExecutor.ExecuteScript(script, args);
-            await Delayer.Delay(millisecondsDelay);
-            return result;
-        }
-
         public int GetDefaultDelay()
         {
             return DefaultDelay;
@@ -48,6 +32,63 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public IJavaScriptExecutor GetJsExecutor()
         {
             return JSExecutor;
+        }
+        private async Task<object> ExecuteWithDelay(int millisecondsDelay, string script, object[] args)
+        {
+            object result = JSExecutor.ExecuteScript(script, args);
+            await Delayer.Delay(millisecondsDelay);
+            return result;
+        }
+
+
+        public async Task RunScript(string script, params object[] args)
+        {
+            await ExecuteWithDelay(GetDefaultDelay(), script, args);
+        }
+
+        public async Task RunScript(int millisecondsDelay, string script, params object[] args)
+        {
+            await ExecuteWithDelay(millisecondsDelay, script, args);
+        }
+
+        public async Task<ReadOnlyCollection<IWebElement>> RunScriptAndGetElements(string script, params object[] args)
+        {
+            return (ReadOnlyCollection<IWebElement>)await ExecuteWithDelay(GetDefaultDelay(), script, args);
+        }
+
+        public async Task<ReadOnlyCollection<IWebElement>> RunScriptAndGetElements(int millisecondsDelay, string script, params object[] args)
+        {
+            return (ReadOnlyCollection<IWebElement>)await ExecuteWithDelay(millisecondsDelay, script, args);
+        }
+
+        public async Task<IWebElement> RunScriptAndGetElement(string script, params object[] args)
+        {
+            return (IWebElement)await ExecuteWithDelay(GetDefaultDelay(), script, args);
+        }
+
+        public async Task<IWebElement> RunScriptAndGetElement(int millisecondsDelay, string script, params object[] args)
+        {
+            return (IWebElement)await ExecuteWithDelay(millisecondsDelay, script, args);
+        }
+
+        public async Task<T> RunScriptAndGetObject<T>(string script, params object[] args)
+        {
+            return (T)await ExecuteWithDelay(GetDefaultDelay(), script, args);
+        }
+
+        public async Task<T> RunScriptAndGetObject<T>(int millisecondsDelay, string script, params object[] args)
+        {
+            return (T)await ExecuteWithDelay(millisecondsDelay, script, args);
+        }
+
+        public async Task<string> RunScriptAndGetString(string script, params object[] args)
+        {
+            return (string)await ExecuteWithDelay(GetDefaultDelay(), script, args);
+        }
+
+        public async Task<string> RunScriptAndGetString(int millisecondsDelay, string script, params object[] args)
+        {
+            return (string)await ExecuteWithDelay(millisecondsDelay, script, args);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             {
                 for (int i = 0; i < path.Count - 1; i++)
                 {
-                    await JSExecutorWithDelayer.ExecuteScriptAndWait("window.open();");
+                    await JSExecutorWithDelayer.RunScript("window.open();");
                     ITargetLocator targetLocator = Driver.SwitchTo();
                     targetLocator.Window(Driver.WindowHandles[Driver.WindowHandles.Count - 1]);
 
@@ -37,26 +37,26 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                     navigation.GoToUrl("https://www.google.com/travel/flights");
                     await Delayer.Delay(1000);
 
-                    ReadOnlyCollection<IWebElement> consentButtons = (ReadOnlyCollection<IWebElement>)await JSExecutorWithDelayer.ExecuteScriptAndWait("return document.querySelectorAll('button');");
+                    ReadOnlyCollection<IWebElement> consentButtons = await JSExecutorWithDelayer.RunScriptAndGetElements("return document.querySelectorAll('button');");
                     foreach (IWebElement button in consentButtons)
                     {
-                        string buttonText = (string)await JSExecutorWithDelayer.ExecuteScriptAndWait("return arguments[0].textContent;", button);
+                        string buttonText = await JSExecutorWithDelayer.RunScriptAndGetString("return arguments[0].textContent;", button);
                         if (!buttonText.Contains("I agree")) continue;
                         button.Click();
                         break;
                     }
 
 
-                    ReadOnlyCollection<IWebElement> spans = (ReadOnlyCollection<IWebElement>)await JSExecutorWithDelayer.ExecuteScriptAndWait("return document.querySelectorAll('span');");
+                    ReadOnlyCollection<IWebElement> spans = await JSExecutorWithDelayer.RunScriptAndGetElements("return document.querySelectorAll('span');");
                     foreach (IWebElement span in spans)
                     {
-                        string spanText = (string)await JSExecutorWithDelayer.ExecuteScriptAndWait("return arguments[0].textContent;", span);
+                        string spanText = await JSExecutorWithDelayer.RunScriptAndGetString("return arguments[0].textContent;", span);
                         if (!spanText.Equals("Round trip")) continue;
                         span.Click();
-                        ReadOnlyCollection<IWebElement> lis = (ReadOnlyCollection<IWebElement>)await JSExecutorWithDelayer.ExecuteScriptAndWait("return document.querySelectorAll('li');");
+                        ReadOnlyCollection<IWebElement> lis = await JSExecutorWithDelayer.RunScriptAndGetElements("return document.querySelectorAll('li');");
                         foreach (IWebElement li in lis)
                         {
-                            string liText = (string)await JSExecutorWithDelayer.ExecuteScriptAndWait("return arguments[0].textContent;", li);
+                            string liText = await JSExecutorWithDelayer.RunScriptAndGetString("return arguments[0].textContent;", li);
                             if (!liText.Equals("One way")) continue;
                             li.Click();
                             break;
@@ -64,7 +64,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                         break;
                     }
 
-                    ReadOnlyCollection<IWebElement> inputs = (ReadOnlyCollection<IWebElement>)await JSExecutorWithDelayer.ExecuteScriptAndWait("return document.querySelectorAll('input');");
+                    ReadOnlyCollection<IWebElement> inputs = await JSExecutorWithDelayer.RunScriptAndGetElements("return document.querySelectorAll('input');");
                     IWebElement originInput1 = inputs[0];
                     IWebElement originInput2 = inputs[1];
                     IWebElement destinationInput1 = inputs[2];
@@ -86,10 +86,10 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                     dateInput2.SendKeys(date.ToString("ddd, MMM dd"));
                     dateInput2.SendKeys(Keys.Return);
 
-                    ReadOnlyCollection<IWebElement> doneButtons = (ReadOnlyCollection<IWebElement>)await JSExecutorWithDelayer.ExecuteScriptAndWait("return document.querySelectorAll('button');");
+                    ReadOnlyCollection<IWebElement> doneButtons = await JSExecutorWithDelayer.RunScriptAndGetElements("return document.querySelectorAll('button');");
                     foreach (IWebElement button in doneButtons)
                     {
-                        string buttonText = (string)await JSExecutorWithDelayer.ExecuteScriptAndWait("return arguments[0].getAttribute('aria-label');", button);
+                        string buttonText = await JSExecutorWithDelayer.RunScriptAndGetString("return arguments[0].getAttribute('aria-label');", button);
                         if (buttonText == null || !buttonText.Contains("Done. Search for")) continue;
                         button.Click();
                         break;

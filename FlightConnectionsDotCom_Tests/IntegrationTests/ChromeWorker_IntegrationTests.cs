@@ -44,6 +44,7 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
             siteParser = new(chromeDriver, jsExecutorWithDelay, navigationWorker, delayer, webElementWorker, logger);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task OpenFlights()
         {

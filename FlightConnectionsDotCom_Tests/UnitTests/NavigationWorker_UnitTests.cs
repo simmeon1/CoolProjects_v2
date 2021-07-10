@@ -35,8 +35,8 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         {
             InitialiseMocks();
             ReadOnlyCollection<IWebElement> buttonsMock = new(new List<IWebElement>() { buttonMock });
-            jsExecutorWithDelayerMock.Setup(x => x.ExecuteScriptAndWait(closePrivacyPopupCommands.GetAllButtonsOnPage).Result).Returns(buttonsMock);
-            jsExecutorWithDelayerMock.Setup(x => x.ExecuteScriptAndWait(closePrivacyPopupCommands.GetButtonText, buttonMock).Result).Returns("AGREE");
+            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetObject<object>(closePrivacyPopupCommands.GetAllButtonsOnPage).Result).Returns(buttonsMock);
+            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetString(closePrivacyPopupCommands.GetButtonText, buttonMock).Result).Returns("AGREE");
 
             NavigationWorker navigationWorker = new(jsExecutorWithDelayerMock.Object, webDriverMock.Object, closePrivacyPopupCommands);
             await navigationWorker.GoToUrl(navigationMock, "test");
@@ -47,8 +47,8 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         public async Task UnexpectedAlertIsHandled()
         {
             InitialiseMocks();
-            jsExecutorWithDelayerMock.Setup(x => x.ExecuteScriptAndWait("return true")).Throws(new UnhandledAlertException());
-            jsExecutorWithDelayerMock.Setup(x => x.ExecuteScriptAndWait(closePrivacyPopupCommands.GetAllButtonsOnPage).Result).Returns(new List<string>());
+            jsExecutorWithDelayerMock.Setup(x => x.RunScript("return true")).Throws(new UnhandledAlertException());
+            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetObject<List<string>>(closePrivacyPopupCommands.GetAllButtonsOnPage).Result).Returns(new List<string>());
 
             IAlert alertMock = new Mock<IAlert>().Object;
             Mock<ITargetLocator> targetLocatorMock = new();

@@ -30,7 +30,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
             try
             {
-                await JSExecutorWithDelayer.ExecuteScriptAndWait("return true");
+                await JSExecutorWithDelayer.RunScript("return true");
             }
             catch (UnhandledAlertException)
             {
@@ -38,13 +38,13 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
 
             if (PolicyPopupHasBeenClosed) return;
-            object scriptResult = await JSExecutorWithDelayer.ExecuteScriptAndWait(ClosePrivacyPopupCommands.GetAllButtonsOnPage);
+            object scriptResult = await JSExecutorWithDelayer.RunScriptAndGetObject<object>(ClosePrivacyPopupCommands.GetAllButtonsOnPage);
             if (scriptResult is not ReadOnlyCollection<IWebElement>) return;
 
             ReadOnlyCollection<IWebElement> buttons = (ReadOnlyCollection<IWebElement>)scriptResult;
             foreach (IWebElement button in buttons)
             {
-                string buttonText = (string)await JSExecutorWithDelayer.ExecuteScriptAndWait(ClosePrivacyPopupCommands.GetButtonText, button);
+                string buttonText = await JSExecutorWithDelayer.RunScriptAndGetString(ClosePrivacyPopupCommands.GetButtonText, button);
                 if (buttonText.Contains("AGREE"))
                 {
                     button.Click();
