@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
-    public class SiteParser
+    public class FlightConnectionsDotComParser
     {
         private IWebDriver Driver { get; set; }
         private IJavaScriptExecutorWithDelayer JSExecutorWithDelayer { get; set; }
@@ -25,7 +25,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private const string collectingAirportDestinationsFromCurrentAirportPage = "Collecting airport destinations from current airport page";
         private const string collectingAirports = "Collecting airports";
 
-        public SiteParser(IWebDriver driver, IJavaScriptExecutorWithDelayer jSExecutorWithDelayer, INavigationWorker navigationWorker, IDelayer delayer, IWebElementWorker webElementWorker, ILogger logger)
+        public FlightConnectionsDotComParser(IWebDriver driver, IJavaScriptExecutorWithDelayer jSExecutorWithDelayer, INavigationWorker navigationWorker, IDelayer delayer, IWebElementWorker webElementWorker, ILogger logger)
         {
             Driver = driver;
             JSExecutorWithDelayer = jSExecutorWithDelayer;

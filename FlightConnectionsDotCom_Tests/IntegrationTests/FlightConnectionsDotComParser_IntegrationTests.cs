@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace FlightConnectionsDotCom_Tests.IntegrationTests
 {
     [TestClass]
-    public class SiteParser_IntegrationTests
+    public class FlightConnectionsDotComParser_IntegrationTests
     {
 
         ChromeDriver chromeDriver;
@@ -21,7 +21,7 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
         WebElementWorker webElementWorker;
         CollectAirportCommands collectAirportCommands;
         GetAirportsAndTheirConnectionsCommands getAirportsAndTheirConnectionsCommands;
-        SiteParser siteParser;
+        FlightConnectionsDotComParser siteParser;
         Logger_Debug logger;
         JavaScriptExecutorWithDelayer jsExecutorWithDelay;
 

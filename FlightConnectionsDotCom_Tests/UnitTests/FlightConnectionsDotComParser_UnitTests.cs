@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace FlightConnectionsDotCom_Tests.UnitTests
 {
     [TestClass]
-    public class SiteParser_UnitTests
+    public class FlightConnectionsDotComParser_UnitTests
     {
         Mock<IWebDriver> driverMock;
         Mock<IJavaScriptExecutorWithDelayer> jsExecutorWithDelayerMock;
@@ -65,7 +65,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             jsExecutorWithDelayerMock.Setup(x => x.ExecuteScriptAndWait(commands.GetDestinationFromEntry, mockEntry2).Result).Returns($"cc ({airport2.Code})");
             jsExecutorWithDelayerMock.Setup(x => x.ExecuteScriptAndWait(commands.GetDestinationFromEntry, mockEntry3).Result).Returns($"dd ({airport3.Code})");
 
-            SiteParser siteParser = new(driverMock.Object, jsExecutorWithDelayerMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object, logger.Object);
+            FlightConnectionsDotComParser siteParser = new(driverMock.Object, jsExecutorWithDelayerMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object, logger.Object);
             Dictionary<string, HashSet<string>> result = await siteParser.GetAirportsAndTheirConnections(airports, commands);
             Assert.IsTrue(result[airport1.Code].Count == 2);
             Assert.IsTrue(result[airport1.Code].Contains(airport2.Code));
@@ -94,7 +94,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                 new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { airportListEntryObject1, airportListEntryObject2, airportListEntryObject3, airportListEntryObject4 })
             );
 
-            SiteParser siteParser = new(driverMock.Object, jsExecutorWithDelayerMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object, logger.Object);
+            FlightConnectionsDotComParser siteParser = new(driverMock.Object, jsExecutorWithDelayerMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object, logger.Object);
             HashSet<Airport> results = await siteParser.CollectAirports(commands);
             Assert.IsTrue(results.Count == 4);
             Assert.IsTrue(results.Contains(airport1));
