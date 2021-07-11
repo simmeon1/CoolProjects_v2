@@ -14,7 +14,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private IWebDriver Driver { get; set; }
         private ILogger Logger { get; set; }
         private const string gettingAirportsAndTheirConnections = "Getting airports and their connections";
-        private const string buildingDictionaryWithCodesAndAirports = "Building dictionary with codes and airports";
         private const string collectingAirportDestinationsFromEachAirportPage = "Collecting airport destinations from each airport page";
         private const string collectingAirportDestinationsFromCurrentAirportPage = "Collecting airport destinations from current airport page";
         private const string collectingAirports = "Collecting airports";
@@ -28,69 +27,25 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public Dictionary<string, HashSet<string>> GetAirportsAndTheirConnections(List<Airport> airports)
         {
             Logger.Log($"{gettingAirportsAndTheirConnections} for {airports.Count} airports...");
-
-            Logger.Log($"{buildingDictionaryWithCodesAndAirports}...");
-            Dictionary<string, HashSet<string>> results = new();
-            Dictionary<string, Airport> codesAndAirports = new();
-            for (int i = 0; i < airports.Count; i++)
-            {
-                Airport airport = airports[i];
-                codesAndAirports.Add(airport.Code, airport);
-            }
-            Logger.Log($"Finished {buildingDictionaryWithCodesAndAirports} for {airports.Count} airports.");
-
             Logger.Log($"{collectingAirportDestinationsFromEachAirportPage} for {airports.Count} airports...");
+
+            Dictionary<string, HashSet<string>> results = new();
             for (int i = 0; i < airports.Count; i++)
             {
                 Airport airport = airports[i];
-                INavigation navigation = Driver.Navigate();
-                GoToUrl(navigation, airport.Link);
-
-                try
-                {
-                    IWebElement showMoreButton = Driver.FindElement(By.CssSelector(".show-all-destinations-btn"));
-                    if (showMoreButton != null) showMoreButton.Click();
-                }
-                catch (NoSuchElementException)
-                {
-                    //No button to click
-                }
-
-                HashSet<string> destinations = new();
-
-                IWebElement popularDestinationsDiv;
-                try
-                {
-                    popularDestinationsDiv = Driver.FindElement(By.CssSelector("#popular-destinations"));
-                }
-                catch (NoSuchElementException)
-                {
-                    popularDestinationsDiv = null;
-                }
-
-                if (popularDestinationsDiv == null)
-                {
-                    Logger.Log($"There was a problem with locating the popular destinations div for {airport.GetFullString()}");
-                }
-                else
-                {
-                    ReadOnlyCollection<IWebElement> popularDestinationsEntries = popularDestinationsDiv.FindElements(By.CssSelector(".popular-destination"));
-                    for (int j = 0; j < popularDestinationsEntries.Count; j++)
-                    {
-                        IWebElement entry = popularDestinationsEntries[j];
-                        string destination = entry.GetAttribute("data-a");
-                        Match match = Regex.Match(destination, @"(.*?) \((...)\)$");
-                        string name = match.Groups[1].Value;
-                        string code = match.Groups[2].Value;
-                        destinations.Add(code);
-                    }
-                }
-                results.Add(airport.Code, destinations);
+                NavigateToAirportPage(airport);
+                ClickShowMoreButtonIfItExists();
+                HashSet<string> destinations = GetDestinationsFromAirportPage(airport, results);
                 Logger.Log($"Finished {collectingAirportDestinationsFromCurrentAirportPage} ({GetPercentageAndCountString(i, airports.Count)} airports done, {destinations.Count} destinations for airport {airport.GetFullString()}).");
             }
             Logger.Log($"Finished {collectingAirportDestinationsFromEachAirportPage} for {airports.Count} airports.");
             Logger.Log($"Finished {gettingAirportsAndTheirConnections} for {airports.Count} airports.");
             return results;
+        }
+        private void NavigateToAirportPage(Airport airport)
+        {
+            INavigation navigation = Driver.Navigate();
+            GoToUrl(navigation, airport.Link);
         }
 
         private void GoToUrl(INavigation navigation, string link)
@@ -121,14 +76,65 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
         }
 
+        private void ClickShowMoreButtonIfItExists()
+        {
+            try
+            {
+                IWebElement showMoreButton = Driver.FindElement(By.CssSelector(".show-all-destinations-btn"));
+                if (showMoreButton != null) showMoreButton.Click();
+            }
+            catch (NoSuchElementException)
+            {
+                //No button to click
+            }
+        }
+
+        private HashSet<string> GetDestinationsFromAirportPage(Airport airport, Dictionary<string, HashSet<string>> results)
+        {
+            HashSet<string> destinations = new();
+            IWebElement popularDestinationsDiv = GetPopularDestinationsDiv();
+            if (popularDestinationsDiv == null) Logger.Log($"There was a problem with locating the popular destinations div for {airport.GetFullString()}");
+            else AddDestinationsFromPopularDivToDestinationsList(popularDestinationsDiv, destinations);
+            results.Add(airport.Code, destinations);
+            return destinations;
+        }
+
+        private IWebElement GetPopularDestinationsDiv()
+        {
+            IWebElement popularDestinationsDiv;
+            try
+            {
+                popularDestinationsDiv = Driver.FindElement(By.CssSelector("#popular-destinations"));
+            }
+            catch (NoSuchElementException)
+            {
+                popularDestinationsDiv = null;
+            }
+
+            return popularDestinationsDiv;
+        }
+
+        private static void AddDestinationsFromPopularDivToDestinationsList(IWebElement popularDestinationsDiv, HashSet<string> destinations)
+        {
+            ReadOnlyCollection<IWebElement> popularDestinationsEntries = popularDestinationsDiv.FindElements(By.CssSelector(".popular-destination"));
+            for (int j = 0; j < popularDestinationsEntries.Count; j++)
+            {
+                IWebElement entry = popularDestinationsEntries[j];
+                string destination = entry.GetAttribute("data-a");
+                Match match = Regex.Match(destination, @"(.*?) \((...)\)$");
+                string name = match.Groups[1].Value;
+                string code = match.Groups[2].Value;
+                destinations.Add(code);
+            }
+        }
+
         private static string GetPercentageAndCountString(int i, int maxCount)
         {
             int currentCount = i + 1;
             string percentageString = $"{((double)currentCount / (double)maxCount) * 100}%";
             Match match = Regex.Match(percentageString, @"(.*?\.\d\d).*%");
             if (match.Success) percentageString = $"{match.Groups[1].Value}%";
-            string percentageAndCountString = $"{currentCount}/{maxCount} ({percentageString})";
-            return percentageAndCountString;
+            return $"{currentCount}/{maxCount} ({percentageString})";
         }
 
         public HashSet<Airport> CollectAirports(int maxCountToCollect = 0)
@@ -147,19 +153,24 @@ namespace FlightConnectionsDotCom_ClassLibrary
             for (int i = 0; i < countToCollect; i++)
             {
                 IWebElement airportListEntry = airportListEntries[i];
-                string code = airportListEntry.FindElement(By.CssSelector(".airport-code")).Text;
-                string airportCityAndCountry = airportListEntry.FindElement(By.CssSelector(".airport-city-country")).Text;
-                Match match = Regex.Match(airportCityAndCountry, "(.*?), (.*)");
-                string city = match.Groups[1].Value;
-                string country = match.Groups[2].Value;
-                string name = airportListEntry.FindElement(By.CssSelector(".airport-name")).Text;
-                string link = airportListEntry.FindElement(By.CssSelector("a")).GetAttribute("href");
-                Airport airport = new(code, city, country, name, link);
+                Airport airport = CreateAirportFromAirportEntry(airportListEntry);
                 airports.Add(airport);
                 Logger.Log($"Collected airport ({GetPercentageAndCountString(i, countToCollect)} airports done) {airport.GetFullString()}.");
             }
             Logger.Log($"Finished {collectingAirports} ({countToCollect} airports).");
             return airports;
+        }
+
+        private static Airport CreateAirportFromAirportEntry(IWebElement airportListEntry)
+        {
+            string code = airportListEntry.FindElement(By.CssSelector(".airport-code")).Text;
+            string airportCityAndCountry = airportListEntry.FindElement(By.CssSelector(".airport-city-country")).Text;
+            Match match = Regex.Match(airportCityAndCountry, "(.*?), (.*)");
+            string city = match.Groups[1].Value;
+            string country = match.Groups[2].Value;
+            string name = airportListEntry.FindElement(By.CssSelector(".airport-name")).Text;
+            string link = airportListEntry.FindElement(By.CssSelector("a")).GetAttribute("href");
+            return new Airport(code, city, country, name, link);
         }
     }
 }
