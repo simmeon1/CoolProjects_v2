@@ -29,7 +29,7 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
         public void TestInitialize()
         {
             ChromeOptions chromeOptions = new();
-            chromeOptions.AddArgument("headless");
+            //chromeOptions.AddArgument("headless");
             chromeDriver = new(chromeOptions);
             delayer = new();
             webElementWorker = new();
@@ -50,12 +50,31 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
         }
         
         [TestMethod]
+        public async Task CollectAirports2_ReturnsValues()
+        {
+            HashSet<Airport> results = siteParser.CollectAirports2(collectAirportCommands);
+            Assert.IsTrue(results.Count > 0);
+        }
+        
+        [TestMethod]
         public async Task GetAirportsAndTheirConnections_ReturnsValues()
         {
             Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "https://www.flightconnections.com/flights-to-aberdeen-abz");
             Airport airport2 = new("KQT", "asd", "asd", "asd", "https://www.flightconnections.com/flights-to-qurghonteppa-kqt");
             List<Airport> airports = new() { airport1, airport2 };
             Dictionary<string, HashSet<string>> results = await siteParser.GetAirportsAndTheirConnections(airports, getAirportsAndTheirConnectionsCommands);
+            Assert.IsTrue(results.Count == 2);
+            Assert.IsTrue(results[airport1.Code].Count > 0);
+            Assert.IsTrue(results[airport2.Code].Count > 0);
+        }
+        
+        [TestMethod]
+        public async Task GetAirportsAndTheirConnections2_ReturnsValues()
+        {
+            Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "https://www.flightconnections.com/flights-to-aberdeen-abz");
+            Airport airport2 = new("KQT", "asd", "asd", "asd", "https://www.flightconnections.com/flights-to-qurghonteppa-kqt");
+            List<Airport> airports = new() { airport1, airport2 };
+            Dictionary<string, HashSet<string>> results = siteParser.GetAirportsAndTheirConnections2(airports, getAirportsAndTheirConnectionsCommands);
             Assert.IsTrue(results.Count == 2);
             Assert.IsTrue(results[airport1.Code].Count > 0);
             Assert.IsTrue(results[airport2.Code].Count > 0);
