@@ -22,6 +22,7 @@ namespace FlightConnectionsDotCom_Console
             bool useLocalAirportList = false;
             bool useLocalAirportDestinations = false;
             bool openGoogleFlights = false;
+            bool writeLocalFiles = false;
             DateTime date = DateTime.Today;
 
             foreach (string arg in arguments)
@@ -46,7 +47,13 @@ namespace FlightConnectionsDotCom_Console
                 
                 match = Regex.Match(arg, "openGoogleFlights");
                 if (match.Success) openGoogleFlights = true;
+                
+                match = Regex.Match(arg, "writeLocalFiles");
+                if (match.Success) writeLocalFiles = true;
             }
+
+            const string airportListJsonFile = "airportList.json";
+            const string airportDestinationJsonFile = "airportDestinations.json";
 
             Logger_Console logger = new();
             ChromeOptions chromeOptions = new();
@@ -57,13 +64,19 @@ namespace FlightConnectionsDotCom_Console
 
             FlightConnectionsDotComParser siteParser = new(driver1, logger);
             List<Airport> airportsList = useLocalAirportList
-                ? JsonConvert.DeserializeObject<List<Airport>>(File.ReadAllText("airportList.json"))
+                ? JsonConvert.DeserializeObject<List<Airport>>(File.ReadAllText(airportListJsonFile))
                 : siteParser.CollectAirports();
 
             Dictionary<string, HashSet<string>> airportsAndDestinations = useLocalAirportDestinations
-                ? JsonConvert.DeserializeObject<Dictionary<string, HashSet<string>>>(File.ReadAllText("airportDestinations.json"))
+                ? JsonConvert.DeserializeObject<Dictionary<string, HashSet<string>>>(File.ReadAllText(airportDestinationJsonFile))
                 : siteParser.GetAirportsAndTheirConnections(airportsList);
             if (driver1 != null) driver1.Quit();
+
+            if (writeLocalFiles)
+            {
+                File.WriteAllText(airportListJsonFile, JsonConvert.SerializeObject(airportsList, Formatting.Indented));
+                File.WriteAllText(airportDestinationJsonFile, JsonConvert.SerializeObject(airportsList, Formatting.Indented));
+            }
 
             AirportPathGenerator generator = new(airportsAndDestinations);
             List<List<string>> paths = generator.GeneratePaths(origin, target, maxFlights);
