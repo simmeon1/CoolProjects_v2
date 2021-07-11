@@ -1,16 +1,9 @@
 ﻿using FlightConnectionsDotCom_ClassLibrary;
-using FlightConnectionsDotCom_ClassLibrary.Interfaces;
 using FlightConnectionsDotCom_Tests.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
-using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_Tests.IntegrationTests
 {
@@ -19,41 +12,28 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
     {
 
         ChromeDriver chromeDriver;
-        NavigationWorker navigationWorker;
-        Delayer delayer;
-        WebElementWorker webElementWorker;
-        CollectAirportCommands collectAirportCommands;
-        GetAirportsAndTheirConnectionsCommands getAirportsAndTheirConnectionsCommands;
-        FlightConnectionsDotComParser siteParser;
         Logger_Debug logger;
-        JavaScriptExecutorWithDelayer jsExecutorWithDelay;
 
         [TestInitialize]
         public void TestInitialize()
         {
             ChromeOptions chromeOptions = new();
-            //chromeOptions.AddArgument("headless");
+            chromeOptions.AddArgument("headless");
             chromeDriver = new(chromeOptions);
-            delayer = new();
-            webElementWorker = new();
-            collectAirportCommands = new();
-            getAirportsAndTheirConnectionsCommands = new();
             logger = new();
-            jsExecutorWithDelay = new(chromeDriver, delayer, 10);
-            navigationWorker = new(jsExecutorWithDelay, chromeDriver, new ClosePrivacyPopupCommands());
-            siteParser = new(chromeDriver, logger);
         }
 
-        [Ignore]
         [TestMethod]
-        public async Task OpenFlights()
+        public void OpenFlights()
         {
             List<string> path1 = new() { "ABZ", "SOF" };
             List<string> path2 = new() { "ABZ", "EDI", "SOF" };
-            List<List<string>> paths = new() { path1, path2 };
+            List<string> path3 = new() { "ABZ", "EDI", "CIA", "SOF" };
+            List<List<string>> paths = new() { path1, path2, path3 };
 
-            ChromeWorker chromeWorker = new(chromeDriver, jsExecutorWithDelay);
-            await chromeWorker.OpenPaths(paths, DateTime.Today);
+            ChromeWorker chromeWorker = new(chromeDriver, chromeDriver);
+            int results = chromeWorker.OpenPaths(paths, DateTime.Today);
+            Assert.IsTrue(results == 6);
         }
 
         [TestCleanup]

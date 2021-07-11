@@ -10,53 +10,53 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
     public class ChromeWorker
     {
         private IWebDriver Driver { get; set; }
-        private IJavaScriptExecutorWithDelayer JSExecutorWithDelayer { get; set; }
-        private INavigationWorker NavigationWorker { get; set; }
-        private IDelayer Delayer { get; set; }
-        private IWebElementWorker WebElementWorker { get; set; }
+        private IJavaScriptExecutor JSExecutor { get; set; }
         private ILogger Logger { get; set; }
 
-        public ChromeWorker(IWebDriver driver, IJavaScriptExecutorWithDelayer jSExecutorWithDelayer)
+        public ChromeWorker(IWebDriver driver, IJavaScriptExecutor jSExecutor)
         {
             Driver = driver;
-            JSExecutorWithDelayer = jSExecutorWithDelayer;
-            Delayer = jSExecutorWithDelayer.GetDelayer();
+            JSExecutor = jSExecutor;
         }
 
-        public async Task OpenPaths(List<List<string>> paths, DateTime date)
+        public int OpenPaths(List<List<string>> paths, DateTime date)
         {
+            int initialTabCount = Driver.WindowHandles.Count;
+            bool consentAgreed = false;
             foreach (List<string> path in paths)
             {
                 for (int i = 0; i < path.Count - 1; i++)
                 {
-                    await JSExecutorWithDelayer.RunScript("window.open();");
+                    JSExecutor.ExecuteScript("window.open();");
                     ITargetLocator targetLocator = Driver.SwitchTo();
                     targetLocator.Window(Driver.WindowHandles[Driver.WindowHandles.Count - 1]);
 
                     INavigation navigation = Driver.Navigate();
                     navigation.GoToUrl("https://www.google.com/travel/flights");
-                    await Delayer.Delay(1000);
 
-                    ReadOnlyCollection<IWebElement> consentButtons = await JSExecutorWithDelayer.RunScriptAndGetElements("return document.querySelectorAll('button');");
-                    foreach (IWebElement button in consentButtons)
+                    if (!consentAgreed)
                     {
-                        string buttonText = await JSExecutorWithDelayer.RunScriptAndGetString("return arguments[0].textContent;", button);
-                        if (!buttonText.Contains("I agree")) continue;
-                        button.Click();
-                        break;
+                        ReadOnlyCollection<IWebElement> consentButtons = Driver.FindElements(By.CssSelector("button"));
+                        foreach (IWebElement button in consentButtons)
+                        {
+                            string buttonText = button.Text;
+                            if (!buttonText.Contains("I agree")) continue;
+                            button.Click();
+                            consentAgreed = true;
+                            break;
+                        }
                     }
 
-
-                    ReadOnlyCollection<IWebElement> spans = await JSExecutorWithDelayer.RunScriptAndGetElements("return document.querySelectorAll('span');");
+                    ReadOnlyCollection<IWebElement> spans = Driver.FindElements(By.CssSelector("span"));
                     foreach (IWebElement span in spans)
                     {
-                        string spanText = await JSExecutorWithDelayer.RunScriptAndGetString("return arguments[0].textContent;", span);
+                        string spanText = span.Text;
                         if (!spanText.Equals("Round trip")) continue;
                         span.Click();
-                        ReadOnlyCollection<IWebElement> lis = await JSExecutorWithDelayer.RunScriptAndGetElements("return document.querySelectorAll('li');");
+                        ReadOnlyCollection<IWebElement> lis = Driver.FindElements(By.CssSelector("li"));
                         foreach (IWebElement li in lis)
                         {
-                            string liText = await JSExecutorWithDelayer.RunScriptAndGetString("return arguments[0].textContent;", li);
+                            string liText = li.Text;
                             if (!liText.Equals("One way")) continue;
                             li.Click();
                             break;
@@ -64,7 +64,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                         break;
                     }
 
-                    ReadOnlyCollection<IWebElement> inputs = await JSExecutorWithDelayer.RunScriptAndGetElements("return document.querySelectorAll('input');");
+                    ReadOnlyCollection<IWebElement> inputs = Driver.FindElements(By.CssSelector("input"));
                     IWebElement originInput1 = inputs[0];
                     IWebElement originInput2 = inputs[1];
                     IWebElement destinationInput1 = inputs[2];
@@ -86,16 +86,17 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                     dateInput2.SendKeys(date.ToString("ddd, MMM dd"));
                     dateInput2.SendKeys(Keys.Return);
 
-                    ReadOnlyCollection<IWebElement> doneButtons = await JSExecutorWithDelayer.RunScriptAndGetElements("return document.querySelectorAll('button');");
+                    ReadOnlyCollection<IWebElement> doneButtons = Driver.FindElements(By.CssSelector("button"));
                     foreach (IWebElement button in doneButtons)
                     {
-                        string buttonText = await JSExecutorWithDelayer.RunScriptAndGetString("return arguments[0].getAttribute('aria-label');", button);
+                        string buttonText = button.GetAttribute("aria-label");
                         if (buttonText == null || !buttonText.Contains("Done. Search for")) continue;
                         button.Click();
                         break;
                     }
                 }
             }
+            return Driver.WindowHandles.Count - initialTabCount;
         }
     }
 }
