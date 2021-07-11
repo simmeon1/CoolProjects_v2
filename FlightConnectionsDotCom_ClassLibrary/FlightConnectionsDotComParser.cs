@@ -131,7 +131,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return percentageAndCountString;
         }
 
-        public HashSet<Airport> CollectAirports()
+        public HashSet<Airport> CollectAirports(int maxCountToCollect = 0)
         {
             Logger.Log($"Navigating to airports page...");
             HashSet<Airport> airports = new();
@@ -139,8 +139,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
             GoToUrl(navigation, "https://www.flightconnections.com/airport-codes");
 
             ReadOnlyCollection<IWebElement> airportListEntries = Driver.FindElements(By.TagName("li"));
-            Logger.Log($"{collectingAirports} {airportListEntries.Count} airports...");
-            for (int i = 0; i < airportListEntries.Count; i++)
+
+            int countToCollect = airportListEntries.Count;
+            if (maxCountToCollect > 0) countToCollect = maxCountToCollect > airportListEntries.Count ? airportListEntries.Count : maxCountToCollect;
+
+            Logger.Log($"{collectingAirports} {countToCollect} airports...");
+            for (int i = 0; i < countToCollect; i++)
             {
                 IWebElement airportListEntry = airportListEntries[i];
                 string code = airportListEntry.FindElement(By.CssSelector(".airport-code")).Text;
@@ -152,9 +156,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 string link = airportListEntry.FindElement(By.CssSelector("a")).GetAttribute("href");
                 Airport airport = new(code, city, country, name, link);
                 airports.Add(airport);
-                Logger.Log($"Collected airport ({GetPercentageAndCountString(i, airportListEntries.Count)} airports done) {airport.GetFullString()}.");
+                Logger.Log($"Collected airport ({GetPercentageAndCountString(i, countToCollect)} airports done) {airport.GetFullString()}.");
             }
-            Logger.Log($"Finished {collectingAirports} ({airportListEntries.Count} airports).");
+            Logger.Log($"Finished {collectingAirports} ({countToCollect} airports).");
             return airports;
         }
     }

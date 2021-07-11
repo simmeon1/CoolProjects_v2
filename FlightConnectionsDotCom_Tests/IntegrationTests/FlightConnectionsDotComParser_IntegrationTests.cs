@@ -29,8 +29,8 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
         [TestMethod]
         public void CollectAirports_ReturnsValues()
         {
-            HashSet<Airport> results = siteParser.CollectAirports();
-            Assert.IsTrue(results.Count > 0);
+            HashSet<Airport> results = siteParser.CollectAirports(maxCountToCollect: 10);
+            Assert.IsTrue(results.Count == 10);
         }
         
         [TestMethod]
