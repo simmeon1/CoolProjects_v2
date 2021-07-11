@@ -14,24 +14,16 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
     public class FlightConnectionsDotComParser_UnitTests
     {
         Mock<IWebDriver> driverMock;
-        Mock<IJavaScriptExecutorWithDelayer> jsExecutorWithDelayerMock;
-        Mock<INavigationWorker> navigationWorkerMock;
-        Mock<IDelayer> delayerMock;
-        Mock<IWebElementWorker> webElementWorker;
         Mock<ILogger> logger;
 
         private void InitialiseMockObjects()
         {
             driverMock = new();
-            jsExecutorWithDelayerMock = new();
-            navigationWorkerMock = new();
-            delayerMock = new();
-            webElementWorker = new();
             logger = new();
         }
 
         [TestMethod]
-        public async Task GetAirportsAndTheirConnections_ReturnsExpectedResults()
+        public void GetAirportsAndTheirConnections_ReturnsExpectedResults()
         {
             InitialiseMockObjects();
             Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "linkA");
@@ -39,34 +31,37 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Airport airport3 = new("EDI", "Edinburgh", "United Kingdom", "Edinburgh Airport", "linkC");
             List<Airport> airports = new() { airport1, airport2, airport3 };
 
-            GetAirportsAndTheirConnectionsCommands commands = new();
-            IWebElement popularDestinationsDivMock1 = new Mock<IWebElement>().Object;
-            IWebElement popularDestinationsDivMock2 = new Mock<IWebElement>().Object;
-            IWebElement popularDestinationsDivMock3 = new Mock<IWebElement>().Object;
-            
-            IWebElement mockEntry1 = new Mock<IWebElement>().Object;
-            IWebElement mockEntry2 = new Mock<IWebElement>().Object;
-            IWebElement mockEntry3 = new Mock<IWebElement>().Object;
+            Mock<IWebElement> mockEntry1 = new();
+            Mock<IWebElement> mockEntry2 = new();
+            Mock<IWebElement> mockEntry3 = new();
+            mockEntry1.Setup(x => x.GetAttribute("data-a")).Returns($"gg ({airport1.Code})");
+            mockEntry2.Setup(x => x.GetAttribute("data-a")).Returns($"cc ({airport2.Code})");
+            mockEntry3.Setup(x => x.GetAttribute("data-a")).Returns($"dd ({airport3.Code})");
 
-            ReadOnlyCollection<IWebElement> entries1 = new(new List<IWebElement>() { mockEntry2, mockEntry3 });
-            ReadOnlyCollection<IWebElement> entries2 = new(new List<IWebElement>() { mockEntry1 });
+            IWebElement mockEntry1Object = mockEntry1.Object;
+            IWebElement mockEntry2Object = mockEntry2.Object;
+            IWebElement mockEntry3Object = mockEntry3.Object;
+            ReadOnlyCollection<IWebElement> entries1 = new(new List<IWebElement>() { mockEntry2Object, mockEntry3Object });
+            ReadOnlyCollection<IWebElement> entries2 = new(new List<IWebElement>() { mockEntry1Object });
             ReadOnlyCollection<IWebElement> entries3 = new(new List<IWebElement>());
 
-            jsExecutorWithDelayerMock.SetupSequence(x => x.RunScriptAndGetElement(commands.GetPopularDestinationsDiv).Result)
-                .Returns(popularDestinationsDivMock1)
-                .Returns(popularDestinationsDivMock2)
-                .Returns(popularDestinationsDivMock3);
+            Mock<IWebElement> popularDestinationsDivMock1 = new();
+            Mock<IWebElement> popularDestinationsDivMock2 = new();
+            Mock<IWebElement> popularDestinationsDivMock3 = new();
+            popularDestinationsDivMock1.Setup(x => x.FindElements(By.CssSelector(".popular-destination"))).Returns(entries1);
+            popularDestinationsDivMock2.Setup(x => x.FindElements(By.CssSelector(".popular-destination"))).Returns(entries2);
+            popularDestinationsDivMock3.Setup(x => x.FindElements(By.CssSelector(".popular-destination"))).Returns(entries3);
 
-            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetElements(commands.GetPopularDestinationsEntries, popularDestinationsDivMock1).Result).Returns(entries1);
-            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetElements(commands.GetPopularDestinationsEntries, popularDestinationsDivMock2).Result).Returns(entries2);
-            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetElements(commands.GetPopularDestinationsEntries, popularDestinationsDivMock3).Result).Returns(entries3);
-            
-            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetString(commands.GetDestinationFromEntry, mockEntry1).Result).Returns($"gg ({airport1.Code})");
-            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetString(commands.GetDestinationFromEntry, mockEntry2).Result).Returns($"cc ({airport2.Code})");
-            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetString(commands.GetDestinationFromEntry, mockEntry3).Result).Returns($"dd ({airport3.Code})");
+            IWebElement popularDestinationsDivMock1Object = popularDestinationsDivMock1.Object;
+            IWebElement popularDestinationsDivMock2Object = popularDestinationsDivMock2.Object;
+            IWebElement popularDestinationsDivMock3Object = popularDestinationsDivMock3.Object;
+            driverMock.SetupSequence(x => x.FindElement(By.CssSelector("#popular-destinations")))
+                .Returns(popularDestinationsDivMock1Object)
+                .Returns(popularDestinationsDivMock2Object)
+                .Returns(popularDestinationsDivMock3Object);
 
-            FlightConnectionsDotComParser siteParser = new(driverMock.Object, jsExecutorWithDelayerMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object, logger.Object);
-            Dictionary<string, HashSet<string>> result = await siteParser.GetAirportsAndTheirConnections(airports, commands);
+            FlightConnectionsDotComParser siteParser = new(driverMock.Object, logger.Object);
+            Dictionary<string, HashSet<string>> result = siteParser.GetAirportsAndTheirConnections(airports);
             Assert.IsTrue(result[airport1.Code].Count == 2);
             Assert.IsTrue(result[airport1.Code].Contains(airport2.Code));
             Assert.IsTrue(result[airport1.Code].Contains(airport3.Code));
@@ -76,7 +71,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         }
 
         [TestMethod]
-        public async Task CollectAirports_ReturnsExpectedAirports()
+        public void CollectAirports_ReturnsExpectedAirports()
         {
             InitialiseMockObjects();
             CollectAirportCommands commands = new();
@@ -85,17 +80,17 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Airport airport3 = new("EDI", "Edinburgh", "United Kingdom", "Edinburgh Airport", "linkC");
             Airport airport4 = new("CIA", "Rome", "Spain", "Rome Ciampino", "linkD");
 
-            IWebElement airportListEntryObject1 = SetUpAirportListEntryData(commands, airport1);
-            IWebElement airportListEntryObject2 = SetUpAirportListEntryData(commands, airport2);
-            IWebElement airportListEntryObject3 = SetUpAirportListEntryData(commands, airport3);
-            IWebElement airportListEntryObject4 = SetUpAirportListEntryData(commands, airport4);
+            IWebElement airportListEntryObject1 = SetUpAirportListEntryData(airport1);
+            IWebElement airportListEntryObject2 = SetUpAirportListEntryData(airport2);
+            IWebElement airportListEntryObject3 = SetUpAirportListEntryData(airport3);
+            IWebElement airportListEntryObject4 = SetUpAirportListEntryData(airport4);
 
-            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetElements(commands.GetAirportListEntries).Result).Returns(
+            driverMock.Setup(x => x.FindElements(By.TagName("li"))).Returns(
                 new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { airportListEntryObject1, airportListEntryObject2, airportListEntryObject3, airportListEntryObject4 })
             );
 
-            FlightConnectionsDotComParser siteParser = new(driverMock.Object, jsExecutorWithDelayerMock.Object, navigationWorkerMock.Object, delayerMock.Object, webElementWorker.Object, logger.Object);
-            HashSet<Airport> results = await siteParser.CollectAirports(commands);
+            FlightConnectionsDotComParser siteParser = new(driverMock.Object, logger.Object);
+            HashSet<Airport> results = siteParser.CollectAirports();
             Assert.IsTrue(results.Count == 4);
             Assert.IsTrue(results.Contains(airport1));
             Assert.IsTrue(results.Contains(airport2));
@@ -103,14 +98,14 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Assert.IsTrue(results.Contains(airport4));
         }
 
-        private IWebElement SetUpAirportListEntryData(CollectAirportCommands commands, Airport airport)
+        private IWebElement SetUpAirportListEntryData(Airport airport)
         {
             Mock<IWebElement> airportListEntry = new();
+            airportListEntry.Setup(x => x.FindElement(By.CssSelector(".airport-code")).Text).Returns(airport.Code);
+            airportListEntry.Setup(x => x.FindElement(By.CssSelector(".airport-city-country")).Text).Returns($"{airport.City}, {airport.Country}");
+            airportListEntry.Setup(x => x.FindElement(By.CssSelector(".airport-name")).Text).Returns(airport.Name);
+            airportListEntry.Setup(x => x.FindElement(By.CssSelector("a")).GetAttribute("href")).Returns(airport.Link);
             IWebElement airportListEntryObject = airportListEntry.Object;
-            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetString(commands.GetAirportCodeFromEntry, airportListEntryObject).Result).Returns(airport.Code);
-            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetString(commands.GetAirportCityAndCountryFromEntry, airportListEntryObject).Result).Returns($"{airport.City}, {airport.Country}");
-            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetString(commands.GetAirportNameFromEntry, airportListEntryObject).Result).Returns(airport.Name);
-            jsExecutorWithDelayerMock.Setup(x => x.RunScriptAndGetString(commands.GetAirportLinkFromEntry, airportListEntryObject).Result).Returns(airport.Link);
             return airportListEntryObject;
         }
     }

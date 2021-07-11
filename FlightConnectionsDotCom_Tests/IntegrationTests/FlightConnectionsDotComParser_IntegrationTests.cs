@@ -1,13 +1,9 @@
 using FlightConnectionsDotCom_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Newtonsoft.Json;
-using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_Tests.IntegrationTests
 {
@@ -16,73 +12,44 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
     {
 
         ChromeDriver chromeDriver;
-        NavigationWorker navigationWorker;
-        Delayer delayer;
-        WebElementWorker webElementWorker;
-        CollectAirportCommands collectAirportCommands;
-        GetAirportsAndTheirConnectionsCommands getAirportsAndTheirConnectionsCommands;
-        FlightConnectionsDotComParser siteParser;
         Logger_Debug logger;
-        JavaScriptExecutorWithDelayer jsExecutorWithDelay;
+        FlightConnectionsDotComParser siteParser;
 
         [TestInitialize]
         public void TestInitialize()
         {
             ChromeOptions chromeOptions = new();
-            //chromeOptions.AddArgument("headless");
+            chromeOptions.AddArgument("headless");
             chromeDriver = new(chromeOptions);
-            delayer = new();
-            webElementWorker = new();
-            collectAirportCommands = new();
-            getAirportsAndTheirConnectionsCommands = new();
             logger = new();
-            jsExecutorWithDelay = new(chromeDriver, delayer, 10);
-            navigationWorker = new(jsExecutorWithDelay, chromeDriver, new ClosePrivacyPopupCommands());
-            siteParser = new(chromeDriver, jsExecutorWithDelay, navigationWorker, delayer, webElementWorker, logger);
+            siteParser = new(chromeDriver, logger);
         }
 
 
         [TestMethod]
-        public async Task CollectAirports_ReturnsValues()
+        public void CollectAirports_ReturnsValues()
         {
-            HashSet<Airport> results = await siteParser.CollectAirports(collectAirportCommands);
+            HashSet<Airport> results = siteParser.CollectAirports();
             Assert.IsTrue(results.Count > 0);
         }
         
         [TestMethod]
-        public async Task CollectAirports2_ReturnsValues()
-        {
-            HashSet<Airport> results = siteParser.CollectAirports2(collectAirportCommands);
-            Assert.IsTrue(results.Count > 0);
-        }
-        
-        [TestMethod]
-        public async Task GetAirportsAndTheirConnections_ReturnsValues()
+        public void GetAirportsAndTheirConnections_ReturnsValuesAndHandlesExceptions()
         {
             Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "https://www.flightconnections.com/flights-to-aberdeen-abz");
             Airport airport2 = new("KQT", "asd", "asd", "asd", "https://www.flightconnections.com/flights-to-qurghonteppa-kqt");
-            List<Airport> airports = new() { airport1, airport2 };
-            Dictionary<string, HashSet<string>> results = await siteParser.GetAirportsAndTheirConnections(airports, getAirportsAndTheirConnectionsCommands);
-            Assert.IsTrue(results.Count == 2);
+            Airport airport3 = new("BWE", "asd", "asd", "asd", "https://www.flightconnections.com/flights-to-braunschweig-bwe");
+            List<Airport> airports = new() { airport1, airport2, airport3 };
+            Dictionary<string, HashSet<string>> results = siteParser.GetAirportsAndTheirConnections(airports);
+            Assert.IsTrue(results.Count == 3);
             Assert.IsTrue(results[airport1.Code].Count > 0);
             Assert.IsTrue(results[airport2.Code].Count > 0);
-        }
-        
-        [TestMethod]
-        public async Task GetAirportsAndTheirConnections2_ReturnsValues()
-        {
-            Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "https://www.flightconnections.com/flights-to-aberdeen-abz");
-            Airport airport2 = new("KQT", "asd", "asd", "asd", "https://www.flightconnections.com/flights-to-qurghonteppa-kqt");
-            List<Airport> airports = new() { airport1, airport2 };
-            Dictionary<string, HashSet<string>> results = siteParser.GetAirportsAndTheirConnections2(airports, getAirportsAndTheirConnectionsCommands);
-            Assert.IsTrue(results.Count == 2);
-            Assert.IsTrue(results[airport1.Code].Count > 0);
-            Assert.IsTrue(results[airport2.Code].Count > 0);
+            Assert.IsTrue(results[airport3.Code].Count == 0);
         }
         
         [Ignore]
         [TestMethod]
-        public async Task FullTest_JsonsReceived()
+        public void FullTest_JsonsReceived()
         {
             const string airportListJsonFileName = "airportsListJson.json";
 
@@ -90,10 +57,10 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
             //List<Airport> airportsList = airports.OrderBy(x => x.Code).ToList();
             List<Airport> airportsList = JsonConvert.DeserializeObject<List<Airport>>(File.ReadAllText(airportListJsonFileName));
 
-            string airportsListJson = JsonConvert.SerializeObject(airportsList, Formatting.Indented);
+            string airportsListJson = JsonConvert.SerializeObject(airportsList);
             File.WriteAllText(airportListJsonFileName, airportsListJson);
 
-            Dictionary<string, HashSet<string>> results = await siteParser.GetAirportsAndTheirConnections(airportsList, getAirportsAndTheirConnectionsCommands);
+            Dictionary<string, HashSet<string>> results = siteParser.GetAirportsAndTheirConnections(airportsList);
             string resultsListJson = JsonConvert.SerializeObject(results);
             File.WriteAllText("resultsListJson.json", resultsListJson);
             Assert.IsTrue(results.Count > 0);

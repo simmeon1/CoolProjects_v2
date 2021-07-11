@@ -41,7 +41,7 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
             logger = new();
             jsExecutorWithDelay = new(chromeDriver, delayer, 10);
             navigationWorker = new(jsExecutorWithDelay, chromeDriver, new ClosePrivacyPopupCommands());
-            siteParser = new(chromeDriver, jsExecutorWithDelay, navigationWorker, delayer, webElementWorker, logger);
+            siteParser = new(chromeDriver, logger);
         }
 
         [Ignore]

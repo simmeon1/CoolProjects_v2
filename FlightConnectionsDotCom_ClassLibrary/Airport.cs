@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
-    [DebuggerDisplay("{Code}, {City}, {Country}, {Name}")]
+    [DebuggerDisplay("{GetFullString()}")]
     public class Airport
     {
         public string Code { get; set; }
