@@ -74,7 +74,6 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         public void CollectAirports_ReturnsExpectedAirports()
         {
             InitialiseMockObjects();
-            CollectAirportCommands commands = new();
             Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "linkA");
             Airport airport2 = new("SOF", "Sofia", "Bulgaria", "Sofia Airport", "linkB");
             Airport airport3 = new("EDI", "Edinburgh", "United Kingdom", "Edinburgh Airport", "linkC");
