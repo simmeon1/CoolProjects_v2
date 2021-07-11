@@ -1,11 +1,13 @@
 ﻿using FlightConnectionsDotCom_ClassLibrary.Interfaces;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
-namespace FlightConnectionsDotCom_Tests.UnitTests
+namespace FlightConnectionsDotCom_ClassLibrary
 {
     public class ChromeWorker
     {
@@ -29,10 +31,10 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                 {
                     JSExecutor.ExecuteScript("window.open();");
                     ITargetLocator targetLocator = Driver.SwitchTo();
-                    targetLocator.Window(Driver.WindowHandles[Driver.WindowHandles.Count - 1]);
+                    if (targetLocator != null) targetLocator.Window(Driver.WindowHandles[Driver.WindowHandles.Count - 1]);
 
                     INavigation navigation = Driver.Navigate();
-                    navigation.GoToUrl("https://www.google.com/travel/flights");
+                    if (navigation != null) navigation.GoToUrl("https://www.google.com/travel/flights");
 
                     if (!consentAgreed)
                     {

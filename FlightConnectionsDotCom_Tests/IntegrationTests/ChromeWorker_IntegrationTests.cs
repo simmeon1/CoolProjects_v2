@@ -1,5 +1,4 @@
 ﻿using FlightConnectionsDotCom_ClassLibrary;
-using FlightConnectionsDotCom_Tests.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Chrome;
 using System;
@@ -24,7 +23,7 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
         }
 
         [TestMethod]
-        public void OpenFlights()
+        public void OpenFlights_ExpectedTabsOpenedWithNoErrors()
         {
             List<string> path1 = new() { "ABZ", "SOF" };
             List<string> path2 = new() { "ABZ", "EDI", "SOF" };

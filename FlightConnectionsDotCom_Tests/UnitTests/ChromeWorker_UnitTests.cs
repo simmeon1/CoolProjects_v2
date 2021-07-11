@@ -18,32 +18,53 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         public class FlightConnectionsDotComParser_UnitTests
         {
             Mock<IWebDriver> driverMock;
-            Mock<IJavaScriptExecutorWithDelayer> jsExecutorWithDelayerMock;
-            Mock<INavigationWorker> navigationWorkerMock;
-            Mock<IDelayer> delayerMock;
-            Mock<IWebElementWorker> webElementWorker;
             Mock<ILogger> logger;
+            Mock<IJavaScriptExecutor> jsExecutor;
 
             private void InitialiseMockObjects()
             {
                 driverMock = new();
-                jsExecutorWithDelayerMock = new();
-                navigationWorkerMock = new();
-                delayerMock = new();
-                webElementWorker = new();
+                jsExecutor = new();
                 logger = new();
             }
 
-            //[TestMethod]
-            //public async Task OpenLinks()
-            //{
-            //    List<string> path1 = new() { "ABZ", "SOF" };
-            //    List<string> path2 = new() { "ABZ", "EDI", "SOF" };
-            //    List<List<string>> paths = new List<List<string>>() { path1, path2 };
-            //    ChromeWorker chromeWorker = new();
-            //    chromeWorker.OpenPaths(paths);
-            //    Assert.IsTrue(true);
-            //}
+            [TestMethod]
+            public void OpenFlights_ExpectedTabsOpenedWithNoErrors()
+            {
+                InitialiseMockObjects();
+                List<string> path1 = new() { "ABZ", "SOF" };
+                List<List<string>> paths = new() { path1 };
+
+                driverMock.Setup(x => x.WindowHandles).Returns(new ReadOnlyCollection<string>(new List<string>() { }));
+
+                Mock<IWebElement> consentButton = new();
+                consentButton.Setup(x => x.Text).Returns("I agree");
+
+                Mock<IWebElement> searchButton = new();
+                searchButton.Setup(x => x.GetAttribute("aria-label")).Returns("Done. Search for");
+
+                driverMock.SetupSequence(x => x.FindElements(By.CssSelector("button")))
+                    .Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { consentButton.Object }))
+                    .Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { searchButton.Object }));
+
+                Mock<IWebElement> roundTripSpan = new();
+                roundTripSpan.Setup(x => x.Text).Returns("Round trip");
+                driverMock.Setup(x => x.FindElements(By.CssSelector("span"))).Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { roundTripSpan.Object }));
+
+                Mock<IWebElement> oneWayLi = new();
+                oneWayLi.Setup(x => x.Text).Returns("One way");
+                driverMock.Setup(x => x.FindElements(By.CssSelector("li"))).Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { oneWayLi.Object }));
+
+                ReadOnlyCollection<IWebElement> inputs = new(new List<IWebElement>() {
+                    new Mock<IWebElement>().Object, new Mock<IWebElement>().Object, new Mock<IWebElement>().Object,
+                    new Mock<IWebElement>().Object, new Mock<IWebElement>().Object, new Mock<IWebElement>().Object,
+                    new Mock<IWebElement>().Object });
+                driverMock.Setup(x => x.FindElements(By.CssSelector("input"))).Returns(inputs);
+
+                ChromeWorker chromeWorker = new(driverMock.Object, jsExecutor.Object);
+                int results = chromeWorker.OpenPaths(paths, new DateTime(2000, 10, 10));
+                Assert.IsTrue(results == 0);
+            }
         }
     }
 }
