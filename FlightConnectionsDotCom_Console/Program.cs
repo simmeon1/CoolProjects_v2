@@ -3,8 +3,8 @@ using Newtonsoft.Json;
 using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace FlightConnectionsDotCom_Console
@@ -21,6 +21,7 @@ namespace FlightConnectionsDotCom_Console
             int maxFlights = 0;
             bool useLocalAirportList = false;
             bool useLocalAirportDestinations = false;
+            bool openGoogleFlights = false;
             DateTime date = DateTime.Today;
 
             foreach (string arg in arguments)
@@ -35,13 +36,16 @@ namespace FlightConnectionsDotCom_Console
                 if (match.Success) maxFlights = int.Parse(match.Groups[1].Value);
 
                 match = Regex.Match(arg, @"date-(\d\d-\d\d-\d\d\d\d)");
-                if (match.Success) date = DateTime.ParseExact(match.Groups[1].Value, "dd-MM-yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                if (match.Success) date = DateTime.ParseExact(match.Groups[1].Value, "dd-MM-yyyy", CultureInfo.InvariantCulture);
 
                 match = Regex.Match(arg, "useLocalAirportList");
                 if (match.Success) useLocalAirportList = true;
 
                 match = Regex.Match(arg, "useLocalAirportDestinations");
                 if (match.Success) useLocalAirportDestinations = true;
+                
+                match = Regex.Match(arg, "openGoogleFlights");
+                if (match.Success) openGoogleFlights = true;
             }
 
             Logger_Console logger = new();
@@ -63,10 +67,20 @@ namespace FlightConnectionsDotCom_Console
 
             AirportPathGenerator generator = new(airportsAndDestinations);
             List<List<string>> paths = generator.GeneratePaths(origin, target, maxFlights);
+            File.WriteAllText($"latestPaths-{GetDateTimeNowString()}.json", JsonConvert.SerializeObject(paths, Formatting.Indented));
 
+            if (!openGoogleFlights) return;
             ChromeDriver driver2 = new();
             ChromeWorker chromeWorker = new(driver2, driver2, logger);
             chromeWorker.OpenPaths(paths, date);
+        }
+
+        private static string GetDateTimeNowString()
+        {
+            DateTime dateTimeNow = DateTime.Now;
+            string dateTimeNowStr = dateTimeNow.ToString("s", CultureInfo.CreateSpecificCulture("en-US"));
+            dateTimeNowStr = dateTimeNowStr.Replace(':', '-');
+            return dateTimeNowStr;
         }
     }
 }
