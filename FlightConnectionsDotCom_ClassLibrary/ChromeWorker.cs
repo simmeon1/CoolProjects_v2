@@ -5,6 +5,7 @@ using SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_ClassLibrary
@@ -110,6 +111,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             destinationInput2.SendKeys(Keys.Return);
 
             dateInput1.Click();
+            Thread.Sleep(1000);
             dateInput2.SendKeys(Date.ToString("ddd, MMM dd"));
             dateInput2.SendKeys(Keys.Return);
         }
