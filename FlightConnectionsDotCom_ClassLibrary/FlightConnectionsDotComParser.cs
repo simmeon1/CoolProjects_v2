@@ -137,10 +137,10 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return $"{currentCount}/{maxCount} ({percentageString})";
         }
 
-        public HashSet<Airport> CollectAirports(int maxCountToCollect = 0)
+        public List<Airport> CollectAirports(int maxCountToCollect = 0)
         {
             Logger.Log($"Navigating to airports page...");
-            HashSet<Airport> airports = new();
+            List<Airport> airports = new();
             INavigation navigation = Driver.Navigate();
             GoToUrl(navigation, "https://www.flightconnections.com/airport-codes");
 

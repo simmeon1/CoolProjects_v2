@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FlightConnectionsDotCom_Console": {
+      "commandName": "Project",
+      "commandLineArgs": "origin-ABZ target-VAR maxFlights-2 useLocalAirportList useLocalAirportDestinations date-23-12-2021"
+    }
+  }
+}
