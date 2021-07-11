@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace FlightConnectionsDotCom_Console
@@ -75,12 +76,19 @@ namespace FlightConnectionsDotCom_Console
             if (writeLocalFiles)
             {
                 File.WriteAllText(airportListJsonFile, JsonConvert.SerializeObject(airportsList, Formatting.Indented));
-                File.WriteAllText(airportDestinationJsonFile, JsonConvert.SerializeObject(airportsList, Formatting.Indented));
+                File.WriteAllText(airportDestinationJsonFile, JsonConvert.SerializeObject(airportsAndDestinations, Formatting.Indented));
             }
 
             AirportPathGenerator generator = new(airportsAndDestinations);
             List<List<string>> paths = generator.GeneratePaths(origin, target, maxFlights);
-            File.WriteAllText($"latestPaths-{GetDateTimeNowString()}.json", JsonConvert.SerializeObject(paths, Formatting.Indented));
+            List<List<string>> pathsDetailed = new();
+            foreach (List<string> path in paths)
+            {
+                List<string> pathDetailed = new();
+                foreach (string airport in path) pathDetailed.Add(airportsList.FirstOrDefault(x => x.Code.Equals(airport)).GetFullString());
+                pathsDetailed.Add(pathDetailed);
+            }
+            File.WriteAllText($"latestPaths.json", JsonConvert.SerializeObject(pathsDetailed, Formatting.Indented));
 
             if (!openGoogleFlights) return;
             ChromeDriver driver2 = new();
