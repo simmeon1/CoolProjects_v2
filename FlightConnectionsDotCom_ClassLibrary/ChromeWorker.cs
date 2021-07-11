@@ -5,6 +5,7 @@ using SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,18 +18,24 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private ILogger Logger { get; set; }
         private DateTime Date { get; set; }
         private bool ConsentAgreed { get; set; }
+        private int PagesToOpen { get; set; }
+        private int PagesOpened { get; set; }
 
-
-        public ChromeWorker(IWebDriver driver, IJavaScriptExecutor jSExecutor)
+        public ChromeWorker(IWebDriver driver, IJavaScriptExecutor jSExecutor, ILogger logger)
         {
             Driver = driver;
             JSExecutor = jSExecutor;
+            Logger = logger;
         }
 
         public int OpenPaths(List<List<string>> paths, DateTime date)
         {
             Date = date;
             int initialTabCount = Driver.WindowHandles.Count;
+
+            PagesToOpen = 0;
+            PagesOpened = 0;
+            foreach (List<string> path in paths) for (int i = 0; i < path.Count - 1; i++) PagesToOpen++;
             foreach (List<string> path in paths) ProcessPath(path);
             return Driver.WindowHandles.Count - initialTabCount;
         }
@@ -37,14 +44,27 @@ namespace FlightConnectionsDotCom_ClassLibrary
         {
             for (int i = 0; i < path.Count - 1; i++)
             {
+                string origin = path[i];
+                string target = path[i + 1];
                 OpenNewTab();
                 NavigateToUrl();
                 AgreeToConsentIfItShows();
                 SetToOneWayTrip();
-                PopulateControls(path, i);
+                PopulateControls(origin, target);
                 ClickDoneButton();
+                PagesOpened++;
+                Logger.Log($"Populated page for {origin} to {target} ({GetPercentageAndCountString()})");
             }
         }
+
+        private string GetPercentageAndCountString()
+        {
+            string percentageString = $"{((double)PagesOpened / (double)PagesToOpen) * 100}%";
+            Match match = Regex.Match(percentageString, @"(.*?\.\d\d).*%");
+            if (match.Success) percentageString = $"{match.Groups[1].Value}%";
+            return $"{PagesOpened}/{PagesToOpen} ({percentageString})";
+        }
+
         private void OpenNewTab()
         {
             JSExecutor.ExecuteScript("window.open();");
@@ -90,7 +110,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
         }
 
-        private void PopulateControls(List<string> path, int i)
+        private void PopulateControls(string origin, string target)
         {
             ReadOnlyCollection<IWebElement> inputs = Driver.FindElements(By.CssSelector("input"));
             IWebElement originInput1 = inputs[0];
@@ -100,12 +120,10 @@ namespace FlightConnectionsDotCom_ClassLibrary
             IWebElement dateInput1 = inputs[4];
             IWebElement dateInput2 = inputs[6];
 
-            string origin = path[i];
             originInput1.Click();
             originInput2.SendKeys(origin);
             originInput2.SendKeys(Keys.Return);
 
-            string target = path[i + 1];
             destinationInput1.Click();
             destinationInput2.SendKeys(target);
             destinationInput2.SendKeys(Keys.Return);

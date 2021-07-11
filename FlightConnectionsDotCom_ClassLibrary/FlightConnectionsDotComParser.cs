@@ -128,7 +128,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
         }
 
-        private static string GetPercentageAndCountString(int i, int maxCount)
+        public static string GetPercentageAndCountString(int i, int maxCount)
         {
             int currentCount = i + 1;
             string percentageString = $"{((double)currentCount / (double)maxCount) * 100}%";

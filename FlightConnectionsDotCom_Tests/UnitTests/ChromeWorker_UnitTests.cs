@@ -61,7 +61,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                     new Mock<IWebElement>().Object });
                 driverMock.Setup(x => x.FindElements(By.CssSelector("input"))).Returns(inputs);
 
-                ChromeWorker chromeWorker = new(driverMock.Object, jsExecutor.Object);
+                ChromeWorker chromeWorker = new(driverMock.Object, jsExecutor.Object, logger.Object);
                 int results = chromeWorker.OpenPaths(paths, new DateTime(2000, 10, 10));
                 Assert.IsTrue(results == 0);
             }
