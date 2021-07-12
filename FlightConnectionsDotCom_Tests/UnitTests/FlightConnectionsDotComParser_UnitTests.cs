@@ -89,7 +89,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             );
 
             FlightConnectionsDotComParser siteParser = new(driverMock.Object, logger.Object);
-            HashSet<Airport> results = siteParser.CollectAirports();
+            List<Airport> results = siteParser.CollectAirports();
             Assert.IsTrue(results.Count == 4);
             Assert.IsTrue(results.Contains(airport1));
             Assert.IsTrue(results.Contains(airport2));
