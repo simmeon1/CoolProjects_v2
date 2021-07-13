@@ -11,15 +11,20 @@ namespace LeagueAPI_Tests
     [TestClass]
     public class LeagueAPI_UnitTests
     {
+        private const string id = "1";
+        private const string accountId = "2";
+        private const string puuid = "3";
+        private const string name = "4";
+        private Account Account { get; set; }
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            Account = new(id, accountId, puuid, name);
+        }
+
         [TestMethod]
         public async Task GetAccountBySummonerName_GetsAccount()
         {
-            string id = "1";
-            string accountId = "2";
-            string puuid = "3";
-            string name = "4";
-            Account testAccount = new(id, accountId, puuid, name);
-
             HttpResponseMessage response = new(HttpStatusCode.OK);
             response.Content = new StringContent(
                 @"{
@@ -32,12 +37,11 @@ namespace LeagueAPI_Tests
             Mock<IHttpClient> httpClientMock = new();
             httpClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
 
-            LeagueAPIClient leagueClient = new(httpClientMock.Object, "someKey");
-            Account account = await leagueClient.GetAccountBySummonerName("someName");
-            Assert.IsTrue(account.Id.Equals(testAccount.Id));
-            Assert.IsTrue(account.AccountId.Equals(testAccount.AccountId));
-            Assert.IsTrue(account.Puuid.Equals(testAccount.Puuid));
-            Assert.IsTrue(account.Name.Equals(testAccount.Name));
+            LeagueAPIClient leagueClient = await LeagueAPIClient.GetClientInstance(httpClientMock.Object, "someKey", "someName");
+            Assert.IsTrue(leagueClient.Account.Id.Equals(Account.Id));
+            Assert.IsTrue(leagueClient.Account.AccountId.Equals(Account.AccountId));
+            Assert.IsTrue(leagueClient.Account.Puuid.Equals(Account.Puuid));
+            Assert.IsTrue(leagueClient.Account.Name.Equals(Account.Name));
         }
         
         [TestMethod]
@@ -47,9 +51,19 @@ namespace LeagueAPI_Tests
             response.Content = new StringContent("");
             Mock<IHttpClient> httpClientMock = new();
             httpClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => LeagueAPIClient.GetClientInstance(httpClientMock.Object, "", ""));
+        }
 
-            LeagueAPIClient leagueClient = new(httpClientMock.Object, "someKey");
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => leagueClient.GetAccountBySummonerName("someName"));
+        [TestMethod]
+        public async Task GetMatches()
+        {
+            //HttpResponseMessage response = new(HttpStatusCode.BadRequest);
+            //response.Content = new StringContent("");
+            //Mock<IHttpClient> httpClientMock = new();
+            //httpClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
+
+            //LeagueAPIClient leagueClient = new(httpClientMock.Object, "someKey");
+            //await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => leagueClient.GetAccountBySummonerName("someName"));
         }
     }
 }

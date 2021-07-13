@@ -8,20 +8,28 @@ namespace LeagueAPI_ClassLibrary
 {
     public class LeagueAPIClient
     {
-        private IHttpClient Client { get; set; }
-        private string Token { get; set; }
+        public IHttpClient Client { get; set; }
+        public string Token { get; set; }
+        public Account Account { get; set; }
 
-        public LeagueAPIClient(IHttpClient client, string token)
+        private LeagueAPIClient(IHttpClient client, string token, Account account)
         {
             Client = client;
             Token = token;
+            Account = account;
         }
 
-        public async Task<Account> GetAccountBySummonerName(string summonerName)
+        public static async Task<LeagueAPIClient> GetClientInstance(IHttpClient client, string token, string summonerName, Account account = null)
+        {
+            Account acc = account ?? await GetAccountBySummonerName(client, token, summonerName);
+            return new LeagueAPIClient(client, token, acc);
+        }
+
+        public static async Task<Account> GetAccountBySummonerName(IHttpClient client, string token, string summonerName)
         {
             string uri = $"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}";
-            HttpRequestMessage message = GetGetMessageReadyWithToken(uri);
-            HttpResponseMessage response = await Client.SendAsync(message);
+            HttpRequestMessage message = GetGetMessageReadyWithToken(uri, token);
+            HttpResponseMessage response = await client.SendAsync(message);
             string responseMessage = await response.Content.ReadAsStringAsync();
             ThrowExceptionIfRequestIsNotOK(uri, response, responseMessage);
 
@@ -40,10 +48,10 @@ namespace LeagueAPI_ClassLibrary
             );
         }
 
-        private HttpRequestMessage GetGetMessageReadyWithToken(string uri)
+        private static HttpRequestMessage GetGetMessageReadyWithToken(string uri, string token)
         {
             HttpRequestMessage message = new(HttpMethod.Get, uri);
-            message.Headers.Add("X-Riot-Token", Token);
+            message.Headers.Add("X-Riot-Token", token);
             return message;
         }
     }
