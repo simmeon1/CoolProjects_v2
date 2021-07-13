@@ -2,6 +2,7 @@ using LeagueAPI_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace LeagueAPI_Tests
         private const string puuid = "3";
         private const string name = "4";
         private Account Account { get; set; }
+
         [TestInitialize]
         public void TestInitialize()
         {
@@ -55,15 +57,25 @@ namespace LeagueAPI_Tests
         }
 
         [TestMethod]
-        public async Task GetMatches()
+        public async Task GetMatches_GetsResults()
         {
-            //HttpResponseMessage response = new(HttpStatusCode.BadRequest);
-            //response.Content = new StringContent("");
-            //Mock<IHttpClient> httpClientMock = new();
-            //httpClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
+            HttpResponseMessage response = new(HttpStatusCode.OK);
+            string matchId1 = "EUW1_5364680752";
+            string matchId2 = "EUW1_5357084019";
+            response.Content = new StringContent(
+                @"[
+                    '" + matchId1 + @"',
+                    '" + matchId2 + @"'
+                  ]"
+            );
 
-            //LeagueAPIClient leagueClient = new(httpClientMock.Object, "someKey");
-            //await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => leagueClient.GetAccountBySummonerName("someName"));
+            Mock<IHttpClient> httpClientMock = new();
+            httpClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
+            LeagueAPIClient leagueClient = LeagueAPIClient.GetClientInstance(httpClientMock.Object, "someKey", Account);
+            List<string> matchIds = await leagueClient.GetMatchIds(450);
+            Assert.IsTrue(matchIds.Count == 2);
+            Assert.IsTrue(matchIds[0].Contains(matchId1));
+            Assert.IsTrue(matchIds[1].Contains(matchId2));
         }
     }
 }

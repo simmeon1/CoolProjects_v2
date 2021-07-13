@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -19,22 +20,30 @@ namespace LeagueAPI_ClassLibrary
             Account = account;
         }
 
-        public static async Task<LeagueAPIClient> GetClientInstance(IHttpClient client, string token, string summonerName, Account account = null)
+        public static LeagueAPIClient GetClientInstance(IHttpClient client, string token, Account account)
         {
-            Account acc = account ?? await GetAccountBySummonerName(client, token, summonerName);
-            return new LeagueAPIClient(client, token, acc);
+            return new LeagueAPIClient(client, token, account);
+        }
+
+        public static async Task<LeagueAPIClient> GetClientInstance(IHttpClient client, string token, string summonerName)
+        {
+            return new LeagueAPIClient(client, token, await GetAccountBySummonerName(client, token, summonerName));
         }
 
         public static async Task<Account> GetAccountBySummonerName(IHttpClient client, string token, string summonerName)
         {
-            string uri = $"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}";
+            string responseMessage = await GetResponse(client, token, $"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}");
+            JObject obj = JObject.Parse(responseMessage);
+            return new Account((string)obj["id"], (string)obj["accountId"], (string)obj["puuid"], (string)obj["name"]);
+        }
+
+        private static async Task<string> GetResponse(IHttpClient client, string token, string uri)
+        {
             HttpRequestMessage message = GetGetMessageReadyWithToken(uri, token);
             HttpResponseMessage response = await client.SendAsync(message);
             string responseMessage = await response.Content.ReadAsStringAsync();
             ThrowExceptionIfRequestIsNotOK(uri, response, responseMessage);
-
-            JObject obj = JObject.Parse(responseMessage);
-            return new Account((string)obj["id"], (string)obj["accountId"], (string)obj["puuid"], (string)obj["name"]);
+            return responseMessage;
         }
 
         private static void ThrowExceptionIfRequestIsNotOK(string uri, HttpResponseMessage response, string responseMessage)
@@ -53,6 +62,15 @@ namespace LeagueAPI_ClassLibrary
             HttpRequestMessage message = new(HttpMethod.Get, uri);
             message.Headers.Add("X-Riot-Token", token);
             return message;
+        }
+
+        public async Task<List<string>> GetMatchIds(int queueId)
+        {
+            string responseMessage = await GetResponse(Client, Token, $"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{Account.Puuid}/ids?queue={queueId}&start=0&count=100");
+            JArray array = JArray.Parse(responseMessage);
+            List<string> ids = new();
+            foreach (JToken id in array) ids.Add(id.ToString());
+            return ids;
         }
     }
 }
