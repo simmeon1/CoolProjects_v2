@@ -26,8 +26,7 @@ namespace LeagueAPI_Tests
         [TestMethod]
         public async Task GetAccountBySummonerName_GetsAccount()
         {
-            HttpResponseMessage response = new(HttpStatusCode.OK);
-            response.Content = new StringContent(
+            HttpResponseMessage response = GetSuccessfulResponse(
                 @"{
                     'id': '" + Account.Id + @"',
                     'accountId': '" + Account.AccountId + @"',
@@ -75,10 +74,9 @@ namespace LeagueAPI_Tests
         }
         
         [TestMethod]
-        public async Task GetMatches_GetsResults()
+        public async Task GetMatches_GetsAllResults()
         {
-            HttpResponseMessage response = new(HttpStatusCode.OK);
-            response.Content = new StringContent(
+            HttpResponseMessage response = GetSuccessfulResponse(
                 @"{'metadata':{'matchId':'EUW1_5364680752','participants':['TxdGlxaUW6x9KvDuk-FEXYbancmWThQ-PQgfkrKW898JcYyAM43T-Gn0sUi0LbYIsUWDJhgxRS_8Wg','G3_8zPn_vTiFPTElkGg7Q3eLF_b9CQ7XZX8vIKYA-jVn2rk-cCihPCaWbRiOdmeBeEg6XkarJwzmUg']},'info':{'gameVersion':'11.14.385.9967','mapId':12,'participants':[{'championId':1,'item0':20,'item1':21,'item2':22,'item3':23,'item4':24,'item5':25,'item6':26,'perks':{'statPerks':{'defense':100,'flex':101,'offense':102},'styles':[{'selections':[{'perk':200},{'perk':201},{'perk':202},{'perk':203}],'style':2000},{'selections':[{'perk':301},{'perk':302}],'style':3000}]},'summoner1Id':50,'summoner2Id':51,'win':true}],'queueId':450}}"
             );
 
@@ -120,14 +118,43 @@ namespace LeagueAPI_Tests
         }
 
         [TestMethod]
+        public async Task GetMatches_GetsResultsBasedOnVersion()
+        {
+            HttpResponseMessage response1 = GetSuccessfulResponse(@"{'info':{'gameVersion':'11.16','participants':[]}}");
+            HttpResponseMessage response2 = GetSuccessfulResponse(@"{'metadata':{'matchId':'EUW1_5364680752'},'info':{'gameVersion':'11.15','mapId':12,'participants':[],'queueId':450}}");
+            HttpResponseMessage response3 = GetSuccessfulResponse(@"{'info':{'gameVersion':'11.14','participants':[]}}");
+            HttpResponseMessage response4 = GetSuccessfulResponse(@"");
+            ClientMock.SetupSequence(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result)
+                .Returns(response1)
+                .Returns(response2)
+                .Returns(response3)
+                .Returns(response4);
+            LeagueAPIClient leagueClient = LeagueAPIClient.GetClientInstance(ClientMock.Object, "someKey", Account);
+            List<LeagueMatch> matches = await leagueClient.GetMatches(new List<string>() { "1", "2", "3", "4" }, "11.15");
+            Assert.IsTrue(matches.Count == 1);
+            Assert.IsTrue(matches.FirstOrDefault().gameVersion.Equals("11.15"));
+        }
+
+        private static HttpResponseMessage GetSuccessfulResponse(string responseContent)
+        {
+            HttpResponseMessage response1 = new(HttpStatusCode.OK);
+            response1.Content = new StringContent(responseContent);
+            return response1;
+        }
+
+        [TestMethod]
         public void CompareTargetVersionAgainstGameVersion_DoesCorrectComparisons()
         {
-            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.14", "11.14.56") == 0);
+            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.14", "11.14.56") == -1);
             Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.13", "11.14.56") == -1);
             Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.15", "11.14.56") == 1);
-            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.14.5", "11.14") == 0);
+            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.14.5", "11.14") == 1);
             Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.13.5", "11.14") == -1);
             Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.15.5", "11.14") == 1);
+            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.15", "11.15.0") == 0);
+            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.15", "11.15") == 0);
+            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("12.0", "11.15") == 1);
+            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.9", "12") == -1);
         }
     }
 }

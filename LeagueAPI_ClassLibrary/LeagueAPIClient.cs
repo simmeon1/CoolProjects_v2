@@ -77,19 +77,24 @@ namespace LeagueAPI_ClassLibrary
             return ids;
         }
 
-        public async Task<List<LeagueMatch>> GetMatches(List<string> matchIds)
+        public async Task<List<LeagueMatch>> GetMatches(List<string> matchIds, string targetVersion = null)
         {
             List<LeagueMatch> matches = new();
             foreach (string matchId in matchIds)
             {
                 JObject obj = await GetJObjectFromResponse(Client, Token, $"https://europe.api.riotgames.com/lol/match/v5/matches/{matchId}");
-                LeagueMatch match = new()
+                LeagueMatch match = new();
+                match.gameVersion = obj["info"]["gameVersion"].ToString();
+                if (targetVersion != null)
                 {
-                    gameVersion = obj["info"]["gameVersion"].ToString(),
-                    mapId = int.Parse(obj["info"]["mapId"].ToString()),
-                    matchId = obj["metadata"]["matchId"].ToString(),
-                    queueId = int.Parse(obj["info"]["queueId"].ToString())
-                };
+                    int versionComparisonResult = CompareTargetVersionAgainstGameVersion(targetVersion, match.gameVersion);
+                    if (versionComparisonResult == 1) break;
+                    else if (versionComparisonResult == -1) continue;
+                }
+                match.matchId = obj["metadata"]["matchId"].ToString();
+                match.mapId = int.Parse(obj["info"]["mapId"].ToString());
+                match.queueId = int.Parse(obj["info"]["queueId"].ToString());
+
                 List<Participant> participants = new();
                 JToken arr = obj["info"]["participants"];
                 foreach (JToken p in arr)
@@ -126,6 +131,7 @@ namespace LeagueAPI_ClassLibrary
             return matches;
         }
 
+
         /// <summary>
         /// Gets a result saying if the target version is greater than the game version.
         /// </summary>
@@ -134,15 +140,14 @@ namespace LeagueAPI_ClassLibrary
         /// <returns>1 if target is greater than game version, 0 if equal, -1 if lesser.</returns>
         public static int CompareTargetVersionAgainstGameVersion(string targetVersion, string gameVersion)
         {
-            targetVersion = targetVersion.Replace(".", "");
-            gameVersion = gameVersion.Replace(".", "");
-            int minLength = Math.Min(targetVersion.Length, gameVersion.Length);
-            targetVersion = targetVersion.Substring(0, minLength);
-            gameVersion = gameVersion.Substring(0, minLength);
-            for (int i = 0; i < minLength; i++)
+            string[] targetVersionArray = targetVersion.Split('.');
+            string[] gameVersionArray = gameVersion.Split('.');
+
+            int maxLength = Math.Max(targetVersionArray.Length, gameVersionArray.Length);
+            for (int i = 0; i < maxLength; i++)
             {
-                int targetVersionCharDigit = int.Parse(targetVersion[i].ToString());
-                int gameVersionCharDigit = int.Parse(gameVersion[i].ToString());
+                int targetVersionCharDigit = i > targetVersionArray.Length - 1 ? 0 : int.Parse(targetVersionArray[i].ToString());
+                int gameVersionCharDigit = i > gameVersionArray.Length - 1 ? 0 : int.Parse(gameVersionArray[i].ToString());
                 if (targetVersionCharDigit != gameVersionCharDigit) return targetVersionCharDigit > gameVersionCharDigit ? 1 : -1;
             }
             return 0;
