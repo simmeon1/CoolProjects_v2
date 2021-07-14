@@ -9,69 +9,60 @@ namespace LeagueAPI_ClassLibrary
 {
     public class LeagueAPIClient : ILeagueAPIClient
     {
-        public IHttpClient Client { get; set; }
-        public string Token { get; set; }
-        public Account Account { get; set; }
+        private IHttpClient Client { get; set; }
+        private string Token { get; set; }
 
-        private LeagueAPIClient(IHttpClient client, string token, Account account)
+        public LeagueAPIClient(IHttpClient client, string token)
         {
             Client = client;
             Token = token;
-            Account = account;
         }
 
-        public static LeagueAPIClient GetClientInstance(IHttpClient client, string token, Account account)
+        public async Task<Account> GetAccountBySummonerName(string summonerName)
         {
-            return new LeagueAPIClient(client, token, account);
-        }
-
-        public static async Task<LeagueAPIClient> GetClientInstance(IHttpClient client, string token, string summonerName)
-        {
-            return new LeagueAPIClient(client, token, await GetAccountBySummonerName(client, token, summonerName));
-        }
-
-        public static async Task<Account> GetAccountBySummonerName(IHttpClient client, string token, string summonerName)
-        {
-            JObject obj = await GetJObjectFromResponse(client, token, $"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}");
+            JObject obj = await GetJObjectFromResponse($"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}");
             return new Account((string)obj["id"], (string)obj["accountId"], (string)obj["puuid"], (string)obj["name"]);
         }
 
-        private static async Task<JObject> GetJObjectFromResponse(IHttpClient client, string token, string uri)
+        private async Task<JObject> GetJObjectFromResponse(string uri)
         {
-            return JObject.Parse(await GetResponse(client, token, uri));
+            return JObject.Parse(await GetResponse(uri));
         }
 
-        private static async Task<string> GetResponse(IHttpClient client, string token, string uri)
+        private async Task<JArray> GetJArrayFromResponse(string uri)
         {
-            HttpRequestMessage message = GetGetMessageReadyWithToken(uri, token);
-            HttpResponseMessage response = await client.SendAsync(message);
+            return JArray.Parse(await GetResponse(uri));
+        }
+
+        private async Task<string> GetResponse(string uri)
+        {
+            HttpRequestMessage message = GetGetMessageReadyWithToken(uri);
+            HttpResponseMessage response = await Client.SendAsync(message);
             string responseMessage = await response.Content.ReadAsStringAsync();
-            ThrowExceptionIfRequestIsNotOK(uri, response, responseMessage);
+            if (response.StatusCode != HttpStatusCode.OK) ThrowInvalidOperationException(uri, response.StatusCode, responseMessage);
             return responseMessage;
         }
 
-        private static void ThrowExceptionIfRequestIsNotOK(string uri, HttpResponseMessage response, string responseMessage)
+        private static void ThrowInvalidOperationException(string uri, HttpStatusCode code, string responseMessage)
         {
-            if (response.StatusCode == HttpStatusCode.OK) return;
             throw new InvalidOperationException(
                 $"The request was not successful.{Environment.NewLine}" +
                 $"URI: {uri}.{Environment.NewLine}" +
-                $"Status code: {response.StatusCode}.{Environment.NewLine}" +
+                $"Status code: {code}.{Environment.NewLine}" +
                 $"Message: {responseMessage}"
             );
         }
 
-        private static HttpRequestMessage GetGetMessageReadyWithToken(string uri, string token)
+        private HttpRequestMessage GetGetMessageReadyWithToken(string uri)
         {
             HttpRequestMessage message = new(HttpMethod.Get, uri);
-            message.Headers.Add("X-Riot-Token", token);
+            message.Headers.Add("X-Riot-Token", Token);
             return message;
         }
 
-        public async Task<List<string>> GetMatchIds(int queueId)
+        public async Task<List<string>> GetMatchIds(int queueId, string puuid)
         {
-            string responseMessage = await GetResponse(Client, Token, $"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{Account.Puuid}/ids?queue={queueId}&start=0&count=100");
-            JArray array = JArray.Parse(responseMessage);
+            JArray array = await GetJArrayFromResponse($"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?queue={queueId}&start=0&count=100");
             List<string> ids = new();
             foreach (JToken id in array) ids.Add(id.ToString());
             return ids;
@@ -79,7 +70,7 @@ namespace LeagueAPI_ClassLibrary
 
         public async Task<LeagueMatch> GetMatch(string matchId)
         {
-            JObject obj = await GetJObjectFromResponse(Client, Token, $"https://europe.api.riotgames.com/lol/match/v5/matches/{matchId}");
+            JObject obj = await GetJObjectFromResponse($"https://europe.api.riotgames.com/lol/match/v5/matches/{matchId}");
             LeagueMatch match = new();
             match.gameVersion = obj["info"]["gameVersion"].ToString();
             match.matchId = obj["metadata"]["matchId"].ToString();

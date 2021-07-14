@@ -13,34 +13,34 @@ namespace LeagueAPI_Tests
     [TestClass]
     public class LeagueAPI_UnitTests
     {
-        private Account Account { get; set; }
         private Mock<IHttpClient> ClientMock { get; set; }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            Account = new("1", "2", "3", "4");
             ClientMock = new();
         }
 
         [TestMethod]
         public async Task GetAccountBySummonerName_GetsAccount()
         {
+            Account testAccount = new("1", "2", "3", "4");
             HttpResponseMessage response = GetSuccessfulResponse(
                 @"{
-                    'id': '" + Account.Id + @"',
-                    'accountId': '" + Account.AccountId + @"',
-                    'puuid': '" + Account.Puuid + @"',
-                    'name': '" + Account.Name + @"'
+                    'id': '" + testAccount.Id + @"',
+                    'accountId': '" + testAccount.AccountId + @"',
+                    'puuid': '" + testAccount.Puuid + @"',
+                    'name': '" + testAccount.Name + @"'
                 }"
             );
             ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
 
-            LeagueAPIClient leagueClient = await LeagueAPIClient.GetClientInstance(ClientMock.Object, "someKey", "someName");
-            Assert.IsTrue(leagueClient.Account.Id.Equals(Account.Id));
-            Assert.IsTrue(leagueClient.Account.AccountId.Equals(Account.AccountId));
-            Assert.IsTrue(leagueClient.Account.Puuid.Equals(Account.Puuid));
-            Assert.IsTrue(leagueClient.Account.Name.Equals(Account.Name));
+            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey");
+            Account account = await leagueClient.GetAccountBySummonerName("someName");
+            Assert.IsTrue(account.Id.Equals(testAccount.Id));
+            Assert.IsTrue(account.AccountId.Equals(testAccount.AccountId));
+            Assert.IsTrue(account.Puuid.Equals(testAccount.Puuid));
+            Assert.IsTrue(account.Name.Equals(testAccount.Name));
         }
         
         [TestMethod]
@@ -49,7 +49,8 @@ namespace LeagueAPI_Tests
             HttpResponseMessage response = new(HttpStatusCode.BadRequest);
             response.Content = new StringContent("");
             ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => LeagueAPIClient.GetClientInstance(ClientMock.Object, "", ""));
+            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey");
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => leagueClient.GetAccountBySummonerName("someName"));
         }
 
         [TestMethod]
@@ -66,8 +67,8 @@ namespace LeagueAPI_Tests
             );
 
             ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
-            LeagueAPIClient leagueClient = LeagueAPIClient.GetClientInstance(ClientMock.Object, "someKey", Account);
-            List<string> matchIds = await leagueClient.GetMatchIds(450);
+            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey");
+            List<string> matchIds = await leagueClient.GetMatchIds(450, "somePuuid");
             Assert.IsTrue(matchIds.Count == 2);
             Assert.IsTrue(matchIds[0].Contains(matchId1));
             Assert.IsTrue(matchIds[1].Contains(matchId2));
@@ -81,7 +82,7 @@ namespace LeagueAPI_Tests
             );
 
             ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
-            LeagueAPIClient leagueClient = LeagueAPIClient.GetClientInstance(ClientMock.Object, "someKey", Account);
+            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey");
             LeagueMatch match = await leagueClient.GetMatch("EUW1_5364680752");
             Assert.IsTrue(match.matchId.Equals("EUW1_5364680752"));
             Assert.IsTrue(match.gameVersion.Equals("11.14.385.9967"));
