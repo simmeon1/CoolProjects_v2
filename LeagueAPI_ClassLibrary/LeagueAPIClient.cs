@@ -32,9 +32,13 @@ namespace LeagueAPI_ClassLibrary
 
         public static async Task<Account> GetAccountBySummonerName(IHttpClient client, string token, string summonerName)
         {
-            string responseMessage = await GetResponse(client, token, $"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}");
-            JObject obj = JObject.Parse(responseMessage);
+            JObject obj = await GetJObjectFromResponse(client, token, $"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}");
             return new Account((string)obj["id"], (string)obj["accountId"], (string)obj["puuid"], (string)obj["name"]);
+        }
+
+        private static async Task<JObject> GetJObjectFromResponse(IHttpClient client, string token, string uri)
+        {
+            return JObject.Parse(await GetResponse(client, token, uri));
         }
 
         private static async Task<string> GetResponse(IHttpClient client, string token, string uri)
@@ -71,6 +75,55 @@ namespace LeagueAPI_ClassLibrary
             List<string> ids = new();
             foreach (JToken id in array) ids.Add(id.ToString());
             return ids;
+        }
+
+        public async Task<List<LeagueMatch>> GetMatches(List<string> matchIds)
+        {
+            List<LeagueMatch> matches = new();
+            foreach (string matchId in matchIds)
+            {
+                JObject obj = await GetJObjectFromResponse(Client, Token, $"https://europe.api.riotgames.com/lol/match/v5/matches/{matchId}");
+                LeagueMatch match = new()
+                {
+                    gameVersion = obj["info"]["gameVersion"].ToString(),
+                    mapId = int.Parse(obj["info"]["mapId"].ToString()),
+                    matchId = obj["metadata"]["matchId"].ToString(),
+                    queueId = int.Parse(obj["info"]["queueId"].ToString())
+                };
+                List<Participant> participants = new();
+                JToken arr = obj["info"]["participants"];
+                foreach (JToken p in arr)
+                {
+                    participants.Add(new Participant()
+                    {
+                        championId = int.Parse(p["championId"].ToString()),
+                        item0 = int.Parse(p["item0"].ToString()),
+                        item1 = int.Parse(p["item1"].ToString()),
+                        item2 = int.Parse(p["item2"].ToString()),
+                        item3 = int.Parse(p["item3"].ToString()),
+                        item4 = int.Parse(p["item4"].ToString()),
+                        item5 = int.Parse(p["item5"].ToString()),
+                        item6 = int.Parse(p["item6"].ToString()),
+                        perk1_1 = int.Parse(p["perks"]["styles"][0]["selections"][0]["perk"].ToString()),
+                        perk1_2 = int.Parse(p["perks"]["styles"][0]["selections"][1]["perk"].ToString()),
+                        perk1_3 = int.Parse(p["perks"]["styles"][0]["selections"][2]["perk"].ToString()),
+                        perk1_4 = int.Parse(p["perks"]["styles"][0]["selections"][3]["perk"].ToString()),
+                        perk2_1 = int.Parse(p["perks"]["styles"][1]["selections"][0]["perk"].ToString()),
+                        perk2_2 = int.Parse(p["perks"]["styles"][1]["selections"][1]["perk"].ToString()),
+                        perkTree_1 = int.Parse(p["perks"]["styles"][0]["style"].ToString()),
+                        perkTree_2 = int.Parse(p["perks"]["styles"][1]["style"].ToString()),
+                        statPerkDefense = int.Parse(p["perks"]["statPerks"]["defense"].ToString()),
+                        statPerkFlex = int.Parse(p["perks"]["statPerks"]["flex"].ToString()),
+                        statPerkOffense = int.Parse(p["perks"]["statPerks"]["offense"].ToString()),
+                        summoner1Id = int.Parse(p["summoner1Id"].ToString()),
+                        summoner2Id = int.Parse(p["summoner2Id"].ToString()),
+                        win = bool.Parse(p["win"].ToString())
+                    });
+                }
+                match.participants = participants;
+                matches.Add(match);
+            }
+            return matches;
         }
     }
 }
