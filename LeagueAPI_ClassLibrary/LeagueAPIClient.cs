@@ -125,5 +125,27 @@ namespace LeagueAPI_ClassLibrary
             }
             return matches;
         }
+
+        /// <summary>
+        /// Gets a result saying if the target version is greater than the game version.
+        /// </summary>
+        /// <param name="targetVersion"></param>
+        /// <param name="gameVersion"></param>
+        /// <returns>1 if target is greater than game version, 0 if equal, -1 if lesser.</returns>
+        public static int CompareTargetVersionAgainstGameVersion(string targetVersion, string gameVersion)
+        {
+            targetVersion = targetVersion.Replace(".", "");
+            gameVersion = gameVersion.Replace(".", "");
+            int minLength = Math.Min(targetVersion.Length, gameVersion.Length);
+            targetVersion = targetVersion.Substring(0, minLength);
+            gameVersion = gameVersion.Substring(0, minLength);
+            for (int i = 0; i < minLength; i++)
+            {
+                int targetVersionCharDigit = int.Parse(targetVersion[i].ToString());
+                int gameVersionCharDigit = int.Parse(gameVersion[i].ToString());
+                if (targetVersionCharDigit != gameVersionCharDigit) return targetVersionCharDigit > gameVersionCharDigit ? 1 : -1;
+            }
+            return 0;
+        }
     }
 }

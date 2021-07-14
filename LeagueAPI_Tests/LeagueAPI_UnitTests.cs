@@ -118,5 +118,16 @@ namespace LeagueAPI_Tests
             Assert.IsTrue(p1.summoner2Id == 51);
             Assert.IsTrue(p1.win == true);
         }
+
+        [TestMethod]
+        public void CompareTargetVersionAgainstGameVersion_DoesCorrectComparisons()
+        {
+            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.14", "11.14.56") == 0);
+            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.13", "11.14.56") == -1);
+            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.15", "11.14.56") == 1);
+            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.14.5", "11.14") == 0);
+            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.13.5", "11.14") == -1);
+            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.15.5", "11.14") == 1);
+        }
     }
 }
