@@ -82,10 +82,7 @@ namespace LeagueAPI_Tests
 
             ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
             LeagueAPIClient leagueClient = LeagueAPIClient.GetClientInstance(ClientMock.Object, "someKey", Account);
-            List<LeagueMatch> matches = await leagueClient.GetMatches(new List<string>() { "EUW1_5364680752" });
-            Assert.IsTrue(matches.Count == 1);
-
-            LeagueMatch match = matches.FirstOrDefault();
+            LeagueMatch match = await leagueClient.GetMatch("EUW1_5364680752");
             Assert.IsTrue(match.matchId.Equals("EUW1_5364680752"));
             Assert.IsTrue(match.gameVersion.Equals("11.14.385.9967"));
             Assert.IsTrue(match.mapId == 12);
@@ -117,44 +114,11 @@ namespace LeagueAPI_Tests
             Assert.IsTrue(p1.win == true);
         }
 
-        [TestMethod]
-        public async Task GetMatches_GetsResultsBasedOnVersion()
-        {
-            HttpResponseMessage response1 = GetSuccessfulResponse(@"{'info':{'gameVersion':'11.16','participants':[]}}");
-            HttpResponseMessage response2 = GetSuccessfulResponse(@"{'metadata':{'matchId':'EUW1_5364680752'},'info':{'gameVersion':'11.15','mapId':12,'participants':[],'queueId':450}}");
-            HttpResponseMessage response3 = GetSuccessfulResponse(@"{'info':{'gameVersion':'11.14','participants':[]}}");
-            HttpResponseMessage response4 = GetSuccessfulResponse(@"");
-            ClientMock.SetupSequence(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result)
-                .Returns(response1)
-                .Returns(response2)
-                .Returns(response3)
-                .Returns(response4);
-            LeagueAPIClient leagueClient = LeagueAPIClient.GetClientInstance(ClientMock.Object, "someKey", Account);
-            List<LeagueMatch> matches = await leagueClient.GetMatches(new List<string>() { "1", "2", "3", "4" }, "11.15");
-            Assert.IsTrue(matches.Count == 1);
-            Assert.IsTrue(matches.FirstOrDefault().gameVersion.Equals("11.15"));
-        }
-
         private static HttpResponseMessage GetSuccessfulResponse(string responseContent)
         {
-            HttpResponseMessage response1 = new(HttpStatusCode.OK);
-            response1.Content = new StringContent(responseContent);
-            return response1;
-        }
-
-        [TestMethod]
-        public void CompareTargetVersionAgainstGameVersion_DoesCorrectComparisons()
-        {
-            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.14", "11.14.56") == -1);
-            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.13", "11.14.56") == -1);
-            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.15", "11.14.56") == 1);
-            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.14.5", "11.14") == 1);
-            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.13.5", "11.14") == -1);
-            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.15.5", "11.14") == 1);
-            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.15", "11.15.0") == 0);
-            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.15", "11.15") == 0);
-            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("12.0", "11.15") == 1);
-            Assert.IsTrue(LeagueAPIClient.CompareTargetVersionAgainstGameVersion("11.9", "12") == -1);
+            HttpResponseMessage response = new(HttpStatusCode.OK);
+            response.Content = new StringContent(responseContent);
+            return response;
         }
     }
 }

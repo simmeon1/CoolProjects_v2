@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LeagueAPI_ClassLibrary
 {
-    public class LeagueAPIClient
+    public class LeagueAPIClient : ILeagueAPIClient
     {
         public IHttpClient Client { get; set; }
         public string Token { get; set; }
@@ -77,80 +77,46 @@ namespace LeagueAPI_ClassLibrary
             return ids;
         }
 
-        public async Task<List<LeagueMatch>> GetMatches(List<string> matchIds, string targetVersion = null)
+        public async Task<LeagueMatch> GetMatch(string matchId)
         {
-            List<LeagueMatch> matches = new();
-            foreach (string matchId in matchIds)
+            JObject obj = await GetJObjectFromResponse(Client, Token, $"https://europe.api.riotgames.com/lol/match/v5/matches/{matchId}");
+            LeagueMatch match = new();
+            match.gameVersion = obj["info"]["gameVersion"].ToString();
+            match.matchId = obj["metadata"]["matchId"].ToString();
+            match.mapId = int.Parse(obj["info"]["mapId"].ToString());
+            match.queueId = int.Parse(obj["info"]["queueId"].ToString());
+
+            List<Participant> participants = new();
+            JToken arr = obj["info"]["participants"];
+            foreach (JToken p in arr)
             {
-                JObject obj = await GetJObjectFromResponse(Client, Token, $"https://europe.api.riotgames.com/lol/match/v5/matches/{matchId}");
-                LeagueMatch match = new();
-                match.gameVersion = obj["info"]["gameVersion"].ToString();
-                if (targetVersion != null)
-                {
-                    int versionComparisonResult = CompareTargetVersionAgainstGameVersion(targetVersion, match.gameVersion);
-                    if (versionComparisonResult == 1) break;
-                    else if (versionComparisonResult == -1) continue;
-                }
-                match.matchId = obj["metadata"]["matchId"].ToString();
-                match.mapId = int.Parse(obj["info"]["mapId"].ToString());
-                match.queueId = int.Parse(obj["info"]["queueId"].ToString());
-
-                List<Participant> participants = new();
-                JToken arr = obj["info"]["participants"];
-                foreach (JToken p in arr)
-                {
-                    participants.Add(new Participant()
-                    {
-                        championId = int.Parse(p["championId"].ToString()),
-                        item0 = int.Parse(p["item0"].ToString()),
-                        item1 = int.Parse(p["item1"].ToString()),
-                        item2 = int.Parse(p["item2"].ToString()),
-                        item3 = int.Parse(p["item3"].ToString()),
-                        item4 = int.Parse(p["item4"].ToString()),
-                        item5 = int.Parse(p["item5"].ToString()),
-                        item6 = int.Parse(p["item6"].ToString()),
-                        perk1_1 = int.Parse(p["perks"]["styles"][0]["selections"][0]["perk"].ToString()),
-                        perk1_2 = int.Parse(p["perks"]["styles"][0]["selections"][1]["perk"].ToString()),
-                        perk1_3 = int.Parse(p["perks"]["styles"][0]["selections"][2]["perk"].ToString()),
-                        perk1_4 = int.Parse(p["perks"]["styles"][0]["selections"][3]["perk"].ToString()),
-                        perk2_1 = int.Parse(p["perks"]["styles"][1]["selections"][0]["perk"].ToString()),
-                        perk2_2 = int.Parse(p["perks"]["styles"][1]["selections"][1]["perk"].ToString()),
-                        perkTree_1 = int.Parse(p["perks"]["styles"][0]["style"].ToString()),
-                        perkTree_2 = int.Parse(p["perks"]["styles"][1]["style"].ToString()),
-                        statPerkDefense = int.Parse(p["perks"]["statPerks"]["defense"].ToString()),
-                        statPerkFlex = int.Parse(p["perks"]["statPerks"]["flex"].ToString()),
-                        statPerkOffense = int.Parse(p["perks"]["statPerks"]["offense"].ToString()),
-                        summoner1Id = int.Parse(p["summoner1Id"].ToString()),
-                        summoner2Id = int.Parse(p["summoner2Id"].ToString()),
-                        win = bool.Parse(p["win"].ToString())
-                    });
-                }
-                match.participants = participants;
-                matches.Add(match);
+                Participant participant = new();
+                participant.championId = int.Parse(p["championId"].ToString());
+                participant.item0 = int.Parse(p["item0"].ToString());
+                participant.item1 = int.Parse(p["item1"].ToString());
+                participant.item2 = int.Parse(p["item2"].ToString());
+                participant.item3 = int.Parse(p["item3"].ToString());
+                participant.item4 = int.Parse(p["item4"].ToString());
+                participant.item5 = int.Parse(p["item5"].ToString());
+                participant.item6 = int.Parse(p["item6"].ToString());
+                participant.perk1_1 = int.Parse(p["perks"]["styles"][0]["selections"][0]["perk"].ToString());
+                participant.perk1_2 = int.Parse(p["perks"]["styles"][0]["selections"][1]["perk"].ToString());
+                participant.perk1_3 = int.Parse(p["perks"]["styles"][0]["selections"][2]["perk"].ToString());
+                participant.perk1_4 = int.Parse(p["perks"]["styles"][0]["selections"][3]["perk"].ToString());
+                participant.perk2_1 = int.Parse(p["perks"]["styles"][1]["selections"][0]["perk"].ToString());
+                participant.perk2_2 = int.Parse(p["perks"]["styles"][1]["selections"][1]["perk"].ToString());
+                participant.perkTree_1 = int.Parse(p["perks"]["styles"][0]["style"].ToString());
+                participant.perkTree_2 = int.Parse(p["perks"]["styles"][1]["style"].ToString());
+                participant.statPerkDefense = int.Parse(p["perks"]["statPerks"]["defense"].ToString());
+                participant.statPerkFlex = int.Parse(p["perks"]["statPerks"]["flex"].ToString());
+                participant.statPerkOffense = int.Parse(p["perks"]["statPerks"]["offense"].ToString());
+                participant.summoner1Id = int.Parse(p["summoner1Id"].ToString());
+                participant.summoner2Id = int.Parse(p["summoner2Id"].ToString());
+                participant.win = bool.Parse(p["win"].ToString());
+                participants.Add(participant);
             }
-            return matches;
-        }
-
-
-        /// <summary>
-        /// Gets a result saying if the target version is greater than the game version.
-        /// </summary>
-        /// <param name="targetVersion"></param>
-        /// <param name="gameVersion"></param>
-        /// <returns>1 if target is greater than game version, 0 if equal, -1 if lesser.</returns>
-        public static int CompareTargetVersionAgainstGameVersion(string targetVersion, string gameVersion)
-        {
-            string[] targetVersionArray = targetVersion.Split('.');
-            string[] gameVersionArray = gameVersion.Split('.');
-
-            int maxLength = Math.Max(targetVersionArray.Length, gameVersionArray.Length);
-            for (int i = 0; i < maxLength; i++)
-            {
-                int targetVersionCharDigit = i > targetVersionArray.Length - 1 ? 0 : int.Parse(targetVersionArray[i].ToString());
-                int gameVersionCharDigit = i > gameVersionArray.Length - 1 ? 0 : int.Parse(gameVersionArray[i].ToString());
-                if (targetVersionCharDigit != gameVersionCharDigit) return targetVersionCharDigit > gameVersionCharDigit ? 1 : -1;
-            }
-            return 0;
+            match.participants = participants;
+            return match;
         }
     }
 }
