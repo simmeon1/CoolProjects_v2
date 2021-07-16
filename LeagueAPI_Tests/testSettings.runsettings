@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
   <TestRunParameters>
-    <Parameter name="integrationTestDataPath" value="C:\Users\simme\source\repos\CoolProjects_v2\integrationTestDataPath.json" />
+    <Parameter name="integrationTestDataPath" value="C:\Users\simme\source\repos\CoolProjects_v2\LeagueAPI_Tests\integrationTestDataPath.json" />
   </TestRunParameters>
 </RunSettings>

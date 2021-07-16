@@ -5,5 +5,6 @@
         public string AccountName { get; set; }
         public string AccountPuuid { get; set; }
         public string Token { get; set; }
+        public string TargetVersion { get; set; }
     }
 }

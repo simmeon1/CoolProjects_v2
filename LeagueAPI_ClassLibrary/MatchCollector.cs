@@ -35,23 +35,21 @@ namespace LeagueAPI_ClassLibrary
             return 0;
         }
 
-        public async Task<List<LeagueMatch>> GetMatches(string startPuuid, string targetVersion, int queueId)
+        public async Task<List<LeagueMatch>> GetMatches(string startPuuid, string targetVersion, int queueId, int maxCount = 0)
         {
             HashSet<string> scannedMatchIds = new();
-            HashSet<string> scannedPuuids = new();
             Queue<string> puuidQueue = new();
+            HashSet<string> puuidsToScan = new();
             List<LeagueMatch> result = new();
 
             try
             {
                 puuidQueue.Enqueue(startPuuid);
+                puuidsToScan.Add(startPuuid);
                 while (puuidQueue.Count > 0)
                 {
                     string puuid = puuidQueue.Dequeue();
-                    if (scannedPuuids.Contains(puuid)) continue;
-
                     List<string> matchIds = await Client.GetMatchIds(queueId, puuid);
-                    scannedPuuids.Add(puuid);
 
                     foreach (string matchId in matchIds)
                     {
@@ -64,7 +62,15 @@ namespace LeagueAPI_ClassLibrary
                         else if (versionComparisonResult == 1) break;
 
                         result.Add(match);
-                        foreach (Participant participant in match.participants) if (!scannedPuuids.Contains(participant.puuid)) puuidQueue.Enqueue(participant.puuid);
+                        if (maxCount > 0 && result.Count >= maxCount) return result;
+                        foreach (Participant participant in match.participants)
+                        {
+                            if (!puuidsToScan.Contains(participant.puuid))
+                            {
+                                puuidQueue.Enqueue(participant.puuid);
+                                puuidsToScan.Add(participant.puuid);
+                            }
+                        }
                     }
                 }
                 return result;
