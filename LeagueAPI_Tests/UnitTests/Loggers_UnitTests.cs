@@ -4,7 +4,7 @@ using Moq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace LeagueAPI_Tests
+namespace LeagueAPI_Tests.UnitTests
 {
     [TestClass]
     public class Loggers_UnitTests

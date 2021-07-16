@@ -4,7 +4,7 @@ using Moq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace LeagueAPI_Tests
+namespace LeagueAPI_Tests.UnitTests
 {
     [TestClass]
     public class MatchCollector_UnitTests
@@ -86,6 +86,29 @@ namespace LeagueAPI_Tests
 
             MatchCollector collector = new(clientMock.Object, new Logger_Debug());
             List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, targetVersion, queueId);
+            Assert.IsTrue(matches.Count == 1);
+            Assert.IsTrue(matches[0].matchId.Equals(matchId2));
+        }
+
+        [TestMethod]
+        public async Task CollectMatches_OnlyOneMatch()
+        {
+            const string matchId2 = "2";
+            const string targetVersion = "11.14";
+            const int queueId = 450;
+            const string startingPuuid = "startingPuuid";
+
+            LeagueMatch matchWithCorrectVersion = new();
+            matchWithCorrectVersion.gameVersion = targetVersion;
+            matchWithCorrectVersion.matchId = matchId2;
+            matchWithCorrectVersion.participants = new() { new Participant() };
+
+            Mock<ILeagueAPIClient> clientMock = new();
+            clientMock.Setup(x => x.GetMatchIds(queueId, startingPuuid).Result).Returns(new List<string>() { matchId2 });
+            clientMock.Setup(x => x.GetMatch(matchId2).Result).Returns(matchWithCorrectVersion);
+
+            MatchCollector collector = new(clientMock.Object, new Logger_Debug());
+            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, targetVersion, queueId, 1);
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));
         }

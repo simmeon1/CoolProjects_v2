@@ -10,7 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace LeagueAPI_Tests
+namespace LeagueAPI_Tests.IntegrationTests
 {
     [TestClass]
     public class LeagueAPI_IntegrationTests

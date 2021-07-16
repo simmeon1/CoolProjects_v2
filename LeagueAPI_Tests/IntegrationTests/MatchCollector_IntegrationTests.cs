@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace LeagueAPI_Tests
+namespace LeagueAPI_Tests.IntegrationTests
 {
     [TestClass]
     public class MatchCollector_IntegrationTests
