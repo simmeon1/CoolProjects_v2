@@ -36,24 +36,20 @@ namespace LeagueAPI_ClassLibrary
 
         private async Task<string> GetResponse(string uri)
         {
-            HttpRequestMessage message = GetGetMessageReadyWithToken(uri);
+            HttpRequestMessage message = GetMessageReadyWithToken(uri);
             HttpResponseMessage response = await Client.SendAsync(message);
             string responseMessage = await response.Content.ReadAsStringAsync();
-            if (response.StatusCode != HttpStatusCode.OK) ThrowInvalidOperationException(uri, response.StatusCode, responseMessage);
-            return responseMessage;
-        }
+            if (response.StatusCode == HttpStatusCode.OK) return responseMessage;
 
-        private static void ThrowInvalidOperationException(string uri, HttpStatusCode code, string responseMessage)
-        {
             throw new InvalidOperationException(
                 $"The request was not successful.{Environment.NewLine}" +
                 $"URI: {uri}.{Environment.NewLine}" +
-                $"Status code: {code}.{Environment.NewLine}" +
+                $"Status code: {response.StatusCode}.{Environment.NewLine}" +
                 $"Message: {responseMessage}"
             );
         }
 
-        private HttpRequestMessage GetGetMessageReadyWithToken(string uri)
+        private HttpRequestMessage GetMessageReadyWithToken(string uri)
         {
             HttpRequestMessage message = new(HttpMethod.Get, uri);
             message.Headers.Add("X-Riot-Token", Token);

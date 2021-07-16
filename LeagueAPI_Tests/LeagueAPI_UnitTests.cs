@@ -58,8 +58,7 @@ namespace LeagueAPI_Tests
         {
             string matchId1 = "EUW1_5364680752";
             string matchId2 = "EUW1_5357084019";
-            HttpResponseMessage response = new(HttpStatusCode.OK);
-            response.Content = new StringContent(
+            HttpResponseMessage response = GetSuccessfulResponse(
                 @"[
                     '" + matchId1 + @"',
                     '" + matchId2 + @"'
