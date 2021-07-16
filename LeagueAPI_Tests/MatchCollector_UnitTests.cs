@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace LeagueAPI_Tests
 {
     [TestClass]
-    public class MatchCollector_Tests
+    public class MatchCollector_UnitTests
     {
         [TestMethod]
         public void CompareTargetVersionAgainstGameVersion_DoesCorrectComparisons()
