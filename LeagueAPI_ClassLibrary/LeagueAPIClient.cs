@@ -38,9 +38,25 @@ namespace LeagueAPI_ClassLibrary
         {
             HttpRequestMessage message = GetMessageReadyWithToken(uri);
             HttpResponseMessage response = await Client.SendAsync(message);
+
+            while (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                double millisecondsToWait = 100;
+                try
+                {
+                    millisecondsToWait = response.Headers.RetryAfter.Delta.Value.TotalMilliseconds + 10;
+                }
+                catch (Exception)
+                {
+                    //Do nothing
+                }
+                await Task.Delay(Convert.ToInt32(millisecondsToWait));
+                message = GetMessageReadyWithToken(uri);
+                response = await Client.SendAsync(message);
+            }
+
             string responseMessage = await response.Content.ReadAsStringAsync();
             if (response.StatusCode == HttpStatusCode.OK) return responseMessage;
-
             throw new InvalidOperationException(
                 $"The request was not successful.{Environment.NewLine}" +
                 $"URI: {uri}.{Environment.NewLine}" +

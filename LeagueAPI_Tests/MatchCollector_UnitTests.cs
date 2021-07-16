@@ -12,7 +12,7 @@ namespace LeagueAPI_Tests
         [TestMethod]
         public void CompareTargetVersionAgainstGameVersion_DoesCorrectComparisons()
         {
-            MatchCollector collector = new(new Mock<ILeagueAPIClient>().Object);
+            MatchCollector collector = new(new Mock<ILeagueAPIClient>().Object, new Logger_Debug());
             Assert.IsTrue(collector.CompareTargetVersionAgainstGameVersion("11.14", "11.14.56") == 0);
             Assert.IsTrue(collector.CompareTargetVersionAgainstGameVersion("11.14.56", "11.14") == 0);
             Assert.IsTrue(collector.CompareTargetVersionAgainstGameVersion("11.15", "11.14.56") == 1);
@@ -61,7 +61,7 @@ namespace LeagueAPI_Tests
             clientMock.Setup(x => x.GetMatch(matchId3).Result).Returns(matchWithCorrectVersionAndRepeatingId);
             clientMock.Setup(x => x.GetMatch(matchId4).Result).Returns(matchWIthOutdatedVersion);
 
-            MatchCollector collector = new(clientMock.Object);
+            MatchCollector collector = new(clientMock.Object, new Logger_Debug());
             List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, targetVersion, queueId);
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));
@@ -84,7 +84,7 @@ namespace LeagueAPI_Tests
             clientMock.Setup(x => x.GetMatchIds(queueId, startingPuuid).Result).Returns(new List<string>() { matchId2 });
             clientMock.Setup(x => x.GetMatch(matchId2).Result).Returns(matchWithCorrectVersion);
 
-            MatchCollector collector = new(clientMock.Object);
+            MatchCollector collector = new(clientMock.Object, new Logger_Debug());
             List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, targetVersion, queueId);
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));

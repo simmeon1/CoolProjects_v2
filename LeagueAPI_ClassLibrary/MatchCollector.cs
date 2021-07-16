@@ -9,9 +9,11 @@ namespace LeagueAPI_ClassLibrary
     public class MatchCollector
     {
         private ILeagueAPIClient Client { get; set; }
-        public MatchCollector(ILeagueAPIClient client)
+        private ILogger Logger { get; set; }
+        public MatchCollector(ILeagueAPIClient client, ILogger logger)
         {
             Client = client;
+            Logger = logger;
         }
 
         /// <summary>
@@ -49,6 +51,7 @@ namespace LeagueAPI_ClassLibrary
                 while (puuidQueue.Count > 0)
                 {
                     string puuid = puuidQueue.Dequeue();
+                    Logger.Log($"Scanning player {puuid}");
                     List<string> matchIds = await Client.GetMatchIds(queueId, puuid);
 
                     foreach (string matchId in matchIds)
@@ -62,6 +65,7 @@ namespace LeagueAPI_ClassLibrary
                         else if (versionComparisonResult == 1) break;
 
                         result.Add(match);
+                        Logger.Log($"Added match {match.matchId}, current count is {result.Count}");
                         if (maxCount > 0 && result.Count >= maxCount) return result;
                         foreach (Participant participant in match.participants)
                         {
@@ -77,6 +81,9 @@ namespace LeagueAPI_ClassLibrary
             }
             catch (Exception ex)
             {
+                Logger.Log("Collections of matches stopped due to exception. Details:");
+                Logger.Log(ex.Message);
+                Logger.Log($"Matches to be returned: {result.Count}.");
                 return result;
             }
         }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace LeagueAPI_Tests
@@ -51,6 +52,40 @@ namespace LeagueAPI_Tests
             ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
             LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey");
             await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => leagueClient.GetAccountBySummonerName("someName"));
+        }
+        
+        [TestMethod]
+        public async Task GetAccountBySummonerName_TooManyRequest_HasValidRetryHeaderValue()
+        {
+            await TestRequestWithRetryHeaderValue(new RetryConditionHeaderValue(TimeSpan.FromMilliseconds(1)));
+        }
+        
+        [TestMethod]
+        public async Task GetAccountBySummonerName_TooManyRequest_HasInvalidRetryHeaderValue()
+        {
+            await TestRequestWithRetryHeaderValue(null);
+        }
+
+        private async Task TestRequestWithRetryHeaderValue(RetryConditionHeaderValue retryConditionHeaderValue)
+        {
+            HttpResponseMessage tooManyRequestsResponse = new(HttpStatusCode.TooManyRequests);
+            tooManyRequestsResponse.Headers.RetryAfter = retryConditionHeaderValue;
+            tooManyRequestsResponse.Content = new StringContent("");
+
+            string matchId1 = "EUW1_5364680752";
+            HttpResponseMessage response = GetSuccessfulResponse(
+                @"[
+                    '" + matchId1 + @"'
+                  ]"
+            );
+
+            ClientMock.SetupSequence(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result)
+                .Returns(tooManyRequestsResponse)
+                .Returns(response);
+            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey");
+            List<string> matchIds = await leagueClient.GetMatchIds(450, "somePuuid");
+            Assert.IsTrue(matchIds.Count == 1);
+            Assert.IsTrue(matchIds[0].Contains(matchId1));
         }
 
         [TestMethod]
