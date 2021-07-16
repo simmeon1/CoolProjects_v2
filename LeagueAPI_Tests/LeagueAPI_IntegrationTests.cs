@@ -59,6 +59,7 @@ namespace LeagueAPI_Tests
 
             Participant p1 = match.participants[0];
             Assert.IsTrue(p1.championId.HasValue);
+            Assert.IsTrue(p1.puuid.Length > 0);
             Assert.IsTrue(p1.item0.HasValue);
             Assert.IsTrue(p1.item1.HasValue);
             Assert.IsTrue(p1.item2.HasValue);

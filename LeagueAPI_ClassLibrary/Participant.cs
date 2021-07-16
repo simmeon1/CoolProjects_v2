@@ -2,6 +2,7 @@
 {
     public class Participant
     {
+        public string puuid { get; set; }
         public int? championId { get; set; }
         public int? item0 { get; set; }
         public int? item1 { get; set; }

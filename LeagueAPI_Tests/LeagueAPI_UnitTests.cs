@@ -77,7 +77,7 @@ namespace LeagueAPI_Tests
         public async Task GetMatches_GetsAllResults()
         {
             HttpResponseMessage response = GetSuccessfulResponse(
-                @"{'metadata':{'matchId':'EUW1_5364680752','participants':['TxdGlxaUW6x9KvDuk-FEXYbancmWThQ-PQgfkrKW898JcYyAM43T-Gn0sUi0LbYIsUWDJhgxRS_8Wg','G3_8zPn_vTiFPTElkGg7Q3eLF_b9CQ7XZX8vIKYA-jVn2rk-cCihPCaWbRiOdmeBeEg6XkarJwzmUg']},'info':{'gameVersion':'11.14.385.9967','mapId':12,'participants':[{'championId':1,'item0':20,'item1':21,'item2':22,'item3':23,'item4':24,'item5':25,'item6':26,'perks':{'statPerks':{'defense':100,'flex':101,'offense':102},'styles':[{'selections':[{'perk':200},{'perk':201},{'perk':202},{'perk':203}],'style':2000},{'selections':[{'perk':301},{'perk':302}],'style':3000}]},'summoner1Id':50,'summoner2Id':51,'win':true}],'queueId':450}}"
+                @"{'metadata':{'matchId':'EUW1_5364680752','participants':['TxdGlxaUW6x9KvDuk-FEXYbancmWThQ-PQgfkrKW898JcYyAM43T-Gn0sUi0LbYIsUWDJhgxRS_8Wg','G3_8zPn_vTiFPTElkGg7Q3eLF_b9CQ7XZX8vIKYA-jVn2rk-cCihPCaWbRiOdmeBeEg6XkarJwzmUg']},'info':{'gameVersion':'11.14.385.9967','mapId':12,'participants':[{'championId':1, 'puuid': '9zz9VE1mATZrQfcPdgkRw6EyOIAD4h99mtLx8U3F1kAPz2hbAim92GQYcPjurBMDpIGAFKtzgGNL9Q','item0':20,'item1':21,'item2':22,'item3':23,'item4':24,'item5':25,'item6':26,'perks':{'statPerks':{'defense':100,'flex':101,'offense':102},'styles':[{'selections':[{'perk':200},{'perk':201},{'perk':202},{'perk':203}],'style':2000},{'selections':[{'perk':301},{'perk':302}],'style':3000}]},'summoner1Id':50,'summoner2Id':51,'win':true}],'queueId':450}}"
             );
 
             ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
@@ -91,6 +91,7 @@ namespace LeagueAPI_Tests
 
             Participant p1 = match.participants[0];
             Assert.IsTrue(p1.championId == 1);
+            Assert.IsTrue(p1.puuid.Equals("9zz9VE1mATZrQfcPdgkRw6EyOIAD4h99mtLx8U3F1kAPz2hbAim92GQYcPjurBMDpIGAFKtzgGNL9Q"));
             Assert.IsTrue(p1.item0 == 20);
             Assert.IsTrue(p1.item1 == 21);
             Assert.IsTrue(p1.item2 == 22);

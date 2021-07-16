@@ -79,6 +79,7 @@ namespace LeagueAPI_ClassLibrary
             {
                 Participant participant = new();
                 participant.championId = int.Parse(p["championId"].ToString());
+                participant.puuid = p["puuid"].ToString();
                 participant.item0 = int.Parse(p["item0"].ToString());
                 participant.item1 = int.Parse(p["item1"].ToString());
                 participant.item2 = int.Parse(p["item2"].ToString());
