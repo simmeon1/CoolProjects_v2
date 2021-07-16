@@ -41,31 +41,38 @@ namespace LeagueAPI_ClassLibrary
             HashSet<string> scannedPuuids = new();
             Queue<string> puuidQueue = new();
             List<LeagueMatch> result = new();
-            puuidQueue.Enqueue(startPuuid);
 
-            while (puuidQueue.Count > 0)
+            try
             {
-                string puuid = puuidQueue.Dequeue();
-                if (scannedPuuids.Contains(puuid)) continue;
-
-                List<string> matchIds = await Client.GetMatchIds(queueId, puuid);
-                scannedPuuids.Add(puuid);
-
-                foreach (string matchId in matchIds)
+                puuidQueue.Enqueue(startPuuid);
+                while (puuidQueue.Count > 0)
                 {
-                    if (scannedMatchIds.Contains(matchId)) continue;
-                    LeagueMatch match = await Client.GetMatch(matchId);
-                    scannedMatchIds.Add(matchId);
+                    string puuid = puuidQueue.Dequeue();
+                    if (scannedPuuids.Contains(puuid)) continue;
 
-                    int versionComparisonResult = CompareTargetVersionAgainstGameVersion(targetVersion, match.gameVersion);
-                    if (versionComparisonResult == -1) continue;
-                    else if (versionComparisonResult == 1) break;
+                    List<string> matchIds = await Client.GetMatchIds(queueId, puuid);
+                    scannedPuuids.Add(puuid);
 
-                    foreach (Participant participant in match.participants) if (!scannedPuuids.Contains(participant.puuid)) puuidQueue.Enqueue(participant.puuid);
-                    result.Add(match);
+                    foreach (string matchId in matchIds)
+                    {
+                        if (scannedMatchIds.Contains(matchId)) continue;
+                        LeagueMatch match = await Client.GetMatch(matchId);
+                        scannedMatchIds.Add(matchId);
+
+                        int versionComparisonResult = CompareTargetVersionAgainstGameVersion(targetVersion, match.gameVersion);
+                        if (versionComparisonResult == -1) continue;
+                        else if (versionComparisonResult == 1) break;
+
+                        result.Add(match);
+                        foreach (Participant participant in match.participants) if (!scannedPuuids.Contains(participant.puuid)) puuidQueue.Enqueue(participant.puuid);
+                    }
                 }
+                return result;
             }
-            return result;
+            catch (Exception ex)
+            {
+                return result;
+            }
         }
     }
 }

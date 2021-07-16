@@ -66,5 +66,28 @@ namespace LeagueAPI_Tests
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));
         }
+
+        [TestMethod]
+        public async Task CollectMatches_ExceptionThrown()
+        {
+            const string matchId2 = "2";
+            const string targetVersion = "11.14";
+            const int queueId = 450;
+            const string startingPuuid = "startingPuuid";
+
+            LeagueMatch matchWithCorrectVersion = new();
+            matchWithCorrectVersion.gameVersion = targetVersion;
+            matchWithCorrectVersion.matchId = matchId2;
+            matchWithCorrectVersion.participants = new() { null };
+
+            Mock<ILeagueAPIClient> clientMock = new();
+            clientMock.Setup(x => x.GetMatchIds(queueId, startingPuuid).Result).Returns(new List<string>() { matchId2 });
+            clientMock.Setup(x => x.GetMatch(matchId2).Result).Returns(matchWithCorrectVersion);
+
+            MatchCollector collector = new(clientMock.Object);
+            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, targetVersion, queueId);
+            Assert.IsTrue(matches.Count == 1);
+            Assert.IsTrue(matches[0].matchId.Equals(matchId2));
+        }
     }
 }
