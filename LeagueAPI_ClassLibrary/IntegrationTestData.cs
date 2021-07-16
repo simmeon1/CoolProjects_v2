@@ -1,6 +1,6 @@
 ﻿namespace LeagueAPI_ClassLibrary
 {
-    public class Credentials
+    public class IntegrationTestData
     {
         public string AccountName { get; set; }
         public string AccountPuuid { get; set; }
