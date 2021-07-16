@@ -53,32 +53,33 @@ namespace LeagueAPI_Tests
             LeagueMatch match = await LeagueAPIClient.GetMatch(matchIds[0]);
             Assert.IsTrue(match.matchId.Length > 0);
             Assert.IsTrue(match.gameVersion.Length > 0);
-            Assert.IsTrue(match.mapId > 0);
-            Assert.IsTrue(match.queueId > 0);
+            Assert.IsTrue(match.mapId.HasValue);
+            Assert.IsTrue(match.queueId.HasValue);
             Assert.IsTrue(match.participants.Count > 0);
 
             Participant p1 = match.participants[0];
-            Assert.IsTrue(p1.championId > 0);
-            Assert.IsTrue(p1.item0 >= 0);
-            Assert.IsTrue(p1.item1 >= 0);
-            Assert.IsTrue(p1.item2 >= 0);
-            Assert.IsTrue(p1.item3 >= 0);
-            Assert.IsTrue(p1.item4 >= 0);
-            Assert.IsTrue(p1.item5 >= 0);
-            Assert.IsTrue(p1.item6 >= 0);
-            Assert.IsTrue(p1.statPerkDefense > 0);
-            Assert.IsTrue(p1.statPerkFlex > 0);
-            Assert.IsTrue(p1.statPerkOffense > 0);
-            Assert.IsTrue(p1.perkTree_1 > 0);
-            Assert.IsTrue(p1.perkTree_2 > 0);
-            Assert.IsTrue(p1.perk1_1 > 0);
-            Assert.IsTrue(p1.perk1_2 > 0);
-            Assert.IsTrue(p1.perk1_3 > 0);
-            Assert.IsTrue(p1.perk1_4 > 0);
-            Assert.IsTrue(p1.perk2_1 > 0);
-            Assert.IsTrue(p1.perk2_2 > 0);
-            Assert.IsTrue(p1.summoner1Id > 0);
-            Assert.IsTrue(p1.summoner2Id > 0);
+            Assert.IsTrue(p1.championId.HasValue);
+            Assert.IsTrue(p1.item0.HasValue);
+            Assert.IsTrue(p1.item1.HasValue);
+            Assert.IsTrue(p1.item2.HasValue);
+            Assert.IsTrue(p1.item3.HasValue);
+            Assert.IsTrue(p1.item4.HasValue);
+            Assert.IsTrue(p1.item5.HasValue);
+            Assert.IsTrue(p1.item6.HasValue);
+            Assert.IsTrue(p1.statPerkDefense.HasValue);
+            Assert.IsTrue(p1.statPerkFlex.HasValue);
+            Assert.IsTrue(p1.statPerkOffense.HasValue);
+            Assert.IsTrue(p1.perkTree_1.HasValue);
+            Assert.IsTrue(p1.perkTree_2.HasValue);
+            Assert.IsTrue(p1.perk1_1.HasValue);
+            Assert.IsTrue(p1.perk1_2.HasValue);
+            Assert.IsTrue(p1.perk1_3.HasValue);
+            Assert.IsTrue(p1.perk1_4.HasValue);
+            Assert.IsTrue(p1.perk2_1.HasValue);
+            Assert.IsTrue(p1.perk2_2.HasValue);
+            Assert.IsTrue(p1.summoner1Id.HasValue);
+            Assert.IsTrue(p1.summoner2Id.HasValue);
+            Assert.IsTrue(p1.win.HasValue);
         }
     }
 }
