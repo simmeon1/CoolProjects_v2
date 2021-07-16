@@ -48,7 +48,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 string target = path[i + 1];
                 OpenNewTab();
                 NavigateToUrl();
-                AgreeToConsentIfItShows();
+                if (!ConsentAgreed) AgreeToConsent();
                 SetToOneWayTrip();
                 PopulateControls(origin, target);
                 ClickDoneButton();
@@ -78,9 +78,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             if (navigation != null) navigation.GoToUrl("https://www.google.com/travel/flights");
         }
 
-        private void AgreeToConsentIfItShows()
+        private void AgreeToConsent()
         {
-            if (ConsentAgreed) return;
+            Thread.Sleep(1000);
             ReadOnlyCollection<IWebElement> consentButtons = Driver.FindElements(By.CssSelector("button"));
             foreach (IWebElement button in consentButtons)
             {
