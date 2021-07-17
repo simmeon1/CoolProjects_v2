@@ -39,16 +39,16 @@ namespace LeagueAPI_ClassLibrary
             HttpRequestMessage message = GetMessageReadyWithToken(uri);
             HttpResponseMessage response = await Client.SendAsync(message);
 
-            while (response.StatusCode == HttpStatusCode.TooManyRequests)
+            while (response.StatusCode == HttpStatusCode.TooManyRequests || (int)response.StatusCode >= 500)
             {
-                double millisecondsToWait = 100;
-                try
+                double millisecondsToWait = 1000;
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
-                    millisecondsToWait = response.Headers.RetryAfter.Delta.Value.TotalMilliseconds + 10;
-                }
-                catch (Exception)
-                {
-                    //Do nothing
+                    try
+                    {
+                        millisecondsToWait = response.Headers.RetryAfter.Delta.Value.TotalMilliseconds + 10;
+                    }
+                    catch (Exception) { }
                 }
                 await Task.Delay(Convert.ToInt32(millisecondsToWait));
                 message = GetMessageReadyWithToken(uri);

@@ -30,7 +30,7 @@ namespace LeagueAPI_Tests.IntegrationTests
         [TestMethod]
         public async Task CollectMatches_GetsResultsAsync()
         {
-            int maxCount = 5;
+            int maxCount = 2;
             List<LeagueMatch> matches = await MatchCollector.GetMatches(IntegrationTestData.AccountPuuid, IntegrationTestData.TargetVersion, 450, maxCount: maxCount);
             Assert.IsTrue(matches.Count == maxCount);
             Assert.IsTrue(matches.Select(m => m.matchId).Distinct().Count() == maxCount);

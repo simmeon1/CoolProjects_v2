@@ -57,31 +57,40 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public async Task GetAccountBySummonerName_TooManyRequest_HasValidRetryHeaderValue()
         {
-            await TestRequestWithRetryHeaderValue(new RetryConditionHeaderValue(TimeSpan.FromMilliseconds(1)));
+            HttpResponseMessage response = new(HttpStatusCode.TooManyRequests);
+            response.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromMilliseconds(1));
+            response.Content = new StringContent("");
+            await TestRequestWithRetryHeaderValue(response);
         }
         
         [TestMethod]
         public async Task GetAccountBySummonerName_TooManyRequest_HasInvalidRetryHeaderValue()
         {
-            await TestRequestWithRetryHeaderValue(null);
+            HttpResponseMessage response = new(HttpStatusCode.TooManyRequests);
+            response.Content = new StringContent("");
+            await TestRequestWithRetryHeaderValue(response);
+        }
+        
+        [TestMethod]
+        public async Task GetAccountBySummonerName_ServerError_WaitAndTryAgain()
+        {
+            HttpResponseMessage response = new(HttpStatusCode.InternalServerError);
+            response.Content = new StringContent("");
+            await TestRequestWithRetryHeaderValue(response);
         }
 
-        private async Task TestRequestWithRetryHeaderValue(RetryConditionHeaderValue retryConditionHeaderValue)
+        private async Task TestRequestWithRetryHeaderValue(HttpResponseMessage badResponse)
         {
-            HttpResponseMessage tooManyRequestsResponse = new(HttpStatusCode.TooManyRequests);
-            tooManyRequestsResponse.Headers.RetryAfter = retryConditionHeaderValue;
-            tooManyRequestsResponse.Content = new StringContent("");
-
             string matchId1 = "EUW1_5364680752";
-            HttpResponseMessage response = GetSuccessfulResponse(
+            HttpResponseMessage goodResponse = GetSuccessfulResponse(
                 @"[
                     '" + matchId1 + @"'
                   ]"
             );
 
             ClientMock.SetupSequence(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result)
-                .Returns(tooManyRequestsResponse)
-                .Returns(response);
+                .Returns(badResponse)
+                .Returns(goodResponse);
             LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey");
             List<string> matchIds = await leagueClient.GetMatchIds(450, "somePuuid");
             Assert.IsTrue(matchIds.Count == 1);
