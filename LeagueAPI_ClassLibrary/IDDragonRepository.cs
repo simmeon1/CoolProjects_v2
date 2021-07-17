@@ -4,6 +4,6 @@ namespace LeagueAPI_ClassLibrary
 {
     public interface IDDragonRepository
     {
-        JObject GetChampion(int id);
+        Champion GetChampion(int id);
     }
 }

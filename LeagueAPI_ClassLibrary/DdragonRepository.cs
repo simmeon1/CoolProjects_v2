@@ -16,10 +16,26 @@ namespace LeagueAPI_ClassLibrary
             ChampionJson = JObject.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "champion.json")));
         }
 
-        public JObject GetChampion(int id)
+        public Champion GetChampion(int id)
         {
-            foreach (JProperty champ in ChampionJson["data"]) if (int.Parse(champ.Value["key"].ToString()) == id) return (JObject)champ.Value;
-            return null;
+            Champion result = null;
+            foreach (JProperty champ in ChampionJson["data"])
+            {
+                if (int.Parse(champ.Value["key"].ToString()) == id)
+                {
+                    Champion champion = new()
+                    {
+                        Name = champ.Value["name"].ToString(),
+                        Difficulty = (int)champ.Value["info"]["difficulty"],
+                    };
+                    List<string> tags = new();
+                    foreach (JToken tag in champ.Value["tags"]) tags.Add(tag.ToString());
+                    champion.Tags = tags;
+                    result = champion;
+                    break;
+                }
+            }
+            return result;
         }
     }
 }

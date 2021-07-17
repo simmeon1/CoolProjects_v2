@@ -28,27 +28,18 @@ namespace LeagueAPI_ClassLibrary
 
         public DataTable GetChampionTable(Dictionary<int, WinLossData> championData)
         {
-            DataTable table = GetTableWithDefaultData();
+            DataTable table = GetTableWithDefaultData("Champions");
             const string tagsColumnName = "Tags";
             const string difficultyColumnName = "Difficulty";
             table.Columns.AddRange(new List<DataColumn> { new DataColumn(tagsColumnName, TypeString), new DataColumn(difficultyColumnName, TypeInt32) }.ToArray());
 
             foreach (KeyValuePair<int, WinLossData> champEntry in championData)
             {
-                JObject champ = DDragonRepository.GetChampion(champEntry.Key);
-                string name = (string)champ["name"];
-                JArray tags = (JArray)champ["tags"];
-                StringBuilder tagsStr = new("");
-                foreach (JToken tag in tags)
-                {
-                    if (tagsStr.Length > 0) tagsStr.Append(", ");
-                    tagsStr.Append(tag.ToString());
-                }
-                int difficulty = (int)champ["info"]["difficulty"];
+                Champion champ = DDragonRepository.GetChampion(champEntry.Key);
                 DataRow row = table.NewRow();
-                AddDefaultDataToRow(name, champEntry, row);
-                row[tagsColumnName] = tagsStr.ToString();
-                row[difficultyColumnName] = difficulty;
+                AddDefaultDataToRow(champ.Name, champEntry, row);
+                row[tagsColumnName] = champ.GetTagsString();
+                row[difficultyColumnName] = champ.Difficulty;
                 table.Rows.Add(row);
             }
             return table;
@@ -63,14 +54,14 @@ namespace LeagueAPI_ClassLibrary
             row[winRateColumName] = entry.Value.GetWinRate();
         }
 
-        private DataTable GetTableWithDefaultData()
+        private DataTable GetTableWithDefaultData(string tableName)
         {
             DataColumn nameColumn = new(nameColumnName, TypeString);
             DataColumn winsColumn = new(winsColumnName, TypeInt32);
             DataColumn lossesColumn = new(lossesColumnName, TypeInt32);
             DataColumn totalColumn = new(totalColumnName, TypeInt32);
             DataColumn winRateColumn = new(winRateColumName, TypeDouble);
-            DataTable table = new("Champions");
+            DataTable table = new(tableName);
             table.Columns.AddRange(new List<DataColumn> { nameColumn, winsColumn, lossesColumn, totalColumn, winRateColumn }.ToArray());
             return table;
         }

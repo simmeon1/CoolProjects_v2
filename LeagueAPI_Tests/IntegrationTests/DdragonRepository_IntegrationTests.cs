@@ -28,9 +28,10 @@ namespace LeagueAPI_Tests.IntegrationTests
         [TestMethod]
         public void GetChampion_DataIsCorrect()
         {
-            JObject obj = Repository.GetChampion(266);
-            Assert.IsTrue((int)obj["key"] == 266);
-            Assert.IsTrue(obj["name"].ToString().Equals("Aatrox"));
+            Champion champ = Repository.GetChampion(103);
+            Assert.IsTrue(champ.Name.Equals("Ahri"));
+            Assert.IsTrue(champ.Difficulty == 5);
+            Assert.IsTrue(champ.GetTagsString().Equals("Mage, Assassin"));
         }
     }
 }

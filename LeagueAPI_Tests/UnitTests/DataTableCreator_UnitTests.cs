@@ -18,12 +18,13 @@ namespace LeagueAPI_Tests.UnitTests
         public void CreateChampionTable_ExpectedResults()
         {
             Mock<IDDragonRepository> repo = new();
-            repo.Setup(x => x.GetChampion(1)).Returns(JObject.Parse(@"{'name':'Aatrox','info':{'difficulty':4},'tags':['Fighter','Tank']}"));
+            repo.Setup(x => x.GetChampion(1)).Returns(new Champion() { Name = "Aatrox", Difficulty = 4, Tags = new List<string>() { "Fighter", "Tank" } });
 
             DataTableCreator creator = new(repo.Object);
             Dictionary<int, WinLossData> championData = new();
             championData.Add(1, new WinLossData(6, 4));
             DataTable championTable = creator.GetChampionTable(championData);
+            Assert.IsTrue(championTable.TableName.Equals("Champions"));
             Assert.IsTrue(championTable.Rows.Count == 1);
             Assert.IsTrue(championTable.Rows[0].ItemArray.Length == 7);
             Assert.IsTrue(championTable.Rows[0].ItemArray[0].Equals("Aatrox"));
@@ -35,13 +36,13 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(championTable.Rows[0].ItemArray[6].Equals(4));
         }
 
-            //ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            //using ExcelPackage package = new(new FileInfo("MyWorkbook10.xlsx"));
-            //ExcelWorksheet ws = package.Workbook.Worksheets.Add(championTable.TableName);
-            //ws.Cells["A1"].LoadFromDataTable(championTable, true);
-            //ws.Cells[ws.Dimension.Address].AutoFilter = true;
-            //ws.View.FreezePanes(2, 2);
-            //ws.Cells.AutoFitColumns();
-            //package.Save();
+        //ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+        //using ExcelPackage package = new(new FileInfo("MyWorkbook10.xlsx"));
+        //ExcelWorksheet ws = package.Workbook.Worksheets.Add(championTable.TableName);
+        //ws.Cells["A1"].LoadFromDataTable(championTable, true);
+        //ws.Cells[ws.Dimension.Address].AutoFilter = true;
+        //ws.View.FreezePanes(2, 2);
+        //ws.Cells.AutoFitColumns();
+        //package.Save();
     }
 }
