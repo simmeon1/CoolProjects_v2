@@ -52,7 +52,6 @@ namespace LeagueAPI_ClassLibrary
                     tagsStr.Append(tag.ToString());
                 }
                 int difficulty = (int)champ["info"]["difficulty"];
-
                 DataRow row = table.NewRow();
                 row[nameColumnName] = name;
                 row[winsColumnName] = champEntry.Value.GetWins();

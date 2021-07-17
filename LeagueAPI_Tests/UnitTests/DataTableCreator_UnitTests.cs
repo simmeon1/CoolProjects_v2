@@ -2,9 +2,11 @@ using LeagueAPI_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json.Linq;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace LeagueAPI_Tests.UnitTests
@@ -30,6 +32,15 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(championTable.Rows[0].ItemArray[4].Equals(60.0));
             Assert.IsTrue(championTable.Rows[0].ItemArray[5].Equals("Fighter, Tank"));
             Assert.IsTrue(championTable.Rows[0].ItemArray[6].Equals(4));
+
+            //ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            //using ExcelPackage package = new(new FileInfo("MyWorkbook10.xlsx"));
+            //ExcelWorksheet ws = package.Workbook.Worksheets.Add(championTable.TableName);
+            //ws.Cells["A1"].LoadFromDataTable(championTable, true);
+            //ws.Cells[ws.Dimension.Address].AutoFilter = true;
+            //ws.View.FreezePanes(2, 2);
+            //ws.Cells.AutoFitColumns();
+            //package.Save();
         }
     }
 }
