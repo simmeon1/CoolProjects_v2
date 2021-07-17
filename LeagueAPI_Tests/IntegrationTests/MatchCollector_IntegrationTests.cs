@@ -23,7 +23,7 @@ namespace LeagueAPI_Tests.IntegrationTests
         {
             IntegrationTestData = JsonConvert.DeserializeObject<IntegrationTestData>(File.ReadAllText((string)TestContext.Properties["integrationTestDataPath"]));
             HttpClient = new RealHttpClient();
-            LeagueAPIClient = new(HttpClient, IntegrationTestData.Token);
+            LeagueAPIClient = new(HttpClient, IntegrationTestData.Token, new Delayer());
             MatchCollector = new MatchCollector(LeagueAPIClient, new Logger_Debug());
         }
 

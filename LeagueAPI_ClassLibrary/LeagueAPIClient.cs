@@ -11,11 +11,13 @@ namespace LeagueAPI_ClassLibrary
     {
         private IHttpClient Client { get; set; }
         private string Token { get; set; }
+        private IDelayer Delayer { get; set; }
 
-        public LeagueAPIClient(IHttpClient client, string token)
+        public LeagueAPIClient(IHttpClient client, string token, IDelayer delayer)
         {
             Client = client;
             Token = token;
+            Delayer = delayer;
         }
 
         public async Task<Account> GetAccountBySummonerName(string summonerName)
@@ -50,7 +52,7 @@ namespace LeagueAPI_ClassLibrary
                     }
                     catch (Exception) { }
                 }
-                await Task.Delay(Convert.ToInt32(millisecondsToWait));
+                await Delayer.Delay(Convert.ToInt32(millisecondsToWait));
                 message = GetMessageReadyWithToken(uri);
                 response = await Client.SendAsync(message);
             }

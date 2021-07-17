@@ -36,7 +36,7 @@ namespace LeagueAPI_Tests.UnitTests
             );
             ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
 
-            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey");
+            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey", new Mock<IDelayer>().Object);
             Account account = await leagueClient.GetAccountBySummonerName("someName");
             Assert.IsTrue(account.Id.Equals(testAccount.Id));
             Assert.IsTrue(account.AccountId.Equals(testAccount.AccountId));
@@ -50,7 +50,7 @@ namespace LeagueAPI_Tests.UnitTests
             HttpResponseMessage response = new(HttpStatusCode.BadRequest);
             response.Content = new StringContent("");
             ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
-            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey");
+            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey", new Mock<IDelayer>().Object);
             await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => leagueClient.GetAccountBySummonerName("someName"));
         }
         
@@ -91,7 +91,7 @@ namespace LeagueAPI_Tests.UnitTests
             ClientMock.SetupSequence(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result)
                 .Returns(badResponse)
                 .Returns(goodResponse);
-            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey");
+            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey", new Mock<IDelayer>().Object);
             List<string> matchIds = await leagueClient.GetMatchIds(450, "somePuuid");
             Assert.IsTrue(matchIds.Count == 1);
             Assert.IsTrue(matchIds[0].Contains(matchId1));
@@ -110,7 +110,7 @@ namespace LeagueAPI_Tests.UnitTests
             );
 
             ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
-            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey");
+            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey", new Mock<IDelayer>().Object);
             List<string> matchIds = await leagueClient.GetMatchIds(450, "somePuuid");
             Assert.IsTrue(matchIds.Count == 2);
             Assert.IsTrue(matchIds[0].Contains(matchId1));
@@ -125,7 +125,7 @@ namespace LeagueAPI_Tests.UnitTests
             );
 
             ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
-            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey");
+            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey", new Mock<IDelayer>().Object);
             LeagueMatch match = await leagueClient.GetMatch("EUW1_5364680752");
             Assert.IsTrue(match.matchId.Equals("EUW1_5364680752"));
             Assert.IsTrue(match.gameVersion.Equals("11.14.385.9967"));
