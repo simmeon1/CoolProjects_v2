@@ -8,11 +8,6 @@ namespace LeagueAPI_ClassLibrary
 {
     public class DataTableCreator
     {
-        private const string nameColumnName = "Name";
-        private const string winsColumnName = "Wins";
-        private const string lossesColumnName = "Losses";
-        private const string totalColumnName = "Total";
-        private const string winRateColumName = "Win rate";
         private IDDragonRepository DDragonRepository { get; set; }
         private Type TypeString { get; set; }
         private Type TypeInt32 { get; set; }
@@ -31,17 +26,18 @@ namespace LeagueAPI_ClassLibrary
         public DataTable GetChampionTable(Dictionary<int, WinLossData> championData)
         {
             DataTable table = GetTableWithDefaultData("Champions");
-            const string tagsColumnName = "Tags";
-            const string difficultyColumnName = "Difficulty";
-            table.Columns.AddRange(new List<DataColumn> { new DataColumn(tagsColumnName, TypeString), new DataColumn(difficultyColumnName, TypeInt32) }.ToArray());
+            table.Columns.AddRange(new List<DataColumn> {
+                new DataColumn("Tags", TypeString),
+                new DataColumn("Difficulty", TypeInt32)
+            }.ToArray());
 
             foreach (KeyValuePair<int, WinLossData> champEntry in championData)
             {
                 Champion champ = DDragonRepository.GetChampion(champEntry.Key);
                 DataRow row = table.NewRow();
                 AddDefaultDataToRow(champ.Name, champEntry, row);
-                row[tagsColumnName] = champ.GetTagsString();
-                row[difficultyColumnName] = champ.Difficulty;
+                row[5] = champ.GetTagsString();
+                row[6] = champ.Difficulty;
                 table.Rows.Add(row);
             }
             return table;
@@ -49,25 +45,22 @@ namespace LeagueAPI_ClassLibrary
 
         private void AddDefaultDataToRow(string name, KeyValuePair<int, WinLossData> entry, DataRow row)
         {
-            row[nameColumnName] = name;
-            row[winsColumnName] = entry.Value.GetWins();
-            row[lossesColumnName] = entry.Value.GetLosses();
-            row[totalColumnName] = entry.Value.GetTotal();
-            row[winRateColumName] = entry.Value.GetWinRate();
+            row[0] = name;
+            row[1] = entry.Value.GetWins();
+            row[2] = entry.Value.GetLosses();
+            row[3] = entry.Value.GetTotal();
+            row[4] = entry.Value.GetWinRate();
         }
 
         public DataTable GetItemTable(Dictionary<int, WinLossData> itemData)
         {
             DataTable table = GetTableWithDefaultData("Items");
-            const string plaintextColumnName = "Plaintext";
-            const string descColumnName = "Description";
-            const string goldColumnName = "Gold";
-            const string moreThan2000G = "More than 2000G";
             table.Columns.AddRange(new List<DataColumn> {
-                new DataColumn(goldColumnName, TypeInt32),
-                new DataColumn(moreThan2000G, TypeBool),
-                new DataColumn(plaintextColumnName, TypeString),
-                new DataColumn(descColumnName, TypeString)
+                new DataColumn("Gold", TypeInt32),
+                new DataColumn("More than 2000G", TypeBool),
+                new DataColumn("Tags", TypeString),
+                new DataColumn("Plaintext", TypeString),
+                new DataColumn("Description", TypeString)
             }.ToArray());
 
             foreach (KeyValuePair<int, WinLossData> itemEntry in itemData)
@@ -75,10 +68,11 @@ namespace LeagueAPI_ClassLibrary
                 Item item = DDragonRepository.GetItem(itemEntry.Key);
                 DataRow row = table.NewRow();
                 AddDefaultDataToRow(item.Name, itemEntry, row);
-                row[goldColumnName] = item.Gold;
-                row[moreThan2000G] = item.IsMoreThan2000G();
-                row[plaintextColumnName] = item.Plaintext;
-                row[descColumnName] = item.GetCleanDescription();
+                row[5] = item.Gold;
+                row[6] = item.IsMoreThan2000G();
+                row[7] = item.GetTagsString();
+                row[8] = item.Plaintext;
+                row[9] = item.GetCleanDescription();
                 table.Rows.Add(row);
             }
             return table;
@@ -86,11 +80,11 @@ namespace LeagueAPI_ClassLibrary
 
         private DataTable GetTableWithDefaultData(string tableName)
         {
-            DataColumn nameColumn = new(nameColumnName, TypeString);
-            DataColumn winsColumn = new(winsColumnName, TypeInt32);
-            DataColumn lossesColumn = new(lossesColumnName, TypeInt32);
-            DataColumn totalColumn = new(totalColumnName, TypeInt32);
-            DataColumn winRateColumn = new(winRateColumName, TypeDouble);
+            DataColumn nameColumn = new("Name", TypeString);
+            DataColumn winsColumn = new("Wins", TypeInt32);
+            DataColumn lossesColumn = new("Losses", TypeInt32);
+            DataColumn totalColumn = new("Total", TypeInt32);
+            DataColumn winRateColumn = new("Win rate", TypeDouble);
             DataTable table = new(tableName);
             table.Columns.AddRange(new List<DataColumn> { nameColumn, winsColumn, lossesColumn, totalColumn, winRateColumn }.ToArray());
             return table;

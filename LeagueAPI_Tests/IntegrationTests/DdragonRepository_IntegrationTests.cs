@@ -43,6 +43,7 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(item.GetCleanDescription().Equals("50% Base Mana Regen"));
             Assert.IsTrue(item.Gold == 250);
             Assert.IsTrue(!item.IsMoreThan2000G());
+            Assert.IsTrue(item.GetTagsString().Equals("ManaRegen"));
         }
     }
 }

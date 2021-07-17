@@ -40,7 +40,7 @@ namespace LeagueAPI_Tests.UnitTests
         public void CreateItemTable_ExpectedResults()
         {
             Mock<IDDragonRepository> repo = new();
-            repo.Setup(x => x.GetItem(1)).Returns(new Item() { Name = "name", Description = "<li>desc</li>", Gold = 250, Plaintext = "plainText" });
+            repo.Setup(x => x.GetItem(1)).Returns(new Item() { Name = "name", Description = "<li>desc</li>", Gold = 250, Plaintext = "plainText", Tags = null });
 
             DataTableCreator creator = new(repo.Object);
             Dictionary<int, WinLossData> itemData = new();
@@ -48,7 +48,7 @@ namespace LeagueAPI_Tests.UnitTests
             DataTable championTable = creator.GetItemTable(itemData);
             Assert.IsTrue(championTable.TableName.Equals("Items"));
             Assert.IsTrue(championTable.Rows.Count == 1);
-            Assert.IsTrue(championTable.Rows[0].ItemArray.Length == 9);
+            Assert.IsTrue(championTable.Rows[0].ItemArray.Length == 10);
             Assert.IsTrue(championTable.Rows[0].ItemArray[0].Equals("name"));
             Assert.IsTrue(championTable.Rows[0].ItemArray[1].Equals(6));
             Assert.IsTrue(championTable.Rows[0].ItemArray[2].Equals(4));
@@ -56,8 +56,9 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(championTable.Rows[0].ItemArray[4].Equals(60.0));
             Assert.IsTrue(championTable.Rows[0].ItemArray[5].Equals(250));
             Assert.IsTrue(championTable.Rows[0].ItemArray[6].Equals(false));
-            Assert.IsTrue(championTable.Rows[0].ItemArray[7].Equals("plainText"));
-            Assert.IsTrue(championTable.Rows[0].ItemArray[8].Equals("desc"));
+            Assert.IsTrue(championTable.Rows[0].ItemArray[7].Equals(""));
+            Assert.IsTrue(championTable.Rows[0].ItemArray[8].Equals("plainText"));
+            Assert.IsTrue(championTable.Rows[0].ItemArray[9].Equals("desc"));
         }
 
         //ExcelPackage.LicenseContext = LicenseContext.NonCommercial;

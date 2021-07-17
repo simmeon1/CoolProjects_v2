@@ -54,6 +54,9 @@ namespace LeagueAPI_ClassLibrary
                         Description = itemEntry.Value["description"].ToString(),
                         Gold = int.Parse(itemEntry.Value["gold"]["total"].ToString())
                     };
+                    List<string> tags = new();
+                    foreach (JToken tag in itemEntry.Value["tags"]) tags.Add(tag.ToString());
+                    item.Tags = tags;
                     result = item;
                     break;
                 }
