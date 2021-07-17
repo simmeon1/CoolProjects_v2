@@ -35,6 +35,7 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(data.GetWinRate() == 50);
             data.AddLoss();
             Assert.IsTrue(Math.Round(data.GetWinRate()) == 33);
+            Assert.IsTrue(data.GetString().Length > 0);
         }
     }
 }

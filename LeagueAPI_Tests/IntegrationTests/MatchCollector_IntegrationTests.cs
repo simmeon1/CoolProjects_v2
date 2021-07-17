@@ -34,6 +34,14 @@ namespace LeagueAPI_Tests.IntegrationTests
             List<LeagueMatch> matches = await MatchCollector.GetMatches(IntegrationTestData.AccountPuuid, IntegrationTestData.TargetVersion, 450, maxCount: maxCount);
             Assert.IsTrue(matches.Count == maxCount);
             Assert.IsTrue(matches.Select(m => m.matchId).Distinct().Count() == maxCount);
+            DataCollector dataCollector = new();
+            DataCollectorResults results = dataCollector.GetData(matches);
+            Assert.IsTrue(results.GetChampionData().Count > 0);
+            Assert.IsTrue(results.GetItemData().Count > 0);
+            Assert.IsTrue(results.GetRuneData().Count > 0);
+            Assert.IsTrue(results.GetRuneTreeData().Count > 0);
+            Assert.IsTrue(results.GetSpellData().Count > 0);
+            Assert.IsTrue(results.GetStatPerkData().Count > 0);
         }
         
         [Ignore]

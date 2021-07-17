@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace LeagueAPI_ClassLibrary
 {
+    [DebuggerDisplay("{GetString()}")]
     public class WinLossData
     {
         private int Wins { get; set; }
@@ -40,6 +42,11 @@ namespace LeagueAPI_ClassLibrary
             int total = GetTotal();
             if (total == 0) return 0;
             return ((double)Wins / total) * 100;
+        }
+        
+        public string GetString()
+        {
+            return $"Wins - {Wins}, Losses - {Losses}, Total - {GetTotal()}, Win rate - {GetWinRate()}";
         }
     }
 }
