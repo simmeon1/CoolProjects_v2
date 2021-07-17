@@ -6,5 +6,6 @@
         public string AccountPuuid { get; set; }
         public string Token { get; set; }
         public string TargetVersion { get; set; }
+        public string DdragonJsonFilesDirectoryPath { get; set; }
     }
 }
