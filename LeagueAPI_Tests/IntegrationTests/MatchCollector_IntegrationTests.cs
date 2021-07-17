@@ -40,11 +40,8 @@ namespace LeagueAPI_Tests.IntegrationTests
         [TestMethod]
         public async Task CollectMatches_FullTest()
         {
-            int maxCount = 0;
-            List<LeagueMatch> matches = await MatchCollector.GetMatches(IntegrationTestData.AccountPuuid, IntegrationTestData.TargetVersion, 450, maxCount: maxCount);
-            Assert.IsTrue(matches.Count == maxCount);
-            Assert.IsTrue(matches.Select(m => m.matchId).Distinct().Count() == maxCount);
+            List<LeagueMatch> matches = await MatchCollector.GetMatches(IntegrationTestData.AccountPuuid, IntegrationTestData.TargetVersion, 450, maxCount: 0);
+            Assert.IsTrue(matches.Count > 0);
         }
     }
 }
-//ADD DELAYER TESTS
