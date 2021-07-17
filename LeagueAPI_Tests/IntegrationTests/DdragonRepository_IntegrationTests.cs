@@ -1,9 +1,12 @@
+using Common_ClassLibrary;
 using LeagueAPI_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using OfficeOpenXml;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -54,6 +57,34 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(rune.Tree.Equals("Domination"));
             Assert.IsTrue(rune.IsKeystone == false);
             Assert.IsTrue(rune.GetCleanDescription().Equals("Damaging champions with impaired movement or actions deals 10 - 45 bonus true damage (based on level).Cooldown: 4sActivates on damage occurring after the impairment."));
+        }
+
+        [Ignore]
+        [TestMethod]
+        public void TestPrint()
+        {
+            List<LeagueMatch> matches = File.ReadAllText(@"C:\Users\simme\source\repos\CoolProjects_v2\LeagueAPI_Tests\matches.json").DeserializeObject<List<LeagueMatch>>();
+            DataCollector collector = new();
+            DataCollectorResults results = collector.GetData(matches);
+
+            DataTableCreator dataTableCreator = new(Repository);
+            List<DataTable> dataTables = new() {
+                dataTableCreator.GetChampionTable(results.GetChampionData()),
+                dataTableCreator.GetItemTable(results.GetItemData()),
+                dataTableCreator.GetRuneTable(results.GetRuneData())
+            };
+
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            using ExcelPackage package = new(new FileInfo("MyWorkbook11.xlsx"));
+            foreach (DataTable table in dataTables)
+            {
+                ExcelWorksheet ws = package.Workbook.Worksheets.Add(table.TableName);
+                ws.Cells["A1"].LoadFromDataTable(table, true);
+                ws.Cells[ws.Dimension.Address].AutoFilter = true;
+                ws.View.FreezePanes(2, 2);
+                ws.Cells.AutoFitColumns();
+            }
+            package.Save();
         }
     }
 }

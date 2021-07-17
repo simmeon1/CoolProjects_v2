@@ -90,7 +90,7 @@ namespace LeagueAPI_ClassLibrary
             return table;
         }
 
-        public DataTable GetRuneData(Dictionary<int, WinLossData> data)
+        public DataTable GetRuneTable(Dictionary<int, WinLossData> data)
         {
             DataTable table = GetTableWithDefaultData("Runes");
             table.Columns.AddRange(new List<DataColumn> {

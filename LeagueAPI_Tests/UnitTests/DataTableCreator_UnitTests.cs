@@ -1,3 +1,4 @@
+using Common_ClassLibrary;
 using LeagueAPI_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -35,7 +36,7 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(championTable.Rows[0].ItemArray[5].Equals("Fighter, Tank"));
             Assert.IsTrue(championTable.Rows[0].ItemArray[6].Equals(4));
         }
-        
+
         [TestMethod]
         public void CreateItemTable_ExpectedResults()
         {
@@ -60,17 +61,17 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(table.Rows[0].ItemArray[8].Equals("plainText"));
             Assert.IsTrue(table.Rows[0].ItemArray[9].Equals("desc"));
         }
-        
+
         [TestMethod]
         public void CreateRuneTable_ExpectedResults()
         {
             Mock<IDDragonRepository> repo = new();
-            repo.Setup(x => x.GetRune(1)).Returns(new Rune() { Name = "name", Tree = "tree", LongDescription = "<l>longdesc<l>", IsKeystone = true});
+            repo.Setup(x => x.GetRune(1)).Returns(new Rune() { Name = "name", Tree = "tree", LongDescription = "<l>longdesc<l>", IsKeystone = true });
 
             DataTableCreator creator = new(repo.Object);
             Dictionary<int, WinLossData> data = new();
             data.Add(1, new WinLossData(6, 4));
-            DataTable table = creator.GetRuneData(data);
+            DataTable table = creator.GetRuneTable(data);
             Assert.IsTrue(table.TableName.Equals("Runes"));
             Assert.IsTrue(table.Rows.Count == 1);
             Assert.IsTrue(table.Rows[0].ItemArray.Length == 8);
@@ -83,14 +84,5 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(table.Rows[0].ItemArray[6].Equals("longdesc"));
             Assert.IsTrue(table.Rows[0].ItemArray[7].Equals(true));
         }
-
-        //ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-        //using ExcelPackage package = new(new FileInfo("MyWorkbook10.xlsx"));
-        //ExcelWorksheet ws = package.Workbook.Worksheets.Add(championTable.TableName);
-        //ws.Cells["A1"].LoadFromDataTable(championTable, true);
-        //ws.Cells[ws.Dimension.Address].AutoFilter = true;
-        //ws.View.FreezePanes(2, 2);
-        //ws.Cells.AutoFitColumns();
-        //package.Save();
     }
 }
