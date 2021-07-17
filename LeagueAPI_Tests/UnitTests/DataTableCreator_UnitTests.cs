@@ -45,20 +45,43 @@ namespace LeagueAPI_Tests.UnitTests
             DataTableCreator creator = new(repo.Object);
             Dictionary<int, WinLossData> itemData = new();
             itemData.Add(1, new WinLossData(6, 4));
-            DataTable championTable = creator.GetItemTable(itemData);
-            Assert.IsTrue(championTable.TableName.Equals("Items"));
-            Assert.IsTrue(championTable.Rows.Count == 1);
-            Assert.IsTrue(championTable.Rows[0].ItemArray.Length == 10);
-            Assert.IsTrue(championTable.Rows[0].ItemArray[0].Equals("name"));
-            Assert.IsTrue(championTable.Rows[0].ItemArray[1].Equals(6));
-            Assert.IsTrue(championTable.Rows[0].ItemArray[2].Equals(4));
-            Assert.IsTrue(championTable.Rows[0].ItemArray[3].Equals(10));
-            Assert.IsTrue(championTable.Rows[0].ItemArray[4].Equals(60.0));
-            Assert.IsTrue(championTable.Rows[0].ItemArray[5].Equals(250));
-            Assert.IsTrue(championTable.Rows[0].ItemArray[6].Equals(false));
-            Assert.IsTrue(championTable.Rows[0].ItemArray[7].Equals(""));
-            Assert.IsTrue(championTable.Rows[0].ItemArray[8].Equals("plainText"));
-            Assert.IsTrue(championTable.Rows[0].ItemArray[9].Equals("desc"));
+            DataTable table = creator.GetItemTable(itemData);
+            Assert.IsTrue(table.TableName.Equals("Items"));
+            Assert.IsTrue(table.Rows.Count == 1);
+            Assert.IsTrue(table.Rows[0].ItemArray.Length == 10);
+            Assert.IsTrue(table.Rows[0].ItemArray[0].Equals("name"));
+            Assert.IsTrue(table.Rows[0].ItemArray[1].Equals(6));
+            Assert.IsTrue(table.Rows[0].ItemArray[2].Equals(4));
+            Assert.IsTrue(table.Rows[0].ItemArray[3].Equals(10));
+            Assert.IsTrue(table.Rows[0].ItemArray[4].Equals(60.0));
+            Assert.IsTrue(table.Rows[0].ItemArray[5].Equals(250));
+            Assert.IsTrue(table.Rows[0].ItemArray[6].Equals(false));
+            Assert.IsTrue(table.Rows[0].ItemArray[7].Equals(""));
+            Assert.IsTrue(table.Rows[0].ItemArray[8].Equals("plainText"));
+            Assert.IsTrue(table.Rows[0].ItemArray[9].Equals("desc"));
+        }
+        
+        [TestMethod]
+        public void CreateRuneTable_ExpectedResults()
+        {
+            Mock<IDDragonRepository> repo = new();
+            repo.Setup(x => x.GetRune(1)).Returns(new Rune() { Name = "name", Tree = "tree", LongDescription = "<l>longdesc<l>", IsKeystone = true});
+
+            DataTableCreator creator = new(repo.Object);
+            Dictionary<int, WinLossData> data = new();
+            data.Add(1, new WinLossData(6, 4));
+            DataTable table = creator.GetRuneData(data);
+            Assert.IsTrue(table.TableName.Equals("Runes"));
+            Assert.IsTrue(table.Rows.Count == 1);
+            Assert.IsTrue(table.Rows[0].ItemArray.Length == 8);
+            Assert.IsTrue(table.Rows[0].ItemArray[0].Equals("name"));
+            Assert.IsTrue(table.Rows[0].ItemArray[1].Equals(6));
+            Assert.IsTrue(table.Rows[0].ItemArray[2].Equals(4));
+            Assert.IsTrue(table.Rows[0].ItemArray[3].Equals(10));
+            Assert.IsTrue(table.Rows[0].ItemArray[4].Equals(60.0));
+            Assert.IsTrue(table.Rows[0].ItemArray[5].Equals("tree"));
+            Assert.IsTrue(table.Rows[0].ItemArray[6].Equals("longdesc"));
+            Assert.IsTrue(table.Rows[0].ItemArray[7].Equals(true));
         }
 
         //ExcelPackage.LicenseContext = LicenseContext.NonCommercial;

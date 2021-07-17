@@ -12,15 +12,16 @@ namespace LeagueAPI_ClassLibrary
     {
         private JObject ChampionJson { get; set; }
         private JObject ItemJson { get; set; }
+        private JArray RuneJson { get; set; }
         public DdragonRepository(string ddragonJsonFilesDirectoryPath)
         {
             ChampionJson = JObject.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "champion.json")));
             ItemJson = JObject.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "item.json")));
+            RuneJson = JArray.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "runesReforged.json")));
         }
 
         public Champion GetChampion(int id)
         {
-            Champion result = null;
             foreach (JProperty champ in ChampionJson["data"])
             {
                 if (int.Parse(champ.Value["key"].ToString()) == id)
@@ -33,16 +34,14 @@ namespace LeagueAPI_ClassLibrary
                     List<string> tags = new();
                     foreach (JToken tag in champ.Value["tags"]) tags.Add(tag.ToString());
                     champion.Tags = tags;
-                    result = champion;
-                    break;
+                    return champion;
                 }
             }
-            return result;
+            return null;
         }
 
         public Item GetItem(int id)
         {
-            Item result = null;
             foreach (JProperty itemEntry in ItemJson["data"])
             {
                 if (int.Parse(itemEntry.Name) == id)
@@ -57,11 +56,38 @@ namespace LeagueAPI_ClassLibrary
                     List<string> tags = new();
                     foreach (JToken tag in itemEntry.Value["tags"]) tags.Add(tag.ToString());
                     item.Tags = tags;
-                    result = item;
-                    break;
+                    return item;
                 }
             }
-            return result;
+            return null;
+        }
+
+        public Rune GetRune(int id)
+        {
+            foreach (JToken treeEntry in RuneJson)
+            {
+                string tree = (string)treeEntry["name"];
+                for (int i = 0; i < treeEntry["slots"].Count(); i++)
+                {
+                    JToken runeRow = treeEntry["slots"][i];
+                    bool isKeystone = i == 0;
+                    foreach (JToken rune in runeRow["runes"])
+                    {
+                        if (int.Parse(rune["id"].ToString()) == id)
+                        {
+                            Rune result = new()
+                            {
+                                Name = rune["name"].ToString(),
+                                IsKeystone = isKeystone,
+                                LongDescription = rune["longDesc"].ToString(),
+                                Tree = tree
+                            };
+                            return result;
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 }

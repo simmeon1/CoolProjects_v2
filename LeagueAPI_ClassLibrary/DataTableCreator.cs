@@ -89,5 +89,27 @@ namespace LeagueAPI_ClassLibrary
             table.Columns.AddRange(new List<DataColumn> { nameColumn, winsColumn, lossesColumn, totalColumn, winRateColumn }.ToArray());
             return table;
         }
+
+        public DataTable GetRuneData(Dictionary<int, WinLossData> data)
+        {
+            DataTable table = GetTableWithDefaultData("Runes");
+            table.Columns.AddRange(new List<DataColumn> {
+                new DataColumn("Tree", TypeString),
+                new DataColumn("Description", TypeString),
+                new DataColumn("Is Keystone", TypeBool)
+            }.ToArray());
+
+            foreach (KeyValuePair<int, WinLossData> entry in data)
+            {
+                Rune item = DDragonRepository.GetRune(entry.Key);
+                DataRow row = table.NewRow();
+                AddDefaultDataToRow(item.Name, entry, row);
+                row[5] = item.Tree;
+                row[6] = item.GetCleanDescription();
+                row[7] = item.IsKeystone;
+                table.Rows.Add(row);
+            }
+            return table;
+        }
     }
 }

@@ -45,5 +45,15 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(!item.IsMoreThan2000G());
             Assert.IsTrue(item.GetTagsString().Equals("ManaRegen"));
         }
+        
+        [TestMethod]
+        public void GetRune_DataIsCorrect()
+        {
+            Rune rune = Repository.GetRune(8126);
+            Assert.IsTrue(rune.Name.Equals("Cheap Shot"));
+            Assert.IsTrue(rune.Tree.Equals("Domination"));
+            Assert.IsTrue(rune.IsKeystone == false);
+            Assert.IsTrue(rune.GetCleanDescription().Equals("Damaging champions with impaired movement or actions deals 10 - 45 bonus true damage (based on level).Cooldown: 4sActivates on damage occurring after the impairment."));
+        }
     }
 }
