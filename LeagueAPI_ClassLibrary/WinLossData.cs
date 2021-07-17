@@ -12,6 +12,17 @@ namespace LeagueAPI_ClassLibrary
     {
         private int Wins { get; set; }
         private int Losses { get; set; }
+
+        public WinLossData()
+        {
+        }
+
+        public WinLossData(int wins, int losses)
+        {
+            Wins = wins;
+            Losses = losses;
+        }
+
         public int GetWins()
         {
             return Wins;
