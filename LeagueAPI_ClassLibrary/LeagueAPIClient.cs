@@ -12,12 +12,13 @@ namespace LeagueAPI_ClassLibrary
         private IHttpClient Client { get; set; }
         private string Token { get; set; }
         private IDelayer Delayer { get; set; }
-
-        public LeagueAPIClient(IHttpClient client, string token, IDelayer delayer)
+        private ILogger Logger { get; set; }
+        public LeagueAPIClient(IHttpClient client, string token, IDelayer delayer, ILogger logger)
         {
             Client = client;
             Token = token;
             Delayer = delayer;
+            Logger = logger;
         }
 
         public async Task<Account> GetAccountBySummonerName(string summonerName)
@@ -38,6 +39,7 @@ namespace LeagueAPI_ClassLibrary
 
         private async Task<string> GetResponse(string uri)
         {
+            Logger.Log($"Sending request {uri}");
             HttpRequestMessage message = GetMessageReadyWithToken(uri);
             HttpResponseMessage response = await Client.SendAsync(message);
 
@@ -52,6 +54,7 @@ namespace LeagueAPI_ClassLibrary
                     }
                     catch (Exception) { }
                 }
+                Logger.Log($"Last request failed due to status code {response.StatusCode}. Waiting {TimeSpan.FromMilliseconds(millisecondsToWait).TotalSeconds} seconds.");
                 await Delayer.Delay(Convert.ToInt32(millisecondsToWait));
                 message = GetMessageReadyWithToken(uri);
                 response = await Client.SendAsync(message);
