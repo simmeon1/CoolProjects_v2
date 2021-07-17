@@ -37,13 +37,6 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(acc.Id.Length > 0);
             Assert.IsTrue(acc.Puuid.Length > 0);
         }
-
-        [TestMethod]
-        public async Task GetMatchIds_MatchIdsReturned()
-        {
-            List<string> matchIds = await LeagueAPIClient.GetMatchIds(450, IntegrationTestData.AccountPuuid);
-            Assert.IsTrue(matchIds.Count > 1);
-        }
         
         [TestMethod]
         public async Task GetMatch_DataCollected()
