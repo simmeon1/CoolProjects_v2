@@ -17,6 +17,7 @@ namespace LeagueAPI_ClassLibrary
         private Type TypeString { get; set; }
         private Type TypeInt32 { get; set; }
         private Type TypeDouble { get; set; }
+        private Type TypeBool { get; set; }
 
         public DataTableCreator(IDDragonRepository dDragonRepository)
         {
@@ -24,6 +25,7 @@ namespace LeagueAPI_ClassLibrary
             TypeString = Type.GetType("System.String");
             TypeInt32 = Type.GetType("System.Int32");
             TypeDouble = Type.GetType("System.Double");
+            TypeBool = Type.GetType("System.Boolean");
         }
 
         public DataTable GetChampionTable(Dictionary<int, WinLossData> championData)
@@ -52,6 +54,34 @@ namespace LeagueAPI_ClassLibrary
             row[lossesColumnName] = entry.Value.GetLosses();
             row[totalColumnName] = entry.Value.GetTotal();
             row[winRateColumName] = entry.Value.GetWinRate();
+        }
+
+        public DataTable GetItemTable(Dictionary<int, WinLossData> itemData)
+        {
+            DataTable table = GetTableWithDefaultData("Items");
+            const string plaintextColumnName = "Plaintext";
+            const string descColumnName = "Description";
+            const string goldColumnName = "Gold";
+            const string moreThan2000G = "More than 2000G";
+            table.Columns.AddRange(new List<DataColumn> {
+                new DataColumn(goldColumnName, TypeInt32),
+                new DataColumn(moreThan2000G, TypeBool),
+                new DataColumn(plaintextColumnName, TypeString),
+                new DataColumn(descColumnName, TypeString)
+            }.ToArray());
+
+            foreach (KeyValuePair<int, WinLossData> itemEntry in itemData)
+            {
+                Item item = DDragonRepository.GetItem(itemEntry.Key);
+                DataRow row = table.NewRow();
+                AddDefaultDataToRow(item.Name, itemEntry, row);
+                row[goldColumnName] = item.Gold;
+                row[moreThan2000G] = item.IsMoreThan2000G();
+                row[plaintextColumnName] = item.Plaintext;
+                row[descColumnName] = item.GetCleanDescription();
+                table.Rows.Add(row);
+            }
+            return table;
         }
 
         private DataTable GetTableWithDefaultData(string tableName)

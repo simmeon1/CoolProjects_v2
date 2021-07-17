@@ -11,9 +11,11 @@ namespace LeagueAPI_ClassLibrary
     public class DdragonRepository : IDDragonRepository
     {
         private JObject ChampionJson { get; set; }
+        private JObject ItemJson { get; set; }
         public DdragonRepository(string ddragonJsonFilesDirectoryPath)
         {
             ChampionJson = JObject.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "champion.json")));
+            ItemJson = JObject.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "item.json")));
         }
 
         public Champion GetChampion(int id)
@@ -32,6 +34,27 @@ namespace LeagueAPI_ClassLibrary
                     foreach (JToken tag in champ.Value["tags"]) tags.Add(tag.ToString());
                     champion.Tags = tags;
                     result = champion;
+                    break;
+                }
+            }
+            return result;
+        }
+
+        public Item GetItem(int id)
+        {
+            Item result = null;
+            foreach (JProperty itemEntry in ItemJson["data"])
+            {
+                if (int.Parse(itemEntry.Name) == id)
+                {
+                    Item item = new()
+                    {
+                        Name = itemEntry.Value["name"].ToString(),
+                        Plaintext = itemEntry.Value["plaintext"].ToString(),
+                        Description = itemEntry.Value["description"].ToString(),
+                        Gold = int.Parse(itemEntry.Value["gold"]["total"].ToString())
+                    };
+                    result = item;
                     break;
                 }
             }

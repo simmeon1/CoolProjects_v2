@@ -33,5 +33,16 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(champ.Difficulty == 5);
             Assert.IsTrue(champ.GetTagsString().Equals("Mage, Assassin"));
         }
+        
+        [TestMethod]
+        public void GetItem_DataIsCorrect()
+        {
+            Item item = Repository.GetItem(1004);
+            Assert.IsTrue(item.Name.Equals("Faerie Charm"));
+            Assert.IsTrue(item.Plaintext.Equals("Slightly increases Mana Regen"));
+            Assert.IsTrue(item.GetCleanDescription().Equals("50% Base Mana Regen"));
+            Assert.IsTrue(item.Gold == 250);
+            Assert.IsTrue(!item.IsMoreThan2000G());
+        }
     }
 }
