@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LeagueAPI_ClassLibrary
 {
-    public class MatchCollector
+    public class MatchCollector : IMatchCollector
     {
         private ILeagueAPIClient Client { get; set; }
         private ILogger Logger { get; set; }

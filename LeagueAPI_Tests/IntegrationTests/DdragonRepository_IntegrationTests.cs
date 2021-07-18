@@ -121,43 +121,5 @@ namespace LeagueAPI_Tests.IntegrationTests
             Spell spell = Repository.GetSpell(0);
             Assert.IsTrue(spell == null);
         }
-
-        [TestMethod]
-        public void TestRun_MatchesAvailable()
-        {
-            DateTime startOfRun = DateTime.Now;
-            string startOfRunStr = startOfRun.ToString("yyyy-MM-dd--HH-mm-ss");
-
-            string matchesFilePath = Path.Combine(IntegrationTestData.OutputDirectory, "matches.json");
-            string itemSetFilePath = Path.Combine(IntegrationTestData.OutputDirectory, $"ItemSet_{startOfRunStr}.json");
-            string statsFilePath = Path.Combine(IntegrationTestData.OutputDirectory, $"Stats_{startOfRunStr}.json");
-
-            List<LeagueMatch> matches = File.ReadAllText(matchesFilePath).DeserializeObject<List<LeagueMatch>>();
-            DataCollector collector = new();
-            DataCollectorResults results = collector.GetData(matches);
-
-            DataTableCreator dataTableCreator = new(Repository);
-            Dictionary<int, WinLossData> itemData = results.GetItemData();
-            ItemSetExporter exporter = new(Repository);
-            string itemSetJson = exporter.GetItemSet(itemData);
-            File.WriteAllText(itemSetFilePath, itemSetJson);
-
-
-            List<DataTable> dataTables = new() {
-                dataTableCreator.GetChampionTable(results.GetChampionData()),
-                dataTableCreator.GetItemTable(itemData),
-                dataTableCreator.GetRuneTable(results.GetRuneData()),
-                dataTableCreator.GetStatPerkTable(results.GetStatPerkData()),
-                dataTableCreator.GetSpellTable(results.GetSpellData())
-            };
-
-            ExcelPrinter printer = new();
-            printer.PrintTablesToWorksheet(dataTables, statsFilePath);
-
-            Assert.IsTrue(File.Exists(itemSetFilePath));
-            Assert.IsTrue(File.Exists(statsFilePath));
-            File.Delete(itemSetFilePath);
-            File.Delete(statsFilePath);
-        }
     }
 }
