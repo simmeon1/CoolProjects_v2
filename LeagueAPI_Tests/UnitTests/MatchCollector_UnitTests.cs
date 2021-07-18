@@ -62,7 +62,7 @@ namespace LeagueAPI_Tests.UnitTests
             clientMock.Setup(x => x.GetMatch(matchId4).Result).Returns(matchWIthOutdatedVersion);
 
             MatchCollector collector = new(clientMock.Object, new Logger_Debug());
-            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, targetVersion, queueId);
+            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, targetVersion);
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));
         }
@@ -85,7 +85,7 @@ namespace LeagueAPI_Tests.UnitTests
             clientMock.Setup(x => x.GetMatch(matchId2).Result).Returns(matchWithCorrectVersion);
 
             MatchCollector collector = new(clientMock.Object, new Logger_Debug());
-            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, targetVersion, queueId);
+            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, targetVersion);
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));
         }
@@ -108,7 +108,7 @@ namespace LeagueAPI_Tests.UnitTests
             clientMock.Setup(x => x.GetMatch(matchId2).Result).Returns(matchWithCorrectVersion);
 
             MatchCollector collector = new(clientMock.Object, new Logger_Debug());
-            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, targetVersion, queueId, 1);
+            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, targetVersion, 1);
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));
         }

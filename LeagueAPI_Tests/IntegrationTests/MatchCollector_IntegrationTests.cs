@@ -28,10 +28,21 @@ namespace LeagueAPI_Tests.IntegrationTests
         }
 
         [TestMethod]
-        public async Task CollectMatches_GetsResultsAsync()
+        public async Task CollectMatches_GetsResults_VersionProvided()
+        {
+            await RunCollectMatchesTest(IntegrationTestData.TargetVersion);
+        }
+        
+        [TestMethod]
+        public async Task CollectMatches_GetsResults_VersionNotProvided()
+        {
+            await RunCollectMatchesTest(null);
+        }
+
+        private async Task RunCollectMatchesTest(string targetVersion)
         {
             int maxCount = 1;
-            List<LeagueMatch> matches = await MatchCollector.GetMatches(IntegrationTestData.AccountPuuid, IntegrationTestData.TargetVersion, 450, maxCount: maxCount);
+            List<LeagueMatch> matches = await MatchCollector.GetMatches(IntegrationTestData.AccountPuuid, 450, targetVersion, maxCount: maxCount);
             Assert.IsTrue(matches.Count == maxCount);
             Assert.IsTrue(matches.Select(m => m.matchId).Distinct().Count() == maxCount);
             DataCollector dataCollector = new();
@@ -43,12 +54,12 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(results.GetSpellData().Count > 0);
             Assert.IsTrue(results.GetStatPerkData().Count > 0);
         }
-        
+
         [Ignore]
         [TestMethod]
         public async Task CollectMatches_FullTest()
         {
-            List<LeagueMatch> matches = await MatchCollector.GetMatches(IntegrationTestData.AccountPuuid, IntegrationTestData.TargetVersion, 450, maxCount: 0);
+            List<LeagueMatch> matches = await MatchCollector.GetMatches(IntegrationTestData.AccountPuuid, 450, IntegrationTestData.TargetVersion, maxCount: 0);
             Assert.IsTrue(matches.Count > 0);
         }
     }

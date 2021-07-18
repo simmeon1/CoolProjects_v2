@@ -120,6 +120,7 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(spell == null);
         }
 
+        [Ignore]
         [TestMethod]
         public void TestPrint()
         {
