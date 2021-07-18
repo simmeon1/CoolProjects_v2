@@ -50,7 +50,7 @@ namespace LeagueAPI_ClassLibrary
                 {
                     try
                     {
-                        millisecondsToWait = response.Headers.RetryAfter.Delta.Value.TotalMilliseconds + 10;
+                        millisecondsToWait = response.Headers.RetryAfter.Delta.Value.TotalMilliseconds;
                     }
                     catch (Exception) { }
                 }
