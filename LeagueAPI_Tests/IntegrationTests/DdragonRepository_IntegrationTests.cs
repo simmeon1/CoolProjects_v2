@@ -99,9 +99,14 @@ namespace LeagueAPI_Tests.IntegrationTests
             DataCollectorResults results = collector.GetData(matches);
 
             DataTableCreator dataTableCreator = new(Repository);
+            Dictionary<int, WinLossData> itemData = results.GetItemData();
+            ItemSetExporter exporter = new(Repository);
+            string json = exporter.GetItemSet(itemData);
+
+
             List<DataTable> dataTables = new() {
                 dataTableCreator.GetChampionTable(results.GetChampionData()),
-                dataTableCreator.GetItemTable(results.GetItemData()),
+                dataTableCreator.GetItemTable(itemData),
                 dataTableCreator.GetRuneTable(results.GetRuneData())
             };
 

@@ -43,11 +43,6 @@ namespace LeagueAPI_ClassLibrary
         {
             return Name.Contains("Guardian");
         }     
-        
-        public bool IsLegendary()
-        {
-            return Description.Contains("rarityLegendary");
-        }
 
         public bool IsBoots()
         {

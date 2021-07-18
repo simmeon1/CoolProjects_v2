@@ -1,5 +1,6 @@
 ﻿using Common_ClassLibrary;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LeagueAPI_ClassLibrary
 {
@@ -12,7 +13,7 @@ namespace LeagueAPI_ClassLibrary
         const string mythics50MinusJson = "mythics50MinusJson";
         const string legendaries50PlusJson = "legendaries50PlusJson";
         const string legendaries50MinusJson = "legendaries50MinusJson";
-        public IDDragonRepository Repository { get; set; }
+        private IDDragonRepository Repository { get; set; }
         private string BaseJson { get; set; } = @"
         {
           'title': '" + jsonTitle + @"',
@@ -63,17 +64,19 @@ namespace LeagueAPI_ClassLibrary
             List<object> legendaries50PlusJsonArray = new();
             List<object> legendaries50MinusJsonArray = new();
 
-            foreach (KeyValuePair<int, WinLossData> entry in itemData)
+            List<KeyValuePair<int, WinLossData>> sortedList = itemData.OrderByDescending(x => x.Value.GetWinRate()).ToList();
+            foreach (KeyValuePair<int, WinLossData> entry in sortedList)
             {
                 int id = entry.Key;
                 double winRate = entry.Value.GetWinRate();
                 Item item = Repository.GetItem(id);
+                if (item.IsOrnnItem()) continue;
                 if (item.IsGuardian()) AddItemToList(id, guardianJsonArray);
                 else if (item.IsBoots()) AddItemToList(id, bootsJsonArray);
                 else if (item.IsMythic() && winRate >= 50) AddItemToList(id, mythics50PlusJsonArray);
-                else if (item.IsMythic() && winRate < 50) AddItemToList(id, mythics50MinusJsonArray);
-                else if (item.IsLegendary() && winRate >= 50) AddItemToList(id, legendaries50PlusJsonArray);
-                else if (item.IsLegendary() && winRate < 50) AddItemToList(id, legendaries50MinusJsonArray);
+                else if (item.IsMythic()) AddItemToList(id, mythics50MinusJsonArray);
+                else if (item.IsFinished && item.IsMoreThan2000G() && winRate >= 50) AddItemToList(id, legendaries50PlusJsonArray);
+                else if (item.IsFinished && item.IsMoreThan2000G()) AddItemToList(id, legendaries50MinusJsonArray);
             }
             return BaseJson
                 .Replace(guardianJson, guardianJsonArray.SerializeObject())
