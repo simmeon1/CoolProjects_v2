@@ -5,8 +5,10 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OfficeOpenXml;
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -120,18 +122,25 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(spell == null);
         }
 
-        [Ignore]
         [TestMethod]
-        public void TestPrint()
+        public void TestRun_MatchesAvailable()
         {
-            List<LeagueMatch> matches = File.ReadAllText(@"C:\Users\simme\source\repos\CoolProjects_v2\LeagueAPI_Tests\matches.json").DeserializeObject<List<LeagueMatch>>();
+            DateTime startOfRun = DateTime.Now;
+            string startOfRunStr = startOfRun.ToString("yyyy-MM-dd--HH-mm-ss");
+
+            string matchesFilePath = Path.Combine(IntegrationTestData.OutputDirectory, "matches.json");
+            string itemSetFilePath = Path.Combine(IntegrationTestData.OutputDirectory, $"ItemSet_{startOfRunStr}.json");
+            string statsFilePath = Path.Combine(IntegrationTestData.OutputDirectory, $"Stats_{startOfRunStr}.json");
+
+            List<LeagueMatch> matches = File.ReadAllText(matchesFilePath).DeserializeObject<List<LeagueMatch>>();
             DataCollector collector = new();
             DataCollectorResults results = collector.GetData(matches);
 
             DataTableCreator dataTableCreator = new(Repository);
             Dictionary<int, WinLossData> itemData = results.GetItemData();
             ItemSetExporter exporter = new(Repository);
-            string json = exporter.GetItemSet(itemData);
+            string itemSetJson = exporter.GetItemSet(itemData);
+            File.WriteAllText(itemSetFilePath, itemSetJson);
 
 
             List<DataTable> dataTables = new() {
@@ -142,17 +151,13 @@ namespace LeagueAPI_Tests.IntegrationTests
                 dataTableCreator.GetSpellTable(results.GetSpellData())
             };
 
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            using ExcelPackage package = new(new FileInfo("MyWorkbook16.xlsx"));
-            foreach (DataTable table in dataTables)
-            {
-                ExcelWorksheet ws = package.Workbook.Worksheets.Add(table.TableName);
-                ws.Cells["A1"].LoadFromDataTable(table, true);
-                ws.Cells[ws.Dimension.Address].AutoFilter = true;
-                ws.View.FreezePanes(2, 2);
-                ws.Cells.AutoFitColumns();
-            }
-            package.Save();
+            ExcelPrinter printer = new();
+            printer.PrintTablesToWorksheet(dataTables, statsFilePath);
+
+            Assert.IsTrue(File.Exists(itemSetFilePath));
+            Assert.IsTrue(File.Exists(statsFilePath));
+            File.Delete(itemSetFilePath);
+            File.Delete(statsFilePath);
         }
     }
 }

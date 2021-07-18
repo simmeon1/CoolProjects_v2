@@ -362,4 +362,3 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /LeagueAPI_Tests/integrationTestDataPath.json
-/LeagueAPI_Tests/matches.json
