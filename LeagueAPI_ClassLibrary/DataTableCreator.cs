@@ -121,6 +121,19 @@ namespace LeagueAPI_ClassLibrary
             }
             return table;
         }
+        
+        public DataTable GetStatPerkTable(Dictionary<int, WinLossData> data)
+        {
+            DataTable table = GetTableWithDefaultColumns("Stat Perks");
+            foreach (KeyValuePair<int, WinLossData> entry in data)
+            {
+                RowIndexCounter = 0;
+                DataRow row = table.NewRow();
+                AddDefaultDataToRow(DDragonRepository.GetStatPerk(entry.Key), entry, row);
+                table.Rows.Add(row);
+            }
+            return table;
+        }
 
         private int ReturnRowIndexCounterAndIncrementIt()
         {

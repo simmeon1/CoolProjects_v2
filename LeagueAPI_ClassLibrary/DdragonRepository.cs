@@ -13,11 +13,13 @@ namespace LeagueAPI_ClassLibrary
         private JObject ChampionJson { get; set; }
         private JObject ItemJson { get; set; }
         private JArray RuneJson { get; set; }
+        private JObject StatPerkJson { get; set; }
         public DdragonRepository(string ddragonJsonFilesDirectoryPath)
         {
             ChampionJson = JObject.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "champion.json")));
             ItemJson = JObject.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "item.json")));
             RuneJson = JArray.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "runesReforged.json")));
+            StatPerkJson = JObject.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "statPerks.json")));
         }
 
         public Champion GetChampion(int id)
@@ -83,6 +85,11 @@ namespace LeagueAPI_ClassLibrary
                 }
             }
             return null;
+        }
+
+        public string GetStatPerk(int id)
+        {
+            return StatPerkJson.ContainsKey(id.ToString()) ? StatPerkJson[id.ToString()].ToString() : null;
         }
     }
 }

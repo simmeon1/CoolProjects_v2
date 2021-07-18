@@ -7,5 +7,6 @@ namespace LeagueAPI_ClassLibrary
         Champion GetChampion(int id);
         Item GetItem(int id);
         Rune GetRune(int id);
+        string GetStatPerk(int id);
     }
 }

@@ -45,6 +45,20 @@ namespace LeagueAPI_Tests.IntegrationTests
         }
         
         [TestMethod]
+        public void GetStatPerk_DataIsCorrect()
+        {
+            string perk = Repository.GetStatPerk(5002);
+            Assert.IsTrue(perk.Equals("+6 Armor"));
+        }
+        
+        [TestMethod]
+        public void GetStatPerk_DoesNotExist()
+        {
+            string perk = Repository.GetStatPerk(0);
+            Assert.IsTrue(perk == null);
+        }
+        
+        [TestMethod]
         public void GetItem_DataIsCorrect()
         {
             Item item = Repository.GetItem(1004);
@@ -107,11 +121,12 @@ namespace LeagueAPI_Tests.IntegrationTests
             List<DataTable> dataTables = new() {
                 dataTableCreator.GetChampionTable(results.GetChampionData()),
                 dataTableCreator.GetItemTable(itemData),
-                dataTableCreator.GetRuneTable(results.GetRuneData())
+                dataTableCreator.GetRuneTable(results.GetRuneData()),
+                dataTableCreator.GetStatPerkTable(results.GetStatPerkData())
             };
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            using ExcelPackage package = new(new FileInfo("MyWorkbook14.xlsx"));
+            using ExcelPackage package = new(new FileInfo("MyWorkbook15.xlsx"));
             foreach (DataTable table in dataTables)
             {
                 ExcelWorksheet ws = package.Workbook.Worksheets.Add(table.TableName);

@@ -12,9 +12,9 @@ namespace Common_ClassLibrary
             return obj.SerializeObject().DeserializeObject<T>();
         }
         
-        public static string SerializeObject(this object obj)
+        public static string SerializeObject(this object obj, Formatting formatting = Formatting.None)
         {
-            return JsonConvert.SerializeObject(obj);
+            return JsonConvert.SerializeObject(obj, formatting);
         }
         
         public static T DeserializeObject<T>(this string str)
