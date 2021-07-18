@@ -9,8 +9,8 @@ namespace LeagueAPI_ClassLibrary
 {
     public class Champion
     {
-        public string Name { get; set; }
-        public List<string> Tags { get; set; }
+        public string Name { get; set; } = "";
+        public List<string> Tags { get; set; } = new();
         public int Difficulty { get; set; }
         public string GetTagsString()
         {

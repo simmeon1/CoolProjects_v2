@@ -90,7 +90,7 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(rune == null);
         }
 
-        
+        [Ignore]
         [TestMethod]
         public void TestPrint()
         {
