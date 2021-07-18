@@ -38,6 +38,13 @@ namespace LeagueAPI_Tests.IntegrationTests
         }
         
         [TestMethod]
+        public void GetChampion_DoesNotExist()
+        {
+            Champion champ = Repository.GetChampion(0);
+            Assert.IsTrue(champ == null);
+        }
+        
+        [TestMethod]
         public void GetItem_DataIsCorrect()
         {
             Item item = Repository.GetItem(1004);
@@ -45,8 +52,25 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(item.Plaintext.Equals("Slightly increases Mana Regen"));
             Assert.IsTrue(item.GetCleanDescription().Equals("50% Base Mana Regen"));
             Assert.IsTrue(item.Gold == 250);
-            Assert.IsTrue(!item.IsMoreThan2000G());
+            Assert.IsTrue(item.IsMythic() == false);
+            Assert.IsTrue(item.IsFinished == false);
             Assert.IsTrue(item.GetTagsString().Equals("ManaRegen"));
+        }
+        
+        [TestMethod]
+        public void GetItem_MythicTest()
+        {
+            Item item = Repository.GetItem(3078);
+            Assert.IsTrue(item.Name.Equals("Trinity Force"));
+            Assert.IsTrue(item.IsMythic() == true);
+            Assert.IsTrue(item.IsFinished == true);
+        }
+        
+        [TestMethod]
+        public void GetItem_DoesNotExist()
+        {
+            Item item = Repository.GetItem(0);
+            Assert.IsTrue(item == null);
         }
         
         [TestMethod]
@@ -55,11 +79,18 @@ namespace LeagueAPI_Tests.IntegrationTests
             Rune rune = Repository.GetRune(8126);
             Assert.IsTrue(rune.Name.Equals("Cheap Shot"));
             Assert.IsTrue(rune.Tree.Equals("Domination"));
-            Assert.IsTrue(rune.IsKeystone == false);
+            Assert.IsTrue(rune.Slot == 1);
             Assert.IsTrue(rune.GetCleanDescription().Equals("Damaging champions with impaired movement or actions deals 10 - 45 bonus true damage (based on level).Cooldown: 4sActivates on damage occurring after the impairment."));
         }
+        
+        [TestMethod]
+        public void GetRune_DoesNotExist()
+        {
+            Rune rune = Repository.GetRune(0);
+            Assert.IsTrue(rune == null);
+        }
 
-        [Ignore]
+        
         [TestMethod]
         public void TestPrint()
         {
@@ -75,7 +106,7 @@ namespace LeagueAPI_Tests.IntegrationTests
             };
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            using ExcelPackage package = new(new FileInfo("MyWorkbook11.xlsx"));
+            using ExcelPackage package = new(new FileInfo("MyWorkbook14.xlsx"));
             foreach (DataTable table in dataTables)
             {
                 ExcelWorksheet ws = package.Workbook.Worksheets.Add(table.TableName);

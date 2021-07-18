@@ -49,7 +49,7 @@ namespace LeagueAPI_Tests.UnitTests
             DataTable table = creator.GetItemTable(itemData);
             Assert.IsTrue(table.TableName.Equals("Items"));
             Assert.IsTrue(table.Rows.Count == 1);
-            Assert.IsTrue(table.Rows[0].ItemArray.Length == 10);
+            Assert.IsTrue(table.Rows[0].ItemArray.Length == 13);
             Assert.IsTrue(table.Rows[0].ItemArray[0].Equals("name"));
             Assert.IsTrue(table.Rows[0].ItemArray[1].Equals(6));
             Assert.IsTrue(table.Rows[0].ItemArray[2].Equals(4));
@@ -57,16 +57,19 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(table.Rows[0].ItemArray[4].Equals(60.0));
             Assert.IsTrue(table.Rows[0].ItemArray[5].Equals(250));
             Assert.IsTrue(table.Rows[0].ItemArray[6].Equals(false));
-            Assert.IsTrue(table.Rows[0].ItemArray[7].Equals(""));
-            Assert.IsTrue(table.Rows[0].ItemArray[8].Equals("plainText"));
-            Assert.IsTrue(table.Rows[0].ItemArray[9].Equals("desc"));
+            Assert.IsTrue(table.Rows[0].ItemArray[7].Equals(false));
+            Assert.IsTrue(table.Rows[0].ItemArray[8].Equals(false));
+            Assert.IsTrue(table.Rows[0].ItemArray[9].Equals(false));
+            Assert.IsTrue(table.Rows[0].ItemArray[10].Equals(""));
+            Assert.IsTrue(table.Rows[0].ItemArray[11].Equals("plainText"));
+            Assert.IsTrue(table.Rows[0].ItemArray[12].Equals("desc"));
         }
 
         [TestMethod]
         public void CreateRuneTable_ExpectedResults()
         {
             Mock<IDDragonRepository> repo = new();
-            repo.Setup(x => x.GetRune(1)).Returns(new Rune() { Name = "name", Tree = "tree", LongDescription = "<l>longdesc<l>", IsKeystone = true });
+            repo.Setup(x => x.GetRune(1)).Returns(new Rune() { Name = "name", Tree = "tree", LongDescription = "<l>longdesc<l>", Slot = 1 });
 
             DataTableCreator creator = new(repo.Object);
             Dictionary<int, WinLossData> data = new();
@@ -81,8 +84,8 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(table.Rows[0].ItemArray[3].Equals(10));
             Assert.IsTrue(table.Rows[0].ItemArray[4].Equals(60.0));
             Assert.IsTrue(table.Rows[0].ItemArray[5].Equals("tree"));
-            Assert.IsTrue(table.Rows[0].ItemArray[6].Equals("longdesc"));
-            Assert.IsTrue(table.Rows[0].ItemArray[7].Equals(true));
+            Assert.IsTrue(table.Rows[0].ItemArray[6].Equals(1));
+            Assert.IsTrue(table.Rows[0].ItemArray[7].Equals("longdesc"));
         }
     }
 }

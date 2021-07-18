@@ -24,18 +24,16 @@ namespace LeagueAPI_ClassLibrary
         {
             foreach (JProperty champ in ChampionJson["data"])
             {
-                if (int.Parse(champ.Value["key"].ToString()) == id)
+                if (int.Parse(champ.Value["key"].ToString()) != id) continue;
+                Champion champion = new()
                 {
-                    Champion champion = new()
-                    {
-                        Name = champ.Value["name"].ToString(),
-                        Difficulty = (int)champ.Value["info"]["difficulty"],
-                    };
-                    List<string> tags = new();
-                    foreach (JToken tag in champ.Value["tags"]) tags.Add(tag.ToString());
-                    champion.Tags = tags;
-                    return champion;
-                }
+                    Name = champ.Value["name"].ToString(),
+                    Difficulty = (int)champ.Value["info"]["difficulty"],
+                };
+                List<string> tags = new();
+                foreach (JToken tag in champ.Value["tags"]) tags.Add(tag.ToString());
+                champion.Tags = tags;
+                return champion;
             }
             return null;
         }
@@ -44,20 +42,20 @@ namespace LeagueAPI_ClassLibrary
         {
             foreach (JProperty itemEntry in ItemJson["data"])
             {
-                if (int.Parse(itemEntry.Name) == id)
+                if (int.Parse(itemEntry.Name) != id) continue;
+                Item item = new()
                 {
-                    Item item = new()
-                    {
-                        Name = itemEntry.Value["name"].ToString(),
-                        Plaintext = itemEntry.Value["plaintext"].ToString(),
-                        Description = itemEntry.Value["description"].ToString(),
-                        Gold = int.Parse(itemEntry.Value["gold"]["total"].ToString())
-                    };
-                    List<string> tags = new();
-                    foreach (JToken tag in itemEntry.Value["tags"]) tags.Add(tag.ToString());
-                    item.Tags = tags;
-                    return item;
-                }
+                    Name = itemEntry.Value["name"].ToString(),
+                    Plaintext = itemEntry.Value["plaintext"].ToString(),
+                    Description = itemEntry.Value["description"].ToString(),
+                    Gold = int.Parse(itemEntry.Value["gold"]["total"].ToString())
+                };
+                JArray buildsInto = (JArray)itemEntry.Value["into"];
+                item.IsFinished = buildsInto == null || (buildsInto.Count == 1 && GetItem(int.Parse(buildsInto[0].ToString())).IsOrnnItem());
+                List<string> tags = new();
+                foreach (JToken tag in itemEntry.Value["tags"]) tags.Add(tag.ToString());
+                item.Tags = tags;
+                return item;
             }
             return null;
         }
@@ -70,20 +68,17 @@ namespace LeagueAPI_ClassLibrary
                 for (int i = 0; i < treeEntry["slots"].Count(); i++)
                 {
                     JToken runeRow = treeEntry["slots"][i];
-                    bool isKeystone = i == 0;
                     foreach (JToken rune in runeRow["runes"])
                     {
-                        if (int.Parse(rune["id"].ToString()) == id)
+                        if (int.Parse(rune["id"].ToString()) != id) continue;
+                        Rune result = new()
                         {
-                            Rune result = new()
-                            {
-                                Name = rune["name"].ToString(),
-                                IsKeystone = isKeystone,
-                                LongDescription = rune["longDesc"].ToString(),
-                                Tree = tree
-                            };
-                            return result;
-                        }
+                            Name = rune["name"].ToString(),
+                            Slot = i,
+                            LongDescription = rune["longDesc"].ToString(),
+                            Tree = tree
+                        };
+                        return result;
                     }
                 }
             }

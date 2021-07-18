@@ -7,7 +7,7 @@ namespace LeagueAPI_ClassLibrary
         public string Name { get; set; }
         public string Tree { get; set; }
         public string LongDescription { get; set; }
-        public bool IsKeystone { get; set; }
+        public int Slot { get; set; }
         public string GetCleanDescription()
         {
             return Regex.Replace(LongDescription, "<.*?>", "");
