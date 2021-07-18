@@ -8,5 +8,6 @@ namespace LeagueAPI_ClassLibrary
         Item GetItem(int id);
         Rune GetRune(int id);
         string GetStatPerk(int id);
+        Spell GetSpell(int id);
     }
 }

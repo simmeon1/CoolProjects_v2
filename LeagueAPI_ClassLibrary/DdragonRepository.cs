@@ -14,12 +14,14 @@ namespace LeagueAPI_ClassLibrary
         private JObject ItemJson { get; set; }
         private JArray RuneJson { get; set; }
         private JObject StatPerkJson { get; set; }
+        private JObject SpellJson { get; set; }
         public DdragonRepository(string ddragonJsonFilesDirectoryPath)
         {
             ChampionJson = JObject.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "champion.json")));
             ItemJson = JObject.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "item.json")));
             RuneJson = JArray.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "runesReforged.json")));
             StatPerkJson = JObject.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "statPerks.json")));
+            SpellJson = JObject.Parse(File.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "summoner.json")));
         }
 
         public Champion GetChampion(int id)
@@ -90,6 +92,22 @@ namespace LeagueAPI_ClassLibrary
         public string GetStatPerk(int id)
         {
             return StatPerkJson.ContainsKey(id.ToString()) ? StatPerkJson[id.ToString()].ToString() : null;
+        }
+
+        public Spell GetSpell(int id)
+        {
+            foreach (JProperty entry in SpellJson["data"])
+            {
+                if (int.Parse(entry.Value["key"].ToString()) != id) continue;
+                Spell spell = new()
+                {
+                    Name = entry.Value["name"].ToString(),
+                    Cooldown = int.Parse(entry.Value["cooldown"][0].ToString()),
+                    Description = entry.Value["description"].ToString()
+                };
+                return spell;
+            }
+            return null;
         }
     }
 }

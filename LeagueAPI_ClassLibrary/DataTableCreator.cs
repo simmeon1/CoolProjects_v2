@@ -121,6 +121,27 @@ namespace LeagueAPI_ClassLibrary
             }
             return table;
         }
+
+        public DataTable GetSpellTable(Dictionary<int, WinLossData> data)
+        {
+            DataTable table = GetTableWithDefaultColumns("Spells");
+            table.Columns.AddRange(new List<DataColumn> {
+                new DataColumn("Cooldown", TypeInt32),
+                new DataColumn("Description", TypeString)
+            }.ToArray());
+
+            foreach (KeyValuePair<int, WinLossData> entry in data)
+            {
+                RowIndexCounter = 0;
+                Spell spell = DDragonRepository.GetSpell(entry.Key);
+                DataRow row = table.NewRow();
+                AddDefaultDataToRow(spell.Name, entry, row);
+                row[ReturnRowIndexCounterAndIncrementIt()] = spell.Cooldown;
+                row[ReturnRowIndexCounterAndIncrementIt()] = spell.Description;
+                table.Rows.Add(row);
+            }
+            return table;
+        }
         
         public DataTable GetStatPerkTable(Dictionary<int, WinLossData> data)
         {

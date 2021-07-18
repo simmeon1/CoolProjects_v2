@@ -104,7 +104,22 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(rune == null);
         }
 
-        [Ignore]
+        [TestMethod]
+        public void GetSpell_DataIsCorrect()
+        {
+            Spell spell = Repository.GetSpell(1);
+            Assert.IsTrue(spell.Name.Equals("Cleanse"));
+            Assert.IsTrue(spell.Description.Equals("Removes all disables (excluding suppression and airborne) and summoner spell debuffs affecting your champion and lowers the duration of incoming disables by 65% for 3 seconds."));
+            Assert.IsTrue(spell.Cooldown == 210);
+        }
+
+        [TestMethod]
+        public void GetSpell_DoesNotExist()
+        {
+            Spell spell = Repository.GetSpell(0);
+            Assert.IsTrue(spell == null);
+        }
+
         [TestMethod]
         public void TestPrint()
         {
@@ -122,11 +137,12 @@ namespace LeagueAPI_Tests.IntegrationTests
                 dataTableCreator.GetChampionTable(results.GetChampionData()),
                 dataTableCreator.GetItemTable(itemData),
                 dataTableCreator.GetRuneTable(results.GetRuneData()),
-                dataTableCreator.GetStatPerkTable(results.GetStatPerkData())
+                dataTableCreator.GetStatPerkTable(results.GetStatPerkData()),
+                dataTableCreator.GetSpellTable(results.GetSpellData())
             };
 
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            using ExcelPackage package = new(new FileInfo("MyWorkbook15.xlsx"));
+            using ExcelPackage package = new(new FileInfo("MyWorkbook16.xlsx"));
             foreach (DataTable table in dataTables)
             {
                 ExcelWorksheet ws = package.Workbook.Worksheets.Add(table.TableName);

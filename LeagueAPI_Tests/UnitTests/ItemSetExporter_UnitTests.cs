@@ -16,8 +16,8 @@ namespace LeagueAPI_Tests.UnitTests
             Item item2 = new() { Tags = new List<string>() { "Boots" } };
             Item item3 = new() { Description = "rarityMythic" };
             Item item4 = new() { Description = "rarityMythic" };
-            Item item5 = new() { Description = "rarityLegendary" };
-            Item item6 = new() { Description = "rarityLegendary" };
+            Item item5 = new() { IsFinished = true, Gold = 2500 };
+            Item item6 = new() { IsFinished = true, Gold = 2500 };
             Item item7 = new() { };
 
             Dictionary<int, WinLossData> itemWInLossData = new();

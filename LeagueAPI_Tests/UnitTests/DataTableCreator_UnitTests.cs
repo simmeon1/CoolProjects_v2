@@ -107,5 +107,27 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(table.Rows[0].ItemArray[3].Equals(10));
             Assert.IsTrue(table.Rows[0].ItemArray[4].Equals(60.0));
         }
+        
+        [TestMethod]
+        public void CreateSpellTable_ExpectedResults()
+        {
+            Mock<IDDragonRepository> repo = new();
+            repo.Setup(x => x.GetSpell(1)).Returns(new Spell() { Name = "hi", Cooldown = 200, Description = "desc" });
+
+            DataTableCreator creator = new(repo.Object);
+            Dictionary<int, WinLossData> data = new();
+            data.Add(1, new WinLossData(6, 4));
+            DataTable table = creator.GetSpellTable(data);
+            Assert.IsTrue(table.TableName.Equals("Spells"));
+            Assert.IsTrue(table.Rows.Count == 1);
+            Assert.IsTrue(table.Rows[0].ItemArray.Length == 7);
+            Assert.IsTrue(table.Rows[0].ItemArray[0].Equals("hi"));
+            Assert.IsTrue(table.Rows[0].ItemArray[1].Equals(6));
+            Assert.IsTrue(table.Rows[0].ItemArray[2].Equals(4));
+            Assert.IsTrue(table.Rows[0].ItemArray[3].Equals(10));
+            Assert.IsTrue(table.Rows[0].ItemArray[4].Equals(60.0));
+            Assert.IsTrue(table.Rows[0].ItemArray[5].Equals(200));
+            Assert.IsTrue(table.Rows[0].ItemArray[6].Equals("desc"));
+        }
     }
 }
