@@ -25,9 +25,8 @@ namespace LeagueAPI_Tests.IntegrationTests
         [TestInitialize]
         public void TestInitialize()
         {
-
             IntegrationTestData = JsonConvert.DeserializeObject<IntegrationTestData>(File.ReadAllText((string)TestContext.Properties["integrationTestDataPath"]));
-            Repository = new(IntegrationTestData.DdragonJsonFilesDirectoryPath);
+            Repository = new(new RealFileIO(), IntegrationTestData.DdragonJsonFilesDirectoryPath);
         }
         
         [TestMethod]

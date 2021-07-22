@@ -35,7 +35,7 @@ namespace LeagueAPI_Tests.IntegrationTests
             Logger_Debug logger = new();
             LeagueAPIClient client = new(http, IntegrationTestData.Token, delayer, logger);
             MatchCollector collector = new(client, logger);
-            DdragonRepository repo = new(IntegrationTestData.DdragonJsonFilesDirectoryPath);
+            DdragonRepository repo = new(new RealFileIO(), IntegrationTestData.DdragonJsonFilesDirectoryPath);
             FullRunner runner = new(collector, repo);
             List<string> createdFiles = await runner.DoFullRun(IntegrationTestData.OutputDirectory, 450, IntegrationTestData.AccountPuuid, maxCount: 1);
             Assert.IsTrue(createdFiles.Count == 3);
@@ -54,7 +54,7 @@ namespace LeagueAPI_Tests.IntegrationTests
             Logger_Debug logger = new();
             LeagueAPIClient client = new(http, IntegrationTestData.Token, delayer, logger);
             MatchCollector collector = new(client, logger);
-            DdragonRepository repo = new(IntegrationTestData.DdragonJsonFilesDirectoryPath);
+            DdragonRepository repo = new(new RealFileIO(), IntegrationTestData.DdragonJsonFilesDirectoryPath);
             FullRunner runner = new(collector, repo);
             List<string> createdFiles = runner.DoFullRun(IntegrationTestData.OutputDirectory, Path.Combine(IntegrationTestData.OutputDirectory, "matches.json"));
             Assert.IsTrue(createdFiles.Count == 2);
