@@ -48,7 +48,7 @@ namespace LeagueAPI_ClassLibrary
             string runGuid = Guid.NewGuid().ToString();
             MatchesFilePath = Path.Combine(outputDirectory, $"Matches_{startOfRunStr}_{runGuid}.json");
             ItemSetFilePath = Path.Combine(outputDirectory, $"ItemSet_{startOfRunStr}_{runGuid}.json");
-            StatsFilePath = Path.Combine(outputDirectory, $"Stats_{startOfRunStr}_{runGuid}.json");
+            StatsFilePath = Path.Combine(outputDirectory, $"Stats_{startOfRunStr}_{runGuid}.xlsx");
         }
 
         private List<string> GetCreatedFilesAfterMatchAnalysis(List<string> createdFiles, List<LeagueMatch> matches)
