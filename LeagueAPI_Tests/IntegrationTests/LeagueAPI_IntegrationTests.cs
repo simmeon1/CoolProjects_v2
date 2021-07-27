@@ -16,23 +16,23 @@ namespace LeagueAPI_Tests.IntegrationTests
     public class LeagueAPI_IntegrationTests
     {
         public TestContext TestContext { get; set; }
-        private IntegrationTestData IntegrationTestData { get; set; }
+        private Parameters TestData { get; set; }
         private IHttpClient HttpClient { get; set; }
         private LeagueAPIClient LeagueAPIClient { get; set; }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            IntegrationTestData = JsonConvert.DeserializeObject<IntegrationTestData>(File.ReadAllText((string)TestContext.Properties["integrationTestDataPath"]));
+            TestData = JsonConvert.DeserializeObject<Parameters>(File.ReadAllText((string)TestContext.Properties["integrationTestDataPath"]));
             HttpClient = new RealHttpClient();
-            LeagueAPIClient = new(HttpClient, IntegrationTestData.Token, new Delayer(), new Logger_Debug());
+            LeagueAPIClient = new(HttpClient, TestData.Token, new Delayer(), new Logger_Debug());
         }
 
         [TestMethod]
         public async Task GetAccountBySummonerName_KeyIsValid()
         {
-            Account acc = await LeagueAPIClient.GetAccountBySummonerName(IntegrationTestData.AccountName);
-            Assert.IsTrue(acc.Name.Equals(IntegrationTestData.AccountName));
+            Account acc = await LeagueAPIClient.GetAccountBySummonerName(TestData.AccountName);
+            Assert.IsTrue(acc.Name.Equals(TestData.AccountName));
             Assert.IsTrue(acc.AccountId.Length > 0);
             Assert.IsTrue(acc.Id.Length > 0);
             Assert.IsTrue(acc.Puuid.Length > 0);
@@ -41,7 +41,7 @@ namespace LeagueAPI_Tests.IntegrationTests
         [TestMethod]
         public async Task GetMatch_DataCollected()
         {
-            List<string> matchIds = await LeagueAPIClient.GetMatchIds(450, IntegrationTestData.AccountPuuid);
+            List<string> matchIds = await LeagueAPIClient.GetMatchIds(450, TestData.AccountPuuid);
             Assert.IsTrue(matchIds.Count > 1);
             LeagueMatch match = await LeagueAPIClient.GetMatch(matchIds[0]);
             Assert.IsTrue(match.matchId.Length > 0);

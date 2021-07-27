@@ -20,12 +20,13 @@ namespace LeagueAPI_Console
                 if (match.Success) parametersPath = match.Groups[1].Value;
             }
             Parameters parameters = File.ReadAllText(parametersPath).DeserializeObject<Parameters>();
+            RealFileIO fileIO = new();
             RealHttpClient http = new();
             Delayer delayer = new();
             Logger_Console logger = new();
             LeagueAPIClient client = new(http, parameters.Token, delayer, logger);
             MatchCollector collector = new(client, logger);
-            DdragonRepository repo = new(parameters.DdragonJsonFilesDirectoryPath);
+            DdragonRepository repo = new(fileIO, parameters.DdragonJsonFilesDirectoryPath);
             FullRunner runner = new(collector, repo);
             List<string> files = await runner.DoFullRun(parameters.OutputDirectory, parameters.QueueId, parameters.AccountPuuid, targetVersion: parameters.TargetVersion, maxCount: parameters.MaxCount);
             if (files.Count > 0) logger.Log($"{files.Count} files written at {parameters.OutputDirectory}. Press any key to exit." );

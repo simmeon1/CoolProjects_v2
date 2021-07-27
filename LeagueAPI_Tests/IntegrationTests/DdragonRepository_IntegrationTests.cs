@@ -19,14 +19,14 @@ namespace LeagueAPI_Tests.IntegrationTests
     public class DdragonRepository_IntegrationTests
     {
         public TestContext TestContext { get; set; }
-        private IntegrationTestData IntegrationTestData { get; set; }
+        private Parameters TestData { get; set; }
         private DdragonRepository Repository { get; set; }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            IntegrationTestData = JsonConvert.DeserializeObject<IntegrationTestData>(File.ReadAllText((string)TestContext.Properties["integrationTestDataPath"]));
-            Repository = new(new RealFileIO(), IntegrationTestData.DdragonJsonFilesDirectoryPath);
+            TestData = JsonConvert.DeserializeObject<Parameters>(File.ReadAllText((string)TestContext.Properties["integrationTestDataPath"]));
+            Repository = new(new RealFileIO(), TestData.DdragonJsonFilesDirectoryPath);
         }
         
         [TestMethod]

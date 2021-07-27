@@ -13,7 +13,7 @@ namespace LeagueAPI_Tests.IntegrationTests
     public class MatchCollector_IntegrationTests
     {
         public TestContext TestContext { get; set; }
-        private IntegrationTestData IntegrationTestData { get; set; }
+        private Parameters TestData { get; set; }
         private IHttpClient HttpClient { get; set; }
         private LeagueAPIClient LeagueAPIClient { get; set; }
         private MatchCollector MatchCollector { get; set; }
@@ -21,16 +21,16 @@ namespace LeagueAPI_Tests.IntegrationTests
         [TestInitialize]
         public void TestInitialize()
         {
-            IntegrationTestData = JsonConvert.DeserializeObject<IntegrationTestData>(File.ReadAllText((string)TestContext.Properties["integrationTestDataPath"]));
+            TestData = JsonConvert.DeserializeObject<Parameters>(File.ReadAllText((string)TestContext.Properties["integrationTestDataPath"]));
             HttpClient = new RealHttpClient();
-            LeagueAPIClient = new(HttpClient, IntegrationTestData.Token, new Delayer(), new Logger_Debug());
+            LeagueAPIClient = new(HttpClient, TestData.Token, new Delayer(), new Logger_Debug());
             MatchCollector = new MatchCollector(LeagueAPIClient, new Logger_Debug());
         }
 
         [TestMethod]
         public async Task CollectMatches_GetsResults_VersionProvided()
         {
-            await RunCollectMatchesTest(IntegrationTestData.TargetVersion);
+            await RunCollectMatchesTest(TestData.TargetVersion);
         }
         
         [TestMethod]
@@ -42,7 +42,7 @@ namespace LeagueAPI_Tests.IntegrationTests
         private async Task RunCollectMatchesTest(string targetVersion)
         {
             int maxCount = 1;
-            List<LeagueMatch> matches = await MatchCollector.GetMatches(IntegrationTestData.AccountPuuid, 450, targetVersion, maxCount: maxCount);
+            List<LeagueMatch> matches = await MatchCollector.GetMatches(TestData.AccountPuuid, 450, targetVersion, maxCount: maxCount);
             Assert.IsTrue(matches.Count == maxCount);
             Assert.IsTrue(matches.Select(m => m.matchId).Distinct().Count() == maxCount);
             DataCollector dataCollector = new();
@@ -59,7 +59,7 @@ namespace LeagueAPI_Tests.IntegrationTests
         [TestMethod]
         public async Task CollectMatches_FullTest()
         {
-            List<LeagueMatch> matches = await MatchCollector.GetMatches(IntegrationTestData.AccountPuuid, 450, IntegrationTestData.TargetVersion, maxCount: 0);
+            List<LeagueMatch> matches = await MatchCollector.GetMatches(TestData.AccountPuuid, 450, TestData.TargetVersion, maxCount: 0);
             Assert.IsTrue(matches.Count > 0);
         }
     }
