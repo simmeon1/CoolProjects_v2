@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj" />
+    <ProjectReference Include="..\SpotifyAPI_ClassLibrary\SpotifyAPI_ClassLibrary.csproj" />
   </ItemGroup>
 
 </Project>
