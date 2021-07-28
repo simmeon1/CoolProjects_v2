@@ -5,7 +5,7 @@ using System.IO;
 
 namespace LeagueAPI_ClassLibrary
 {
-    public class ExcelPrinter
+    public class ExcelPrinter: IExcelPrinter
     {
         public void PrintTablesToWorksheet(List<DataTable> dataTables, string fileName)
         {

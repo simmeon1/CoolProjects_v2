@@ -13,21 +13,29 @@ namespace LeagueAPI_ClassLibrary
     {
         private IMatchCollector MatchCollector { get; set; }
         private IDDragonRepository Repository { get; set; }
+        private IFileIO FileIO { get; set; }
+        private IDateTimeProvider DateTimeProvider { get; set; }
+        private IGuidProvider GuidProvider { get; set; }
+        private IExcelPrinter ExcelPrinter { get; set; }
         private string MatchesFilePath { get; set; }
         private string ItemSetFilePath { get; set; }
         private string StatsFilePath { get; set; }
 
-        public FullRunner(IMatchCollector matchCollector, IDDragonRepository repository)
+        public FullRunner(IMatchCollector matchCollector, IDDragonRepository repository, IFileIO fileIO, IDateTimeProvider dateTimeProvider, IGuidProvider guidProvider, IExcelPrinter excelPrinter)
         {
             MatchCollector = matchCollector;
             Repository = repository;
+            FileIO = fileIO;
+            DateTimeProvider = dateTimeProvider;
+            GuidProvider = guidProvider;
+            ExcelPrinter = excelPrinter;
         }
 
         public List<string> DoFullRun(string outputDirectory, string existingMatchesFilePath)
         {
             InitialiseFileNames(outputDirectory);
             List<string> createdFiles = new();
-            List<LeagueMatch> matches = File.ReadAllText(existingMatchesFilePath).DeserializeObject<List<LeagueMatch>>();
+            List<LeagueMatch> matches = FileIO.ReadAllText(existingMatchesFilePath).DeserializeObject<List<LeagueMatch>>();
             return GetCreatedFilesAfterMatchAnalysis(createdFiles, matches);
         }
 
@@ -36,16 +44,16 @@ namespace LeagueAPI_ClassLibrary
             InitialiseFileNames(outputDirectory);
             List<string> createdFiles = new();
             List<LeagueMatch> matches = await MatchCollector.GetMatches(startPuuid, queueId, targetVersion, maxCount);
-            File.WriteAllText(MatchesFilePath, matches.SerializeObject());
+            FileIO.WriteAllText(MatchesFilePath, matches.SerializeObject());
             createdFiles.Add(MatchesFilePath);
             return GetCreatedFilesAfterMatchAnalysis(createdFiles, matches);
         }
 
         private void InitialiseFileNames(string outputDirectory)
         {
-            DateTime startOfRun = DateTime.Now;
+            DateTime startOfRun = DateTimeProvider.Now();
             string startOfRunStr = startOfRun.ToString("yyyy-MM-dd--HH-mm-ss");
-            string runGuid = Guid.NewGuid().ToString();
+            string runGuid = GuidProvider.NewGuid();
             MatchesFilePath = Path.Combine(outputDirectory, $"Matches_{startOfRunStr}_{runGuid}.json");
             ItemSetFilePath = Path.Combine(outputDirectory, $"ItemSet_{startOfRunStr}_{runGuid}.json");
             StatsFilePath = Path.Combine(outputDirectory, $"Stats_{startOfRunStr}_{runGuid}.xlsx");
@@ -58,7 +66,7 @@ namespace LeagueAPI_ClassLibrary
             Dictionary<int, WinLossData> itemData = results.GetItemData();
             ItemSetExporter exporter = new(Repository);
             string itemSetJson = exporter.GetItemSet(itemData);
-            File.WriteAllText(ItemSetFilePath, itemSetJson);
+            FileIO.WriteAllText(ItemSetFilePath, itemSetJson);
             createdFiles.Add(ItemSetFilePath);
 
             DataTableCreator dataTableCreator = new(Repository);
@@ -70,9 +78,7 @@ namespace LeagueAPI_ClassLibrary
                 dataTableCreator.GetStatPerkTable(results.GetStatPerkData()),
                 dataTableCreator.GetSpellTable(results.GetSpellData())
             };
-
-            ExcelPrinter printer = new();
-            printer.PrintTablesToWorksheet(dataTables, StatsFilePath);
+            ExcelPrinter.PrintTablesToWorksheet(dataTables, StatsFilePath);
             createdFiles.Add(StatsFilePath);
             return createdFiles;
         }

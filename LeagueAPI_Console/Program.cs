@@ -27,7 +27,10 @@ namespace LeagueAPI_Console
             LeagueAPIClient client = new(http, parameters.Token, delayer, logger);
             MatchCollector collector = new(client, logger);
             DdragonRepository repo = new(fileIO, parameters.DdragonJsonFilesDirectoryPath);
-            FullRunner runner = new(collector, repo);
+            RealDateTimeProvider dateTimeProvider = new();
+            RealGuidProvider guidProvider = new();
+            ExcelPrinter printer = new();
+            FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer);
             List<string> files = await runner.DoFullRun(parameters.OutputDirectory, parameters.QueueId, parameters.AccountPuuid, targetVersion: parameters.TargetVersion, maxCount: parameters.MaxCount);
             if (files.Count > 0) logger.Log($"{files.Count} files written at {parameters.OutputDirectory}. Press any key to exit." );
             Console.ReadKey();
