@@ -1,6 +1,7 @@
-using ClassLibrary;
+using Common_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using SpotifyAPI_ClassLibrary;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -95,7 +96,7 @@ namespace ClassLibrary_Tests
         private Mock<IDateTimeProvider> GetDateTimeProviderMockThatReturnsFakeDateTimeNow(DateTime dateToReturn)
         {
             Mock<IDateTimeProvider> dateTimeProviderMock = new();
-            dateTimeProviderMock.Setup(x => x.GetDateTimeNow()).Returns(dateToReturn);
+            dateTimeProviderMock.Setup(x => x.Now()).Returns(dateToReturn);
             return dateTimeProviderMock;
         }
 

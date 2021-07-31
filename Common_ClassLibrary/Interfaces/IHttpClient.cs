@@ -5,6 +5,6 @@ namespace Common_ClassLibrary
 {
     public interface IHttpClient
     {
-        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request);
+        public Task<HttpResponseMessage> SendRequest(HttpRequestMessage request);
     }
 }

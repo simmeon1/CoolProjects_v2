@@ -42,7 +42,7 @@ namespace LeagueAPI_ClassLibrary
         {
             Logger.Log($"Sending request {uri}");
             HttpRequestMessage message = GetMessageReadyWithToken(uri);
-            HttpResponseMessage response = await Client.SendAsync(message);
+            HttpResponseMessage response = await Client.SendRequest(message);
 
             while (response.StatusCode == HttpStatusCode.TooManyRequests || (int)response.StatusCode >= 500)
             {
@@ -58,7 +58,7 @@ namespace LeagueAPI_ClassLibrary
                 Logger.Log($"Last request failed due to status code {response.StatusCode}. Waiting {TimeSpan.FromMilliseconds(millisecondsToWait).TotalSeconds} seconds.");
                 await Delayer.Delay(Convert.ToInt32(millisecondsToWait));
                 message = GetMessageReadyWithToken(uri);
-                response = await Client.SendAsync(message);
+                response = await Client.SendRequest(message);
             }
 
             string responseMessage = await response.Content.ReadAsStringAsync();

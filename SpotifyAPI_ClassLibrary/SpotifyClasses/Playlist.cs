@@ -1,4 +1,4 @@
-﻿namespace ClassLibrary
+﻿namespace SpotifyAPI_ClassLibrary
 {
     public class Playlist
     {

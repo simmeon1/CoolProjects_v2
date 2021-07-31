@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Common_ClassLibrary;
+using System;
 
-namespace ClassLibrary
+namespace SpotifyAPI_ClassLibrary
 {
     public interface ISpotifyTokenWorker
     {

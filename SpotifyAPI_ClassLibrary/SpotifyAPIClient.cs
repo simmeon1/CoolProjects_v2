@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Common_ClassLibrary;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClassLibrary
+namespace SpotifyAPI_ClassLibrary
 {
     public class SpotifyAPIClient
     {
@@ -32,7 +33,7 @@ namespace ClassLibrary
             HttpRequestMessage requestMessage = new(HttpMethod.Post, "https://accounts.spotify.com/api/token");
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", Credentials.GetEncodedSecret());
             requestMessage.Content = new StringContent($"grant_type=refresh_token&refresh_token={Credentials.GetRefreshToken()}", Encoding.UTF8, "application/x-www-form-urlencoded");
-            DateTime dateTimeJustBeforeRequest = DateTimeProvider.GetDateTimeNow();
+            DateTime dateTimeJustBeforeRequest = DateTimeProvider.Now();
             string responseText = await SendRequest(requestMessage);
             Token = GetSpotifyTokenFromResponse(responseText, dateTimeJustBeforeRequest);
         }

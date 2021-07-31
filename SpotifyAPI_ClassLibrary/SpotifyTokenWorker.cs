@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Common_ClassLibrary;
+using System;
 
-namespace ClassLibrary
+namespace SpotifyAPI_ClassLibrary
 {
     public class SpotifyTokenWorker : ISpotifyTokenWorker
     {
@@ -22,7 +19,7 @@ namespace ClassLibrary
             DateTime? tokenCreationTime = token?.GetDateTimeCreated();
             if (tokenCreationTime == null) return false;
             DateTime tokenExpirationTime = token.GetDateTimeCreated().Value.AddSeconds(token.GetExpiresIn());
-            return dateTimeProvider.GetDateTimeNow().CompareTo(tokenExpirationTime) <= 0;
+            return dateTimeProvider.Now().CompareTo(tokenExpirationTime) <= 0;
         }
 
         public ISpotifyToken CreateTokenObject(string accessToken, int expiresIn, string scope, string tokenType, DateTime? dateTimeCreated)

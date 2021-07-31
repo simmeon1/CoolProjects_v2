@@ -35,7 +35,7 @@ namespace LeagueAPI_Tests.UnitTests
                     'name': '" + testAccount.Name + @"'
                 }"
             );
-            ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
+            ClientMock.Setup(x => x.SendRequest(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
 
             LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey", new Mock<IDelayer>().Object, new Logger_Debug());
             Account account = await leagueClient.GetAccountBySummonerName("someName");
@@ -50,7 +50,7 @@ namespace LeagueAPI_Tests.UnitTests
         {
             HttpResponseMessage response = new(HttpStatusCode.BadRequest);
             response.Content = new StringContent("");
-            ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
+            ClientMock.Setup(x => x.SendRequest(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
             LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey", new Mock<IDelayer>().Object, new Logger_Debug());
             await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => leagueClient.GetAccountBySummonerName("someName"));
         }
@@ -89,7 +89,7 @@ namespace LeagueAPI_Tests.UnitTests
                   ]"
             );
 
-            ClientMock.SetupSequence(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result)
+            ClientMock.SetupSequence(x => x.SendRequest(It.IsAny<HttpRequestMessage>()).Result)
                 .Returns(badResponse)
                 .Returns(goodResponse);
             LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey", new Mock<IDelayer>().Object, new Logger_Debug());
@@ -110,7 +110,7 @@ namespace LeagueAPI_Tests.UnitTests
                   ]"
             );
 
-            ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
+            ClientMock.Setup(x => x.SendRequest(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
             LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey", new Mock<IDelayer>().Object, new Logger_Debug());
             List<string> matchIds = await leagueClient.GetMatchIds(450, "somePuuid");
             Assert.IsTrue(matchIds.Count == 2);
@@ -125,7 +125,7 @@ namespace LeagueAPI_Tests.UnitTests
                 @"{'metadata':{'matchId':'EUW1_5364680752','participants':['TxdGlxaUW6x9KvDuk-FEXYbancmWThQ-PQgfkrKW898JcYyAM43T-Gn0sUi0LbYIsUWDJhgxRS_8Wg','G3_8zPn_vTiFPTElkGg7Q3eLF_b9CQ7XZX8vIKYA-jVn2rk-cCihPCaWbRiOdmeBeEg6XkarJwzmUg']},'info':{'gameVersion':'11.14.385.9967','mapId':12,'participants':[{'championId':1, 'puuid': '9zz9VE1mATZrQfcPdgkRw6EyOIAD4h99mtLx8U3F1kAPz2hbAim92GQYcPjurBMDpIGAFKtzgGNL9Q','item0':20,'item1':21,'item2':22,'item3':23,'item4':24,'item5':25,'item6':26,'perks':{'statPerks':{'defense':100,'flex':101,'offense':102},'styles':[{'selections':[{'perk':200},{'perk':201},{'perk':202},{'perk':203}],'style':2000},{'selections':[{'perk':301},{'perk':302}],'style':3000}]},'summoner1Id':50,'summoner2Id':51,'win':true}],'queueId':450}}"
             );
 
-            ClientMock.Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
+            ClientMock.Setup(x => x.SendRequest(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
             LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey", new Mock<IDelayer>().Object, new Logger_Debug());
             LeagueMatch match = await leagueClient.GetMatch("EUW1_5364680752");
             Assert.IsTrue(match.matchId.Equals("EUW1_5364680752"));

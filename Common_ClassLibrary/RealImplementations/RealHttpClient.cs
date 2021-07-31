@@ -12,7 +12,7 @@ namespace Common_ClassLibrary
             Client = new();
         }
 
-        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
+        public Task<HttpResponseMessage> SendRequest(HttpRequestMessage request)
         {
             return Client.SendAsync(request);
         }

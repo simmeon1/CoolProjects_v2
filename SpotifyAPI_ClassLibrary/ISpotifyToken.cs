@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ClassLibrary
+namespace SpotifyAPI_ClassLibrary
 {
     public interface ISpotifyToken
     {
