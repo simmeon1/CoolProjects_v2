@@ -1,5 +1,4 @@
-﻿using ClassLibrary.SpotifyClasses;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,10 +33,16 @@ namespace ClassLibrary
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", Credentials.GetEncodedSecret());
             requestMessage.Content = new StringContent($"grant_type=refresh_token&refresh_token={Credentials.GetRefreshToken()}", Encoding.UTF8, "application/x-www-form-urlencoded");
             DateTime dateTimeJustBeforeRequest = DateTimeProvider.GetDateTimeNow();
+            string responseText = await SendRequest(requestMessage);
+            Token = GetSpotifyTokenFromResponse(responseText, dateTimeJustBeforeRequest);
+        }
+
+        private async Task<string> SendRequest(HttpRequestMessage requestMessage)
+        {
             HttpResponseMessage response = await HttpClient.SendRequest(requestMessage);
             string responseText = await response.Content.ReadAsStringAsync();
-            if (response.StatusCode != HttpStatusCode.OK) ThrowExceptionDueToBadAPIResponse("The token request was not successful.", response, responseText);
-            Token = GetSpotifyTokenFromResponse(responseText, dateTimeJustBeforeRequest);
+            if (response.StatusCode != HttpStatusCode.OK) ThrowExceptionDueToBadAPIResponse("The request was not successful.", response, responseText);
+            return responseText;
         }
 
         private static void ThrowExceptionDueToBadAPIResponse(string leadingMessage, HttpResponseMessage response, string responseText)
@@ -65,9 +70,7 @@ namespace ClassLibrary
         public async Task<List<Playlist>> GetPlaylists()
         {
             HttpRequestMessage requestMessage = await GetRequestMessageWithJsonContentAndAuthorization(HttpMethod.Get, "https://api.spotify.com/v1/me/playlists", "");
-            HttpResponseMessage response = await HttpClient.SendRequest(requestMessage);
-            string responseText = await response.Content.ReadAsStringAsync();
-            if (response.StatusCode != HttpStatusCode.OK) ThrowExceptionDueToBadAPIResponse("The GetPlaylists request was not successful.", response, responseText);
+            string responseText = await SendRequest(requestMessage);
             return GetPlaylistsFromJson(responseText);
         }
 

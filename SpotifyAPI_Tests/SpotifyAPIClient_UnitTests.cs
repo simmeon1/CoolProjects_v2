@@ -1,5 +1,4 @@
 using ClassLibrary;
-using ClassLibrary.SpotifyClasses;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -118,7 +117,7 @@ namespace ClassLibrary_Tests
             }
             catch (ArgumentException ex)
             {
-                Assert.IsTrue(ex.Message.Equals($"The token request was not successful.{Environment.NewLine}The details are as follows:{Environment.NewLine}" +
+                Assert.IsTrue(ex.Message.Equals($"The request was not successful.{Environment.NewLine}The details are as follows:{Environment.NewLine}" +
                     $"Status code: {responseCode}{Environment.NewLine}" +
                     $"Error details: {failResponse}"));
             }
