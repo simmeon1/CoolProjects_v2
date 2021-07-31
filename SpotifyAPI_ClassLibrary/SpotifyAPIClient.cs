@@ -49,11 +49,11 @@ namespace ClassLibrary
 
         private ISpotifyToken GetSpotifyTokenFromResponse(string responseText, DateTime dateTimeJustBeforeRequest)
         {
-            JObject obj = JObject.Parse(responseText);
-            string accessToken = obj["access_token"].ToString();
-            int expiresIn = int.Parse(obj["expires_in"].ToString());
-            string tokenType = obj["token_type"].ToString();
-            string scope = obj["scope"].ToString();
+            JObject tokenResponse = JObject.Parse(responseText);
+            string accessToken = tokenResponse["access_token"].ToString();
+            int expiresIn = int.Parse(tokenResponse["expires_in"].ToString());
+            string tokenType = tokenResponse["token_type"].ToString();
+            string scope = tokenResponse["scope"].ToString();
             return TokenWorker.CreateTokenObject(accessToken, expiresIn, scope, tokenType, dateTimeJustBeforeRequest);
         }
 
@@ -64,36 +64,36 @@ namespace ClassLibrary
 
         public async Task<List<Playlist>> GetPlaylists()
         {
-            await UpdateAccessTokenIfNeededAsync();
-            HttpRequestMessage requestMessage = new(HttpMethod.Get, "https://api.spotify.com/v1/me/playlists");
-            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            requestMessage.Headers.Authorization = new AuthenticationHeaderValue(Token.GetTokenType(), Token.GetAccessToken());
-            requestMessage.Content = new StringContent("");
-            requestMessage.Content.Headers.ContentType = new("application/json");
+            HttpRequestMessage requestMessage = await GetRequestMessageWithJsonContentAndAuthorization(HttpMethod.Get, "https://api.spotify.com/v1/me/playlists", "");
             HttpResponseMessage response = await HttpClient.SendRequest(requestMessage);
             string responseText = await response.Content.ReadAsStringAsync();
             if (response.StatusCode != HttpStatusCode.OK) ThrowExceptionDueToBadAPIResponse("The GetPlaylists request was not successful.", response, responseText);
-            List<Playlist> playlists = GetPlaylistsFromJson(responseText);
-            return playlists;
+            return GetPlaylistsFromJson(responseText);
         }
 
-        private List<Playlist> GetPlaylistsFromJson(string json)
+        private async Task<HttpRequestMessage> GetRequestMessageWithJsonContentAndAuthorization(HttpMethod method, string requestUri, string content)
+        {
+            HttpRequestMessage requestMessage = new(method, requestUri);
+            requestMessage.Content = new StringContent(content);
+            requestMessage.Content.Headers.ContentType = new("application/json");
+            if (!TokenWorker.TokenIsStillValid(Token, DateTimeProvider)) await GetAndSetNewAccessToken();
+            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            requestMessage.Headers.Authorization = new AuthenticationHeaderValue(Token.GetTokenType(), Token.GetAccessToken());
+            return requestMessage;
+        }
+
+        private static List<Playlist> GetPlaylistsFromJson(string json)
         {
             List<Playlist> playlists = new();
-            JObject obj1 = JObject.Parse(json);
-            foreach (JToken obj2 in obj1["items"])
+            JObject playlistsJson = JObject.Parse(json);
+            foreach (JToken playlistJson in playlistsJson["items"])
             {
                 playlists.Add(new Playlist(
-                    obj2["id"].ToString(),
-                    obj2["name"].ToString(),
-                    obj2["description"].ToString()));
+                    playlistJson["id"].ToString(),
+                    playlistJson["name"].ToString(),
+                    playlistJson["description"].ToString()));
             }
             return playlists;
-        }
-
-        private async Task UpdateAccessTokenIfNeededAsync()
-        {
-            if (!TokenWorker.TokenIsStillValid(Token, DateTimeProvider)) await GetAndSetNewAccessToken();
         }
     }
 }

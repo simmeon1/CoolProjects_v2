@@ -82,7 +82,8 @@ namespace ClassLibrary_Tests
         public async Task GetAndSetNewAccessToken_ReturnsSuccessfulResponseAndToken()
         {
             Mock<ISpotifyCredentials> spotifyCredentialsMock = GetSpotifyCredentialsMockThatReturnsAFakeRefreshToken();
-            Mock<IHttpClient> httpClientMock = GetHttpClientMockThatReturnsAGivenStatusCodeAndMessage(HttpStatusCode.OK, SuccessfulTokenResponse);
+            Mock<IHttpClient> httpClientMock = new();
+            httpClientMock.Setup(x => x.SendRequest(It.IsAny<HttpRequestMessage>()).Result).Returns(GetResponseWithCodeAndMessage(HttpStatusCode.OK, SuccessfulTokenResponse));
             Mock<IDateTimeProvider> dateTimeProviderMock = GetDateTimeProviderMockThatReturnsFakeDateTimeNow(FakeToken.GetDateTimeCreated().Value);
 
             SpotifyAPIClient spotifyClient = new(httpClientMock.Object, spotifyCredentialsMock.Object, TokenWorker, dateTimeProviderMock.Object);
@@ -105,7 +106,8 @@ namespace ClassLibrary_Tests
             string failResponse = "failResponse";
             Mock<ISpotifyCredentials> spotifyCredentialsMock = GetSpotifyCredentialsMockThatReturnsAFakeRefreshToken();
             HttpStatusCode responseCode = HttpStatusCode.BadRequest;
-            Mock<IHttpClient> httpClientMock = GetHttpClientMockThatReturnsAGivenStatusCodeAndMessage(responseCode, failResponse);
+            Mock<IHttpClient> httpClientMock = new();
+            httpClientMock.Setup(x => x.SendRequest(It.IsAny<HttpRequestMessage>()).Result).Returns(GetResponseWithCodeAndMessage(responseCode, failResponse));
             Mock<IDateTimeProvider> dateTimeProviderMock = GetDateTimeProviderMockThatReturnsFakeDateTimeNow(FakeToken.GetDateTimeCreated().Value);
             SpotifyAPIClient spotifyClient = new(httpClientMock.Object, spotifyCredentialsMock.Object, TokenWorker, dateTimeProviderMock.Object);
 
@@ -123,16 +125,18 @@ namespace ClassLibrary_Tests
         }
 
         [TestMethod]
-        public async Task GetPlaylist_PlaylistSuccessfullyReturnedAsync()
+        public async Task GetPlaylist_PlaylistSuccessfullyReturned()
         {
             const string playlistId = "testPlaylistId";
             const string playlistName = "testPlaylistName";
             const string playlistDesc = "testPlaylistDesc";
-            string playlistResponseItem = @"[{""collaborative"":false,""description"":""" + $"{playlistDesc}" + @""",""external_urls"":{""spotify"":""""},""href"":"""",""id"":""" + $"{playlistId}" + @""",""images"":[],""name"":""" + $"{playlistName}" + @""",""owner"":{""display_name"":"""",""external_urls"":{""spotify"":""""},""href"":"""",""id"":"""",""type"":"""",""uri"":""""},""primary_color"":null,""public"":false,""snapshot_id"":"""",""tracks"":{""href"":"""",""total"":0},""type"":"""",""uri"":""""}]";
+            string playlistResponseItem = @"{'items':[{'description':'" + playlistDesc + @"','id':'" + playlistId + @"','name':'" + playlistName + @"'}]}";
 
             Mock<ISpotifyCredentials> spotifyCredentialsMock = GetSpotifyCredentialsMockThatReturnsAFakeRefreshToken();
-            string successfulPlaylistResponse = @"{""href"":"""",""items"":" + $"{playlistResponseItem}" + @",""limit"":20,""next"":null,""offset"":0,""previous"":null,""total"":8}";
-            Mock<IHttpClient> httpClientMock = GetHttpClientMockThatReturnsAGivenStatusCodeAndMessage(HttpStatusCode.OK, SuccessfulTokenResponse, successfulPlaylistResponse);
+            Mock<IHttpClient> httpClientMock = new();
+            httpClientMock.SetupSequence(x => x.SendRequest(It.IsAny<HttpRequestMessage>()).Result)
+                .Returns(GetResponseWithCodeAndMessage(HttpStatusCode.OK, SuccessfulTokenResponse))
+                .Returns(GetResponseWithCodeAndMessage(HttpStatusCode.OK, playlistResponseItem));
             Mock<IDateTimeProvider> dateTimeProviderMock = GetDateTimeProviderMockThatReturnsFakeDateTimeNow(FakeToken.GetDateTimeCreated().Value);
             SpotifyAPIClient spotifyClient = new(httpClientMock.Object, spotifyCredentialsMock.Object, TokenWorker, dateTimeProviderMock.Object);
             List<Playlist> playlists = await spotifyClient.GetPlaylists();
@@ -143,20 +147,11 @@ namespace ClassLibrary_Tests
             Assert.IsTrue(playlists.First().Description.Equals(playlistDesc));
         }
 
-        private static Mock<IHttpClient> GetHttpClientMockThatReturnsAGivenStatusCodeAndMessage(HttpStatusCode statusCodeOfResponse, string firstResponseToReturn, string secondResponseToReturn = "")
+        private static HttpResponseMessage GetResponseWithCodeAndMessage(HttpStatusCode statusCodeOfResponse, string responseText)
         {
-            Mock<IHttpClient> httpClientMock = new();
-
-            HttpResponseMessage firstResponseFromTokenRequest = new(statusCode: statusCodeOfResponse);
-            firstResponseFromTokenRequest.Content = new StringContent(firstResponseToReturn);
-
-            HttpResponseMessage secondResponseFromTokenRequest = new(statusCode: statusCodeOfResponse);
-            secondResponseFromTokenRequest.Content = new StringContent(secondResponseToReturn);
-
-            httpClientMock.SetupSequence(x => x.SendRequest((It.IsAny<HttpRequestMessage>())).Result)
-                .Returns(firstResponseFromTokenRequest)
-                .Returns(secondResponseFromTokenRequest);
-            return httpClientMock;
+            HttpResponseMessage response = new(statusCode: statusCodeOfResponse);
+            response.Content = new StringContent(responseText);
+            return response;
         }
 
         private static Mock<ISpotifyCredentials> GetSpotifyCredentialsMockThatReturnsAFakeRefreshToken()
