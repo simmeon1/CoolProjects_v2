@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace ClassLibrary_Tests
 {
     [TestClass]
-    public class SpotifyAPIClientTests
+    public class SpotifyAPIClient_UnitTests
     {
         private const string fakeAccessToken = "fakeAccessToken";
         private const string fakeRefreshToken = "fakeRefreshToken";
