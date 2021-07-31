@@ -1,4 +1,5 @@
 ﻿using ClassLibrary.SpotifyClasses;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,16 +18,14 @@ namespace ClassLibrary
         private ISpotifyToken Token { get; set; }
         private ISpotifyTokenWorker TokenWorker { get; set; }
         private IDateTimeProvider DateTimeProvider { get; set; }
-        private IJsonParser JsonParser { get; set; }
 
-        public SpotifyAPIClient(ISpotifyCredentials credentials, IHttpClient httpClient, IJsonParser jsonParser, IDateTimeProvider dateTimeProvider, ISpotifyTokenWorker tokenWorker, ISpotifyToken token = null)
+        public SpotifyAPIClient(IHttpClient httpClient, ISpotifyCredentials credentials, ISpotifyTokenWorker tokenWorker, IDateTimeProvider dateTimeProvider, ISpotifyToken token = null)
         {
             HttpClient = httpClient;
             Credentials = credentials;
-            JsonParser = jsonParser;
-            Token = token;
             TokenWorker = tokenWorker;
             DateTimeProvider = dateTimeProvider;
+            Token = token;
         }
 
         public async Task GetAndSetNewAccessToken()
@@ -41,7 +40,7 @@ namespace ClassLibrary
             Token = GetSpotifyTokenFromResponse(responseText, dateTimeJustBeforeRequest);
         }
 
-        private void ThrowExceptionDueToBadAPIResponse(string leadingMessage, HttpResponseMessage response, string responseText)
+        private static void ThrowExceptionDueToBadAPIResponse(string leadingMessage, HttpResponseMessage response, string responseText)
         {
             throw new ArgumentException($"{leadingMessage}{Environment.NewLine}The details are as follows:{Environment.NewLine}" +
                                 $"Status code: {response.StatusCode}{Environment.NewLine}" +
@@ -50,10 +49,11 @@ namespace ClassLibrary
 
         private ISpotifyToken GetSpotifyTokenFromResponse(string responseText, DateTime dateTimeJustBeforeRequest)
         {
-            string accessToken = JsonParser.GetPropertyValue<string>(responseText, "access_token");
-            int expiresIn = JsonParser.GetPropertyValue<int>(responseText, "expires_in");
-            string tokenType = JsonParser.GetPropertyValue<string>(responseText, "token_type");
-            string scope = JsonParser.GetPropertyValue<string>(responseText, "scope");
+            JObject obj = JObject.Parse(responseText);
+            string accessToken = obj["access_token"].ToString();
+            int expiresIn = int.Parse(obj["expires_in"].ToString());
+            string tokenType = obj["token_type"].ToString();
+            string scope = obj["scope"].ToString();
             return TokenWorker.CreateTokenObject(accessToken, expiresIn, scope, tokenType, dateTimeJustBeforeRequest);
         }
 
@@ -77,16 +77,16 @@ namespace ClassLibrary
             return playlists;
         }
 
-        public List<Playlist> GetPlaylistsFromJson(string json)
+        private List<Playlist> GetPlaylistsFromJson(string json)
         {
             List<Playlist> playlists = new();
-            List<string> playlistJsons = JsonParser.GetArrayJsons(json, "items");
-            foreach (string playlistJson in playlistJsons)
+            JObject obj1 = JObject.Parse(json);
+            foreach (JToken obj2 in obj1["items"])
             {
                 playlists.Add(new Playlist(
-                    JsonParser.GetPropertyValue<string>(playlistJson, "id"),
-                    JsonParser.GetPropertyValue<string>(playlistJson, "name"),
-                    JsonParser.GetPropertyValue<string>(playlistJson, "description")));
+                    obj2["id"].ToString(),
+                    obj2["name"].ToString(),
+                    obj2["description"].ToString()));
             }
             return playlists;
         }
