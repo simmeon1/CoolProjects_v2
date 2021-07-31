@@ -1,14 +1,11 @@
-﻿using FlightConnectionsDotCom_ClassLibrary;
-using FlightConnectionsDotCom_ClassLibrary.Interfaces;
+﻿using Common_ClassLibrary;
+using FlightConnectionsDotCom_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_Tests.UnitTests
 {

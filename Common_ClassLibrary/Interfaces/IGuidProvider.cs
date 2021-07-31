@@ -1,4 +1,4 @@
-﻿namespace LeagueAPI_ClassLibrary
+﻿namespace Common_ClassLibrary
 {
     public interface IGuidProvider
     {

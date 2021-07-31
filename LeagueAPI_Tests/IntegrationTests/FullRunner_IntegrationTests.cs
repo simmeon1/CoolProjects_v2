@@ -31,7 +31,7 @@ namespace LeagueAPI_Tests.IntegrationTests
         public async Task FullRun_DoTest_NoPredefinedMatchFile()
         {
             RealHttpClient http = new();
-            Delayer delayer = new();
+            RealDelayer delayer = new();
             Logger_Debug logger = new();
             LeagueAPIClient client = new(http, TestData.Token, delayer, logger);
             MatchCollector collector = new(client, logger);
@@ -54,7 +54,7 @@ namespace LeagueAPI_Tests.IntegrationTests
         public void FullRun_DoTest_HasPredefinedMatchFile()
         {
             RealHttpClient http = new();
-            Delayer delayer = new();
+            RealDelayer delayer = new();
             Logger_Debug logger = new();
             LeagueAPIClient client = new(http, TestData.Token, delayer, logger);
             MatchCollector collector = new(client, logger);

@@ -13,4 +13,8 @@
     <ProjectReference Include="..\Common_ClassLibrary\Common_ClassLibrary.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="RealImplementations\" />
+  </ItemGroup>
+
 </Project>

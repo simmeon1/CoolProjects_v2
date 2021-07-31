@@ -1,13 +1,10 @@
-﻿using FlightConnectionsDotCom_ClassLibrary.Interfaces;
+﻿using Common_ClassLibrary;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {

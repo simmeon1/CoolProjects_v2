@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace LeagueAPI_ClassLibrary
+namespace Common_ClassLibrary
 {
     public class RealHttpClient : IHttpClient
     {

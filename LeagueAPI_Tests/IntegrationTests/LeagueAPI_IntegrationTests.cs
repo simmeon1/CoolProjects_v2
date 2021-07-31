@@ -1,3 +1,4 @@
+using Common_ClassLibrary;
 using LeagueAPI_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -25,7 +26,7 @@ namespace LeagueAPI_Tests.IntegrationTests
         {
             TestData = JsonConvert.DeserializeObject<Parameters>(File.ReadAllText((string)TestContext.Properties["integrationTestDataPath"]));
             HttpClient = new RealHttpClient();
-            LeagueAPIClient = new(HttpClient, TestData.Token, new Delayer(), new Logger_Debug());
+            LeagueAPIClient = new(HttpClient, TestData.Token, new RealDelayer(), new Logger_Debug());
         }
 
         [TestMethod]

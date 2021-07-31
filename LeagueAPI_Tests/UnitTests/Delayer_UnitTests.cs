@@ -1,3 +1,4 @@
+using Common_ClassLibrary;
 using LeagueAPI_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -12,7 +13,7 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public async Task Delay_Working()
         {
-            Delayer delayer = new();
+            RealDelayer delayer = new();
             await delayer.Delay(1);
             Assert.IsTrue(true);
         }

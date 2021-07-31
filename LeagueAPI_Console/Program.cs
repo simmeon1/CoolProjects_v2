@@ -22,7 +22,7 @@ namespace LeagueAPI_Console
             Parameters parameters = File.ReadAllText(parametersPath).DeserializeObject<Parameters>();
             RealFileIO fileIO = new();
             RealHttpClient http = new();
-            Delayer delayer = new();
+            RealDelayer delayer = new();
             Logger_Console logger = new();
             LeagueAPIClient client = new(http, parameters.Token, delayer, logger);
             MatchCollector collector = new(client, logger);

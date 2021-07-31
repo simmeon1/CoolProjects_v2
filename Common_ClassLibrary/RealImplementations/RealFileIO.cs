@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 
-namespace LeagueAPI_ClassLibrary
+namespace Common_ClassLibrary
 {
     public class RealFileIO : IFileIO
     {

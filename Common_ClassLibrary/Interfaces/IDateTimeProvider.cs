@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LeagueAPI_ClassLibrary
+namespace Common_ClassLibrary
 {
     public interface IDateTimeProvider
     {

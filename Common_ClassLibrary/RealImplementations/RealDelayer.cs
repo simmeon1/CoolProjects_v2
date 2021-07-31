@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace LeagueAPI_ClassLibrary
+namespace Common_ClassLibrary
 {
-    public class Delayer : IDelayer
+    public class RealDelayer : IDelayer
     {
         public async Task Delay(int milliseconds)
         {

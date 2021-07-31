@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace LeagueAPI_ClassLibrary
+namespace Common_ClassLibrary
 {
     public class Logger_Debug : ILogger
     {

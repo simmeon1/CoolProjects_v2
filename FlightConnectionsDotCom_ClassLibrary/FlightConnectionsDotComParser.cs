@@ -1,4 +1,4 @@
-﻿using FlightConnectionsDotCom_ClassLibrary.Interfaces;
+﻿using Common_ClassLibrary;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.WaitHelpers;

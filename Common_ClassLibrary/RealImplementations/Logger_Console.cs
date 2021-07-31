@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace LeagueAPI_ClassLibrary
+namespace Common_ClassLibrary
 {
     public class Logger_Console : ILogger
     {
