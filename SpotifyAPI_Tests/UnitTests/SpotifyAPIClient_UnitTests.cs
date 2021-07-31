@@ -9,7 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace ClassLibrary_Tests
+namespace SpotifyAPI_Tests.UnitTests
 {
     [TestClass]
     public class SpotifyAPIClient_UnitTests

@@ -1,12 +1,11 @@
 using Common_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SpotifyAPI_ClassLibrary;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace ClassLibrary
+namespace SpotifyAPI_Tests.IntegrationTests
 {
     [TestClass]
     public class SpotifyAPIClient_IntegrationTests
@@ -23,7 +22,7 @@ namespace ClassLibrary
         }
 
         [TestMethod]
-        public async Task GetPlaylists_AtLeastOneResultAsync()
+        public async Task GetPlaylists_AtLeastOneResult()
         {
             List<Playlist> result = await Client.GetPlaylists();
             Assert.IsTrue(result.Count > 0);
