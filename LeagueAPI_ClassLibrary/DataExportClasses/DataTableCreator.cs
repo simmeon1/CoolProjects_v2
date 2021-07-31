@@ -9,7 +9,7 @@ namespace LeagueAPI_ClassLibrary
     public class DataTableCreator
     {
         private IDDragonRepository DDragonRepository { get; set; }
-        private int RowIndexCounter { get; set; }
+        private int ColumnIndexCounter { get; set; }
         private Type TypeString { get; set; }
         private Type TypeInt32 { get; set; }
         private Type TypeDouble { get; set; }
@@ -34,12 +34,12 @@ namespace LeagueAPI_ClassLibrary
 
             foreach (KeyValuePair<int, WinLossData> champEntry in championData)
             {
-                RowIndexCounter = 0;
+                ColumnIndexCounter = 0;
                 Champion champ = DDragonRepository.GetChampion(champEntry.Key);
                 DataRow row = table.NewRow();
                 AddDefaultDataToRow(champ.Name, champEntry, row);
-                row[ReturnRowIndexCounterAndIncrementIt()] = champ.GetTagsString();
-                row[ReturnRowIndexCounterAndIncrementIt()] = champ.Difficulty;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = champ.GetTagsString();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = champ.Difficulty;
                 table.Rows.Add(row);
             }
             return table;
@@ -47,11 +47,11 @@ namespace LeagueAPI_ClassLibrary
 
         private void AddDefaultDataToRow(string name, KeyValuePair<int, WinLossData> entry, DataRow row)
         {
-            row[ReturnRowIndexCounterAndIncrementIt()] = name;
-            row[ReturnRowIndexCounterAndIncrementIt()] = entry.Value.GetWins();
-            row[ReturnRowIndexCounterAndIncrementIt()] = entry.Value.GetLosses();
-            row[ReturnRowIndexCounterAndIncrementIt()] = entry.Value.GetTotal();
-            row[ReturnRowIndexCounterAndIncrementIt()] = entry.Value.GetWinRate();
+            row[ReturnColumnIndexCounterAndIncrementIt()] = name;
+            row[ReturnColumnIndexCounterAndIncrementIt()] = entry.Value.GetWins();
+            row[ReturnColumnIndexCounterAndIncrementIt()] = entry.Value.GetLosses();
+            row[ReturnColumnIndexCounterAndIncrementIt()] = entry.Value.GetTotal();
+            row[ReturnColumnIndexCounterAndIncrementIt()] = entry.Value.GetWinRate();
         }
 
         public DataTable GetItemTable(Dictionary<int, WinLossData> itemData)
@@ -70,18 +70,18 @@ namespace LeagueAPI_ClassLibrary
 
             foreach (KeyValuePair<int, WinLossData> itemEntry in itemData)
             {
-                RowIndexCounter = 0;
+                ColumnIndexCounter = 0;
                 Item item = DDragonRepository.GetItem(itemEntry.Key);
                 DataRow row = table.NewRow();
                 AddDefaultDataToRow(item.Name, itemEntry, row);
-                row[ReturnRowIndexCounterAndIncrementIt()] = item.Gold;
-                row[ReturnRowIndexCounterAndIncrementIt()] = item.IsMoreThan2000G();
-                row[ReturnRowIndexCounterAndIncrementIt()] = item.IsMythic();
-                row[ReturnRowIndexCounterAndIncrementIt()] = item.IsOrnnItem();
-                row[ReturnRowIndexCounterAndIncrementIt()] = item.IsFinished;
-                row[ReturnRowIndexCounterAndIncrementIt()] = item.GetTagsString();
-                row[ReturnRowIndexCounterAndIncrementIt()] = item.Plaintext;
-                row[ReturnRowIndexCounterAndIncrementIt()] = item.GetCleanDescription();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = item.Gold;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = item.IsMoreThan2000G();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = item.IsMythic();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = item.IsOrnnItem();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = item.IsFinished;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = item.GetTagsString();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = item.Plaintext;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = item.GetCleanDescription();
                 table.Rows.Add(row);
             }
             return table;
@@ -110,13 +110,13 @@ namespace LeagueAPI_ClassLibrary
 
             foreach (KeyValuePair<int, WinLossData> entry in data)
             {
-                RowIndexCounter = 0;
+                ColumnIndexCounter = 0;
                 Rune item = DDragonRepository.GetRune(entry.Key);
                 DataRow row = table.NewRow();
                 AddDefaultDataToRow(item.Name, entry, row);
-                row[ReturnRowIndexCounterAndIncrementIt()] = item.Tree;
-                row[ReturnRowIndexCounterAndIncrementIt()] = item.Slot;
-                row[ReturnRowIndexCounterAndIncrementIt()] = item.GetCleanDescription();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = item.Tree;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = item.Slot;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = item.GetCleanDescription();
                 table.Rows.Add(row);
             }
             return table;
@@ -132,12 +132,12 @@ namespace LeagueAPI_ClassLibrary
 
             foreach (KeyValuePair<int, WinLossData> entry in data)
             {
-                RowIndexCounter = 0;
+                ColumnIndexCounter = 0;
                 Spell spell = DDragonRepository.GetSpell(entry.Key);
                 DataRow row = table.NewRow();
                 AddDefaultDataToRow(spell.Name, entry, row);
-                row[ReturnRowIndexCounterAndIncrementIt()] = spell.Cooldown;
-                row[ReturnRowIndexCounterAndIncrementIt()] = spell.Description;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = spell.Cooldown;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = spell.Description;
                 table.Rows.Add(row);
             }
             return table;
@@ -148,7 +148,7 @@ namespace LeagueAPI_ClassLibrary
             DataTable table = GetTableWithDefaultColumns("Stat Perks");
             foreach (KeyValuePair<int, WinLossData> entry in data)
             {
-                RowIndexCounter = 0;
+                ColumnIndexCounter = 0;
                 DataRow row = table.NewRow();
                 AddDefaultDataToRow(DDragonRepository.GetStatPerk(entry.Key), entry, row);
                 table.Rows.Add(row);
@@ -156,10 +156,10 @@ namespace LeagueAPI_ClassLibrary
             return table;
         }
 
-        private int ReturnRowIndexCounterAndIncrementIt()
+        private int ReturnColumnIndexCounterAndIncrementIt()
         {
-            int result = RowIndexCounter;
-            RowIndexCounter++;
+            int result = ColumnIndexCounter;
+            ColumnIndexCounter++;
             return result;
         }
     }
