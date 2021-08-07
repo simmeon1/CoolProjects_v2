@@ -38,11 +38,34 @@ namespace SpotifyAPI_ClassLibrary
             Token = GetSpotifyTokenFromResponse(responseText, dateTimeJustBeforeRequest);
         }
 
+        public async Task AddSongsToPlaylist(List<SongCLS> songs, string playlistId)
+        {
+            string template = @"{'uris':" + "arrayPlaceHolder" + @"}";
+            List<HttpRequestMessage> requests = new();
+            List<string> uris = new();
+            foreach (SongCLS song in songs)
+            {
+                uris.Add($"spotify:track:{song.SpotifyId}");
+                if (uris.Count < 100) continue;
+                await AddRequestToAddSongs(playlistId, template, requests, uris);
+                uris.Clear();
+            }
+            if (uris.Count > 0) await AddRequestToAddSongs(playlistId, template, requests, uris);
+            foreach (HttpRequestMessage request in requests) await SendRequest(request);
+        }
+
+        private async Task AddRequestToAddSongs(string playlistId, string template, List<HttpRequestMessage> requests, List<string> uris)
+        {
+            requests.Add(await GetRequestMessageWithJsonContentAndAuthorization(
+                                HttpMethod.Post, $"https://api.spotify.com/v1/playlists/{playlistId}/tracks",
+                                template.Replace("arrayPlaceHolder", uris.SerializeObject()).Replace("'", "\"")));
+        }
+
         private async Task<string> SendRequest(HttpRequestMessage requestMessage)
         {
             HttpResponseMessage response = await HttpClient.SendRequest(requestMessage);
             string responseText = await response.Content.ReadAsStringAsync();
-            if (response.StatusCode != HttpStatusCode.OK) ThrowExceptionDueToBadAPIResponse("The request was not successful.", response, responseText);
+            if (((int)response.StatusCode).ToString()[0] != '2') ThrowExceptionDueToBadAPIResponse("The request was not successful.", response, responseText);
             return responseText;
         }
 
