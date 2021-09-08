@@ -46,13 +46,30 @@ namespace LeagueAPI_Tests.UnitTests
         }
         
         [TestMethod]
-        public async Task GetAccountBySummonerName_ThrowsException()
+        public async Task GetAccountBySummonerName_ReturnsNullWhenNotForbidden()
         {
-            HttpResponseMessage response = new(HttpStatusCode.BadRequest);
+            LeagueAPIClient leagueClient = SetUpClientWithUnsuccessfulResponse(HttpStatusCode.BadRequest);
+            Assert.IsTrue(await leagueClient.GetAccountBySummonerName("someName") == null);
+        }
+
+        private LeagueAPIClient SetUpClientWithUnsuccessfulResponse(HttpStatusCode code)
+        {
+            HttpResponseMessage response = new(code);
             response.Content = new StringContent("");
             ClientMock.Setup(x => x.SendRequest(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
-            LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey", new Mock<IDelayer>().Object, new Logger_Debug());
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => leagueClient.GetAccountBySummonerName("someName"));
+            return new LeagueAPIClient(ClientMock.Object, "someKey", new Mock<IDelayer>().Object, new Logger_Debug());
+        }
+
+        [TestMethod]
+        public async Task GetAccountBySummonerName_ThrowsExceptionWhenForbidden()
+        {
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => SetUpClientWithUnsuccessfulResponse(HttpStatusCode.Forbidden).GetAccountBySummonerName("someName"));
+        }
+        
+        [TestMethod]
+        public async Task GetAccountBySummonerName_ThrowsExceptionWhenAmbiguous()
+        {
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => SetUpClientWithUnsuccessfulResponse(HttpStatusCode.Ambiguous).GetAccountBySummonerName("someName"));
         }
         
         [TestMethod]
@@ -119,7 +136,13 @@ namespace LeagueAPI_Tests.UnitTests
         }
         
         [TestMethod]
-        public async Task GetMatches_GetsAllResults()
+        public async Task GetMatchIds_ReturnsEmptyArrayWhenRequestIsNotFound()
+        {
+            Assert.IsTrue((await SetUpClientWithUnsuccessfulResponse(HttpStatusCode.NotFound).GetMatchIds(450, "somePuuid")).Count == 0);
+        }
+        
+        [TestMethod]
+        public async Task GetMatch_GetsAllResults()
         {
             HttpResponseMessage response = GetSuccessfulResponse(
                 @"{'metadata':{'matchId':'EUW1_5364680752','participants':['TxdGlxaUW6x9KvDuk-FEXYbancmWThQ-PQgfkrKW898JcYyAM43T-Gn0sUi0LbYIsUWDJhgxRS_8Wg','G3_8zPn_vTiFPTElkGg7Q3eLF_b9CQ7XZX8vIKYA-jVn2rk-cCihPCaWbRiOdmeBeEg6XkarJwzmUg']},'info':{'gameVersion':'11.14.385.9967','mapId':12,'participants':[{'championId':1, 'puuid': '9zz9VE1mATZrQfcPdgkRw6EyOIAD4h99mtLx8U3F1kAPz2hbAim92GQYcPjurBMDpIGAFKtzgGNL9Q','item0':20,'item1':21,'item2':22,'item3':23,'item4':24,'item5':25,'item6':26,'perks':{'statPerks':{'defense':100,'flex':101,'offense':102},'styles':[{'selections':[{'perk':200},{'perk':201},{'perk':202},{'perk':203}],'style':2000},{'selections':[{'perk':301},{'perk':302}],'style':3000}]},'summoner1Id':50,'summoner2Id':51,'win':true}],'queueId':450}}"
@@ -158,6 +181,12 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(p1.summoner1Id == 50);
             Assert.IsTrue(p1.summoner2Id == 51);
             Assert.IsTrue(p1.win == true);
+        }
+        
+        [TestMethod]
+        public async Task GetMatch_ReturnsNullWhenRequestIsUnsuccessful()
+        {
+            Assert.IsTrue(await SetUpClientWithUnsuccessfulResponse(HttpStatusCode.BadRequest).GetMatch("EUW1_5364680752") == null);
         }
 
         private static HttpResponseMessage GetSuccessfulResponse(string responseContent)

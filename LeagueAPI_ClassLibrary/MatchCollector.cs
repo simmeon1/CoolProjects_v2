@@ -38,7 +38,7 @@ namespace LeagueAPI_ClassLibrary
             return 0;
         }
 
-        public async Task<List<LeagueMatch>> GetMatches(string startPuuid, int queueId, string targetVersion = null, int maxCount = 0)
+        public async Task<List<LeagueMatch>> GetMatches(string startPuuid, int queueId, string targetVersion, int maxCount = 0)
         {
             HashSet<string> scannedMatchIds = new();
             Queue<string> puuidQueue = new();
@@ -61,13 +61,13 @@ namespace LeagueAPI_ClassLibrary
                         LeagueMatch match = await Client.GetMatch(matchId);
                         scannedMatchIds.Add(matchId);
 
-                        if (targetVersion == null) targetVersion = match.gameVersion;
+                        if (match == null) continue;
                         int versionComparisonResult = CompareTargetVersionAgainstGameVersion(targetVersion, match.gameVersion);
                         if (versionComparisonResult == -1) continue;
                         else if (versionComparisonResult == 1) break;
 
                         result.Add(match);
-                        Logger.Log($"Added match {match.matchId} (version {match.gameVersion}), current count is {result.Count}");
+                        Logger.Log($"Added match {match.matchId} (version {match.gameVersion}, queueId {match.queueId}), current count is {result.Count}");
                         if (maxCount > 0 && result.Count >= maxCount) return result;
                         foreach (Participant participant in match.participants)
                         {

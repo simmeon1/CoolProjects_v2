@@ -31,19 +31,8 @@ namespace LeagueAPI_Tests.IntegrationTests
         [TestMethod]
         public async Task CollectMatches_GetsResults_VersionProvided()
         {
-            await RunCollectMatchesTest(TestData.TargetVersion);
-        }
-        
-        [TestMethod]
-        public async Task CollectMatches_GetsResults_VersionNotProvided()
-        {
-            await RunCollectMatchesTest(null);
-        }
-
-        private async Task RunCollectMatchesTest(string targetVersion)
-        {
             int maxCount = 1;
-            List<LeagueMatch> matches = await MatchCollector.GetMatches(TestData.AccountPuuid, 450, targetVersion, maxCount: maxCount);
+            List<LeagueMatch> matches = await MatchCollector.GetMatches(TestData.AccountPuuid, 450, TestData.TargetVersion, maxCount: maxCount);
             Assert.IsTrue(matches.Count == maxCount);
             Assert.IsTrue(matches.Select(m => m.matchId).Distinct().Count() == maxCount);
             DataCollector dataCollector = new();
