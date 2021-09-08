@@ -25,17 +25,19 @@ namespace LeagueAPI_ClassLibrary
         public async Task<Account> GetAccountBySummonerName(string summonerName)
         {
             JObject obj = await GetJObjectFromResponse($"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}");
-            return new Account((string)obj["id"], (string)obj["accountId"], (string)obj["puuid"], (string)obj["name"]);
+            return obj == null ? null : new Account((string)obj["id"], (string)obj["accountId"], (string)obj["puuid"], (string)obj["name"]);
         }
 
         private async Task<JObject> GetJObjectFromResponse(string uri)
         {
-            return JObject.Parse(await GetResponse(uri));
+            string response = await GetResponse(uri);
+            return response == null ? null : JObject.Parse(response);
         }
 
         private async Task<JArray> GetJArrayFromResponse(string uri)
         {
-            return JArray.Parse(await GetResponse(uri));
+            string response = await GetResponse(uri);
+            return response == null ? new JArray() : JArray.Parse(response);
         }
 
         private async Task<string> GetResponse(string uri)
@@ -55,7 +57,9 @@ namespace LeagueAPI_ClassLibrary
                     }
                     catch (Exception) { }
                 }
-                Logger.Log($"Last request failed due to status code {response.StatusCode}. Waiting {TimeSpan.FromMilliseconds(millisecondsToWait).TotalSeconds} seconds.");
+
+                double timeToWait = TimeSpan.FromMilliseconds(millisecondsToWait).TotalSeconds;
+                Logger.Log($"Last request failed due to status code {response.StatusCode}. Waiting {timeToWait} seconds (to continue at {DateTime.Now.AddSeconds(timeToWait)}).");
                 await Delayer.Delay(Convert.ToInt32(millisecondsToWait));
                 message = GetMessageReadyWithToken(uri);
                 response = await Client.SendRequest(message);
@@ -63,6 +67,7 @@ namespace LeagueAPI_ClassLibrary
 
             string responseMessage = await response.Content.ReadAsStringAsync();
             if (response.StatusCode == HttpStatusCode.OK) return responseMessage;
+            if ((int)response.StatusCode >= 400 && (int)response.StatusCode != (int)HttpStatusCode.Forbidden) return null;
             throw new InvalidOperationException(
                 $"The request was not successful.{Environment.NewLine}" +
                 $"URI: {uri}.{Environment.NewLine}" +
@@ -89,6 +94,7 @@ namespace LeagueAPI_ClassLibrary
         public async Task<LeagueMatch> GetMatch(string matchId)
         {
             JObject obj = await GetJObjectFromResponse($"https://europe.api.riotgames.com/lol/match/v5/matches/{matchId}");
+            if (obj == null) return null;
             LeagueMatch match = new();
             match.gameVersion = obj["info"]["gameVersion"].ToString();
             match.matchId = obj["metadata"]["matchId"].ToString();

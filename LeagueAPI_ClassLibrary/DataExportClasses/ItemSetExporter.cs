@@ -55,7 +55,7 @@ namespace LeagueAPI_ClassLibrary
             Repository = repository;
         }
 
-        public string GetItemSet(Dictionary<int, WinLossData> itemData)
+        public string GetItemSet(Dictionary<int, WinLossData> itemData, string itemSetName)
         {
             List<object> guardianJsonArray = new();
             List<object> bootsJsonArray = new();
@@ -70,7 +70,7 @@ namespace LeagueAPI_ClassLibrary
                 int id = entry.Key;
                 double winRate = entry.Value.GetWinRate();
                 Item item = Repository.GetItem(id);
-                if (item.IsOrnnItem()) continue;
+                if (item == null || item.IsOrnnItem()) continue;
                 if (item.IsGuardian()) AddItemToList(id, guardianJsonArray);
                 else if (item.IsBoots()) AddItemToList(id, bootsJsonArray);
                 else if (item.IsMythic() && winRate >= 50) AddItemToList(id, mythics50PlusJsonArray);
@@ -79,6 +79,7 @@ namespace LeagueAPI_ClassLibrary
                 else if (item.IsFinished && item.IsMoreThan2000G()) AddItemToList(id, legendaries50MinusJsonArray);
             }
             return BaseJson
+                .Replace(jsonTitle, itemSetName)
                 .Replace(guardianJson, guardianJsonArray.SerializeObject())
                 .Replace(bootsJson, bootsJsonArray.SerializeObject())
                 .Replace(mythics50PlusJson, mythics50PlusJsonArray.SerializeObject())

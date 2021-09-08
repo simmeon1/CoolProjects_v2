@@ -72,6 +72,7 @@ namespace LeagueAPI_ClassLibrary
             {
                 ColumnIndexCounter = 0;
                 Item item = DDragonRepository.GetItem(itemEntry.Key);
+                if (item == null) continue;
                 DataRow row = table.NewRow();
                 AddDefaultDataToRow(item.Name, itemEntry, row);
                 row[ReturnColumnIndexCounterAndIncrementIt()] = item.Gold;

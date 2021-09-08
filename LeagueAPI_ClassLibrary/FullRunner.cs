@@ -65,7 +65,7 @@ namespace LeagueAPI_ClassLibrary
             DataCollectorResults results = collector.GetData(matches);
             Dictionary<int, WinLossData> itemData = results.GetItemData();
             ItemSetExporter exporter = new(Repository);
-            string itemSetJson = exporter.GetItemSet(itemData);
+            string itemSetJson = exporter.GetItemSet(itemData, ItemSetFilePath);
             FileIO.WriteAllText(ItemSetFilePath, itemSetJson);
             createdFiles.Add(ItemSetFilePath);
 
