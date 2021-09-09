@@ -42,31 +42,9 @@ namespace LeagueAPI_ClassLibrary
 
         private async Task<string> GetResponse(string uri)
         {
-            Logger.Log($"Sending request {uri}");
-            HttpRequestMessage message = GetMessageReadyWithToken(uri);
-            HttpResponseMessage response = await Client.SendRequest(message);
-
-            while (response.StatusCode == HttpStatusCode.TooManyRequests || (int)response.StatusCode >= 500)
-            {
-                double millisecondsToWait = 1000;
-                if (response.StatusCode == HttpStatusCode.TooManyRequests)
-                {
-                    try
-                    {
-                        millisecondsToWait = response.Headers.RetryAfter.Delta.Value.TotalMilliseconds;
-                    }
-                    catch (Exception) { }
-                }
-
-                double timeToWait = TimeSpan.FromMilliseconds(millisecondsToWait).TotalSeconds;
-                Logger.Log($"Last request failed due to status code {response.StatusCode}. Waiting {timeToWait} seconds (to continue at {DateTime.Now.AddSeconds(timeToWait)}).");
-                await Delayer.Delay(Convert.ToInt32(millisecondsToWait));
-                message = GetMessageReadyWithToken(uri);
-                response = await Client.SendRequest(message);
-            }
-
+            HttpResponseMessage response = await SendRequest(uri);
             string responseMessage = await response.Content.ReadAsStringAsync();
-            if (response.StatusCode == HttpStatusCode.OK) return responseMessage;
+            if (((int)response.StatusCode).ToString()[0] == '2') return responseMessage;
             if ((int)response.StatusCode >= 400 && (int)response.StatusCode != (int)HttpStatusCode.Forbidden) return null;
             throw new InvalidOperationException(
                 $"The request was not successful.{Environment.NewLine}" +
@@ -74,6 +52,50 @@ namespace LeagueAPI_ClassLibrary
                 $"Status code: {response.StatusCode}.{Environment.NewLine}" +
                 $"Message: {responseMessage}"
             );
+        }
+
+        private async Task<HttpResponseMessage> SendRequest(string uri)
+        {
+            while (true)
+            {
+                HttpRequestMessage message = GetMessageReadyWithToken(uri);
+                try
+                {
+                    HttpResponseMessage response = await Client.SendRequest(message);
+                    while (response.StatusCode == HttpStatusCode.TooManyRequests || (int)response.StatusCode >= 500)
+                    {
+                        double millisecondsToWait = 1000;
+                        if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                        {
+                            try
+                            {
+                                millisecondsToWait = response.Headers.RetryAfter.Delta.Value.TotalMilliseconds;
+                            }
+                            catch (Exception) { }
+                        }
+
+                        Logger.Log($"Last request failed due to status code {response.StatusCode}.");
+                        LogTimeToWaitBeforeRetrying(TimeSpan.FromMilliseconds(millisecondsToWait).TotalSeconds);
+                        await Delayer.Delay(Convert.ToInt32(millisecondsToWait));
+                        message = GetMessageReadyWithToken(uri);
+                        response = await Client.SendRequest(message);
+                    }
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"There was an error with sending request {uri}. Details:");
+                    Logger.Log(ex.Message);
+                    double secondsToWait = 10;
+                    LogTimeToWaitBeforeRetrying(secondsToWait);
+                    await Delayer.Delay(Convert.ToInt32(TimeSpan.FromSeconds(secondsToWait).TotalMilliseconds));
+                }
+            }
+        }
+
+        private void LogTimeToWaitBeforeRetrying(double timeToWaitInSeconds)
+        {
+            Logger.Log($"Waiting {timeToWaitInSeconds} seconds before retrying (at {DateTime.Now.AddSeconds(timeToWaitInSeconds)}).");
         }
 
         private HttpRequestMessage GetMessageReadyWithToken(string uri)

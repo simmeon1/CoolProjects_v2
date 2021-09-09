@@ -22,9 +22,9 @@ namespace LeagueAPI_Tests.UnitTests
         {
             ClientMock = new();
         }
-
+        
         [TestMethod]
-        public async Task GetAccountBySummonerName_GetsAccount()
+        public async Task GetAccountBySummonerName_GetsAccountAfterAnExceiptionThrownBySendRequest()
         {
             Account testAccount = new("1", "2", "3", "4");
             HttpResponseMessage response = GetSuccessfulResponse(
@@ -35,7 +35,9 @@ namespace LeagueAPI_Tests.UnitTests
                     'name': '" + testAccount.Name + @"'
                 }"
             );
-            ClientMock.Setup(x => x.SendRequest(It.IsAny<HttpRequestMessage>()).Result).Returns(response);
+            ClientMock.SetupSequence(x => x.SendRequest(It.IsAny<HttpRequestMessage>()).Result)
+                .Throws(new Exception("test exception"))
+                .Returns(response);
 
             LeagueAPIClient leagueClient = new(ClientMock.Object, "someKey", new Mock<IDelayer>().Object, new Logger_Debug());
             Account account = await leagueClient.GetAccountBySummonerName("someName");
