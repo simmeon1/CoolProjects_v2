@@ -1,16 +1,9 @@
 using Common_ClassLibrary;
 using LeagueAPI_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace LeagueAPI_Tests.IntegrationTests
@@ -42,12 +35,8 @@ namespace LeagueAPI_Tests.IntegrationTests
             ExcelPrinter printer = new();
             FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger);
             List<string> createdFiles = await runner.DoFullRun(TestData.OutputDirectory, 450, TestData.AccountPuuid, maxCount: 1);
-            Assert.IsTrue(createdFiles.Count == 3);
-            foreach (string file in createdFiles)
-            {
-                try {File.Delete(file);}
-                catch (Exception) {}
-            }
+            Assert.IsTrue(createdFiles.Count == 4);
+            DeleteCreatedFiles(createdFiles);
         }
         
         [TestMethod]
@@ -65,11 +54,16 @@ namespace LeagueAPI_Tests.IntegrationTests
             RealGuidProvider guidProvider = new();
             FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger);
             List<string> createdFiles = runner.DoFullRun(TestData.OutputDirectory, Path.Combine(TestData.OutputDirectory, "matches.json"));
-            Assert.IsTrue(createdFiles.Count == 2);
+            Assert.IsTrue(createdFiles.Count == 3);
+            DeleteCreatedFiles(createdFiles);
+        }
+
+        private static void DeleteCreatedFiles(List<string> createdFiles)
+        {
             foreach (string file in createdFiles)
             {
-                try {File.Delete(file);}
-                catch (Exception) {}
+                try { File.Delete(file); }
+                catch (Exception) { }
             }
         }
     }
