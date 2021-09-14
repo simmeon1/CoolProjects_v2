@@ -4,5 +4,6 @@
     {
         void Log(string message);
         bool Contains(string message);
+        string GetContent();
     }
 }

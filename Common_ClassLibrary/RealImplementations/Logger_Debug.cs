@@ -5,15 +5,20 @@ namespace Common_ClassLibrary
 {
     public class Logger_Debug : ILogger
     {
-        private List<string> LogDetails { get; set; } = new();
+        private Queue<string> LogDetails { get; set; } = new();
         public bool Contains(string message)
         {
             return LogDetails.Contains(message);
         }
 
+        public string GetContent()
+        {
+            return string.Join("\n", LogDetails.ToArray());
+        }
+
         public void Log(string message)
         {
-            LogDetails.Add(message);
+            LogDetails.Enqueue(message);
             Debug.WriteLine(message);
         }
     }

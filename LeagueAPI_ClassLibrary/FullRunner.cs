@@ -17,11 +17,13 @@ namespace LeagueAPI_ClassLibrary
         private IDateTimeProvider DateTimeProvider { get; set; }
         private IGuidProvider GuidProvider { get; set; }
         private IExcelPrinter ExcelPrinter { get; set; }
+        private ILogger Logger { get; set; }
         private string MatchesFilePath { get; set; }
         private string ItemSetFilePath { get; set; }
         private string StatsFilePath { get; set; }
+        private string LogFilePath { get; set; }
 
-        public FullRunner(IMatchCollector matchCollector, IDDragonRepository repository, IFileIO fileIO, IDateTimeProvider dateTimeProvider, IGuidProvider guidProvider, IExcelPrinter excelPrinter)
+        public FullRunner(IMatchCollector matchCollector, IDDragonRepository repository, IFileIO fileIO, IDateTimeProvider dateTimeProvider, IGuidProvider guidProvider, IExcelPrinter excelPrinter, ILogger logger)
         {
             MatchCollector = matchCollector;
             Repository = repository;
@@ -29,24 +31,43 @@ namespace LeagueAPI_ClassLibrary
             DateTimeProvider = dateTimeProvider;
             GuidProvider = guidProvider;
             ExcelPrinter = excelPrinter;
+            Logger = logger;
         }
 
         public List<string> DoFullRun(string outputDirectory, string existingMatchesFilePath)
         {
             InitialiseFileNames(outputDirectory);
             List<string> createdFiles = new();
-            List<LeagueMatch> matches = FileIO.ReadAllText(existingMatchesFilePath).DeserializeObject<List<LeagueMatch>>();
-            return GetCreatedFilesAfterMatchAnalysis(createdFiles, matches);
+
+            try
+            {
+                List<LeagueMatch> matches = FileIO.ReadAllText(existingMatchesFilePath).DeserializeObject<List<LeagueMatch>>();
+                return GetCreatedFilesAfterMatchAnalysis(createdFiles, matches);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message);
+                return CreateLogFileAndReturnListOfCreatedFiles(createdFiles);
+            }
         }
 
         public async Task<List<string>> DoFullRun(string outputDirectory, int queueId, string startPuuid, string targetVersion = null, int maxCount = 0)
         {
             InitialiseFileNames(outputDirectory);
             List<string> createdFiles = new();
-            List<LeagueMatch> matches = await MatchCollector.GetMatches(startPuuid, queueId, targetVersion, maxCount);
-            FileIO.WriteAllText(MatchesFilePath, matches.SerializeObject());
-            createdFiles.Add(MatchesFilePath);
-            return GetCreatedFilesAfterMatchAnalysis(createdFiles, matches);
+
+            try
+            {
+                List<LeagueMatch> matches = await MatchCollector.GetMatches(startPuuid, queueId, targetVersion, maxCount);
+                FileIO.WriteAllText(MatchesFilePath, matches.SerializeObject());
+                createdFiles.Add(MatchesFilePath);
+                return GetCreatedFilesAfterMatchAnalysis(createdFiles, matches);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message);
+                return CreateLogFileAndReturnListOfCreatedFiles(createdFiles);
+            }
         }
 
         private void InitialiseFileNames(string outputDirectory)
@@ -54,9 +75,11 @@ namespace LeagueAPI_ClassLibrary
             DateTime startOfRun = DateTimeProvider.Now();
             string startOfRunStr = startOfRun.ToString("yyyy-MM-dd--HH-mm-ss");
             string runGuid = GuidProvider.NewGuid();
-            MatchesFilePath = Path.Combine(outputDirectory, $"Matches_{startOfRunStr}_{runGuid}.json");
-            ItemSetFilePath = Path.Combine(outputDirectory, $"ItemSet_{startOfRunStr}_{runGuid}.json");
-            StatsFilePath = Path.Combine(outputDirectory, $"Stats_{startOfRunStr}_{runGuid}.xlsx");
+            string idString = $"{startOfRunStr}_{runGuid}";
+            MatchesFilePath = Path.Combine(outputDirectory, $"Matches_{idString}.json");
+            ItemSetFilePath = Path.Combine(outputDirectory, $"ItemSet_{idString}.json");
+            StatsFilePath = Path.Combine(outputDirectory, $"Stats_{idString}.xlsx");
+            LogFilePath = Path.Combine(outputDirectory, $"Log_{idString}.txt");
         }
 
         private List<string> GetCreatedFilesAfterMatchAnalysis(List<string> createdFiles, List<LeagueMatch> matches)
@@ -65,7 +88,7 @@ namespace LeagueAPI_ClassLibrary
             DataCollectorResults results = collector.GetData(matches);
             Dictionary<int, WinLossData> itemData = results.GetItemData();
             ItemSetExporter exporter = new(Repository);
-            string itemSetJson = exporter.GetItemSet(itemData, ItemSetFilePath);
+            string itemSetJson = exporter.GetItemSet(itemData, Path.GetFileNameWithoutExtension(ItemSetFilePath));
             FileIO.WriteAllText(ItemSetFilePath, itemSetJson);
             createdFiles.Add(ItemSetFilePath);
 
@@ -80,6 +103,13 @@ namespace LeagueAPI_ClassLibrary
             };
             ExcelPrinter.PrintTablesToWorksheet(dataTables, StatsFilePath);
             createdFiles.Add(StatsFilePath);
+            return CreateLogFileAndReturnListOfCreatedFiles(createdFiles);
+        }
+
+        private List<string> CreateLogFileAndReturnListOfCreatedFiles(List<string> createdFiles)
+        {
+            FileIO.WriteAllText(LogFilePath, Logger.GetContent());
+            createdFiles.Add(LogFilePath);
             return createdFiles;
         }
     }

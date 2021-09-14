@@ -40,7 +40,7 @@ namespace LeagueAPI_Tests.IntegrationTests
             RealDateTimeProvider dateTimeProvider = new();
             RealGuidProvider guidProvider = new();
             ExcelPrinter printer = new();
-            FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer);
+            FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger);
             List<string> createdFiles = await runner.DoFullRun(TestData.OutputDirectory, 450, TestData.AccountPuuid, maxCount: 1);
             Assert.IsTrue(createdFiles.Count == 3);
             foreach (string file in createdFiles)
@@ -63,7 +63,7 @@ namespace LeagueAPI_Tests.IntegrationTests
             RealDateTimeProvider dateTimeProvider = new();
             ExcelPrinter printer = new();
             RealGuidProvider guidProvider = new();
-            FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer);
+            FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger);
             List<string> createdFiles = runner.DoFullRun(TestData.OutputDirectory, Path.Combine(TestData.OutputDirectory, "matches.json"));
             Assert.IsTrue(createdFiles.Count == 2);
             foreach (string file in createdFiles)
