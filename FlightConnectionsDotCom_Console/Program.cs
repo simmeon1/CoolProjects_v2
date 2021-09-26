@@ -37,7 +37,7 @@ namespace FlightConnectionsDotCom_Console
             FlightConnectionsDotComParser siteParser = new(driver1, logger);
             List<Airport> airportsList = useLocalAirportList
                 ? JsonConvert.DeserializeObject<List<Airport>>(File.ReadAllText(parameters.LocalAirportListFile))
-                : siteParser.CollectAirports();
+                : siteParser.CollectAirports(europeOnly: parameters.EuropeOnly);
 
             string runId = Globals.GetDateConcatenatedWithGuid(DateTime.Now, Guid.NewGuid().ToString());
             if (!useLocalAirportList) File.WriteAllText($"{parameters.FileSavePath}\\airportList_{runId}.json", JsonConvert.SerializeObject(airportsList, Formatting.Indented));

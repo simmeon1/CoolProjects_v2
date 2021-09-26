@@ -24,7 +24,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Logger = logger;
         }
 
-        public List<Airport> CollectAirports(int maxCountToCollect = 0)
+        public List<Airport> CollectAirports(int maxCountToCollect = 0, bool europeOnly = false)
         {
             Logger.Log($"Navigating to airports page...");
             List<Airport> airports = new();
@@ -41,7 +41,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             {
                 IWebElement airportListEntry = airportListEntries[i];
                 Airport airport = CreateAirportFromAirportEntry(airportListEntry);
-                airports.Add(airport);
+                if (!europeOnly || airport.AirportIsInEurope()) airports.Add(airport);
                 Logger.Log($"Collected airport ({GetPercentageAndCountString(i, countToCollect)} airports done) {airport.GetFullString()}.");
             }
             Logger.Log($"Finished {collectingAirports} ({countToCollect} airports).");

@@ -13,5 +13,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public string LocalAirportDestinationsFile { get; set; }
         public bool OpenGoogleFlights { get; set; }
         public string FileSavePath { get; set; }
+        public bool EuropeOnly{ get; set; }
     }
 }
