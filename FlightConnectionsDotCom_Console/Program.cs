@@ -45,7 +45,7 @@ namespace FlightConnectionsDotCom_Console
             Dictionary<string, HashSet<string>> airportsAndDestinations = useLocalAirportDestinations
                 ? JsonConvert.DeserializeObject<Dictionary<string, HashSet<string>>>(File.ReadAllText(parameters.LocalAirportDestinationsFile))
                 : siteParser.GetAirportsAndTheirConnections(airportsList);
-            if (!useLocalAirportDestinations) File.WriteAllText($"{parameters.FileSavePath}\\airportDestinations_{runId}.json", JsonConvert.SerializeObject(airportsList, Formatting.Indented));
+            if (!useLocalAirportDestinations) File.WriteAllText($"{parameters.FileSavePath}\\airportDestinations_{runId}.json", JsonConvert.SerializeObject(airportsAndDestinations, Formatting.Indented));
 
             if (driver1 != null) driver1.Quit();
 
