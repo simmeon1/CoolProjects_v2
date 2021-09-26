@@ -5,6 +5,7 @@ using SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace FlightConnectionsDotCom_ClassLibrary
@@ -48,22 +49,22 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return airports;
         }
 
-        public Dictionary<string, HashSet<string>> GetAirportsAndTheirConnections(List<Airport> airports)
+        public Dictionary<string, HashSet<string>> GetAirportsAndTheirConnections(List<Airport> airportsList)
         {
-            Logger.Log($"{gettingAirportsAndTheirConnections} for {airports.Count} airports...");
-            Logger.Log($"{collectingAirportDestinationsFromEachAirportPage} for {airports.Count} airports...");
+            Logger.Log($"{gettingAirportsAndTheirConnections} for {airportsList.Count} airports...");
+            Logger.Log($"{collectingAirportDestinationsFromEachAirportPage} for {airportsList.Count} airports...");
 
             Dictionary<string, HashSet<string>> results = new();
-            for (int i = 0; i < airports.Count; i++)
+            for (int i = 0; i < airportsList.Count; i++)
             {
-                Airport airport = airports[i];
+                Airport airport = airportsList[i];
                 NavigateToAirportPage(airport);
                 ClickShowMoreButtonIfItExists();
-                HashSet<string> destinations = GetDestinationsFromAirportPage(airport, results);
-                Logger.Log($"Finished {collectingAirportDestinationsFromCurrentAirportPage} ({GetPercentageAndCountString(i, airports.Count)} airports done, {destinations.Count} destinations for airport {airport.GetFullString()}).");
+                HashSet<string> destinations = GetDestinationsFromAirportPage(airport, results, airportsList);
+                Logger.Log($"Finished {collectingAirportDestinationsFromCurrentAirportPage} ({GetPercentageAndCountString(i, airportsList.Count)} airports done, {destinations.Count} destinations for airport {airport.GetFullString()}).");
             }
-            Logger.Log($"Finished {collectingAirportDestinationsFromEachAirportPage} for {airports.Count} airports.");
-            Logger.Log($"Finished {gettingAirportsAndTheirConnections} for {airports.Count} airports.");
+            Logger.Log($"Finished {collectingAirportDestinationsFromEachAirportPage} for {airportsList.Count} airports.");
+            Logger.Log($"Finished {gettingAirportsAndTheirConnections} for {airportsList.Count} airports.");
             return results;
         }
 
@@ -114,12 +115,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
         }
 
-        private HashSet<string> GetDestinationsFromAirportPage(Airport airport, Dictionary<string, HashSet<string>> results)
+        private HashSet<string> GetDestinationsFromAirportPage(Airport airport, Dictionary<string, HashSet<string>> results, List<Airport> airportsList)
         {
             HashSet<string> destinations = new();
             IWebElement popularDestinationsDiv = GetPopularDestinationsDiv();
             if (popularDestinationsDiv == null) Logger.Log($"There was a problem with locating the popular destinations div for {airport.GetFullString()}");
-            else AddDestinationsFromPopularDivToDestinationsList(popularDestinationsDiv, destinations);
+            else AddDestinationsFromPopularDivToDestinationsList(popularDestinationsDiv, destinations, airportsList);
             results.Add(airport.Code, destinations);
             return destinations;
         }
@@ -139,7 +140,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return popularDestinationsDiv;
         }
 
-        private static void AddDestinationsFromPopularDivToDestinationsList(IWebElement popularDestinationsDiv, HashSet<string> destinations)
+        private static void AddDestinationsFromPopularDivToDestinationsList(IWebElement popularDestinationsDiv, HashSet<string> destinations, List<Airport> airportsList)
         {
             ReadOnlyCollection<IWebElement> popularDestinationsEntries = popularDestinationsDiv.FindElements(By.CssSelector(".popular-destination"));
             for (int j = 0; j < popularDestinationsEntries.Count; j++)
@@ -149,7 +150,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 Match match = Regex.Match(destination, @"(.*?) \((...)\)$");
                 string name = match.Groups[1].Value;
                 string code = match.Groups[2].Value;
-                destinations.Add(code);
+                if (airportsList.Any(a => a.Code.Equals(code))) destinations.Add(code);
             }
         }
 
