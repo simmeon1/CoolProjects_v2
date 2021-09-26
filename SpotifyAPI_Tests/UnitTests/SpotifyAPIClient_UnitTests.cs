@@ -93,7 +93,7 @@ namespace SpotifyAPI_Tests.UnitTests
             Assert.IsTrue(spotifyClient.ConfirmTokenAgainstCurrentToken(tokenToCompare));
         }
 
-        private Mock<IDateTimeProvider> GetDateTimeProviderMockThatReturnsFakeDateTimeNow(DateTime dateToReturn)
+        private static Mock<IDateTimeProvider> GetDateTimeProviderMockThatReturnsFakeDateTimeNow(DateTime dateToReturn)
         {
             Mock<IDateTimeProvider> dateTimeProviderMock = new();
             dateTimeProviderMock.Setup(x => x.Now()).Returns(dateToReturn);

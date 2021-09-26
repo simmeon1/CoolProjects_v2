@@ -8,12 +8,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_Console
 {
     class Program
     {
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             string parametersPath = "";
             foreach (string arg in args)
@@ -61,8 +62,8 @@ namespace FlightConnectionsDotCom_Console
 
             if (!parameters.OpenGoogleFlights) return;
             ChromeDriver driver2 = new();
-            ChromeWorker chromeWorker = new(driver2, driver2, logger);
-            chromeWorker.OpenPaths(paths, parameters.Date);
+            ChromeWorker chromeWorker = new(driver2, driver2, logger, new RealDelayer());
+            await chromeWorker.OpenPaths(paths, parameters.Date);
         }
     }
 }

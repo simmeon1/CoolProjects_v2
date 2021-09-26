@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_Tests.IntegrationTests
 {
@@ -24,15 +25,15 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
         }
 
         [TestMethod]
-        public void OpenFlights_ExpectedTabsOpenedWithNoErrors()
+        public async Task OpenFlights_ExpectedTabsOpenedWithNoErrors()
         {
             List<string> path1 = new() { "ABZ", "SOF" };
             List<string> path2 = new() { "ABZ", "EDI", "SOF" };
             List<string> path3 = new() { "ABZ", "EDI", "CIA", "SOF" };
             List<List<string>> paths = new() { path1, path2, path3 };
 
-            ChromeWorker chromeWorker = new(chromeDriver, chromeDriver, logger);
-            int results = chromeWorker.OpenPaths(paths, DateTime.Today);
+            ChromeWorker chromeWorker = new(chromeDriver, chromeDriver, logger, new RealDelayer());
+            int results = await chromeWorker.OpenPaths(paths, DateTime.Today);
             Assert.IsTrue(results == 6);
         }
 

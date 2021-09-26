@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
@@ -13,19 +14,21 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private IWebDriver Driver { get; set; }
         private IJavaScriptExecutor JSExecutor { get; set; }
         private ILogger Logger { get; set; }
+        private IDelayer Delayer { get; set; }
         private DateTime Date { get; set; }
         private bool ConsentAgreed { get; set; }
         private int PagesToOpen { get; set; }
         private int PagesOpened { get; set; }
 
-        public ChromeWorker(IWebDriver driver, IJavaScriptExecutor jSExecutor, ILogger logger)
+        public ChromeWorker(IWebDriver driver, IJavaScriptExecutor jSExecutor, ILogger logger, IDelayer delayer)
         {
             Driver = driver;
             JSExecutor = jSExecutor;
             Logger = logger;
+            Delayer = delayer;
         }
 
-        public int OpenPaths(List<List<string>> paths, DateTime date)
+        public async Task<int> OpenPaths(List<List<string>> paths, DateTime date)
         {
             Date = date;
             int initialTabCount = Driver.WindowHandles.Count;
@@ -33,11 +36,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
             PagesToOpen = 0;
             PagesOpened = 0;
             foreach (List<string> path in paths) for (int i = 0; i < path.Count - 1; i++) PagesToOpen++;
-            foreach (List<string> path in paths) ProcessPath(path);
+            foreach (List<string> path in paths) await ProcessPath(path);
             return Driver.WindowHandles.Count - initialTabCount;
         }
 
-        private void ProcessPath(List<string> path)
+        private async Task ProcessPath(List<string> path)
         {
             for (int i = 0; i < path.Count - 1; i++)
             {
@@ -45,21 +48,21 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 string target = path[i + 1];
                 OpenNewTab();
                 NavigateToUrl();
-                if (!ConsentAgreed) AgreeToConsent();
+                if (!ConsentAgreed) await AgreeToConsent();
                 SetToOneWayTrip();
-                PopulateControls(origin, target);
+                await PopulateControls(origin, target);
                 ClickButtonWithAriaLabelText("Done. Search for");
-                Thread.Sleep(1000);
-                SetStopsToNone();
+                await Delayer.Delay(1000);
+                await SetStopsToNone();
                 PagesOpened++;
                 Logger.Log($"Populated page for {origin} to {target} ({GetPercentageAndCountString()})");
             }
         }
 
-        private void SetStopsToNone()
+        private async Task SetStopsToNone()
         {
             ClickButtonWithAriaLabelText("Stops");
-            Thread.Sleep(1000);
+            await Delayer.Delay(1000);
             IWebElement radioGroup = Driver.FindElement(By.CssSelector("[role=radiogroup]"));
             ReadOnlyCollection<IWebElement> radioGroupChildren = radioGroup.FindElements(By.CssSelector("input"));
             radioGroupChildren[1].Click();
@@ -92,9 +95,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             if (navigation != null) navigation.GoToUrl("https://www.google.com/travel/flights");
         }
 
-        private void AgreeToConsent()
+        private async Task AgreeToConsent()
         {
-            Thread.Sleep(1000);
+            await Delayer.Delay(1000);
             ReadOnlyCollection<IWebElement> consentButtons = Driver.FindElements(By.CssSelector("button"));
             foreach (IWebElement button in consentButtons)
             {
@@ -124,7 +127,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
         }
 
-        private void PopulateControls(string origin, string target)
+        private async Task PopulateControls(string origin, string target)
         {
             ReadOnlyCollection<IWebElement> inputs = Driver.FindElements(By.CssSelector("input"));
             IWebElement originInput1 = inputs[0];
@@ -143,7 +146,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             destinationInput2.SendKeys(Keys.Return);
 
             dateInput1.Click();
-            Thread.Sleep(1000);
+            await Delayer.Delay(1000);
             dateInput2.SendKeys(Date.ToString("ddd, MMM dd"));
             dateInput2.SendKeys(Keys.Return);
         }

@@ -44,7 +44,7 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
             Assert.IsTrue(results.Count == 3);
             Assert.IsTrue(results[airport1.Code].Count > 0);
             Assert.IsTrue(results[airport2.Code].Count > 0);
-            Assert.IsTrue(results[airport3.Code].Count == 0);
+            Assert.IsTrue(results[airport3.Code].Count > 0);
         }
         
         [Ignore]

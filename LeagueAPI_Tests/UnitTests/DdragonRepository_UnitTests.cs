@@ -29,7 +29,7 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public void GetChampion_ExpectedValues()
         {
-            var obj = Repo.GetChampion(266);
+            Champion obj = Repo.GetChampion(266);
             Assert.IsTrue(obj != null);
             Assert.IsTrue(obj.Name.Equals("Aatrox"));
             Assert.IsTrue(obj.Difficulty == 4);
@@ -39,14 +39,14 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public void GetChampion_NotFound()
         {
-            var obj = Repo.GetChampion(0);
+            Champion obj = Repo.GetChampion(0);
             Assert.IsTrue(obj == null);
         }
         
         [TestMethod]
         public void GetItem_ExpectedValues()
         {
-            var obj = Repo.GetItem(1001);
+            Item obj = Repo.GetItem(1001);
             Assert.IsTrue(obj != null);
             Assert.IsTrue(obj.Name.Equals("Boots"));
             Assert.IsTrue(obj.Description.Equals("rarityMythic<asd>ornnBonus"));
@@ -63,14 +63,14 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public void GetItem_NotFound()
         {
-            var obj = Repo.GetItem(0);
+            Item obj = Repo.GetItem(0);
             Assert.IsTrue(obj == null);
         }
 
         [TestMethod]
         public void GetRune_ExpectedValues()
         {
-            var obj = Repo.GetRune(8112);
+            Rune obj = Repo.GetRune(8112);
             Assert.IsTrue(obj != null);
             Assert.IsTrue(obj.Name.Equals("name"));
             Assert.IsTrue(obj.Tree.Equals("Domination"));
@@ -82,14 +82,14 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public void GetRune_NotFound()
         {
-            var obj = Repo.GetRune(0);
+            Rune obj = Repo.GetRune(0);
             Assert.IsTrue(obj == null);
         }
 
         [TestMethod]
         public void GetSpell_ExpectedValues()
         {
-            var obj = Repo.GetSpell(21);
+            Spell obj = Repo.GetSpell(21);
             Assert.IsTrue(obj != null);
             Assert.IsTrue(obj.Name.Equals("name"));
             Assert.IsTrue(obj.Description.Equals("desc"));
@@ -99,14 +99,14 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public void GetSpell_NotFound()
         {
-            var obj = Repo.GetSpell(0);
+            Spell obj = Repo.GetSpell(0);
             Assert.IsTrue(obj == null);
         }
         
         [TestMethod]
         public void GetStatPerk_ExpectedValues()
         {
-            var obj = Repo.GetStatPerk(5008);
+            string obj = Repo.GetStatPerk(5008);
             Assert.IsTrue(obj != null);
             Assert.IsTrue(obj.Equals("someText"));
         }
@@ -114,7 +114,7 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public void GetStatPerk_NotFound()
         {
-            var obj = Repo.GetStatPerk(0);
+            string obj = Repo.GetStatPerk(0);
             Assert.IsTrue(obj == null);
         }
     }
