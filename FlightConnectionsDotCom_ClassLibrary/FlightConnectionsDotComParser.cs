@@ -24,6 +24,30 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Logger = logger;
         }
 
+        public List<Airport> CollectAirports(int maxCountToCollect = 0)
+        {
+            Logger.Log($"Navigating to airports page...");
+            List<Airport> airports = new();
+            INavigation navigation = Driver.Navigate();
+            GoToUrl(navigation, "https://www.flightconnections.com/airport-codes");
+
+            ReadOnlyCollection<IWebElement> airportListEntries = Driver.FindElements(By.TagName("li"));
+
+            int countToCollect = airportListEntries.Count;
+            if (maxCountToCollect > 0) countToCollect = maxCountToCollect > airportListEntries.Count ? airportListEntries.Count : maxCountToCollect;
+
+            Logger.Log($"{collectingAirports} {countToCollect} airports...");
+            for (int i = 0; i < countToCollect; i++)
+            {
+                IWebElement airportListEntry = airportListEntries[i];
+                Airport airport = CreateAirportFromAirportEntry(airportListEntry);
+                airports.Add(airport);
+                Logger.Log($"Collected airport ({GetPercentageAndCountString(i, countToCollect)} airports done) {airport.GetFullString()}.");
+            }
+            Logger.Log($"Finished {collectingAirports} ({countToCollect} airports).");
+            return airports;
+        }
+
         public Dictionary<string, HashSet<string>> GetAirportsAndTheirConnections(List<Airport> airports)
         {
             Logger.Log($"{gettingAirportsAndTheirConnections} for {airports.Count} airports...");
@@ -42,6 +66,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Logger.Log($"Finished {gettingAirportsAndTheirConnections} for {airports.Count} airports.");
             return results;
         }
+
         private void NavigateToAirportPage(Airport airport)
         {
             INavigation navigation = Driver.Navigate();
@@ -131,34 +156,10 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public static string GetPercentageAndCountString(int i, int maxCount)
         {
             int currentCount = i + 1;
-            string percentageString = $"{((double)currentCount / (double)maxCount) * 100}%";
+            string percentageString = $"{currentCount / (double)maxCount * 100}%";
             Match match = Regex.Match(percentageString, @"(.*?\.\d\d).*%");
             if (match.Success) percentageString = $"{match.Groups[1].Value}%";
             return $"{currentCount}/{maxCount} ({percentageString})";
-        }
-
-        public List<Airport> CollectAirports(int maxCountToCollect = 0)
-        {
-            Logger.Log($"Navigating to airports page...");
-            List<Airport> airports = new();
-            INavigation navigation = Driver.Navigate();
-            GoToUrl(navigation, "https://www.flightconnections.com/airport-codes");
-
-            ReadOnlyCollection<IWebElement> airportListEntries = Driver.FindElements(By.TagName("li"));
-
-            int countToCollect = airportListEntries.Count;
-            if (maxCountToCollect > 0) countToCollect = maxCountToCollect > airportListEntries.Count ? airportListEntries.Count : maxCountToCollect;
-
-            Logger.Log($"{collectingAirports} {countToCollect} airports...");
-            for (int i = 0; i < countToCollect; i++)
-            {
-                IWebElement airportListEntry = airportListEntries[i];
-                Airport airport = CreateAirportFromAirportEntry(airportListEntry);
-                airports.Add(airport);
-                Logger.Log($"Collected airport ({GetPercentageAndCountString(i, countToCollect)} airports done) {airport.GetFullString()}.");
-            }
-            Logger.Log($"Finished {collectingAirports} ({countToCollect} airports).");
-            return airports;
         }
 
         private static Airport CreateAirportFromAirportEntry(IWebElement airportListEntry)

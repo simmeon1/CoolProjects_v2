@@ -48,15 +48,32 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 if (!ConsentAgreed) AgreeToConsent();
                 SetToOneWayTrip();
                 PopulateControls(origin, target);
-                ClickDoneButton();
+                ClickButtonWithAriaLabelText("Done. Search for");
+                Thread.Sleep(1000);
+                SetStopsToNone();
                 PagesOpened++;
                 Logger.Log($"Populated page for {origin} to {target} ({GetPercentageAndCountString()})");
             }
         }
 
+        private void SetStopsToNone()
+        {
+            ClickButtonWithAriaLabelText("Stops");
+            Thread.Sleep(1000);
+            IWebElement radioGroup = Driver.FindElement(By.CssSelector("[role=radiogroup]"));
+            ReadOnlyCollection<IWebElement> radioGroupChildren = radioGroup.FindElements(By.CssSelector("input"));
+            radioGroupChildren[1].Click();
+            ClickHeader();
+        }
+
+        private void ClickHeader()
+        {
+            Driver.FindElement(By.CssSelector("header")).Click();
+        }
+
         private string GetPercentageAndCountString()
         {
-            string percentageString = $"{((double)PagesOpened / (double)PagesToOpen) * 100}%";
+            string percentageString = $"{(double)PagesOpened / (double)PagesToOpen * 100}%";
             Match match = Regex.Match(percentageString, @"(.*?\.\d\d).*%");
             if (match.Success) percentageString = $"{match.Groups[1].Value}%";
             return $"{PagesOpened}/{PagesToOpen} ({percentageString})";
@@ -131,13 +148,13 @@ namespace FlightConnectionsDotCom_ClassLibrary
             dateInput2.SendKeys(Keys.Return);
         }
 
-        private void ClickDoneButton()
+        private void ClickButtonWithAriaLabelText(string text)
         {
             ReadOnlyCollection<IWebElement> doneButtons = Driver.FindElements(By.CssSelector("button"));
             foreach (IWebElement button in doneButtons)
             {
                 string buttonText = button.GetAttribute("aria-label");
-                if (buttonText == null || !buttonText.Contains("Done. Search for")) continue;
+                if (buttonText == null || !buttonText.Contains(text)) continue;
                 button.Click();
                 return;
             }

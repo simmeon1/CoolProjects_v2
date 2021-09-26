@@ -26,7 +26,6 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
             siteParser = new(chromeDriver, logger);
         }
 
-
         [TestMethod]
         public void CollectAirports_ReturnsValues()
         {

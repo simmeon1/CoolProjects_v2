@@ -72,10 +72,7 @@ namespace LeagueAPI_ClassLibrary
 
         private void InitialiseFileNames(string outputDirectory)
         {
-            DateTime startOfRun = DateTimeProvider.Now();
-            string startOfRunStr = startOfRun.ToString("yyyy-MM-dd--HH-mm-ss");
-            string runGuid = GuidProvider.NewGuid();
-            string idString = $"{startOfRunStr}_{runGuid}";
+            string idString = Globals.GetDateConcatenatedWithGuid(DateTimeProvider.Now(), GuidProvider.NewGuid());
             MatchesFilePath = Path.Combine(outputDirectory, $"Matches_{idString}.json");
             ItemSetFilePath = Path.Combine(outputDirectory, $"ItemSet_{idString}.json");
             StatsFilePath = Path.Combine(outputDirectory, $"Stats_{idString}.xlsx");

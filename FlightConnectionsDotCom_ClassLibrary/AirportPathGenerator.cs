@@ -72,12 +72,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
         }
 
-        private string GetPathAsString(List<string> path)
+        private static string GetPathAsString(List<string> path)
         {
             StringBuilder sb = new();
             foreach (string airport in path)
             {
-                if (sb.Length > 0) sb.Append("-");
+                if (sb.Length > 0) sb.Append('-');
                 sb.Append(airport);
             }
             return sb.ToString();

@@ -95,7 +95,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Assert.IsTrue(results.Contains(airport4));
         }
 
-        private IWebElement SetUpAirportListEntryData(Airport airport)
+        private static IWebElement SetUpAirportListEntryData(Airport airport)
         {
             Mock<IWebElement> airportListEntry = new();
             airportListEntry.Setup(x => x.FindElement(By.CssSelector(".airport-code")).Text).Returns(airport.Code);

@@ -22,6 +22,11 @@ namespace Common_ClassLibrary
             return JsonConvert.DeserializeObject<T>(str);
         }
         
+        public static bool IsNullOrEmpty(this string str)
+        {
+            return string.IsNullOrEmpty(str);
+        }
+        
         public static string ConcatenateListOfStringsToCommaString(this List<string> list)
         {
             if (list == null) return "";
@@ -29,7 +34,7 @@ namespace Common_ClassLibrary
             foreach (string str in list)
             {
                 if (result.Length > 0) result.Append(", ");
-                result.Append(str.ToString());
+                result.Append(str);
             }
             return result.ToString();
         }

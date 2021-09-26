@@ -14,11 +14,11 @@ namespace LeagueAPI_Tests.UnitTests
         public void CompareTargetVersionAgainstGameVersion_DoesCorrectComparisons()
         {
             MatchCollector collector = new(new Mock<ILeagueAPIClient>().Object, new Logger_Debug());
-            Assert.IsTrue(collector.CompareTargetVersionAgainstGameVersion("11.14", "11.14.56") == 0);
-            Assert.IsTrue(collector.CompareTargetVersionAgainstGameVersion("11.14.56", "11.14") == 0);
-            Assert.IsTrue(collector.CompareTargetVersionAgainstGameVersion("11.15", "11.14.56") == 1);
-            Assert.IsTrue(collector.CompareTargetVersionAgainstGameVersion("11.13", "11.14.56") == -1);
-            Assert.IsTrue(collector.CompareTargetVersionAgainstGameVersion("11.14", "11.14") == 0);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion("11.14", "11.14.56") == 0);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion("11.14.56", "11.14") == 0);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion("11.15", "11.14.56") == 1);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion("11.13", "11.14.56") == -1);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion("11.14", "11.14") == 0);
         }
 
         [TestMethod]

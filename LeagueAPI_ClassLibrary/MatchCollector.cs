@@ -23,7 +23,7 @@ namespace LeagueAPI_ClassLibrary
         /// <param name="targetVersion"></param>
         /// <param name="gameVersion"></param>
         /// <returns>1 if target is greater than game version, 0 if equal, -1 if lesser.</returns>
-        public int CompareTargetVersionAgainstGameVersion(string targetVersion, string gameVersion)
+        public static int CompareTargetVersionAgainstGameVersion(string targetVersion, string gameVersion)
         {
             string[] targetVersionArray = targetVersion.Split('.');
             string[] gameVersionArray = gameVersion.Split('.');

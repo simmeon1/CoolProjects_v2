@@ -15,73 +15,41 @@ namespace FlightConnectionsDotCom_Console
     {
         static void Main(string[] args)
         {
-            HashSet<string> arguments = new();
-            foreach (string arg in args) arguments.Add(arg);
-
-            string origin = "";
-            string target = "";
-            int maxFlights = 0;
-            bool useLocalAirportList = false;
-            bool useLocalAirportDestinations = false;
-            bool openGoogleFlights = false;
-            bool writeLocalFiles = false;
-            DateTime date = DateTime.Today;
-
-            foreach (string arg in arguments)
+            string parametersPath = "";
+            foreach (string arg in args)
             {
-                Match match = Regex.Match(arg, "origin-(.*)");
-                if (match.Success) origin = match.Groups[1].Value;
-
-                match = Regex.Match(arg, "target-(.*)");
-                if (match.Success) target = match.Groups[1].Value;
-
-                match = Regex.Match(arg, "maxFlights-(.*)");
-                if (match.Success) maxFlights = int.Parse(match.Groups[1].Value);
-
-                match = Regex.Match(arg, @"date-(\d\d-\d\d-\d\d\d\d)");
-                if (match.Success) date = DateTime.ParseExact(match.Groups[1].Value, "dd-MM-yyyy", CultureInfo.InvariantCulture);
-
-                match = Regex.Match(arg, "useLocalAirportList");
-                if (match.Success) useLocalAirportList = true;
-
-                match = Regex.Match(arg, "useLocalAirportDestinations");
-                if (match.Success) useLocalAirportDestinations = true;
-                
-                match = Regex.Match(arg, "openGoogleFlights");
-                if (match.Success) openGoogleFlights = true;
-                
-                match = Regex.Match(arg, "writeLocalFiles");
-                if (match.Success) writeLocalFiles = true;
+                Match match = Regex.Match(arg, "parametersPath-(.*)");
+                if (match.Success) parametersPath = match.Groups[1].Value;
             }
-
-            const string airportListJsonFile = "airportList.json";
-            const string airportDestinationJsonFile = "airportDestinations.json";
+            Parameters parameterss = new();
+            Parameters parameters = File.ReadAllText(parametersPath).DeserializeObject<Parameters>();
 
             Logger_Console logger = new();
             ChromeOptions chromeOptions = new();
             chromeOptions.AddArgument("headless");
 
             ChromeDriver driver1 = null;
+            bool useLocalAirportList = !parameters.LocalAirportListFile.IsNullOrEmpty();
+            bool useLocalAirportDestinations = !parameters.LocalAirportDestinationsFile.IsNullOrEmpty();
             if (!useLocalAirportList || !useLocalAirportDestinations) driver1 = new(chromeOptions);
 
             FlightConnectionsDotComParser siteParser = new(driver1, logger);
             List<Airport> airportsList = useLocalAirportList
-                ? JsonConvert.DeserializeObject<List<Airport>>(File.ReadAllText(airportListJsonFile))
+                ? JsonConvert.DeserializeObject<List<Airport>>(File.ReadAllText(parameters.LocalAirportListFile))
                 : siteParser.CollectAirports();
 
+            string runId = Globals.GetDateConcatenatedWithGuid(DateTime.Now, Guid.NewGuid().ToString());
+            if (!useLocalAirportList) File.WriteAllText($"{parameters.FileSavePath}\\airportList_{runId}.json", JsonConvert.SerializeObject(airportsList, Formatting.Indented));
+
             Dictionary<string, HashSet<string>> airportsAndDestinations = useLocalAirportDestinations
-                ? JsonConvert.DeserializeObject<Dictionary<string, HashSet<string>>>(File.ReadAllText(airportDestinationJsonFile))
+                ? JsonConvert.DeserializeObject<Dictionary<string, HashSet<string>>>(File.ReadAllText(parameters.LocalAirportDestinationsFile))
                 : siteParser.GetAirportsAndTheirConnections(airportsList);
+            if (!useLocalAirportDestinations) File.WriteAllText($"{parameters.FileSavePath}\\airportDestinations_{runId}.json", JsonConvert.SerializeObject(airportsList, Formatting.Indented));
+
             if (driver1 != null) driver1.Quit();
 
-            if (writeLocalFiles)
-            {
-                File.WriteAllText(airportListJsonFile, JsonConvert.SerializeObject(airportsList, Formatting.Indented));
-                File.WriteAllText(airportDestinationJsonFile, JsonConvert.SerializeObject(airportsAndDestinations, Formatting.Indented));
-            }
-
             AirportPathGenerator generator = new(airportsAndDestinations);
-            List<List<string>> paths = generator.GeneratePaths(origin, target, maxFlights);
+            List<List<string>> paths = generator.GeneratePaths(parameters.Origin, parameters.Destination, parameters.MaxFlights);
             List<List<string>> pathsDetailed = new();
             foreach (List<string> path in paths)
             {
@@ -89,20 +57,12 @@ namespace FlightConnectionsDotCom_Console
                 foreach (string airport in path) pathDetailed.Add(airportsList.FirstOrDefault(x => x.Code.Equals(airport)).GetFullString());
                 pathsDetailed.Add(pathDetailed);
             }
-            File.WriteAllText($"latestPaths.json", JsonConvert.SerializeObject(pathsDetailed, Formatting.Indented));
+            File.WriteAllText($"{parameters.FileSavePath}\\latestPaths_{runId}.json", JsonConvert.SerializeObject(pathsDetailed, Formatting.Indented));
 
-            if (!openGoogleFlights) return;
+            if (!parameters.OpenGoogleFlights) return;
             ChromeDriver driver2 = new();
             ChromeWorker chromeWorker = new(driver2, driver2, logger);
-            chromeWorker.OpenPaths(paths, date);
-        }
-
-        private static string GetDateTimeNowString()
-        {
-            DateTime dateTimeNow = DateTime.Now;
-            string dateTimeNowStr = dateTimeNow.ToString("s", CultureInfo.CreateSpecificCulture("en-US"));
-            dateTimeNowStr = dateTimeNowStr.Replace(':', '-');
-            return dateTimeNowStr;
+            chromeWorker.OpenPaths(paths, parameters.Date);
         }
     }
 }
