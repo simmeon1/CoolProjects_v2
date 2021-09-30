@@ -34,17 +34,19 @@ namespace FlightConnectionsDotCom_Console
             bool useLocalAirportDestinations = !parameters.LocalAirportDestinationsFile.IsNullOrEmpty();
             if (!useLocalAirportList || !useLocalAirportDestinations) driver1 = new(chromeOptions);
 
-            FlightConnectionsDotComParser siteParser = new(driver1, logger, new RealWebDriverWait(driver1));
+            FlightConnectionsDotComWorker worker = new(driver1, logger, new RealWebDriverWait(driver1));
+            FlightConnectionsDotComWorker_AirportCollector collector = new(worker);
             List<Airport> airportsList = useLocalAirportList
                 ? JsonConvert.DeserializeObject<List<Airport>>(File.ReadAllText(parameters.LocalAirportListFile))
-                : siteParser.CollectAirports(europeOnly: parameters.EuropeOnly);
+                : collector.CollectAirports(europeOnly: parameters.EuropeOnly);
 
             string runId = Globals.GetDateConcatenatedWithGuid(DateTime.Now, Guid.NewGuid().ToString());
             if (!useLocalAirportList) File.WriteAllText($"{parameters.FileSavePath}\\airportList_{runId}.json", JsonConvert.SerializeObject(airportsList, Formatting.Indented));
 
+            FlightConnectionsDotComWorker_AirportPopulator populator = new(worker);
             Dictionary<string, HashSet<string>> airportsAndDestinations = useLocalAirportDestinations
                 ? JsonConvert.DeserializeObject<Dictionary<string, HashSet<string>>>(File.ReadAllText(parameters.LocalAirportDestinationsFile))
-                : siteParser.GetAirportsAndTheirConnections(airportsList);
+                : populator.PopulateAirports(airportsList);
             if (!useLocalAirportDestinations) File.WriteAllText($"{parameters.FileSavePath}\\airportDestinations_{runId}.json", JsonConvert.SerializeObject(airportsAndDestinations, Formatting.Indented));
 
             if (driver1 != null) driver1.Quit();

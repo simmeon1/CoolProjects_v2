@@ -30,6 +30,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
                    Link == airport.Link;
         }
 
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Code, City, Country, Name, Link);
+        }
+
         public string GetFullString()
         {
             return $"{Code} - {City} - {Country} - {Name}";
