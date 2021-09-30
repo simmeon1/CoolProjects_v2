@@ -76,9 +76,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private string GetPercentageAndCountString()
         {
-            string percentageString = $"{(double)PagesOpened / (double)PagesToOpen * 100}%";
-            Match match = Regex.Match(percentageString, @"(.*?\.\d\d).*%");
-            if (match.Success) percentageString = $"{match.Groups[1].Value}%";
+            string percentageString = $"{PagesOpened / (double)PagesToOpen * 100}%";
+            percentageString = $"{Regex.Match(percentageString, @"(.*?\.\d\d).*%").Groups[1].Value}%";
             return $"{PagesOpened}/{PagesToOpen} ({percentageString})";
         }
 
@@ -153,8 +152,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private void ClickButtonWithAriaLabelText(string text)
         {
-            ReadOnlyCollection<IWebElement> doneButtons = Driver.FindElements(By.CssSelector("button"));
-            foreach (IWebElement button in doneButtons)
+            ReadOnlyCollection<IWebElement> buttons = Driver.FindElements(By.CssSelector("button"));
+            foreach (IWebElement button in buttons)
             {
                 string buttonText = button.GetAttribute("aria-label");
                 if (buttonText == null || !buttonText.Contains(text)) continue;

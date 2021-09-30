@@ -35,11 +35,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return $"{Code} - {City} - {Country} - {Name}";
         }
 
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Code, City, Country, Name, Link);
-        }
-
         public bool AirportIsInEurope()
         {
             return Country.Contains("Albania") ||

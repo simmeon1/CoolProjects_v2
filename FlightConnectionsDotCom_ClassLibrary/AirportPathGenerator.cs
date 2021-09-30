@@ -55,7 +55,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 if (airportOccurences.ContainsKey(airport))
                 {
                     airportOccurences[airport]++;
-                    if (airportOccurences[airport] > 1) return true;
+                    return true;
                 }
                 else airportOccurences.Add(airport, 1);
             }

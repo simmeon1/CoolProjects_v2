@@ -224,7 +224,8 @@ var assemblies = [
   {
     "name": "Common_ClassLibrary",
     "classes": [
-      { "name": "Common_ClassLibrary.Extensions", "rp": "Common_ClassLibrary_Extensions.html", "cl": 0, "ucl": 19, "cal": 19, "tl": 37, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
+      { "name": "Common_ClassLibrary.Extensions", "rp": "Common_ClassLibrary_Extensions.html", "cl": 0, "ucl": 22, "cal": 22, "tl": 42, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
+      { "name": "Common_ClassLibrary.Globals", "rp": "Common_ClassLibrary_Globals.html", "cl": 0, "ucl": 3, "cal": 3, "tl": 15, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.Logger_Console", "rp": "Common_ClassLibrary_Logger_Console.html", "cl": 0, "ucl": 11, "cal": 11, "tl": 25, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.Logger_Debug", "rp": "Common_ClassLibrary_Logger_Debug.html", "cl": 0, "ucl": 11, "cal": 11, "tl": 25, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.RealDateTimeProvider", "rp": "Common_ClassLibrary_RealDateTimeProvider.html", "cl": 0, "ucl": 3, "cal": 3, "tl": 12, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
@@ -236,19 +237,26 @@ var assemblies = [
   {
     "name": "FlightConnectionsDotCom_ClassLibrary",
     "classes": [
-      { "name": "FlightConnectionsDotCom_ClassLibrary.Airport", "rp": "FlightConnectionsDotCom_ClassLibrary_Airport.html", "cl": 24, "ucl": 3, "cal": 27, "tl": 43, "ct": "LineCoverage", "mc": "-", "cb": 10, "tb": 10, "lch": [], "bch": [], "hc": [] },
-      { "name": "FlightConnectionsDotCom_ClassLibrary.AirportPathGenerator", "rp": "FlightConnectionsDotCom_ClassLibrary_AirportPathGenerator.html", "cl": 58, "ucl": 1, "cal": 59, "tl": 86, "ct": "LineCoverage", "mc": "-", "cb": 21, "tb": 22, "lch": [], "bch": [], "hc": [] },
-      { "name": "FlightConnectionsDotCom_ClassLibrary.ChromeWorker", "rp": "FlightConnectionsDotCom_ClassLibrary_ChromeWorker.html", "cl": 106, "ucl": 1, "cal": 107, "tl": 146, "ct": "LineCoverage", "mc": "-", "cb": 26, "tb": 34, "lch": [], "bch": [], "hc": [] },
-      { "name": "FlightConnectionsDotCom_ClassLibrary.FlightConnectionsDotComParser", "rp": "FlightConnectionsDotCom_ClassLibrary_FlightConnectionsDotComParser.html", "cl": 98, "ucl": 25, "cal": 123, "tl": 176, "ct": "LineCoverage", "mc": "-", "cb": 12, "tb": 22, "lch": [], "bch": [], "hc": [] },
+      { "name": "FlightConnectionsDotCom_ClassLibrary.Airport", "rp": "FlightConnectionsDotCom_ClassLibrary_Airport.html", "cl": 70, "ucl": 0, "cal": 70, "tl": 86, "ct": "LineCoverage", "mc": "-", "cb": 96, "tb": 96, "lch": [], "bch": [], "hc": [] },
+      { "name": "FlightConnectionsDotCom_ClassLibrary.AirportPathGenerator", "rp": "FlightConnectionsDotCom_ClassLibrary_AirportPathGenerator.html", "cl": 58, "ucl": 0, "cal": 58, "tl": 86, "ct": "LineCoverage", "mc": "-", "cb": 20, "tb": 20, "lch": [], "bch": [], "hc": [] },
+      { "name": "FlightConnectionsDotCom_ClassLibrary.ChromeWorker", "rp": "FlightConnectionsDotCom_ClassLibrary_ChromeWorker.html", "cl": 121, "ucl": 0, "cal": 121, "tl": 165, "ct": "LineCoverage", "mc": "-", "cb": 32, "tb": 32, "lch": [], "bch": [], "hc": [] },
+      { "name": "FlightConnectionsDotCom_ClassLibrary.FlightConnectionsDotComParser", "rp": "FlightConnectionsDotCom_ClassLibrary_FlightConnectionsDotComParser.html", "cl": 98, "ucl": 25, "cal": 123, "tl": 178, "ct": "LineCoverage", "mc": "-", "cb": 17, "tb": 28, "lch": [], "bch": [], "hc": [] },
+      { "name": "FlightConnectionsDotCom_ClassLibrary.Parameters", "rp": "FlightConnectionsDotCom_ClassLibrary_Parameters.html", "cl": 0, "ucl": 9, "cal": 9, "tl": 18, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
     ]},
 ];
 
 var historicCoverageExecutionTimes = [];
 
 var riskHotspotMetrics = [
+      { "name": "Cyclomatic complexity", "explanationUrl": "https://en.wikipedia.org/wiki/Cyclomatic_complexity" },
 ];
 
 var riskHotspots = [
+  {
+    "assembly": "FlightConnectionsDotCom_ClassLibrary", "class": "FlightConnectionsDotCom_ClassLibrary.Airport", "reportPath": "FlightConnectionsDotCom_ClassLibrary_Airport.html", "methodName": "AirportIsInEurope()", "methodShortName": "AirportIsInEurope()", "fileIndex": 0, "line": 39,
+    "metrics": [
+      { "value": 86, "exceeded": true },
+    ]},
 ];
 
 var branchCoverageAvailable = true;
