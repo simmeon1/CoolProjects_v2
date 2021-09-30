@@ -3,6 +3,7 @@ using FlightConnectionsDotCom_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using OpenQA.Selenium;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -13,20 +14,29 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
     {
         Mock<IWebDriver> driverMock;
         Mock<ILogger> logger;
+        Mock<IWebDriverWait> webDriverWait;
+        private Airport airport1;
+        private Airport airport2;
+        private Airport airport3;
+        private Airport airport4;
+        private Airport airport5;
 
-        private void InitialiseMockObjects()
+        [TestInitialize]
+        public void TestInitialize()
         {
             driverMock = new();
             logger = new();
+            webDriverWait = new();
+            airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "linkA");
+            airport2 = new("SOF", "Sofia", "Bulgaria", "Sofia Airport", "linkB");
+            airport3 = new("EDI", "Edinburgh", "United Kingdom", "Edinburgh Airport", "linkC");
+            airport4 = new("CIA", "Rome", "Spain", "Rome Ciampino", "linkD");
+            airport5 = new("USA", "USA", "USA", "USA", "USA");
         }
 
         [TestMethod]
         public void GetAirportsAndTheirConnections_ReturnsExpectedResults()
         {
-            InitialiseMockObjects();
-            Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "linkA");
-            Airport airport2 = new("SOF", "Sofia", "Bulgaria", "Sofia Airport", "linkB");
-            Airport airport3 = new("EDI", "Edinburgh", "United Kingdom", "Edinburgh Airport", "linkC");
             List<Airport> airports = new() { airport1, airport2, airport3 };
 
             Mock<IWebElement> mockEntry1 = new();
@@ -58,7 +68,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                 .Returns(popularDestinationsDivMock2Object)
                 .Returns(popularDestinationsDivMock3Object);
 
-            FlightConnectionsDotComParser siteParser = new(driverMock.Object, logger.Object);
+            FlightConnectionsDotComParser siteParser = new(driverMock.Object, logger.Object, webDriverWait.Object);
             Dictionary<string, HashSet<string>> result = siteParser.GetAirportsAndTheirConnections(airports);
             Assert.IsTrue(result[airport1.Code].Count == 2);
             Assert.IsTrue(result[airport1.Code].Contains(airport2.Code));
@@ -71,28 +81,54 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void CollectAirports_ReturnsExpectedAirports()
         {
-            InitialiseMockObjects();
-            Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "linkA");
-            Airport airport2 = new("SOF", "Sofia", "Bulgaria", "Sofia Airport", "linkB");
-            Airport airport3 = new("EDI", "Edinburgh", "United Kingdom", "Edinburgh Airport", "linkC");
-            Airport airport4 = new("CIA", "Rome", "Spain", "Rome Ciampino", "linkD");
+            RunCollectAirportsTest(new List<IWebElement>() { SetUpAirportListEntryData(airport1), SetUpAirportListEntryData(airport2), SetUpAirportListEntryData(airport3), SetUpAirportListEntryData(airport4) }, 4);
+        }
 
-            IWebElement airportListEntryObject1 = SetUpAirportListEntryData(airport1);
-            IWebElement airportListEntryObject2 = SetUpAirportListEntryData(airport2);
-            IWebElement airportListEntryObject3 = SetUpAirportListEntryData(airport3);
-            IWebElement airportListEntryObject4 = SetUpAirportListEntryData(airport4);
+        [TestMethod]
+        public void CollectAirports_ReturnsExpectedAirports_MaxCountToCollectIsOne()
+        {
+            RunCollectAirportsTest(new List<IWebElement>() { SetUpAirportListEntryData(airport1), SetUpAirportListEntryData(airport2), SetUpAirportListEntryData(airport3), SetUpAirportListEntryData(airport4) }, 1, maxCountToCollect: 1);
+        }
+        
+        [TestMethod]
+        public void CollectAirports_ReturnsExpectedAirports_MaxCountToCollectIsOne_NoAirportsToCollect()
+        {
+            RunCollectAirportsTest(new List<IWebElement>(), 0, maxCountToCollect: 1, waitUntilThrowsException: true);
+        }
+        
+        [TestMethod]
+        public void CollectAirports_ReturnsExpectedAirports_AmericanAirportExcluded()
+        {
+            RunCollectAirportsTest(new List<IWebElement>() { SetUpAirportListEntryData(airport5) }, 0, europeOnly: true, agreeButtonContainsFakeText: true);
+        }
 
-            driverMock.Setup(x => x.FindElements(By.TagName("li"))).Returns(
-                new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { airportListEntryObject1, airportListEntryObject2, airportListEntryObject3, airportListEntryObject4 })
-            );
+        private void RunCollectAirportsTest(
+            List<IWebElement> airportListEntries,
+            int resultCountExpectation,
+            int maxCountToCollect = 0,
+            bool europeOnly = false,
+            bool navigationIsFalse = false,
+            bool waitUntilThrowsException = false,
+            bool agreeButtonContainsFakeText = false
+            )
+        {
+            driverMock.Setup(x => x.Navigate()).Returns(navigationIsFalse ? null : new Mock<INavigation>().Object);
+            driverMock.Setup(x => x.FindElements(By.TagName("li"))).Returns(new ReadOnlyCollection<IWebElement>(airportListEntries));
+            Mock<IAlert> alert = new();
+            if (waitUntilThrowsException) alert.Setup(x => x.Accept()).Throws(new WebDriverTimeoutException());
+            webDriverWait.Setup(x => x.Until(It.IsAny<Func<IWebDriver, IAlert>>())).Returns(alert.Object);
 
-            FlightConnectionsDotComParser siteParser = new(driverMock.Object, logger.Object);
-            List<Airport> results = siteParser.CollectAirports();
-            Assert.IsTrue(results.Count == 4);
-            Assert.IsTrue(results.Contains(airport1));
-            Assert.IsTrue(results.Contains(airport2));
-            Assert.IsTrue(results.Contains(airport3));
-            Assert.IsTrue(results.Contains(airport4));
+            Mock<IWebElement> searchButton = new();
+            searchButton.Setup(x => x.Text).Returns(agreeButtonContainsFakeText ? "Fake" : "AGREE");
+            driverMock.Setup(x => x.FindElements(By.CssSelector("button"))).Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { searchButton.Object }));
+
+            FlightConnectionsDotComParser siteParser = new(driverMock.Object, logger.Object, webDriverWait.Object);
+            List<Airport> results = siteParser.CollectAirports(maxCountToCollect: maxCountToCollect, europeOnly);
+            Assert.IsTrue(results.Count == resultCountExpectation);
+            if (results.Count > 0) Assert.IsTrue(results[0].Equals(airport1));
+            if (results.Count > 1) Assert.IsTrue(results[1].Equals(airport2));
+            if (results.Count > 2) Assert.IsTrue(results[2].Equals(airport3));
+            if (results.Count > 3) Assert.IsTrue(results[3].Equals(airport4));
         }
 
         private static IWebElement SetUpAirportListEntryData(Airport airport)

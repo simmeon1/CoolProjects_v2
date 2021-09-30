@@ -23,7 +23,7 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
             chromeOptions.AddArgument("headless");
             chromeDriver = new(chromeOptions);
             logger = new();
-            siteParser = new(chromeDriver, logger);
+            siteParser = new(chromeDriver, logger, new RealWebDriverWait(chromeDriver));
         }
 
         [TestMethod]

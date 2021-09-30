@@ -12,17 +12,19 @@ namespace FlightConnectionsDotCom_ClassLibrary
 {
     public class FlightConnectionsDotComParser
     {
-        private IWebDriver Driver { get; set; }
-        private ILogger Logger { get; set; }
         private const string gettingAirportsAndTheirConnections = "Getting airports and their connections";
         private const string collectingAirportDestinationsFromEachAirportPage = "Collecting airport destinations from each airport page";
         private const string collectingAirportDestinationsFromCurrentAirportPage = "Collecting airport destinations from current airport page";
         private const string collectingAirports = "Collecting airports";
+        private IWebDriver Driver { get; set; }
+        private ILogger Logger { get; set; }
+        private IWebDriverWait WebDriverWait { get; set; }
 
-        public FlightConnectionsDotComParser(IWebDriver driver, ILogger logger)
+        public FlightConnectionsDotComParser(IWebDriver driver, ILogger logger, IWebDriverWait webDriverWait)
         {
             Driver = driver;
             Logger = logger;
+            WebDriverWait = webDriverWait;
         }
 
         public List<Airport> CollectAirports(int maxCountToCollect = 0, bool europeOnly = false)
@@ -81,8 +83,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
             try
             {
-                WebDriverWait wait = new(Driver, TimeSpan.FromMilliseconds(100));
-                IAlert result = wait.Until(ExpectedConditions.AlertIsPresent());
+                IAlert result = WebDriverWait.Until(ExpectedConditions.AlertIsPresent());
                 result.Accept();
             }
             catch (WebDriverTimeoutException)

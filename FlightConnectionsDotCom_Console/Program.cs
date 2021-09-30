@@ -34,7 +34,7 @@ namespace FlightConnectionsDotCom_Console
             bool useLocalAirportDestinations = !parameters.LocalAirportDestinationsFile.IsNullOrEmpty();
             if (!useLocalAirportList || !useLocalAirportDestinations) driver1 = new(chromeOptions);
 
-            FlightConnectionsDotComParser siteParser = new(driver1, logger);
+            FlightConnectionsDotComParser siteParser = new(driver1, logger, new RealWebDriverWait(driver1));
             List<Airport> airportsList = useLocalAirportList
                 ? JsonConvert.DeserializeObject<List<Airport>>(File.ReadAllText(parameters.LocalAirportListFile))
                 : siteParser.CollectAirports(europeOnly: parameters.EuropeOnly);

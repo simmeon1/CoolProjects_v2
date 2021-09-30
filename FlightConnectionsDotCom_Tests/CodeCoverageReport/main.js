@@ -237,11 +237,12 @@ var assemblies = [
   {
     "name": "FlightConnectionsDotCom_ClassLibrary",
     "classes": [
-      { "name": "FlightConnectionsDotCom_ClassLibrary.Airport", "rp": "FlightConnectionsDotCom_ClassLibrary_Airport.html", "cl": 70, "ucl": 0, "cal": 70, "tl": 86, "ct": "LineCoverage", "mc": "-", "cb": 96, "tb": 96, "lch": [], "bch": [], "hc": [] },
+      { "name": "FlightConnectionsDotCom_ClassLibrary.Airport", "rp": "FlightConnectionsDotCom_ClassLibrary_Airport.html", "cl": 70, "ucl": 0, "cal": 70, "tl": 86, "ct": "LineCoverage", "mc": "-", "cb": 91, "tb": 96, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.AirportPathGenerator", "rp": "FlightConnectionsDotCom_ClassLibrary_AirportPathGenerator.html", "cl": 58, "ucl": 0, "cal": 58, "tl": 86, "ct": "LineCoverage", "mc": "-", "cb": 20, "tb": 20, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.ChromeWorker", "rp": "FlightConnectionsDotCom_ClassLibrary_ChromeWorker.html", "cl": 121, "ucl": 0, "cal": 121, "tl": 165, "ct": "LineCoverage", "mc": "-", "cb": 32, "tb": 32, "lch": [], "bch": [], "hc": [] },
-      { "name": "FlightConnectionsDotCom_ClassLibrary.FlightConnectionsDotComParser", "rp": "FlightConnectionsDotCom_ClassLibrary_FlightConnectionsDotComParser.html", "cl": 98, "ucl": 25, "cal": 123, "tl": 178, "ct": "LineCoverage", "mc": "-", "cb": 17, "tb": 28, "lch": [], "bch": [], "hc": [] },
+      { "name": "FlightConnectionsDotCom_ClassLibrary.FlightConnectionsDotComParser", "rp": "FlightConnectionsDotCom_ClassLibrary_FlightConnectionsDotComParser.html", "cl": 117, "ucl": 7, "cal": 124, "tl": 179, "ct": "LineCoverage", "mc": "-", "cb": 26, "tb": 28, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.Parameters", "rp": "FlightConnectionsDotCom_ClassLibrary_Parameters.html", "cl": 0, "ucl": 9, "cal": 9, "tl": 18, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
+      { "name": "FlightConnectionsDotCom_ClassLibrary.RealWebDriverWait", "rp": "FlightConnectionsDotCom_ClassLibrary_RealWebDriverWait.html", "cl": 0, "ucl": 9, "cal": 9, "tl": 24, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
     ]},
 ];
 
