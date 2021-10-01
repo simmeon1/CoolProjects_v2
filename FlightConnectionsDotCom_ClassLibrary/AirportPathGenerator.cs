@@ -19,19 +19,20 @@ namespace FlightConnectionsDotCom_ClassLibrary
             AirportDestinations = airportDestinations;
         }
 
-        public List<List<string>> GeneratePaths(string origin, string target, int maxFlights)
-        {
-            Initialise(target, maxFlights);
-            UpdateCurrentPathAndScanItIfNeeded(origin, target);
-            return Paths.OrderBy(p => p.Count).ThenBy(p => GetPathAsString(p)).ToList();
-        }
-
-        private void Initialise(string target, int maxFlights)
+        public List<List<string>> GeneratePaths(List<string> origins, List<string> targets, int maxFlights)
         {
             Paths = new List<List<string>>();
-            CurrentPath = new LinkedList<string>();
             MaxFlights = maxFlights;
-            Target = target;
+            foreach (string origin in origins)
+            {
+                foreach (string target in targets)
+                {
+                    CurrentPath = new LinkedList<string>();
+                    Target = target;
+                    UpdateCurrentPathAndScanItIfNeeded(origin, target);
+                }
+            }
+            return Paths.OrderBy(p => p.Count).ThenBy(p => GetPathAsString(p)).ToList();
         }
 
         private void UpdateCurrentPathAndScanItIfNeeded(string origin, string target)

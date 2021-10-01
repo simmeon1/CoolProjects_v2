@@ -30,7 +30,7 @@ namespace SpotifyAPI_Tests.IntegrationTests
         }
 
         [TestMethod]
-        public async Task testAsync()
+        public async Task TestAsync()
         {
             List<SongCLS> songs = File.ReadAllText(@"C:\Users\simme\source\repos\json files from laptop\TopTenUKandUSSingles_lessFiller.json").DeserializeObject<List<SongCLS>>();
             songs = songs.Distinct(new SongCLS()).OrderByDescending(x => x.YouTubeViews).ToList();

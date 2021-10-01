@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
     public class Parameters
     {
-        public string Origin { get; set; }
-        public string Destination { get; set; }
+        public List<string> Origins { get; set; }
+        public List<string> Destinations { get; set; }
         public int MaxFlights { get; set; }
         public DateTime Date { get; set; }
         public string LocalAirportListFile { get; set; }

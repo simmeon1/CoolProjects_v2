@@ -56,7 +56,7 @@ namespace FlightConnectionsDotCom_Console
             if (driver1 != null) driver1.Quit();
 
             AirportPathGenerator generator = new(airportsAndDestinations);
-            List<List<string>> paths = generator.GeneratePaths(parameters.Origin, parameters.Destination, parameters.MaxFlights);
+            List<List<string>> paths = generator.GeneratePaths(parameters.Origins, parameters.Destinations, parameters.MaxFlights);
             List<List<string>> pathsDetailed = new();
             foreach (List<string> path in paths)
             {
