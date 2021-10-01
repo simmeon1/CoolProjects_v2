@@ -1,0 +1,30 @@
+﻿using System;
+using System.Diagnostics;
+
+namespace FlightConnectionsDotCom_ClassLibrary
+{
+    [DebuggerDisplay("{GetFullString()}")]
+    public class Flight
+    {
+        public DateTime Departing { get; set; }
+        public DateTime Arriving { get; set; }
+        public string Airline { get; set; }
+        public TimeSpan Duration { get; set; }
+        public string Path { get; set; }
+        public int Cost { get; set; }
+        public Flight(DateTime departing, DateTime arriving, string airline, TimeSpan duration, string path, int cost)
+        {
+            Departing = departing;
+            Arriving = arriving;
+            Airline = airline;
+            Duration = duration;
+            Path = path;
+            Cost = cost;
+        }
+
+        public string GetFullString()
+        {
+            return $"{Path} - {Departing} - {Arriving} - {Cost}";
+        }
+    }
+}

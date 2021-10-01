@@ -33,8 +33,8 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
             List<List<string>> paths = new() { path1, path2, path3 };
 
             ChromeWorker chromeWorker = new(chromeDriver, chromeDriver, logger, new RealDelayer());
-            int results = await chromeWorker.OpenPaths(paths, DateTime.Today);
-            Assert.IsTrue(results == 6);
+            List<KeyValuePair<List<string>, List<KeyValuePair<List<string>, List<Flight>>>>> results = await chromeWorker.ProcessPaths(paths, DateTime.Today);
+            Assert.IsTrue(results.Count > 0);
         }
 
         [TestCleanup]

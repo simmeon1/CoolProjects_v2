@@ -69,7 +69,7 @@ namespace FlightConnectionsDotCom_Console
             if (!parameters.OpenGoogleFlights) return;
             ChromeDriver driver2 = new();
             ChromeWorker chromeWorker = new(driver2, driver2, logger, new RealDelayer());
-            await chromeWorker.OpenPaths(paths, parameters.Date);
+            await chromeWorker.ProcessPaths(paths, parameters.Date);
         }
     }
 }

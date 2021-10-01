@@ -28,20 +28,21 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Delayer = delayer;
         }
 
-        public async Task<int> OpenPaths(List<List<string>> paths, DateTime date)
+        public async Task<List<KeyValuePair<List<string>, List<KeyValuePair<List<string>, List<Flight>>>>>> ProcessPaths(List<List<string>> paths, DateTime date)
         {
+            List<KeyValuePair<List<string>, List<KeyValuePair<List<string>, List<Flight>>>>> results = new();
             Date = date;
-            int initialTabCount = Driver.WindowHandles.Count;
 
             PagesToOpen = 0;
             PagesOpened = 0;
             foreach (List<string> path in paths) for (int i = 0; i < path.Count - 1; i++) PagesToOpen++;
-            foreach (List<string> path in paths) await ProcessPath(path);
-            return Driver.WindowHandles.Count - initialTabCount;
+            foreach (List<string> path in paths) results.Add(await ProcessPath(path));
+            return results;
         }
 
-        private async Task ProcessPath(List<string> path)
+        private async Task<KeyValuePair<List<string>, List<KeyValuePair<List<string>, List<Flight>>>>> ProcessPath(List<string> path)
         {
+            List<KeyValuePair<List<string>, List<Flight>>> pathsAndFlights = new();
             for (int i = 0; i < path.Count - 1; i++)
             {
                 string origin = path[i];
@@ -55,8 +56,67 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 await Delayer.Delay(1000);
                 await SetStopsToNone();
                 PagesOpened++;
+                List<Flight> flights = await GetFlights();
+                KeyValuePair<List<string>, List<Flight>> flightsForOriginToTarget = new(new List<string>() { origin, target }, flights);
+                pathsAndFlights.Add(flightsForOriginToTarget);
                 Logger.Log($"Populated page for {origin} to {target} ({GetPercentageAndCountString()})");
             }
+            return new(path, pathsAndFlights);
+        }
+
+        private async Task<List<Flight>> GetFlights()
+        {
+            List<Flight> results = new();
+            IWebElement flightList;
+            ReadOnlyCollection<IWebElement> flights;
+
+            while (true)
+            {
+                try
+                {
+                    await Delayer.Delay(1000);
+                    flightList = Driver.FindElement(By.CssSelector("[role=list]"));
+                }
+                catch (NoSuchElementException)
+                {
+                    return new();
+                }
+                flights = flightList.FindElements(By.CssSelector("[role=listitem]"));
+                if (flights[flights.Count - 1].Text.Contains("more flights")) flights[flights.Count - 1].Click();
+                else break;
+            }
+
+            foreach (IWebElement flight in flights)
+            {
+                string text = flight.GetAttribute("innerText");
+                if (text.Contains("flights")) continue;
+                string[] flightText = text.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+                string departingText = flightText[0].Replace(" ", "").Trim();
+                string arrivingText = flightText[2].Replace(" ", "").Trim();
+
+                bool arrivesNextDay = false;
+                if (arrivingText.Contains("+1"))
+                {
+                    arrivesNextDay = true;
+                    arrivingText = arrivingText.Replace("+1", "").Trim();
+                }
+
+                string airlineText = flightText[3].Trim();
+                string durationText = Regex.Replace(flightText[4], "(\\d+).*?(\\d+).*", "$1:$2").Trim();
+                string pathText = flightText[5].Trim();
+                string costText = Regex.Replace(flightText[7], ".*?(\\d+).*", "$1").Trim();
+                results.Add(
+                    new Flight(
+                        DateTime.Parse($"{Date.Day}-{Date.Month}-{Date.Year} {departingText}"),
+                        DateTime.Parse($"{Date.Day}-{Date.Month}-{Date.Year} {arrivingText}").AddDays(arrivesNextDay ? 1 : 0),
+                        airlineText,
+                        TimeSpan.Parse(durationText),
+                        pathText,
+                        int.Parse(costText)
+                    )
+                );
+            }
+            return results;
         }
 
         private async Task SetStopsToNone()
