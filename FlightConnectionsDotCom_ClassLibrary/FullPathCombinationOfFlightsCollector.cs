@@ -30,10 +30,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private void BuildUpCombinationOfFlights(int index, LinkedList<Flight> x, List<List<Flight>> combos)
         {
-            for (int i = 0; i < DataWithFlightsForSinglePaths.Value.Count; i++)
+            for (int i = index; i < DataWithFlightsForSinglePaths.Value.Count; i++)
             {
                 KeyValuePair<Path, List<Flight>> pathAndFlights = DataWithFlightsForSinglePaths.Value[i];
-                if (i < index) continue;
                 List<Flight> pathFlights = pathAndFlights.Value;
                 foreach (Flight pathFlight in pathFlights)
                 {
