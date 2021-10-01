@@ -33,7 +33,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 IWebElement airportListEntry = airportListEntries[i];
                 Airport airport = CreateAirportFromAirportEntry(airportListEntry);
                 airports.Add(airport);
-                Worker.Logger.Log($"Collected airport ({Globals.GetPercentageAndCountString(i, countToCollect)} airports done) {airport.GetFullString()}.");
+                Worker.Logger.Log($"Collected airport ({Globals.GetPercentageAndCountString(i, countToCollect)} airports done) {airport.ToString()}.");
             }
             Worker.Logger.Log($"Finished {collectingAirports} ({countToCollect} airports).");
             return airports;

@@ -61,7 +61,7 @@ namespace FlightConnectionsDotCom_Console
             foreach (FlightConnectionsDotCom_ClassLibrary.Path path in paths)
             {
                 List<string> pathDetailed = new();
-                foreach (string airport in path.Entries) pathDetailed.Add(airportsList.FirstOrDefault(x => x.Code.Equals(airport)).GetFullString());
+                foreach (string airport in path.Entries) pathDetailed.Add(airportsList.FirstOrDefault(x => x.Code.Equals(airport)).ToString());
                 pathsDetailed.Add(pathDetailed);
             }
             File.WriteAllText($"{parameters.FileSavePath}\\latestPaths_{runId}.json", JsonConvert.SerializeObject(pathsDetailed, Formatting.Indented));

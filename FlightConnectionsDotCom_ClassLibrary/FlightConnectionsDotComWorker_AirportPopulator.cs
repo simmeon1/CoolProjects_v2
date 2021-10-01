@@ -37,7 +37,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 NavigateToAirportPage(airport);
                 ClickShowMoreButtonIfItExists();
                 HashSet<string> destinations = GetDestinationsFromAirportPage(airport, results);
-                Worker.Logger.Log($"Finished {collectingAirportDestinationsFromCurrentAirportPage} ({Globals.GetPercentageAndCountString(i, AirportsList.Count)} airports done, {destinations.Count} destinations for airport {airport.GetFullString()}).");
+                Worker.Logger.Log($"Finished {collectingAirportDestinationsFromCurrentAirportPage} ({Globals.GetPercentageAndCountString(i, AirportsList.Count)} airports done, {destinations.Count} destinations for airport {airport}).");
             }
             Worker.Logger.Log($"Finished {collectingAirportDestinationsFromEachAirportPage} for {AirportsList.Count} airports.");
             Worker.Logger.Log($"Finished {gettingAirportsAndTheirConnections} for {AirportsList.Count} airports.");
@@ -54,7 +54,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         {
             HashSet<string> destinations = new();
             IWebElement popularDestinationsDiv = GetPopularDestinationsDiv();
-            if (popularDestinationsDiv == null) Worker.Logger.Log($"There was a problem with locating the popular destinations div for {airport.GetFullString()}");
+            if (popularDestinationsDiv == null) Worker.Logger.Log($"There was a problem with locating the popular destinations div for {airport}");
             else AddDestinationsFromPopularDivToDestinationsList(popularDestinationsDiv, destinations);
             results.Add(airport.Code, destinations);
             return destinations;

@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
-    [DebuggerDisplay("{GetFullString()}")]
     public class Airport
     {
         public string Code { get; set; }
@@ -35,7 +33,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return HashCode.Combine(Code, City, Country, Name, Link);
         }
 
-        public string GetFullString()
+        public override string ToString()
         {
             return $"{Code} - {City} - {Country} - {Name}";
         }
