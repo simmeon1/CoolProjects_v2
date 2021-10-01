@@ -56,12 +56,12 @@ namespace FlightConnectionsDotCom_Console
             if (driver1 != null) driver1.Quit();
 
             AirportPathGenerator generator = new(airportsAndDestinations);
-            List<List<string>> paths = generator.GeneratePaths(parameters.Origins, parameters.Destinations, parameters.MaxFlights);
+            List<FlightConnectionsDotCom_ClassLibrary.Path> paths = generator.GeneratePaths(parameters.Origins, parameters.Destinations, parameters.MaxFlights);
             List<List<string>> pathsDetailed = new();
-            foreach (List<string> path in paths)
+            foreach (FlightConnectionsDotCom_ClassLibrary.Path path in paths)
             {
                 List<string> pathDetailed = new();
-                foreach (string airport in path) pathDetailed.Add(airportsList.FirstOrDefault(x => x.Code.Equals(airport)).GetFullString());
+                foreach (string airport in path.Entries) pathDetailed.Add(airportsList.FirstOrDefault(x => x.Code.Equals(airport)).GetFullString());
                 pathsDetailed.Add(pathDetailed);
             }
             File.WriteAllText($"{parameters.FileSavePath}\\latestPaths_{runId}.json", JsonConvert.SerializeObject(pathsDetailed, Formatting.Indented));

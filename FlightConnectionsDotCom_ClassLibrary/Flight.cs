@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
-    [DebuggerDisplay("{GetFullString()}")]
     public class Flight
     {
         public DateTime Departing { get; set; }
@@ -22,7 +20,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Cost = cost;
         }
 
-        public string GetFullString()
+        public override string ToString()
         {
             return $"{Path} - {Departing} - {Arriving} - {Cost}";
         }

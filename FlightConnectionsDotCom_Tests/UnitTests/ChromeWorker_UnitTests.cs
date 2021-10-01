@@ -33,13 +33,19 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public async Task OpenFlights_ExpectedTabsOpenedWithNoErrors_2()
         {
-            await RunTest(targetLocatorReturnsNull: true, noConsentButtons: true, noSpansForTripType: true, searchingForButtonsReturnsEmptyList: true, stopButtonContainsNullText: true);
+            await RunTest(targetLocatorReturnsNull: true, noConsentButtons: true, noSpansForTripType: true, searchingForButtonsReturnsEmptyList: true, stopButtonContainsNullText: true, hasNoFlightList: true);
         }
-        
+
         [TestMethod]
         public async Task OpenFlights_ExpectedTabsOpenedWithNoErrors_3()
         {
-            await RunTest(noOptionForOneWayFlight: true);
+            await RunTest(noOptionForOneWayFlight: true, flightListThrowsException: true);
+        }
+        
+        [TestMethod]
+        public async Task OpenFlights_ExpectedTabsOpenedWithNoErrors_4()
+        {
+            await RunTest(flightsAreNull: true);
         }
 
         private async Task RunTest(
@@ -49,17 +55,40 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             bool noSpansForTripType = false,
             bool noOptionForOneWayFlight = false,
             bool searchingForButtonsReturnsEmptyList = false,
-            bool stopButtonContainsNullText = false
-            )
+            bool stopButtonContainsNullText = false,
+            bool hasNoFlightList = false,
+            bool flightListThrowsException = false,
+            bool flightsAreNull = false)
         {
             InitialiseMockObjects();
             List<string> path1 = new() { "ABZ", "SOF" };
-            List<List<string>> paths = new() { path1 };
+            List<Path> paths = new() { new Path(path1) };
 
             driverMock.Setup(x => x.Navigate()).Returns(navigatonIsNull ? null : new Mock<INavigation>().Object);
             driverMock.Setup(x => x.SwitchTo()).Returns(targetLocatorReturnsNull ? null : new Mock<ITargetLocator>().Object);
             driverMock.Setup(x => x.WindowHandles).Returns(new ReadOnlyCollection<string>(new List<string>() { "1", "1", "1" }));
             driverMock.Setup(x => x.FindElement(By.CssSelector("header"))).Returns(new Mock<IWebElement>().Object);
+
+            if (!hasNoFlightList)
+            {
+                if (flightListThrowsException)
+                {
+                    driverMock.Setup(x => x.FindElement(By.CssSelector("[role=list]"))).Throws(new NoSuchElementException());
+                }
+                else
+                {
+                    Mock<IWebElement> flightListMock = new();
+                    Mock<IWebElement> flightMock = new();
+
+                    string flightText = "9:45 PM\n– \n2:55 AM+1\nWizz Air\n3 hr 10 min\nLTN–VAR\nNonstop\n£27";
+                    flightMock.SetupSequence(x => x.GetAttribute("innerText"))
+                        .Returns("more flights")
+                        .Returns(flightText)
+                        .Returns(flightText);
+                    flightListMock.Setup(x => x.FindElements(By.CssSelector("[role=listitem]"))).Returns(flightsAreNull ? null : new ReadOnlyCollection<IWebElement>(new List<IWebElement> { flightMock.Object }));
+                    driverMock.Setup(x => x.FindElement(By.CssSelector("[role=list]"))).Returns(flightListMock.Object);
+                }
+            }
 
             Mock<IWebElement> consentButton = new();
             consentButton.Setup(x => x.Text).Returns("I agree");
@@ -96,8 +125,23 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             driverMock.Setup(x => x.FindElements(By.CssSelector("input"))).Returns(inputs);
 
             ChromeWorker chromeWorker = new(driverMock.Object, jsExecutor.Object, logger.Object, new Mock<IDelayer>().Object);
-            List<KeyValuePair<List<string>, List<KeyValuePair<List<string>, List<Flight>>>>> results = await chromeWorker.ProcessPaths(paths, new DateTime(2000, 10, 10));
-            Assert.IsTrue(results.Count > 0);
+            List<KeyValuePair<Path, List<KeyValuePair<Path, List<Flight>>>>> results = await chromeWorker.ProcessPaths(paths, new DateTime(2000, 10, 10));
+
+            AssertCommonExpectation(results);
+            if (!hasNoFlightList && !flightListThrowsException && !flightsAreNull)
+            {
+                Assert.IsTrue(results[0].Value[0].Value.Count == 1);
+                Assert.IsTrue(results[0].Value[0].Value[0].ToString().Equals(@"LTN–VAR - 10/10/2000 21:45:00 - 11/10/2000 02:55:00 - 27"));
+            }
+            else Assert.IsTrue(results[0].Value[0].Value.Count == 0);
+        }
+
+        private static void AssertCommonExpectation(List<KeyValuePair<Path, List<KeyValuePair<Path, List<Flight>>>>> results)
+        {
+            Assert.IsTrue(results.Count == 1);
+            Assert.IsTrue(results[0].Key.ToString().Equals("ABZ-SOF"));
+            Assert.IsTrue(results[0].Value.Count == 1);
+            Assert.IsTrue(results[0].Value[0].Key.ToString().Equals("ABZ-SOF"));
         }
     }
 }

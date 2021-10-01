@@ -11,7 +11,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private IDictionary<string, HashSet<string>> AirportDestinations { get; set; }
         private LinkedList<string> CurrentPath { get; set; }
         private int MaxFlights { get; set; }
-        private List<List<string>> Paths { get; set; }
+        private List<Path> Paths { get; set; }
         private string Target { get; set; }
 
         public AirportPathGenerator(IDictionary<string, HashSet<string>> airportDestinations)
@@ -19,9 +19,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             AirportDestinations = airportDestinations;
         }
 
-        public List<List<string>> GeneratePaths(List<string> origins, List<string> targets, int maxFlights)
+        public List<Path> GeneratePaths(List<string> origins, List<string> targets, int maxFlights)
         {
-            Paths = new List<List<string>>();
+            Paths = new List<Path>();
             MaxFlights = maxFlights;
             foreach (string origin in origins)
             {
@@ -32,7 +32,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                     UpdateCurrentPathAndScanItIfNeeded(origin, target);
                 }
             }
-            return Paths.OrderBy(p => p.Count).ThenBy(p => GetPathAsString(p)).ToList();
+            return Paths.OrderBy(p => p.Entries.Count).ThenBy(p => GetPathAsString(p.Entries)).ToList();
         }
 
         private void UpdateCurrentPathAndScanItIfNeeded(string origin, string target)
@@ -68,7 +68,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             HashSet<string> destinations = AirportDestinations[origin];
             foreach (string destination in destinations)
             {
-                if (destination.Equals(target)) Paths.Add(new List<string>(CurrentPath) { destination });
+                if (destination.Equals(target)) Paths.Add(new Path(new List<string>(CurrentPath) { destination }));
                 UpdateCurrentPathAndScanItIfNeeded(destination, target);
             }
         }

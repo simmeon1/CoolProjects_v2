@@ -30,14 +30,14 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetAirportConnections_ReturnsZeroResultsWhenMaxFlightsAreZero()
         {
-            List<List<string>> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 0);
+            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 0);
             Assert.IsTrue(paths.Count == 0);
         }
 
         [TestMethod]
         public void GetAirportConnections_ReturnsExpectedOnePathWhenMaxFlightsAreOne()
         {
-            List<List<string>> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 1);
+            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 1);
             Assert.IsTrue(paths.Count == 1);
             VerifyAbzSofPath(paths);
         }
@@ -45,26 +45,26 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetAirportConnections_MultipleOriginsAndTargets()
         {
-            List<List<string>> paths = generator.GeneratePaths(new List<string>(){ codeABZ, codeEDI }, new List<string>(){ codeSOF, codeCIA }, 1);
+            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ, codeEDI }, new List<string>(){ codeSOF, codeCIA }, 1);
             Assert.IsTrue(paths.Count == 4);
-            Assert.IsTrue(paths[0].Count == 2);
-            Assert.IsTrue(paths[0][0].Equals(codeABZ));
-            Assert.IsTrue(paths[0][1].Equals(codeCIA));
-            Assert.IsTrue(paths[1].Count == 2);
-            Assert.IsTrue(paths[1][0].Equals(codeABZ));
-            Assert.IsTrue(paths[1][1].Equals(codeSOF));
-            Assert.IsTrue(paths[2].Count == 2);
-            Assert.IsTrue(paths[2][0].Equals(codeEDI));
-            Assert.IsTrue(paths[2][1].Equals(codeCIA));
-            Assert.IsTrue(paths[3].Count == 2);
-            Assert.IsTrue(paths[3][0].Equals(codeEDI));
-            Assert.IsTrue(paths[3][1].Equals(codeSOF));
+            Assert.IsTrue(paths[0].Entries.Count == 2);
+            Assert.IsTrue(paths[0].Entries[0].Equals(codeABZ));
+            Assert.IsTrue(paths[0].Entries[1].Equals(codeCIA));
+            Assert.IsTrue(paths[1].Entries.Count == 2);
+            Assert.IsTrue(paths[1].Entries[0].Equals(codeABZ));
+            Assert.IsTrue(paths[1].Entries[1].Equals(codeSOF));
+            Assert.IsTrue(paths[2].Entries.Count == 2);
+            Assert.IsTrue(paths[2].Entries[0].Equals(codeEDI));
+            Assert.IsTrue(paths[2].Entries[1].Equals(codeCIA));
+            Assert.IsTrue(paths[3].Entries.Count == 2);
+            Assert.IsTrue(paths[3].Entries[0].Equals(codeEDI));
+            Assert.IsTrue(paths[3].Entries[1].Equals(codeSOF));
         }
 
         [TestMethod]
         public void GetAirportConnections_ReturnsExpectedThreePathsWhenMaxFlightsAreTwo()
         {
-            List<List<string>> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 2);
+            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 2);
             Assert.IsTrue(paths.Count == 3);
             VerifyAbzSofPath(paths);
             VerifyAbzCiaSofPath(paths);
@@ -74,43 +74,43 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetAirportConnections_ReturnsExpectedFivePathsWhenMaxFlightsAreThreeOrMore()
         {
-            List<List<string>> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 10);
+            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 10);
             Assert.IsTrue(paths.Count == 5);
             VerifyAbzSofPath(paths);
             VerifyAbzCiaSofPath(paths);
             VerifyAbzEdiSofPath(paths);
-            Assert.IsTrue(paths[3].Count == 4);
-            Assert.IsTrue(paths[3][0].Equals(codeABZ));
-            Assert.IsTrue(paths[3][1].Equals(codeCIA));
-            Assert.IsTrue(paths[3][2].Equals(codeEDI));
-            Assert.IsTrue(paths[3][3].Equals(codeSOF));
-            Assert.IsTrue(paths[4].Count == 4);
-            Assert.IsTrue(paths[4][0].Equals(codeABZ));
-            Assert.IsTrue(paths[4][1].Equals(codeEDI));
-            Assert.IsTrue(paths[4][2].Equals(codeCIA));
-            Assert.IsTrue(paths[4][3].Equals(codeSOF));
+            Assert.IsTrue(paths[3].Entries.Count == 4);
+            Assert.IsTrue(paths[3].Entries[0].Equals(codeABZ));
+            Assert.IsTrue(paths[3].Entries[1].Equals(codeCIA));
+            Assert.IsTrue(paths[3].Entries[2].Equals(codeEDI));
+            Assert.IsTrue(paths[3].Entries[3].Equals(codeSOF));
+            Assert.IsTrue(paths[4].Entries.Count == 4);
+            Assert.IsTrue(paths[4].Entries[0].Equals(codeABZ));
+            Assert.IsTrue(paths[4].Entries[1].Equals(codeEDI));
+            Assert.IsTrue(paths[4].Entries[2].Equals(codeCIA));
+            Assert.IsTrue(paths[4].Entries[3].Equals(codeSOF));
         }
 
-        private static void VerifyAbzSofPath(List<List<string>> paths)
+        private static void VerifyAbzSofPath(List<Path> paths)
         {
-            Assert.IsTrue(paths[0].Count == 2);
-            Assert.IsTrue(paths[0][0].Equals(codeABZ));
-            Assert.IsTrue(paths[0][1].Equals(codeSOF));
+            Assert.IsTrue(paths[0].Entries.Count == 2);
+            Assert.IsTrue(paths[0].Entries[0].Equals(codeABZ));
+            Assert.IsTrue(paths[0].Entries[1].Equals(codeSOF));
         }
-        private static void VerifyAbzCiaSofPath(List<List<string>> paths)
+        private static void VerifyAbzCiaSofPath(List<Path> paths)
         {
-            Assert.IsTrue(paths[1].Count == 3);
-            Assert.IsTrue(paths[1][0].Equals(codeABZ));
-            Assert.IsTrue(paths[1][1].Equals(codeCIA));
-            Assert.IsTrue(paths[1][2].Equals(codeSOF));
+            Assert.IsTrue(paths[1].Entries.Count == 3);
+            Assert.IsTrue(paths[1].Entries[0].Equals(codeABZ));
+            Assert.IsTrue(paths[1].Entries[1].Equals(codeCIA));
+            Assert.IsTrue(paths[1].Entries[2].Equals(codeSOF));
         }
 
-        private static void VerifyAbzEdiSofPath(List<List<string>> paths)
+        private static void VerifyAbzEdiSofPath(List<Path> paths)
         {
-            Assert.IsTrue(paths[2].Count == 3);
-            Assert.IsTrue(paths[2][0].Equals(codeABZ));
-            Assert.IsTrue(paths[2][1].Equals(codeEDI));
-            Assert.IsTrue(paths[2][2].Equals(codeSOF));
+            Assert.IsTrue(paths[2].Entries.Count == 3);
+            Assert.IsTrue(paths[2].Entries[0].Equals(codeABZ));
+            Assert.IsTrue(paths[2].Entries[1].Equals(codeEDI));
+            Assert.IsTrue(paths[2].Entries[2].Equals(codeSOF));
         }
     }
 }

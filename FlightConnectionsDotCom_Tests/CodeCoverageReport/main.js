@@ -224,7 +224,7 @@ var assemblies = [
   {
     "name": "Common_ClassLibrary",
     "classes": [
-      { "name": "Common_ClassLibrary.Extensions", "rp": "Common_ClassLibrary_Extensions.html", "cl": 0, "ucl": 22, "cal": 22, "tl": 42, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
+      { "name": "Common_ClassLibrary.Extensions", "rp": "Common_ClassLibrary_Extensions.html", "cl": 13, "ucl": 15, "cal": 28, "tl": 52, "ct": "LineCoverage", "mc": "-", "cb": 5, "tb": 6, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.Globals", "rp": "Common_ClassLibrary_Globals.html", "cl": 7, "ucl": 3, "cal": 10, "tl": 22, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.Logger_Console", "rp": "Common_ClassLibrary_Logger_Console.html", "cl": 0, "ucl": 11, "cal": 11, "tl": 25, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.Logger_Debug", "rp": "Common_ClassLibrary_Logger_Debug.html", "cl": 0, "ucl": 11, "cal": 11, "tl": 25, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
@@ -239,13 +239,15 @@ var assemblies = [
     "classes": [
       { "name": "FlightConnectionsDotCom_ClassLibrary.Airport", "rp": "FlightConnectionsDotCom_ClassLibrary_Airport.html", "cl": 27, "ucl": 0, "cal": 27, "tl": 43, "ct": "LineCoverage", "mc": "-", "cb": 10, "tb": 10, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.AirportPathGenerator", "rp": "FlightConnectionsDotCom_ClassLibrary_AirportPathGenerator.html", "cl": 61, "ucl": 0, "cal": 61, "tl": 87, "ct": "LineCoverage", "mc": "-", "cb": 24, "tb": 24, "lch": [], "bch": [], "hc": [] },
-      { "name": "FlightConnectionsDotCom_ClassLibrary.ChromeWorker", "rp": "FlightConnectionsDotCom_ClassLibrary_ChromeWorker.html", "cl": 121, "ucl": 0, "cal": 121, "tl": 165, "ct": "LineCoverage", "mc": "-", "cb": 32, "tb": 32, "lch": [], "bch": [], "hc": [] },
+      { "name": "FlightConnectionsDotCom_ClassLibrary.ChromeWorker", "rp": "FlightConnectionsDotCom_ClassLibrary_ChromeWorker.html", "cl": 172, "ucl": 0, "cal": 172, "tl": 226, "ct": "LineCoverage", "mc": "-", "cb": 45, "tb": 46, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.EuropeFilterer", "rp": "FlightConnectionsDotCom_ClassLibrary_EuropeFilterer.html", "cl": 48, "ucl": 0, "cal": 48, "tl": 55, "ct": "LineCoverage", "mc": "-", "cb": 88, "tb": 88, "lch": [], "bch": [], "hc": [] },
+      { "name": "FlightConnectionsDotCom_ClassLibrary.Flight", "rp": "FlightConnectionsDotCom_ClassLibrary_Flight.html", "cl": 18, "ucl": 0, "cal": 18, "tl": 28, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.FlightConnectionsDotComWorker", "rp": "FlightConnectionsDotCom_ClassLibrary_FlightConnectionsDotComWorker.html", "cl": 29, "ucl": 0, "cal": 29, "tl": 49, "ct": "LineCoverage", "mc": "-", "cb": 6, "tb": 6, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.FlightConnectionsDotComWorker_AirportCollector", "rp": "FlightConnectionsDotCom_ClassLibrary_FlightConnectionsDotComWorker_AirportCollector.html", "cl": 34, "ucl": 0, "cal": 34, "tl": 54, "ct": "LineCoverage", "mc": "-", "cb": 6, "tb": 6, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.FlightConnectionsDotComWorker_AirportPopulator", "rp": "FlightConnectionsDotCom_ClassLibrary_FlightConnectionsDotComWorker_AirportPopulator.html", "cl": 70, "ucl": 0, "cal": 70, "tl": 106, "ct": "LineCoverage", "mc": "-", "cb": 14, "tb": 14, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.NoFilterer", "rp": "FlightConnectionsDotCom_ClassLibrary_NoFilterer.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 10, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.Parameters", "rp": "FlightConnectionsDotCom_ClassLibrary_Parameters.html", "cl": 0, "ucl": 10, "cal": 10, "tl": 20, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
+      { "name": "FlightConnectionsDotCom_ClassLibrary.Path", "rp": "FlightConnectionsDotCom_ClassLibrary_Path.html", "cl": 8, "ucl": 0, "cal": 8, "tl": 22, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.RealWebDriverWait", "rp": "FlightConnectionsDotCom_ClassLibrary_RealWebDriverWait.html", "cl": 0, "ucl": 9, "cal": 9, "tl": 24, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.UKBulgariaFilterer", "rp": "FlightConnectionsDotCom_ClassLibrary_UKBulgariaFilterer.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 10, "ct": "LineCoverage", "mc": "-", "cb": 4, "tb": 4, "lch": [], "bch": [], "hc": [] },
     ]},
