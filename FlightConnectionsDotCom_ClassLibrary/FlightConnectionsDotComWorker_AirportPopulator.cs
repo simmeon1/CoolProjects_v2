@@ -14,15 +14,18 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private const string collectingAirportDestinationsFromCurrentAirportPage = "Collecting airport destinations from current airport page";
         private FlightConnectionsDotComWorker Worker { get; set; }
         private List<Airport> AirportsList { get; set; }
+        private IAirportFilterer Filterer { get; set; }
 
         public FlightConnectionsDotComWorker_AirportPopulator(FlightConnectionsDotComWorker worker)
         {
             Worker = worker;
         }
 
-        public Dictionary<string, HashSet<string>> PopulateAirports(List<Airport> airportsList)
+        public Dictionary<string, HashSet<string>> PopulateAirports(List<Airport> airportsList, IAirportFilterer filterer = null)
         {
             AirportsList = airportsList;
+            Filterer = filterer ?? new NoFilterer();
+
             Worker.Logger.Log($"{gettingAirportsAndTheirConnections} for {AirportsList.Count} airports...");
             Worker.Logger.Log($"{collectingAirportDestinationsFromEachAirportPage} for {AirportsList.Count} airports...");
 
@@ -30,6 +33,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             for (int i = 0; i < AirportsList.Count; i++)
             {
                 Airport airport = AirportsList[i];
+                if (!Filterer.AirportMeetsCondition(airport)) continue;
                 NavigateToAirportPage(airport);
                 ClickShowMoreButtonIfItExists();
                 HashSet<string> destinations = GetDestinationsFromAirportPage(airport, results);
@@ -81,7 +85,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 Match match = Regex.Match(destination, @"(.*?) \((...)\)$");
                 string name = match.Groups[1].Value;
                 string code = match.Groups[2].Value;
-                if (AirportsList.Any(a => a.Code.Equals(code))) destinations.Add(code);
+                Airport airport = AirportsList.FirstOrDefault(a => a.Code.Equals(code));
+                if (Filterer.AirportMeetsCondition(airport)) destinations.Add(code);
             }
         }
 

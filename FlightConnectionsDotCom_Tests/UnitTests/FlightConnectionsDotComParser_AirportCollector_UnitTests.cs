@@ -55,16 +55,15 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         }
         
         [TestMethod]
-        public void CollectAirports_ReturnsExpectedAirports_AmericanAirportExcluded()
+        public void CollectAirports_ReturnsExpectedAirports_AgreeButtonContainsFakeText()
         {
-            RunCollectAirportsTest(new List<IWebElement>() { SetUpAirportListEntryData(airport5) }, 0, europeOnly: true, agreeButtonContainsFakeText: true);
+            RunCollectAirportsTest(new List<IWebElement>() { SetUpAirportListEntryData(airport1) }, 1, agreeButtonContainsFakeText: true);
         }
 
         private void RunCollectAirportsTest(
             List<IWebElement> airportListEntries,
             int resultCountExpectation,
             int maxCountToCollect = 0,
-            bool europeOnly = false,
             bool navigationIsFalse = false,
             bool waitUntilThrowsException = false,
             bool agreeButtonContainsFakeText = false
@@ -81,7 +80,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             driverMock.Setup(x => x.FindElements(By.CssSelector("button"))).Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { searchButton.Object }));
 
             FlightConnectionsDotComWorker_AirportCollector siteParser = new(worker);
-            List<Airport> results = siteParser.CollectAirports(maxCountToCollect: maxCountToCollect, europeOnly);
+            List<Airport> results = siteParser.CollectAirports(maxCountToCollect: maxCountToCollect);
             Assert.IsTrue(results.Count == resultCountExpectation);
             if (results.Count > 0) Assert.IsTrue(results[0].Equals(airport1));
             if (results.Count > 1) Assert.IsTrue(results[1].Equals(airport2));

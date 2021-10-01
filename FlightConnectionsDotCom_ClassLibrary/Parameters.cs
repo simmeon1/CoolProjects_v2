@@ -14,5 +14,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public bool OpenGoogleFlights { get; set; }
         public string FileSavePath { get; set; }
         public bool EuropeOnly{ get; set; }
+        public bool UKAndBulgariaOnly{ get; set; }
     }
 }

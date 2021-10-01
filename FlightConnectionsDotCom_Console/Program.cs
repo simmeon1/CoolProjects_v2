@@ -38,15 +38,19 @@ namespace FlightConnectionsDotCom_Console
             FlightConnectionsDotComWorker_AirportCollector collector = new(worker);
             List<Airport> airportsList = useLocalAirportList
                 ? JsonConvert.DeserializeObject<List<Airport>>(File.ReadAllText(parameters.LocalAirportListFile))
-                : collector.CollectAirports(europeOnly: parameters.EuropeOnly);
+                : collector.CollectAirports();
 
             string runId = Globals.GetDateConcatenatedWithGuid(DateTime.Now, Guid.NewGuid().ToString());
             if (!useLocalAirportList) File.WriteAllText($"{parameters.FileSavePath}\\airportList_{runId}.json", JsonConvert.SerializeObject(airportsList, Formatting.Indented));
 
+            IAirportFilterer filterer = new NoFilterer();
+            if (parameters.EuropeOnly) filterer = new EuropeFilterer();
+            else if (parameters.UKAndBulgariaOnly) filterer = new UKBulgariaFilterer();
+
             FlightConnectionsDotComWorker_AirportPopulator populator = new(worker);
             Dictionary<string, HashSet<string>> airportsAndDestinations = useLocalAirportDestinations
                 ? JsonConvert.DeserializeObject<Dictionary<string, HashSet<string>>>(File.ReadAllText(parameters.LocalAirportDestinationsFile))
-                : populator.PopulateAirports(airportsList);
+                : populator.PopulateAirports(airportsList, filterer);
             if (!useLocalAirportDestinations) File.WriteAllText($"{parameters.FileSavePath}\\airportDestinations_{runId}.json", JsonConvert.SerializeObject(airportsAndDestinations, Formatting.Indented));
 
             if (driver1 != null) driver1.Quit();

@@ -37,6 +37,28 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         {
             AssertDefaultSuccessResults(GetResults());
         }
+        
+        [TestMethod]
+        public void PopulateAirports_NoResultsDueToFiltering()
+        {
+            Mock<IAirportFilterer> filtererMock = new();
+            filtererMock.Setup(x => x.AirportMeetsCondition(It.IsAny<Airport>())).Returns(false);
+            Assert.IsTrue(GetResults(filterer: filtererMock.Object).Count == 0);
+        }
+        
+        [TestMethod]
+        public void PopulateAirports_SofiaIsFilteredOut()
+        {
+            Mock<IAirportFilterer> filtererMock = new();
+            filtererMock.Setup(x => x.AirportMeetsCondition(It.IsAny<Airport>())).Returns(true);
+            filtererMock.Setup(x => x.AirportMeetsCondition(airport2)).Returns(false);
+            Dictionary<string, HashSet<string>> results = GetResults(filterer: filtererMock.Object);
+            Assert.IsTrue(results.Count == 2);
+            Assert.IsTrue(results[airport1.Code].Count == 1);
+            Assert.IsTrue(results[airport1.Code].Contains(airport3.Code));
+            Assert.IsTrue(results[airport3.Code].Count == 1);
+            Assert.IsTrue(results[airport3.Code].Contains(airport1.Code));
+        }
 
         [TestMethod]
         public void PopulateAirports_ReturnsExpectedResults_ShowMoreButtonIsNull()
@@ -83,7 +105,8 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             bool popularDestinationsDivIsNull = false,
             bool popularDestinationsDivThrowsException = false,
             bool showMoreButtonIsNull = false,
-            bool showMoreButtonThrowsException = false
+            bool showMoreButtonThrowsException = false,
+            IAirportFilterer filterer = null
             )
         {
             List<Airport> airports = new() { airport1, airport2, airport3 };
@@ -137,7 +160,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             }
 
             FlightConnectionsDotComWorker_AirportPopulator siteParser = new(worker);
-            Dictionary<string, HashSet<string>> result = siteParser.PopulateAirports(airports);
+            Dictionary<string, HashSet<string>> result = siteParser.PopulateAirports(airports, filterer);
             return result;
         }
     }
