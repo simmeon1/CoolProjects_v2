@@ -75,7 +75,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 if (!CollectedPathFlights.ContainsKey(pathName.ToString())) CollectedPathFlights.Add(pathName.ToString(), flights);
                 PagesOpened++;
                 pathsAndFlights.Add(flightsForOriginToTarget);
-                Logger.Log($"Populated page for {origin} to {target} ({GetPercentageAndCountString()})");
+                Logger.Log($"Populated page for {origin} to {target} ({GetProgressString()})");
             }
             return new(path, pathsAndFlights);
         }
@@ -182,11 +182,14 @@ namespace FlightConnectionsDotCom_ClassLibrary
             await ClickAndWait(await FindElementAndWait(By.CssSelector("header")));
         }
 
-        private string GetPercentageAndCountString()
+        private string GetProgressString()
         {
-            string percentageString = $"{PagesOpened / (double)PagesToOpen * 100}%";
+            string percentageString = $"{PagesOpened / (double)PagesToOpen * 100}";
+            if (Regex.IsMatch(percentageString, @"^\d+$")) percentageString += ".00";
+            else if (Regex.IsMatch(percentageString, @"^\d+\.\d$")) percentageString += "0";
+            percentageString += "%";
             percentageString = $"{Regex.Match(percentageString, @"(.*?\.\d\d).*%").Groups[1].Value}%";
-            return $"{PagesOpened}/{PagesToOpen} ({percentageString})";
+            return $"{PagesOpened}/{PagesToOpen} ({percentageString}) at {DateTime.Now}";
         }
 
         private void OpenNewTab()
