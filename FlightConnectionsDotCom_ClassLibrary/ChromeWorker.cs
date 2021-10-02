@@ -91,7 +91,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 try
                 {
                     await Delayer.Delay(1000);
-                    flightList = Driver.FindElement(By.CssSelector("[role=list]"));
+                    flightList = await FindElementAndWait(By.CssSelector("[role=list]"));
                     if (flightList == null) return;
                 }
                 catch (NoSuchElementException)
@@ -148,11 +148,18 @@ namespace FlightConnectionsDotCom_ClassLibrary
             await Delayer.Delay(1000);
             return result;
         }
+        
+        private async Task<IWebElement> FindElementAndWait(By by)
+        {
+            IWebElement result = Driver.FindElement(by);
+            await Delayer.Delay(1000);
+            return result;
+        }
 
         private async Task SetStopsToNone()
         {
             await ClickButtonWithAriaLabelText("Stops");
-            IWebElement radioGroup = Driver.FindElement(By.CssSelector("[role=radiogroup]"));
+            IWebElement radioGroup = await FindElementAndWait(By.CssSelector("[role=radiogroup]"));
             ReadOnlyCollection<IWebElement> radioGroupChildren = await FindElementsAndWait(radioGroup, By.CssSelector("input"));
             await ClickAndWait(radioGroupChildren[1]);
             await ClickHeader();
@@ -160,7 +167,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private async Task ClickHeader()
         {
-            await ClickAndWait(Driver.FindElement(By.CssSelector("header")));
+            await ClickAndWait(await FindElementAndWait(By.CssSelector("header")));
         }
 
         private string GetPercentageAndCountString()
