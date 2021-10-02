@@ -23,8 +23,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         public List<DataTable> GetTables(List<SequentialFlightCollection> sequentialCollections)
         {
-            List<SequentialFlightCollection> sequentialCollectionsOrdered = sequentialCollections.OrderBy(c => c.SequenceIsDoable())
-                                                                    .ThenBy(c => c.StartsAndEndsOnSameDay())
+            List<SequentialFlightCollection> sequentialCollectionsOrdered = sequentialCollections.OrderByDescending(c => c.SequenceIsDoable())
+                                                                    .ThenByDescending(c => c.StartsAndEndsOnSameDay())
                                                                     .ThenBy(c => c.GetTotalTime())
                                                                     .ThenBy(c => c.GetCost())
                                                                     .ToList();
