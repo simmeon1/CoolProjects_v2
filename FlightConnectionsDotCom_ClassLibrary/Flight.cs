@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
@@ -23,6 +24,16 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public override string ToString()
         {
             return $"{Path} - {Departing} - {Arriving} - {Cost}";
+        }
+        
+        public string GetDepartingAirport()
+        {
+            return Regex.Replace(Path, @"(\w+)-\w+", "$1");
+        }
+        
+        public string GetArrivingAirport()
+        {
+            return Regex.Replace(Path, @"\w+-(\w+)", "$1");
         }
     }
 }

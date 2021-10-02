@@ -9,7 +9,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
     public class Path_UnitTests
     {
         private static readonly List<string> entries = new() { "ABZ", "EDI" };
-        private Path path = new(entries);
+        private readonly Path path = new(entries);
 
         [TestMethod]
         public void ToStringIsCorrect()

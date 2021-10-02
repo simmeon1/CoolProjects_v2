@@ -125,18 +125,18 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             driverMock.Setup(x => x.FindElements(By.CssSelector("input"))).Returns(inputs);
 
             ChromeWorker chromeWorker = new(driverMock.Object, jsExecutor.Object, logger.Object, new Mock<IDelayer>().Object);
-            List<KeyValuePair<Path, List<KeyValuePair<Path, List<Flight>>>>> results = await chromeWorker.ProcessPaths(paths, new DateTime(2000, 10, 10));
+            List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results = await chromeWorker.ProcessPaths(paths, new DateTime(2000, 10, 10));
 
             AssertCommonExpectation(results);
             if (!hasNoFlightList && !flightListThrowsException && !flightsAreNull)
             {
-                Assert.IsTrue(results[0].Value[0].Value.Count == 1);
+                Assert.IsTrue(results[0].Value[0].Value.Count() == 1);
                 Assert.IsTrue(results[0].Value[0].Value[0].ToString().Equals(@"LTN–VAR - 10/10/2000 21:45:00 - 11/10/2000 02:55:00 - 27"));
             }
-            else Assert.IsTrue(results[0].Value[0].Value.Count == 0);
+            else Assert.IsTrue(results[0].Value[0].Value.Count() == 0);
         }
 
-        private static void AssertCommonExpectation(List<KeyValuePair<Path, List<KeyValuePair<Path, List<Flight>>>>> results)
+        private static void AssertCommonExpectation(List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results)
         {
             Assert.IsTrue(results.Count == 1);
             Assert.IsTrue(results[0].Key.ToString().Equals("ABZ-SOF"));

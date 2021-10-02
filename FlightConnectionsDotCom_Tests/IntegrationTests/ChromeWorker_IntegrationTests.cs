@@ -32,9 +32,9 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
             List<Path> paths = new() { new Path(path1), new Path(path2) };
 
             ChromeWorker chromeWorker = new(chromeDriver, chromeDriver, logger, new RealDelayer());
-            List<KeyValuePair<Path, List<KeyValuePair<Path, List<Flight>>>>> results = await chromeWorker.ProcessPaths(paths, new DateTime(2022, 1, 13));
+            List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results = await chromeWorker.ProcessPaths(paths, new DateTime(2022, 1, 13));
             Assert.IsTrue(results.Count > 0);
-            Assert.IsTrue(results[0].Value[0].Value.Count > 0);
+            Assert.IsTrue(results[0].Value[0].Value.Count() > 0);
         }
 
         [TestCleanup]

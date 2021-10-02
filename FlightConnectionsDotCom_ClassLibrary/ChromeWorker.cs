@@ -28,9 +28,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Delayer = delayer;
         }
 
-        public async Task<List<KeyValuePair<Path, List<KeyValuePair<Path, List<Flight>>>>>> ProcessPaths(List<Path> paths, DateTime date)
+        public async Task<List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>>> ProcessPaths(List<Path> paths, DateTime date)
         {
-            List<KeyValuePair<Path, List<KeyValuePair<Path, List<Flight>>>>> results = new();
+            List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results = new();
             Date = date;
 
             PagesToOpen = 0;
@@ -40,9 +40,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return results;
         }
 
-        private async Task<KeyValuePair<Path, List<KeyValuePair<Path, List<Flight>>>>> ProcessPath(Path path)
+        private async Task<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> ProcessPath(Path path)
         {
-            List<KeyValuePair<Path, List<Flight>>> pathsAndFlights = new();
+            List<KeyValuePair<Path, FlightCollection>> pathsAndFlights = new();
             for (int i = 0; i < path.Count() - 1; i++)
             {
                 string origin = path[i];
@@ -56,15 +56,15 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 await Delayer.Delay(1000);
                 await SetStopsToNone();
                 PagesOpened++;
-                List<Flight> flights = await GetFlights();
-                KeyValuePair<Path, List<Flight>> flightsForOriginToTarget = new(new Path(new List<string> { origin, target }), flights);
+                FlightCollection flights = await GetFlights();
+                KeyValuePair<Path, FlightCollection> flightsForOriginToTarget = new(new Path(new List<string> { origin, target }), flights);
                 pathsAndFlights.Add(flightsForOriginToTarget);
                 Logger.Log($"Populated page for {origin} to {target} ({GetPercentageAndCountString()})");
             }
             return new(path, pathsAndFlights);
         }
 
-        private async Task<List<Flight>> GetFlights()
+        private async Task<FlightCollection> GetFlights()
         {
             List<Flight> results = new();
             IWebElement flightList;
@@ -117,7 +117,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                                     );
                 results.Add(item);
             }
-            return results;
+            return new FlightCollection(results);
         }
 
         private async Task SetStopsToNone()
