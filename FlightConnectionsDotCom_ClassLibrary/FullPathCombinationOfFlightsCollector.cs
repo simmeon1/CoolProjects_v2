@@ -9,13 +9,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
     {
         private KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>> DataWithFlightsForSinglePaths { get; set; }
 
-        public FullPathCombinationOfFlightsCollector(KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>> dataWithFlightsForSinglePaths)
+        public List<SequentialFlightCollection> GetFullPathCombinationOfFLights(KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>> dataWithFlightsForSinglePaths)
         {
             DataWithFlightsForSinglePaths = dataWithFlightsForSinglePaths;
-        }
-
-        public List<SequentialFlightCollection> GetFullPathCombinationOfFLights()
-        {
             string fullPathName = DataWithFlightsForSinglePaths.Key.ToString();
             List<KeyValuePair<Path, FlightCollection>> pathsAndFlights = DataWithFlightsForSinglePaths.Value;
 

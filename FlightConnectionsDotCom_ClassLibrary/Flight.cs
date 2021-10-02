@@ -28,12 +28,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
         
         public string GetDepartingAirport()
         {
-            return Regex.Replace(Path, @"(\w+)-\w+", "$1");
+            return Regex.Replace(Path, @"(\w+)\W+\w+", "$1");
         }
         
         public string GetArrivingAirport()
         {
-            return Regex.Replace(Path, @"\w+-(\w+)", "$1");
+            return Regex.Replace(Path, @"\w+\W+(\w+)", "$1");
         }
     }
 }

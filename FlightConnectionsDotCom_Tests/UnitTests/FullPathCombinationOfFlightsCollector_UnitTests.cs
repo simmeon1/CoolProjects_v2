@@ -31,8 +31,8 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             data.Add(new KeyValuePair<Path, FlightCollection>(path2, new(new List<Flight>() { flight3, flight4 })));
             data.Add(new KeyValuePair<Path, FlightCollection>(path3, new(new List<Flight>() { flight5, flight6, flight7 })));
 
-            FullPathCombinationOfFlightsCollector collector = new(new KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>(allPath, data));
-            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights();
+            FullPathCombinationOfFlightsCollector collector = new();
+            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights(new KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>(allPath, data));
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 12);
             Assert.IsTrue(fullPathCombinationOfFlights[0][0].ToString().Equals(flight1.ToString()));
             Assert.IsTrue(fullPathCombinationOfFlights[1][0].ToString().Equals(flight1.ToString()));
@@ -88,8 +88,8 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             List<KeyValuePair<Path, FlightCollection>> data = new();
             data.Add(new KeyValuePair<Path, FlightCollection>(path1, new(new List<Flight>() { flight1 })));
 
-            FullPathCombinationOfFlightsCollector collector = new(new KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>(allPath, data));
-            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights();
+            FullPathCombinationOfFlightsCollector collector = new();
+            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights(new KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>(allPath, data));
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 1);
             Assert.IsTrue(fullPathCombinationOfFlights[0].Count() == 1);
             Assert.IsTrue(fullPathCombinationOfFlights[0][0].ToString().Equals(flight1.ToString()));
@@ -100,8 +100,8 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         {
             Path allPath = new(new List<string>() { "VAR", "LTN" });
             List<KeyValuePair<Path, FlightCollection>> data = new();
-            FullPathCombinationOfFlightsCollector collector = new(new KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>(allPath, data));
-            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights();
+            FullPathCombinationOfFlightsCollector collector = new();
+            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights(new KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>(allPath, data));
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 0);
         }
     }

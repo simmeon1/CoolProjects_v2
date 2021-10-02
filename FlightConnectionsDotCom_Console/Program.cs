@@ -69,7 +69,15 @@ namespace FlightConnectionsDotCom_Console
             if (!parameters.OpenGoogleFlights) return;
             ChromeDriver driver2 = new();
             ChromeWorker chromeWorker = new(driver2, driver2, logger, new RealDelayer());
-            await chromeWorker.ProcessPaths(paths, parameters.Date);
+            List<KeyValuePair<FlightConnectionsDotCom_ClassLibrary.Path, List<KeyValuePair<FlightConnectionsDotCom_ClassLibrary.Path, FlightCollection>>>> pathsAndFlights = await chromeWorker.ProcessPaths(paths, parameters.Date);
+
+            FullPathCombinationOfFlightsCollector flightCollector = new();
+            List<SequentialFlightCollection> results2 = new();
+            foreach (KeyValuePair<FlightConnectionsDotCom_ClassLibrary.Path, List<KeyValuePair<FlightConnectionsDotCom_ClassLibrary.Path, FlightCollection>>> pathAndFlights in pathsAndFlights)
+            {
+                results2.AddRange(flightCollector.GetFullPathCombinationOfFLights(pathAndFlights));
+            }
+            var x = 1;
         }
     }
 }
