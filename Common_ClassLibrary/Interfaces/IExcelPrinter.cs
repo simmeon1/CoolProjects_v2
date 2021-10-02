@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 
-namespace LeagueAPI_ClassLibrary
+namespace Common_ClassLibrary
 {
     public interface IExcelPrinter
     {

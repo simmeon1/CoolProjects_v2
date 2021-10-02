@@ -77,7 +77,10 @@ namespace FlightConnectionsDotCom_Console
             {
                 results2.AddRange(flightCollector.GetFullPathCombinationOfFLights(pathAndFlights));
             }
-            var x = 1;
+
+            DataTableCreator dtCreator = new();
+            ExcelPrinter printer = new();
+            printer.PrintTablesToWorksheet(dtCreator.GetTables(results2), $"{parameters.FileSavePath}\\results_{runId}.xlsx");
         }
     }
 }

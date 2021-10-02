@@ -80,6 +80,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         public override string ToString()
         {
+            return $"{GetFullPath()}, Doable = {SequenceIsDoable()}, Start = {GetStartTime()}, End = {GetEndTime()}, Cost = {GetCost()}";
+        }
+
+        public string GetFullPath()
+        {
             if (IsNotValid()) return "No flights in sequence.";
             StringBuilder path = new("");
             path.Append(FlightCollection[0].Path);
@@ -88,7 +93,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 Flight flight = FlightCollection[i];
                 path.Append($"-{flight.GetArrivingAirport()}");
             }
-            return $"{path}, Doable = {SequenceIsDoable()}, Start = {GetStartTime()}, End = {GetEndTime()}, Cost = {GetCost()}";
+            return path.ToString();
         }
 
         public bool SequenceIsDoable()
