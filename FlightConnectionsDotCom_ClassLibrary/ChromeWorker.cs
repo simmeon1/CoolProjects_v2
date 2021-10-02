@@ -128,6 +128,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             ReadOnlyCollection<IWebElement> radioGroupChildren = radioGroup.FindElements(By.CssSelector("input"));
             await Delayer.Delay(1000);
             radioGroupChildren[1].Click();
+            await Delayer.Delay(1000);
             ClickHeader();
         }
 
