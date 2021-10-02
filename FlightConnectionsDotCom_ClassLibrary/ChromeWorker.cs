@@ -18,6 +18,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private bool ConsentAgreed { get; set; }
         private int PagesToOpen { get; set; }
         private int PagesOpened { get; set; }
+        private Dictionary<string, FlightCollection> CollectedPathFlights { get; set; }
 
         public ChromeWorker(IWebDriver driver, IJavaScriptExecutor jSExecutor, ILogger logger, IDelayer delayer)
         {
@@ -30,7 +31,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public async Task<List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>>> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo)
         {
             List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results = new();
-
+            CollectedPathFlights = new();
             PagesToOpen = 0;
             PagesOpened = 0;
             foreach (Path path in paths) for (int i = 0; i < path.Count() - 1; i++) PagesToOpen++;
@@ -45,24 +46,34 @@ namespace FlightConnectionsDotCom_ClassLibrary
             {
                 string origin = path[i];
                 string target = path[i + 1];
-                OpenNewTab();
-                NavigateToUrl();
-                if (!ConsentAgreed) await AgreeToConsent();
-                await SetToOneWayTrip();
-                await PopulateControls(origin, target, dateFrom);
-                await SetStopsToNone();
-                PagesOpened++;
+                Path pathName = new(new List<string> { origin, target });
 
-                List<DateTime> listOfExtraDates = new() { };
-                DateTime tempDate = dateFrom.AddDays(1);
-                while (DateTime.Compare(tempDate, dateTo) <= 0)
+                FlightCollection flights;
+                if (CollectedPathFlights.ContainsKey(pathName.ToString()))
                 {
-                    listOfExtraDates.Add(tempDate);
-                    tempDate = tempDate.AddDays(1);
+                    flights = CollectedPathFlights[pathName.ToString()];
                 }
-                FlightCollection flights = await GetFlights(dateFrom, listOfExtraDates);
+                else
+                {
+                    OpenNewTab();
+                    NavigateToUrl();
+                    if (!ConsentAgreed) await AgreeToConsent();
+                    await SetToOneWayTrip();
+                    await PopulateControls(origin, target, dateFrom);
+                    await SetStopsToNone();
 
-                KeyValuePair<Path, FlightCollection> flightsForOriginToTarget = new(new Path(new List<string> { origin, target }), flights);
+                    List<DateTime> listOfExtraDates = new() { };
+                    DateTime tempDate = dateFrom.AddDays(1);
+                    while (DateTime.Compare(tempDate, dateTo) <= 0)
+                    {
+                        listOfExtraDates.Add(tempDate);
+                        tempDate = tempDate.AddDays(1);
+                    }
+                    flights = await GetFlights(dateFrom, listOfExtraDates);
+                }
+                KeyValuePair<Path, FlightCollection> flightsForOriginToTarget = new(pathName, flights);
+                if (!CollectedPathFlights.ContainsKey(pathName.ToString())) CollectedPathFlights.Add(pathName.ToString(), flights);
+                PagesOpened++;
                 pathsAndFlights.Add(flightsForOriginToTarget);
                 Logger.Log($"Populated page for {origin} to {target} ({GetPercentageAndCountString()})");
             }
@@ -123,13 +134,14 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 string durationText = Regex.Replace(flightText[4], "(\\d+).*?(\\d+).*", "$1:$2").Trim();
                 string pathText = flightText[5].Trim();
                 string costText = Regex.Replace(flightText[7], ".*?(\\d+).*", "$1").Trim();
+                int.TryParse(costText, out int cost);
                 Flight item = new(
                                         DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {departingText}"),
                                         DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {arrivingText}").AddDays(arrivesNextDay ? 1 : 0),
                                         airlineText,
                                         TimeSpan.Parse(durationText),
                                         pathText,
-                                        int.Parse(costText)
+                                        cost
                                     );
                 results.Add(item);
             }
@@ -148,7 +160,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             await Delayer.Delay(1000);
             return result;
         }
-        
+
         private async Task<IWebElement> FindElementAndWait(By by)
         {
             IWebElement result = Driver.FindElement(by);
@@ -226,7 +238,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 {
                     string liText = li.Text;
                     if (!liText.Equals("One way")) continue;
-                    await ClickAndWait (li);
+                    await ClickAndWait(li);
                     return;
                 }
             }
@@ -242,11 +254,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
             IWebElement dateInput1 = inputs[4];
             IWebElement dateInput2 = inputs[6];
 
-            await ClickAndWait (originInput1);
+            await ClickAndWait(originInput1);
             originInput2.SendKeys(origin);
             originInput2.SendKeys(Keys.Return);
 
-            await ClickAndWait (destinationInput1);
+            await ClickAndWait(destinationInput1);
             destinationInput2.SendKeys(target);
             destinationInput2.SendKeys(Keys.Return);
 
@@ -269,7 +281,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private async Task PopulateDate(IWebElement dateInput1, IWebElement dateInput2, DateTime date)
         {
-            await ClickAndWait (dateInput1);
+            await ClickAndWait(dateInput1);
             const string format = "ddd, MMM dd";
             foreach (char ch in format) dateInput2.SendKeys(Keys.Backspace);
             dateInput2.SendKeys(date.ToString(format));

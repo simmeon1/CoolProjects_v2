@@ -14,10 +14,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
             DataWithFlightsForSinglePaths = dataWithFlightsForSinglePaths;
             string fullPathName = DataWithFlightsForSinglePaths.Key.ToString();
             List<KeyValuePair<Path, FlightCollection>> pathsAndFlights = DataWithFlightsForSinglePaths.Value;
-
-            if (pathsAndFlights.Count == 0) return new();
-            if (pathsAndFlights.Count == 1) return new() { new(pathsAndFlights[0].Value )};
-
             List<SequentialFlightCollection> fullPathCombinationsOfFlights = new();
             LinkedList<Flight> flight = new();
             BuildUpCombinationOfFlights(0, flight, fullPathCombinationsOfFlights);
