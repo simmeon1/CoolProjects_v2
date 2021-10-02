@@ -32,7 +32,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                     UpdateCurrentPathAndScanItIfNeeded(origin, target);
                 }
             }
-            return Paths.OrderBy(p => p.Entries.Count).ThenBy(p => GetPathAsString(p.Entries)).ToList();
+            return Paths.OrderBy(p => p.Count()).ThenBy(p => p.ToString()).ToList();
         }
 
         private void UpdateCurrentPathAndScanItIfNeeded(string origin, string target)
@@ -71,17 +71,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 if (destination.Equals(target)) Paths.Add(new Path(new List<string>(CurrentPath) { destination }));
                 UpdateCurrentPathAndScanItIfNeeded(destination, target);
             }
-        }
-
-        private static string GetPathAsString(List<string> path)
-        {
-            StringBuilder sb = new();
-            foreach (string airport in path)
-            {
-                if (sb.Length > 0) sb.Append('-');
-                sb.Append(airport);
-            }
-            return sb.ToString();
         }
     }
 }

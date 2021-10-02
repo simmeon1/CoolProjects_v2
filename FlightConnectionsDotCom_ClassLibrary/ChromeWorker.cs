@@ -35,7 +35,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
             PagesToOpen = 0;
             PagesOpened = 0;
-            foreach (Path path in paths) for (int i = 0; i < path.Entries.Count - 1; i++) PagesToOpen++;
+            foreach (Path path in paths) for (int i = 0; i < path.Count() - 1; i++) PagesToOpen++;
             foreach (Path path in paths) results.Add(await ProcessPath(path));
             return results;
         }
@@ -43,10 +43,10 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private async Task<KeyValuePair<Path, List<KeyValuePair<Path, List<Flight>>>>> ProcessPath(Path path)
         {
             List<KeyValuePair<Path, List<Flight>>> pathsAndFlights = new();
-            for (int i = 0; i < path.Entries.Count - 1; i++)
+            for (int i = 0; i < path.Count() - 1; i++)
             {
-                string origin = path.Entries[i];
-                string target = path.Entries[i + 1];
+                string origin = path[i];
+                string target = path[i + 1];
                 OpenNewTab();
                 NavigateToUrl();
                 if (!ConsentAgreed) await AgreeToConsent();

@@ -17,14 +17,14 @@
 <tr><th>Class:</th><td>FlightConnectionsDotCom_ClassLibrary.AirportPathGenerator</td></tr>
 <tr><th>Assembly:</th><td>FlightConnectionsDotCom_ClassLibrary</td></tr>
 <tr><th>File(s):</th><td><a href="#CUserssimmesourcereposCoolProjects_v2FlightConnectionsDotCom_ClassLibraryAirportPathGeneratorcs" class="navigatetohash">File 1: C:\Users\simme\source\repos\CoolProjects_v2\FlightConnectionsDotCom_ClassLibrary\AirportPathGenerator.cs</a></td></tr>
-<tr><th>Covered lines:</th><td>61</td></tr>
+<tr><th>Covered lines:</th><td>52</td></tr>
 <tr><th>Uncovered lines:</th><td>0</td></tr>
-<tr><th>Coverable lines:</th><td>61</td></tr>
-<tr><th>Total lines:</th><td>87</td></tr>
-<tr><th>Line coverage:</th><td>100% (61 of 61)</td></tr>
-<tr><th>Covered branches:</th><td>24</td></tr>
-<tr><th>Total branches:</th><td>24</td></tr>
-<tr><th>Branch coverage:</th><td>100% (24 of 24)</td></tr>
+<tr><th>Coverable lines:</th><td>52</td></tr>
+<tr><th>Total lines:</th><td>76</td></tr>
+<tr><th>Line coverage:</th><td>100% (52 of 52)</td></tr>
+<tr><th>Covered branches:</th><td>20</td></tr>
+<tr><th>Total branches:</th><td>20</td></tr>
+<tr><th>Branch coverage:</th><td>100% (20 of 20)</td></tr>
 </tbody>
 </table>
 <h1>Metrics</h1>
@@ -42,7 +42,6 @@
 <tr><td title="CurrentPathHasReachedTargetOrExceededMaxFlightCount()"><a href="#file0_line47" class="navigatetohash">File 1: CurrentPathHasReachedTargetOrExceededMaxFlightCount()</a></td><td>100%</td><td>4</td><td>100%</td></tr>
 <tr><td title="CurrentPathContainsRepeatedAirport()"><a href="#file0_line52" class="navigatetohash">File 1: CurrentPathContainsRepeatedAirport()</a></td><td>100%</td><td>4</td><td>100%</td></tr>
 <tr><td title="ScanCurrentPath(System.String,System.String)"><a href="#file0_line67" class="navigatetohash">File 1: ScanCurrentPath(...)</a></td><td>100%</td><td>4</td><td>100%</td></tr>
-<tr><td title="GetPathAsString(System.Collections.Generic.List`1&lt;System.String&gt;)"><a href="#file0_line77" class="navigatetohash">File 1: GetPathAsString(...)</a></td><td>100%</td><td>4</td><td>100%</td></tr>
 </tbody>
 </table>
 <h1>File(s)</h1>
@@ -84,7 +83,7 @@
 <tr class="coverableline" title="Covered (8 visits)" data-coverage="{'AllTestMethods': {'VC': '8', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">8</td><td class="rightmargin right"><a id="file0_line32"></a><code>32</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UpdateCurrentPathAndScanItIfNeeded(origin,&nbsp;target);</code></td></tr>
 <tr class="coverableline" title="Covered (8 visits)" data-coverage="{'AllTestMethods': {'VC': '8', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">8</td><td class="rightmargin right"><a id="file0_line33"></a><code>33</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
 <tr class="coverableline" title="Covered (6 visits)" data-coverage="{'AllTestMethods': {'VC': '6', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">6</td><td class="rightmargin right"><a id="file0_line34"></a><code>34</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="coverableline" title="Covered (31 visits)" data-coverage="{'AllTestMethods': {'VC': '31', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">31</td><td class="rightmargin right"><a id="file0_line35"></a><code>35</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;Paths.OrderBy(p&nbsp;=&gt;&nbsp;p.Entries.Count).ThenBy(p&nbsp;=&gt;&nbsp;GetPathAsString(p.Entries)).ToList();</code></td></tr>
+<tr class="coverableline" title="Covered (31 visits)" data-coverage="{'AllTestMethods': {'VC': '31', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">31</td><td class="rightmargin right"><a id="file0_line35"></a><code>35</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;Paths.OrderBy(p&nbsp;=&gt;&nbsp;p.Count()).ThenBy(p&nbsp;=&gt;&nbsp;p.ToString()).ToList();</code></td></tr>
 <tr class="coverableline" title="Covered (5 visits)" data-coverage="{'AllTestMethods': {'VC': '5', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">5</td><td class="rightmargin right"><a id="file0_line36"></a><code>36</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line37"></a><code>37</code></td><td></td><td class="lightgray"><code></code></td></tr>
 <tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line38"></a><code>38</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;private&nbsp;void&nbsp;UpdateCurrentPathAndScanItIfNeeded(string&nbsp;origin,&nbsp;string&nbsp;target)</code></td></tr>
@@ -124,22 +123,11 @@
 <tr class="coverableline" title="Covered (57 visits)" data-coverage="{'AllTestMethods': {'VC': '57', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">57</td><td class="rightmargin right"><a id="file0_line72"></a><code>72</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UpdateCurrentPathAndScanItIfNeeded(destination,&nbsp;target);</code></td></tr>
 <tr class="coverableline" title="Covered (57 visits)" data-coverage="{'AllTestMethods': {'VC': '57', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">57</td><td class="rightmargin right"><a id="file0_line73"></a><code>73</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
 <tr class="coverableline" title="Covered (19 visits)" data-coverage="{'AllTestMethods': {'VC': '19', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">19</td><td class="rightmargin right"><a id="file0_line74"></a><code>74</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line75"></a><code>75</code></td><td></td><td class="lightgray"><code></code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line76"></a><code>76</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;private&nbsp;static&nbsp;string&nbsp;GetPathAsString(List&lt;string&gt;&nbsp;path)</code></td></tr>
-<tr class="coverableline" title="Covered (13 visits)" data-coverage="{'AllTestMethods': {'VC': '13', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">13</td><td class="rightmargin right"><a id="file0_line77"></a><code>77</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
-<tr class="coverableline" title="Covered (13 visits)" data-coverage="{'AllTestMethods': {'VC': '13', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">13</td><td class="rightmargin right"><a id="file0_line78"></a><code>78</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;StringBuilder&nbsp;sb&nbsp;=&nbsp;new();</code></td></tr>
-<tr class="coverableline" title="Covered (107 visits, 2 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '107', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">107</td><td class="rightmargin right"><a id="file0_line79"></a><code>79</code></td><td class="percentagebar percentagebar100"><i class="icon-fork"></i></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foreach&nbsp;(string&nbsp;airport&nbsp;in&nbsp;path)</code></td></tr>
-<tr class="coverableline" title="Covered (34 visits)" data-coverage="{'AllTestMethods': {'VC': '34', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">34</td><td class="rightmargin right"><a id="file0_line80"></a><code>80</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</code></td></tr>
-<tr class="coverableline" title="Covered (55 visits, 2 of 2 branches are covered)" data-coverage="{'AllTestMethods': {'VC': '55', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">55</td><td class="rightmargin right"><a id="file0_line81"></a><code>81</code></td><td class="percentagebar percentagebar100"><i class="icon-fork"></i></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;(sb.Length&nbsp;&gt;&nbsp;0)&nbsp;sb.Append(&#39;-&#39;);</code></td></tr>
-<tr class="coverableline" title="Covered (34 visits)" data-coverage="{'AllTestMethods': {'VC': '34', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">34</td><td class="rightmargin right"><a id="file0_line82"></a><code>82</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sb.Append(airport);</code></td></tr>
-<tr class="coverableline" title="Covered (34 visits)" data-coverage="{'AllTestMethods': {'VC': '34', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">34</td><td class="rightmargin right"><a id="file0_line83"></a><code>83</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="coverableline" title="Covered (13 visits)" data-coverage="{'AllTestMethods': {'VC': '13', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">13</td><td class="rightmargin right"><a id="file0_line84"></a><code>84</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;sb.ToString();</code></td></tr>
-<tr class="coverableline" title="Covered (13 visits)" data-coverage="{'AllTestMethods': {'VC': '13', 'LVS': 'green'}}"><td class="green">&nbsp;</td><td class="leftmargin rightmargin right">13</td><td class="rightmargin right"><a id="file0_line85"></a><code>85</code></td><td></td><td class="lightgreen"><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line86"></a><code>86</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
-<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line87"></a><code>87</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line75"></a><code>75</code></td><td></td><td class="lightgray"><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code></td></tr>
+<tr class="" title="Not coverable" data-coverage="{'AllTestMethods': {'VC': '', 'LVS': 'gray'}}"><td class="gray">&nbsp;</td><td class="leftmargin rightmargin right"></td><td class="rightmargin right"><a id="file0_line76"></a><code>76</code></td><td></td><td class="lightgray"><code>}</code></td></tr>
 </tbody>
 </table>
-<div class="footer">Generated by: ReportGenerator 4.8.12.0<br />02/10/2021 - 00:31:46<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
+<div class="footer">Generated by: ReportGenerator 4.8.12.0<br />02/10/2021 - 12:50:51<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="http://www.palmmedia.de">www.palmmedia.de</a></div></div>
 <div class="containerright">
 <div class="containerrightfixed">
 <h1>Methods/Properties</h1>
@@ -154,7 +142,6 @@
 <a href="#file0_line47" class="navigatetohash percentagebar percentagebar100" title="File 1: Line coverage: 100% - CurrentPathHasReachedTargetOrExceededMaxFlightCount()"><i class="icon-cube"></i>CurrentPathHasReachedTargetOrExceededMaxFlightCount()</a><br />
 <a href="#file0_line52" class="navigatetohash percentagebar percentagebar100" title="File 1: Line coverage: 100% - CurrentPathContainsRepeatedAirport()"><i class="icon-cube"></i>CurrentPathContainsRepeatedAirport()</a><br />
 <a href="#file0_line67" class="navigatetohash percentagebar percentagebar100" title="File 1: Line coverage: 100% - ScanCurrentPath(...)"><i class="icon-cube"></i>ScanCurrentPath(...)</a><br />
-<a href="#file0_line77" class="navigatetohash percentagebar percentagebar100" title="File 1: Line coverage: 100% - GetPathAsString(...)"><i class="icon-cube"></i>GetPathAsString(...)</a><br />
 <br/></div>
 </div></div>
 <script type="text/javascript">
