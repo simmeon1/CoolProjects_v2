@@ -1,9 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
@@ -25,8 +23,13 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         public List<DataTable> GetTables(List<SequentialFlightCollection> sequentialCollections)
         {
-            List<DataTable> tables = new();
+            List<SequentialFlightCollection> sequentialCollectionsOrdered = sequentialCollections.OrderBy(c => c.SequenceIsDoable())
+                                                                    .ThenBy(c => c.StartsAndEndsOnSameDay())
+                                                                    .ThenBy(c => c.GetTotalTime())
+                                                                    .ThenBy(c => c.GetCost())
+                                                                    .ToList();
 
+            List<DataTable> tables = new();
             DataTable mainTable = new("0");
             DataColumn pathColumn = new("Path", TypeString);
             DataColumn idColumn = new("Id", TypeInt32);
@@ -34,12 +37,13 @@ namespace FlightConnectionsDotCom_ClassLibrary
             DataColumn sameDayFinishColumn = new("SameDayFinish", TypeBool);
             DataColumn startColumn = new("Start", TypeString);
             DataColumn endColumn = new("End", TypeString);
+            DataColumn lengthColumn = new("Length", TypeString);
             DataColumn costColumn = new("Cost", TypeDouble);
-            mainTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, doableColumn, sameDayFinishColumn, startColumn, endColumn, costColumn }.ToArray());
+            mainTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, doableColumn, sameDayFinishColumn, startColumn, endColumn, lengthColumn, costColumn }.ToArray());
 
-            for (int i = 0; i < sequentialCollections.Count; i++)
+            for (int i = 0; i < sequentialCollectionsOrdered.Count; i++)
             {
-                SequentialFlightCollection seqCollection = sequentialCollections[i];
+                SequentialFlightCollection seqCollection = sequentialCollectionsOrdered[i];
                 int id = i + 1;
                 ColumnIndexCounter = 0;
                 DataRow row = mainTable.NewRow();
@@ -49,12 +53,13 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.StartsAndEndsOnSameDay();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetStartTime().ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetEndTime().ToString();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetTotalTime().ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetCost();
                 mainTable.Rows.Add(row);
                 tables.Add(GetSubTable(seqCollection, id));
             }
             tables.Add(mainTable);
-            return tables.OrderBy(t => t.TableName).ToList();
+            return tables.OrderBy(t =>  int.Parse(t.TableName)).ToList();
         }
 
         private DataTable GetSubTable(SequentialFlightCollection sequentialCollection, int id)
