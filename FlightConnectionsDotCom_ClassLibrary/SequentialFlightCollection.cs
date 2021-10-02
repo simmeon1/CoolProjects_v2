@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -104,6 +105,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
             for (int i = 1; i < FlightCollection.Count(); i++)
             {
                 if ((FlightCollection[i].Departing - previousFlight.Arriving).TotalMinutes < 120) return false;
+                if ((FlightCollection[i].Departing.ToString("tt", CultureInfo.InvariantCulture).ToUpper().Equals("AM") && 
+                    previousFlight.Arriving.ToString("tt", CultureInfo.InvariantCulture).ToUpper().Equals("PM"))) return false;
                 previousFlight = FlightCollection[i];
             }
             return true;

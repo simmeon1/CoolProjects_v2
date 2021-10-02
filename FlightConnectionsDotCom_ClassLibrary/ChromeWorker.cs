@@ -15,7 +15,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private IJavaScriptExecutor JSExecutor { get; set; }
         private ILogger Logger { get; set; }
         private IDelayer Delayer { get; set; }
-        private DateTime Date { get; set; }
         private bool ConsentAgreed { get; set; }
         private int PagesToOpen { get; set; }
         private int PagesOpened { get; set; }
@@ -28,19 +27,18 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Delayer = delayer;
         }
 
-        public async Task<List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>>> ProcessPaths(List<Path> paths, DateTime date)
+        public async Task<List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>>> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo)
         {
             List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results = new();
-            Date = date;
 
             PagesToOpen = 0;
             PagesOpened = 0;
             foreach (Path path in paths) for (int i = 0; i < path.Count() - 1; i++) PagesToOpen++;
-            foreach (Path path in paths) results.Add(await ProcessPath(path));
+            foreach (Path path in paths) results.Add(await ProcessPath(path, dateFrom, dateTo));
             return results;
         }
 
-        private async Task<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> ProcessPath(Path path)
+        private async Task<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> ProcessPath(Path path, DateTime dateFrom, DateTime dateTo)
         {
             List<KeyValuePair<Path, FlightCollection>> pathsAndFlights = new();
             for (int i = 0; i < path.Count() - 1; i++)
@@ -51,12 +49,19 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 NavigateToUrl();
                 if (!ConsentAgreed) await AgreeToConsent();
                 SetToOneWayTrip();
-                await PopulateControls(origin, target);
-                ClickButtonWithAriaLabelText("Done. Search for");
-                await Delayer.Delay(1000);
+                await PopulateControls(origin, target, dateFrom);
                 await SetStopsToNone();
                 PagesOpened++;
-                FlightCollection flights = await GetFlights();
+
+                List<DateTime> listOfExtraDates = new() { };
+                DateTime tempDate = dateFrom.AddDays(1);
+                while (DateTime.Compare(tempDate, dateTo) <= 0)
+                {
+                    listOfExtraDates.Add(tempDate);
+                    tempDate = tempDate.AddDays(1);
+                }
+                FlightCollection flights = await GetFlights(dateFrom, listOfExtraDates);
+
                 KeyValuePair<Path, FlightCollection> flightsForOriginToTarget = new(new Path(new List<string> { origin, target }), flights);
                 pathsAndFlights.Add(flightsForOriginToTarget);
                 Logger.Log($"Populated page for {origin} to {target} ({GetPercentageAndCountString()})");
@@ -64,9 +69,20 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return new(path, pathsAndFlights);
         }
 
-        private async Task<FlightCollection> GetFlights()
+        private async Task<FlightCollection> GetFlights(DateTime date, List<DateTime> extraDates)
         {
             List<Flight> results = new();
+            await GetFlightsForDate(date, results);
+            foreach (DateTime extraDate in extraDates)
+            {
+                await PopulateDate(extraDate);
+                await GetFlightsForDate(extraDate, results);
+            }
+            return new FlightCollection(results);
+        }
+
+        private async Task GetFlightsForDate(DateTime date, List<Flight> results)
+        {
             IWebElement flightList;
             ReadOnlyCollection<IWebElement> flights;
 
@@ -76,14 +92,14 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 {
                     await Delayer.Delay(1000);
                     flightList = Driver.FindElement(By.CssSelector("[role=list]"));
-                    if (flightList == null) return new();
+                    if (flightList == null) return;
                 }
                 catch (NoSuchElementException)
                 {
-                    return new();
+                    return;
                 }
                 flights = flightList.FindElements(By.CssSelector("[role=listitem]"));
-                if (flights == null) return new();
+                if (flights == null) return;
                 if (flights[flights.Count - 1].GetAttribute("innerText").Contains("more flights")) flights[flights.Count - 1].Click();
                 else break;
             }
@@ -108,8 +124,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 string pathText = flightText[5].Trim();
                 string costText = Regex.Replace(flightText[7], ".*?(\\d+).*", "$1").Trim();
                 Flight item = new(
-                                        DateTime.Parse($"{Date.Day}-{Date.Month}-{Date.Year} {departingText}"),
-                                        DateTime.Parse($"{Date.Day}-{Date.Month}-{Date.Year} {arrivingText}").AddDays(arrivesNextDay ? 1 : 0),
+                                        DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {departingText}"),
+                                        DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {arrivingText}").AddDays(arrivesNextDay ? 1 : 0),
                                         airlineText,
                                         TimeSpan.Parse(durationText),
                                         pathText,
@@ -117,7 +133,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
                                     );
                 results.Add(item);
             }
-            return new FlightCollection(results);
         }
 
         private async Task SetStopsToNone()
@@ -189,7 +204,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
         }
 
-        private async Task PopulateControls(string origin, string target)
+        private async Task PopulateControls(string origin, string target, DateTime date)
         {
             ReadOnlyCollection<IWebElement> inputs = Driver.FindElements(By.CssSelector("input"));
             IWebElement originInput1 = inputs[0];
@@ -207,10 +222,26 @@ namespace FlightConnectionsDotCom_ClassLibrary
             destinationInput2.SendKeys(target);
             destinationInput2.SendKeys(Keys.Return);
 
+            await PopulateDate(dateInput1, dateInput2, date);
+        }
+        private async Task PopulateDate(DateTime date)
+        {
+            ReadOnlyCollection<IWebElement> inputs = Driver.FindElements(By.CssSelector("input"));
+            IWebElement dateInput1 = inputs[4];
+            IWebElement dateInput2 = inputs[6];
+            await PopulateDate(dateInput1, dateInput2, date);
+        }
+
+        private async Task PopulateDate(IWebElement dateInput1, IWebElement dateInput2, DateTime date)
+        {
             dateInput1.Click();
             await Delayer.Delay(1000);
-            dateInput2.SendKeys(Date.ToString("ddd, MMM dd"));
+            const string format = "ddd, MMM dd";
+            foreach (char ch in format) dateInput2.SendKeys(Keys.Backspace);
+            dateInput2.SendKeys(date.ToString(format));
             dateInput2.SendKeys(Keys.Return);
+            ClickButtonWithAriaLabelText("Done. Search for");
+            await Delayer.Delay(1000);
         }
 
         private void ClickButtonWithAriaLabelText(string text)
