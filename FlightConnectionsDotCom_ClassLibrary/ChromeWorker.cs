@@ -48,7 +48,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 OpenNewTab();
                 NavigateToUrl();
                 if (!ConsentAgreed) await AgreeToConsent();
-                SetToOneWayTrip();
+                await SetToOneWayTrip();
                 await PopulateControls(origin, target, dateFrom);
                 await SetStopsToNone();
                 PagesOpened++;
@@ -98,7 +98,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 {
                     return;
                 }
-                flights = flightList.FindElements(By.CssSelector("[role=listitem]"));
+                flights = await FindElementsAndWait(flightList, By.CssSelector("[role=listitem]"));
                 if (flights == null) return;
                 if (flights[flights.Count - 1].GetAttribute("innerText").Contains("more flights")) flights[flights.Count - 1].Click();
                 else break;
@@ -135,21 +135,32 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
         }
 
-        private async Task SetStopsToNone()
+        private async Task<ReadOnlyCollection<IWebElement>> FindElementsAndWait(IWebElement element, By by)
         {
-            ClickButtonWithAriaLabelText("Stops");
-            await Delayer.Delay(500);
-            IWebElement radioGroup = Driver.FindElement(By.CssSelector("[role=radiogroup]"));
-            ReadOnlyCollection<IWebElement> radioGroupChildren = radioGroup.FindElements(By.CssSelector("input"));
+            ReadOnlyCollection<IWebElement> result = element.FindElements(by);
             await Delayer.Delay(1000);
-            radioGroupChildren[1].Click();
-            await Delayer.Delay(1000);
-            ClickHeader();
+            return result;
         }
 
-        private void ClickHeader()
+        private async Task<ReadOnlyCollection<IWebElement>> FindElementsAndWait(By by)
         {
-            Driver.FindElement(By.CssSelector("header")).Click();
+            ReadOnlyCollection<IWebElement> result = Driver.FindElements(by);
+            await Delayer.Delay(1000);
+            return result;
+        }
+
+        private async Task SetStopsToNone()
+        {
+            await ClickButtonWithAriaLabelText("Stops");
+            IWebElement radioGroup = Driver.FindElement(By.CssSelector("[role=radiogroup]"));
+            ReadOnlyCollection<IWebElement> radioGroupChildren = await FindElementsAndWait(radioGroup, By.CssSelector("input"));
+            await ClickAndWait(radioGroupChildren[1]);
+            await ClickHeader();
+        }
+
+        private async Task ClickHeader()
+        {
+            await ClickAndWait(Driver.FindElement(By.CssSelector("header")));
         }
 
         private string GetPercentageAndCountString()
@@ -175,7 +186,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private async Task AgreeToConsent()
         {
             await Delayer.Delay(1000);
-            ReadOnlyCollection<IWebElement> consentButtons = Driver.FindElements(By.CssSelector("button"));
+            ReadOnlyCollection<IWebElement> consentButtons = await FindElementsAndWait(By.CssSelector("button"));
             foreach (IWebElement button in consentButtons)
             {
                 string buttonText;
@@ -189,25 +200,26 @@ namespace FlightConnectionsDotCom_ClassLibrary
                     continue;
                 }
                 if (!buttonText.Contains("I agree")) continue;
-                button.Click();
+                await ClickAndWait(button);
                 ConsentAgreed = true;
                 return;
             }
         }
-        private void SetToOneWayTrip()
+
+        private async Task SetToOneWayTrip()
         {
-            ReadOnlyCollection<IWebElement> spans = Driver.FindElements(By.CssSelector("span"));
+            ReadOnlyCollection<IWebElement> spans = await FindElementsAndWait(By.CssSelector("span"));
             foreach (IWebElement span in spans)
             {
                 string spanText = span.Text;
                 if (!spanText.Equals("Round trip")) continue;
-                span.Click();
-                ReadOnlyCollection<IWebElement> lis = Driver.FindElements(By.CssSelector("li"));
+                await ClickAndWait(span);
+                ReadOnlyCollection<IWebElement> lis = await FindElementsAndWait(By.CssSelector("li"));
                 foreach (IWebElement li in lis)
                 {
                     string liText = li.Text;
                     if (!liText.Equals("One way")) continue;
-                    li.Click();
+                    await ClickAndWait (li);
                     return;
                 }
             }
@@ -215,7 +227,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private async Task PopulateControls(string origin, string target, DateTime date)
         {
-            ReadOnlyCollection<IWebElement> inputs = Driver.FindElements(By.CssSelector("input"));
+            ReadOnlyCollection<IWebElement> inputs = await FindElementsAndWait(By.CssSelector("input"));
             IWebElement originInput1 = inputs[0];
             IWebElement originInput2 = inputs[1];
             IWebElement destinationInput1 = inputs[2];
@@ -223,19 +235,26 @@ namespace FlightConnectionsDotCom_ClassLibrary
             IWebElement dateInput1 = inputs[4];
             IWebElement dateInput2 = inputs[6];
 
-            originInput1.Click();
+            await ClickAndWait (originInput1);
             originInput2.SendKeys(origin);
             originInput2.SendKeys(Keys.Return);
 
-            destinationInput1.Click();
+            await ClickAndWait (destinationInput1);
             destinationInput2.SendKeys(target);
             destinationInput2.SendKeys(Keys.Return);
 
             await PopulateDate(dateInput1, dateInput2, date);
         }
+
+        private async Task ClickAndWait(IWebElement element)
+        {
+            element.Click();
+            await Delayer.Delay(1000);
+        }
+
         private async Task PopulateDate(DateTime date)
         {
-            ReadOnlyCollection<IWebElement> inputs = Driver.FindElements(By.CssSelector("input"));
+            ReadOnlyCollection<IWebElement> inputs = await FindElementsAndWait(By.CssSelector("input"));
             IWebElement dateInput1 = inputs[4];
             IWebElement dateInput2 = inputs[6];
             await PopulateDate(dateInput1, dateInput2, date);
@@ -243,24 +262,22 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private async Task PopulateDate(IWebElement dateInput1, IWebElement dateInput2, DateTime date)
         {
-            dateInput1.Click();
-            await Delayer.Delay(1000);
+            await ClickAndWait (dateInput1);
             const string format = "ddd, MMM dd";
             foreach (char ch in format) dateInput2.SendKeys(Keys.Backspace);
             dateInput2.SendKeys(date.ToString(format));
             dateInput2.SendKeys(Keys.Return);
-            ClickButtonWithAriaLabelText("Done. Search for");
-            await Delayer.Delay(1000);
+            await ClickButtonWithAriaLabelText("Done. Search for");
         }
 
-        private void ClickButtonWithAriaLabelText(string text)
+        private async Task ClickButtonWithAriaLabelText(string text)
         {
-            ReadOnlyCollection<IWebElement> buttons = Driver.FindElements(By.CssSelector("button"));
+            ReadOnlyCollection<IWebElement> buttons = await FindElementsAndWait(By.CssSelector("button"));
             foreach (IWebElement button in buttons)
             {
                 string buttonText = button.GetAttribute("aria-label");
                 if (buttonText == null || !buttonText.Contains(text)) continue;
-                button.Click();
+                await ClickAndWait(button);
                 return;
             }
         }
