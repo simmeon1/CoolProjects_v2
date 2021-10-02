@@ -180,6 +180,24 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             double time = CreateSeqCollectionWithFlights(flight1, flight2).GetTotalIdleTime();
             Assert.IsTrue(time > 4 && time < 5);
         }
+        
+        [TestMethod]
+        public void StartsAndEndsOnSameDayIsFalseIfInvalid()
+        {
+            Assert.IsFalse(CreateSeqCollectionWithFlights(null).StartsAndEndsOnSameDay());
+        }
+
+        [TestMethod]
+        public void StartsAndEndsOnSameDayIsTrue()
+        {
+            Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).StartsAndEndsOnSameDay());
+        }
+
+        [TestMethod]
+        public void StartsAndEndsOnSameDayIsFalseIfNotTrue()
+        {
+            Assert.IsFalse(CreateSeqCollectionWithFlights(flight3, flight4).StartsAndEndsOnSameDay());
+        }
 
         private static SequentialFlightCollection CreateSeqCollectionWithFlights(params Flight[] flights)
         {

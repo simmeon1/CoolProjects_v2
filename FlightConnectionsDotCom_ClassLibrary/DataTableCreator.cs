@@ -14,8 +14,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private Type TypeInt32 { get; set; }
         private Type TypeDouble { get; set; }
         private Type TypeBool { get; set; }
-        //private Type TypeDateTime { get; set; }
-        //private Type TypeTimeSpan { get; set; }
 
         public DataTableCreator()
         {
@@ -23,8 +21,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
             TypeInt32 = Type.GetType("System.Int32");
             TypeDouble = Type.GetType("System.Double");
             TypeBool = Type.GetType("System.Boolean");
-            //TypeDateTime = Type.GetType("System.DateTime");
-            //TypeTimeSpan = Type.GetType("System.TimeSpan");
         }
 
         public List<DataTable> GetTables(List<SequentialFlightCollection> sequentialCollections)
@@ -35,10 +31,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
             DataColumn pathColumn = new("Path", TypeString);
             DataColumn idColumn = new("Id", TypeInt32);
             DataColumn doableColumn = new("Doable", TypeBool);
+            DataColumn sameDayFinishColumn = new("SameDayFinish", TypeBool);
             DataColumn startColumn = new("Start", TypeString);
             DataColumn endColumn = new("End", TypeString);
             DataColumn costColumn = new("Cost", TypeDouble);
-            mainTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, doableColumn, startColumn, endColumn, costColumn }.ToArray());
+            mainTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, doableColumn, sameDayFinishColumn, startColumn, endColumn, costColumn }.ToArray());
 
             for (int i = 0; i < sequentialCollections.Count; i++)
             {
@@ -49,6 +46,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetFullPath();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = id;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.SequenceIsDoable();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.StartsAndEndsOnSameDay();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetStartTime().ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetEndTime().ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetCost();

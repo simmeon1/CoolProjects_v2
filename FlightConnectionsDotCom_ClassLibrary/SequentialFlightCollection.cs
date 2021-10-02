@@ -81,12 +81,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         public override string ToString()
         {
-            return $"{GetFullPath()}, Doable = {SequenceIsDoable()}, Start = {GetStartTime()}, End = {GetEndTime()}, Cost = {GetCost()}";
+            return IsNotValid() ? "No flights in sequence." : $"{GetFullPath()}, Doable = {SequenceIsDoable()}, Start = {GetStartTime()}, End = {GetEndTime()}, Cost = {GetCost()}";
         }
 
         public string GetFullPath()
         {
-            if (IsNotValid()) return "No flights in sequence.";
             StringBuilder path = new("");
             path.Append(FlightCollection[0].Path);
             for (int i = 1; i < FlightCollection.Count(); i++)
@@ -105,8 +104,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
             for (int i = 1; i < FlightCollection.Count(); i++)
             {
                 if ((FlightCollection[i].Departing - previousFlight.Arriving).TotalMinutes < 120) return false;
-                if ((FlightCollection[i].Departing.ToString("tt", CultureInfo.InvariantCulture).ToUpper().Equals("AM") && 
-                    previousFlight.Arriving.ToString("tt", CultureInfo.InvariantCulture).ToUpper().Equals("PM"))) return false;
                 previousFlight = FlightCollection[i];
             }
             return true;
@@ -146,6 +143,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public double GetTotalIdleTime()
         {
             return IsNotValid() ? 0 : GetTotalTime() - GetTotalTimeInFlights();
+        }
+        
+        public bool StartsAndEndsOnSameDay()
+        {
+            return !IsNotValid() && GetStartTime().Value.Day == GetEndTime().Value.Day;
         }
     }
 }
