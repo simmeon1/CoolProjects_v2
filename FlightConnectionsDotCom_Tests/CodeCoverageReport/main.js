@@ -250,6 +250,7 @@ var assemblies = [
       { "name": "FlightConnectionsDotCom_ClassLibrary.NoFilterer", "rp": "FlightConnectionsDotCom_ClassLibrary_NoFilterer.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 10, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.Path", "rp": "FlightConnectionsDotCom_ClassLibrary_Path.html", "cl": 20, "ucl": 3, "cal": 23, "tl": 50, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.RealWebDriverWait", "rp": "FlightConnectionsDotCom_ClassLibrary_RealWebDriverWait.html", "cl": 0, "ucl": 9, "cal": 9, "tl": 24, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
+      { "name": "FlightConnectionsDotCom_ClassLibrary.SequentialFlightCollection", "rp": "FlightConnectionsDotCom_ClassLibrary_SequentialFlightCollection.html", "cl": 89, "ucl": 3, "cal": 92, "tl": 143, "ct": "LineCoverage", "mc": "-", "cb": 40, "tb": 40, "lch": [], "bch": [], "hc": [] },
       { "name": "FlightConnectionsDotCom_ClassLibrary.UKBulgariaFilterer", "rp": "FlightConnectionsDotCom_ClassLibrary_UKBulgariaFilterer.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 10, "ct": "LineCoverage", "mc": "-", "cb": 4, "tb": 4, "lch": [], "bch": [], "hc": [] },
     ]},
 ];

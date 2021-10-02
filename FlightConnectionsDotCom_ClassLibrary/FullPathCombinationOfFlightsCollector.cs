@@ -14,21 +14,21 @@ namespace FlightConnectionsDotCom_ClassLibrary
             DataWithFlightsForSinglePaths = dataWithFlightsForSinglePaths;
         }
 
-        public List<FlightCollection> GetFullPathCombinationOfFLights()
+        public List<SequentialFlightCollection> GetFullPathCombinationOfFLights()
         {
             string fullPathName = DataWithFlightsForSinglePaths.Key.ToString();
             List<KeyValuePair<Path, FlightCollection>> pathsAndFlights = DataWithFlightsForSinglePaths.Value;
 
             if (pathsAndFlights.Count == 0) return new();
-            if (pathsAndFlights.Count == 1) return new() { pathsAndFlights[0].Value };
+            if (pathsAndFlights.Count == 1) return new() { new(pathsAndFlights[0].Value )};
 
-            List<FlightCollection> fullPathCombinationsOfFlights = new();
+            List<SequentialFlightCollection> fullPathCombinationsOfFlights = new();
             LinkedList<Flight> flight = new();
             BuildUpCombinationOfFlights(0, flight, fullPathCombinationsOfFlights);
             return fullPathCombinationsOfFlights;
         }
 
-        private void BuildUpCombinationOfFlights(int index, LinkedList<Flight> listOfFlights, List<FlightCollection> combos)
+        private void BuildUpCombinationOfFlights(int index, LinkedList<Flight> listOfFlights, List<SequentialFlightCollection> combos)
         {
             for (int i = index; i < DataWithFlightsForSinglePaths.Value.Count; i++)
             {
@@ -38,7 +38,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 {
                     listOfFlights.AddLast(pathFlight);
                     if (index < DataWithFlightsForSinglePaths.Value.Count - 1) BuildUpCombinationOfFlights(i + 1, listOfFlights, combos);
-                    else if (listOfFlights.Count == DataWithFlightsForSinglePaths.Value.Count) combos.Add(new FlightCollection(listOfFlights.ToList()));
+                    else if (listOfFlights.Count == DataWithFlightsForSinglePaths.Value.Count) combos.Add(new SequentialFlightCollection(new(listOfFlights.ToList())));
                     listOfFlights.RemoveLast();
                 }
             }
