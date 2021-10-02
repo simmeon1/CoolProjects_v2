@@ -174,11 +174,20 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private async Task AgreeToConsent()
         {
-            await Delayer.Delay(1500);
+            await Delayer.Delay(1000);
             ReadOnlyCollection<IWebElement> consentButtons = Driver.FindElements(By.CssSelector("button"));
             foreach (IWebElement button in consentButtons)
             {
-                string buttonText = button.Text;
+                string buttonText;
+                try
+                {
+                    buttonText = button.Text;
+
+                }
+                catch (StaleElementReferenceException)
+                {
+                    continue;
+                }
                 if (!buttonText.Contains("I agree")) continue;
                 button.Click();
                 ConsentAgreed = true;
