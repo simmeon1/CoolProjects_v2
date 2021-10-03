@@ -66,7 +66,7 @@ namespace FlightConnectionsDotCom_Console
 
             if (!parameters.OpenGoogleFlights) return;
             ChromeDriver driver2 = new();
-            ChromeWorker chromeWorker = new(driver2, driver2, logger, new RealDelayer());
+            ChromeWorker chromeWorker = new(driver2, logger, new RealDelayer());
             List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> pathsAndFlights = await chromeWorker.ProcessPaths(paths, parameters.DateFrom, parameters.DateTo);
 
             FullPathCombinationOfFlightsCollector flightCollector = new();

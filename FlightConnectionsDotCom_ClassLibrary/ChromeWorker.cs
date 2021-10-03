@@ -12,18 +12,23 @@ namespace FlightConnectionsDotCom_ClassLibrary
     public class ChromeWorker
     {
         private IWebDriver Driver { get; set; }
-        private IJavaScriptExecutor JSExecutor { get; set; }
         private ILogger Logger { get; set; }
         private IDelayer Delayer { get; set; }
         private bool ConsentAgreed { get; set; }
         private int PagesToOpen { get; set; }
         private int PagesOpened { get; set; }
         private Dictionary<string, FlightCollection> CollectedPathFlights { get; set; }
+        private IWebElement OriginInput1 { get; set; }
+        private IWebElement OriginInput2 { get; set; }
+        private IWebElement DestinationInput1 { get; set; }
+        private IWebElement DestinationInput2 { get; set; }
+        private IWebElement DateInput1 { get; set; }
+        private IWebElement DateInput2 { get; set; }
+        private bool ControlsKnown { get; set; }
 
-        public ChromeWorker(IWebDriver driver, IJavaScriptExecutor jSExecutor, ILogger logger, IDelayer delayer)
+        public ChromeWorker(IWebDriver driver, ILogger logger, IDelayer delayer)
         {
             Driver = driver;
-            JSExecutor = jSExecutor;
             Logger = logger;
             Delayer = delayer;
         }
@@ -34,6 +39,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
             CollectedPathFlights = new();
             PagesToOpen = 0;
             PagesOpened = 0;
+
+            NavigateToUrl();
+            if (!ConsentAgreed) await AgreeToConsent();
+            await SetToOneWayTrip();
+
             foreach (Path path in paths) for (int i = 0; i < path.Count() - 1; i++) PagesToOpen++;
             foreach (Path path in paths) results.Add(await ProcessPath(path, dateFrom, dateTo));
             return results;
@@ -55,12 +65,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 }
                 else
                 {
-                    OpenNewTab();
-                    NavigateToUrl();
-                    if (!ConsentAgreed) await AgreeToConsent();
-                    await SetToOneWayTrip();
                     await PopulateControls(origin, target, dateFrom);
-                    await SetStopsToNone();
+                    if (CollectedPathFlights.Count == 0) await SetStopsToNone();
 
                     List<DateTime> listOfExtraDates = new() { };
                     DateTime tempDate = dateFrom.AddDays(1);
@@ -86,7 +92,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             await GetFlightsForDate(date, results);
             foreach (DateTime extraDate in extraDates)
             {
-                await PopulateDate(extraDate);
+                await PopulateDateAndHitDone(extraDate);
                 await GetFlightsForDate(extraDate, results);
             }
             return new FlightCollection(results);
@@ -198,13 +204,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return $"{PagesOpened}/{PagesToOpen} ({percentageString}) at {DateTime.Now}";
         }
 
-        private void OpenNewTab()
-        {
-            JSExecutor.ExecuteScript("window.open();");
-            ITargetLocator targetLocator = Driver.SwitchTo();
-            if (targetLocator != null) targetLocator.Window(Driver.WindowHandles[Driver.WindowHandles.Count - 1]);
-        }
-
         private void NavigateToUrl()
         {
             INavigation navigation = Driver.Navigate();
@@ -255,23 +254,35 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private async Task PopulateControls(string origin, string target, DateTime date)
         {
+            bool getControlsAgain = false;
+            if (!ControlsKnown)
+            {
+                await GetControls();
+                getControlsAgain = true;
+            }
+
+            await ClickAndWait(DestinationInput1);
+            DestinationInput2.SendKeys(target);
+            DestinationInput2.SendKeys(Keys.Return);
+
+            await ClickAndWait(OriginInput1);
+            OriginInput2.SendKeys(origin);
+            OriginInput2.SendKeys(Keys.Return);
+
+            await PopulateDateAndHitDone(date);
+            if (getControlsAgain) await GetControls();
+            ControlsKnown = true;
+        }
+
+        private async Task GetControls()
+        {
             ReadOnlyCollection<IWebElement> inputs = await FindElementsAndWait(By.CssSelector("input"));
-            IWebElement originInput1 = inputs[0];
-            IWebElement originInput2 = inputs[1];
-            IWebElement destinationInput1 = inputs[2];
-            IWebElement destinationInput2 = inputs[3];
-            IWebElement dateInput1 = inputs[4];
-            IWebElement dateInput2 = inputs[6];
-
-            await ClickAndWait(originInput1);
-            originInput2.SendKeys(origin);
-            originInput2.SendKeys(Keys.Return);
-
-            await ClickAndWait(destinationInput1);
-            destinationInput2.SendKeys(target);
-            destinationInput2.SendKeys(Keys.Return);
-
-            await PopulateDate(dateInput1, dateInput2, date);
+            OriginInput1 = inputs[0];
+            OriginInput2 = inputs[1];
+            DestinationInput1 = inputs[2];
+            DestinationInput2 = inputs[3];
+            DateInput1 = inputs[4];
+            DateInput2 = inputs[6];
         }
 
         private async Task ClickAndWait(IWebElement element)
@@ -280,21 +291,13 @@ namespace FlightConnectionsDotCom_ClassLibrary
             await Delayer.Delay(1000);
         }
 
-        private async Task PopulateDate(DateTime date)
+        private async Task PopulateDateAndHitDone(DateTime date)
         {
-            ReadOnlyCollection<IWebElement> inputs = await FindElementsAndWait(By.CssSelector("input"));
-            IWebElement dateInput1 = inputs[4];
-            IWebElement dateInput2 = inputs[6];
-            await PopulateDate(dateInput1, dateInput2, date);
-        }
-
-        private async Task PopulateDate(IWebElement dateInput1, IWebElement dateInput2, DateTime date)
-        {
-            await ClickAndWait(dateInput1);
+            await ClickAndWait(DateInput1);
             const string format = "ddd, MMM dd";
-            foreach (char ch in format) dateInput2.SendKeys(Keys.Backspace);
-            dateInput2.SendKeys(date.ToString(format));
-            dateInput2.SendKeys(Keys.Return);
+            foreach (char ch in format) DateInput2.SendKeys(Keys.Backspace);
+            DateInput2.SendKeys(date.ToString(format));
+            DateInput2.SendKeys(Keys.Return);
             await ClickButtonWithAriaLabelText("Done. Search for");
         }
 

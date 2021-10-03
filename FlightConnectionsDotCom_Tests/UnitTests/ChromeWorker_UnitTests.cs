@@ -15,12 +15,10 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
     {
         Mock<IWebDriver> driverMock;
         Mock<ILogger> logger;
-        Mock<IJavaScriptExecutor> jsExecutor;
 
         private void InitialiseMockObjects()
         {
             driverMock = new();
-            jsExecutor = new();
             logger = new();
         }
 
@@ -124,7 +122,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                     new Mock<IWebElement>().Object });
             driverMock.Setup(x => x.FindElements(By.CssSelector("input"))).Returns(inputs);
 
-            ChromeWorker chromeWorker = new(driverMock.Object, jsExecutor.Object, logger.Object, new Mock<IDelayer>().Object);
+            ChromeWorker chromeWorker = new(driverMock.Object, logger.Object, new Mock<IDelayer>().Object);
             List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results = await chromeWorker.ProcessPaths(paths, new DateTime(2000, 10, 10), new DateTime(2000, 10, 10));
 
             AssertCommonExpectation(results);
