@@ -68,6 +68,7 @@ namespace FlightConnectionsDotCom_Console
             ChromeDriver driver2 = new();
             ChromeWorker chromeWorker = new(driver2, logger, new RealDelayer());
             List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> pathsAndFlights = await chromeWorker.ProcessPaths(paths, parameters.DateFrom, parameters.DateTo);
+            System.IO.File.WriteAllText($"{parameters.FileSavePath}\\pathsAndFlights_{runId}.json", JsonConvert.SerializeObject(pathsAndFlights, Formatting.Indented));
 
             FullPathCombinationOfFlightsCollector flightCollector = new();
             List<SequentialFlightCollection> results2 = new();
