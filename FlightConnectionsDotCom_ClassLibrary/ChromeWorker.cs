@@ -159,22 +159,28 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private async Task<ReadOnlyCollection<IWebElement>> FindElementsAndWait(IWebElement element, By by)
         {
             ReadOnlyCollection<IWebElement> result = element.FindElements(by);
-            await Delayer.Delay(1000);
+            await Delayer.Delay(300);
             return result;
         }
 
         private async Task<ReadOnlyCollection<IWebElement>> FindElementsAndWait(By by)
         {
             ReadOnlyCollection<IWebElement> result = Driver.FindElements(by);
-            await Delayer.Delay(1000);
+            await Delayer.Delay(300);
             return result;
         }
 
         private async Task<IWebElement> FindElementAndWait(By by)
         {
             IWebElement result = Driver.FindElement(by);
-            await Delayer.Delay(1000);
+            await Delayer.Delay(300);
             return result;
+        }
+
+        private async Task ClickAndWait(IWebElement element)
+        {
+            element.Click();
+            await Delayer.Delay(300);
         }
 
         private async Task SetStopsToNone()
@@ -282,12 +288,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
             DestinationInput2 = inputs[3];
             DateInput1 = inputs[4];
             DateInput2 = inputs[6];
-        }
-
-        private async Task ClickAndWait(IWebElement element)
-        {
-            element.Click();
-            await Delayer.Delay(1000);
         }
 
         private async Task PopulateDateAndHitDone(DateTime date)
