@@ -259,10 +259,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
 
             await ClickAndWait(DestinationInput1);
+            DestinationInput2.Clear();
             DestinationInput2.SendKeys(target);
             DestinationInput2.SendKeys(Keys.Return);
 
             await ClickAndWait(OriginInput1);
+            OriginInput2.Clear();
             OriginInput2.SendKeys(origin);
             OriginInput2.SendKeys(Keys.Return);
 

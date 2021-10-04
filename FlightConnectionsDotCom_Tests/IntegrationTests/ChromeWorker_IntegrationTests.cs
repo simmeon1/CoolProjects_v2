@@ -31,13 +31,13 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
         public async Task OpenFlights_ExpectedTabsOpenedWithNoErrors()
         {
             List<string> path1 = new() { "ABZ", "LTN", "VAR" };
-            List<string> path2 = new() { "VAR", "LTN", "ABZ" };
-            List<Path> paths = new() { new Path(path1), new Path(path2) };
+            List<string> path2 = new() { "EDI", "SOF" };
+            List<string> path3 = new() { "VAR", "LTN", "ABZ" };
+            List<Path> paths = new() { new Path(path1), new Path(path2), new Path(path3) };
 
             ChromeWorker chromeWorker = new(chromeDriver, logger, new RealDelayer());
-            List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results = await chromeWorker.ProcessPaths(paths, new DateTime(2022, 1, 13), new DateTime(2022, 1, 13));
+            List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results = await chromeWorker.ProcessPaths(paths, new DateTime(2022, 1, 13), new DateTime(2022, 1, 14));
             Assert.IsTrue(results.Count > 0);
-            Assert.IsTrue(results[0].Value[0].Value.Count() > 0);
         }
 
         [TestCleanup]
