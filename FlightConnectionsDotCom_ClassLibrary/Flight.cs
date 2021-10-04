@@ -23,7 +23,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         public override string ToString()
         {
-            return $"{Path} - {Departing} - {Arriving} - {Cost}";
+            return $"{GetDepartingAirport()}-{GetArrivingAirport()} - {Departing} - {Arriving} - {Airline} - {Duration} - {Cost}";
         }
         
         public string GetDepartingAirport()

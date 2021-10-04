@@ -59,8 +59,9 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             bool flightsAreNull = false)
         {
             InitialiseMockObjects();
-            List<string> path1 = new() { "ABZ", "SOF" };
-            List<Path> paths = new() { new Path(path1) };
+            List<string> path1 = new() { "LTN", "VAR" };
+            List<string> path2 = new() { "LTN", "VAR" };
+            List<Path> paths = new() { new Path(path1), new Path(path2) };
 
             driverMock.Setup(x => x.Navigate()).Returns(navigatonIsNull ? null : new Mock<INavigation>().Object);
             driverMock.Setup(x => x.SwitchTo()).Returns(targetLocatorReturnsNull ? null : new Mock<ITargetLocator>().Object);
@@ -78,18 +79,23 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                     Mock<IWebElement> flightListMock = new();
                     Mock<IWebElement> flightMock = new();
 
-                    string flightText = "9:45 PM\n– \n2:55 AM+1\nWizz Air\n3 hr 10 min\nLTN–VAR\nNonstop\n£27";
+                    string flightText1 = "9:45 PM\n– \n2:55 AM+1\nWizz Air\n3 hr 10 min\nLTN–VAR\nNonstop\n£27";
+                    string flightText2= "9:45 PM\n– \n11:45 PM\nWizz Air\n2 hr\nLTN–VAR\nNonstop\nPrice unavailable";
                     flightMock.SetupSequence(x => x.GetAttribute("innerText"))
                         .Returns("more flights")
-                        .Returns(flightText)
-                        .Returns(flightText);
+                        .Returns(flightText1)
+                        .Returns(flightText1)
+                        .Returns(flightText2)
+                        .Returns(flightText2);
                     flightListMock.Setup(x => x.FindElements(By.CssSelector("[role=listitem]"))).Returns(flightsAreNull ? null : new ReadOnlyCollection<IWebElement>(new List<IWebElement> { flightMock.Object }));
                     driverMock.Setup(x => x.FindElement(By.CssSelector("[role=list]"))).Returns(flightListMock.Object);
                 }
             }
 
-            Mock<IWebElement> consentButton = new();
-            consentButton.Setup(x => x.Text).Returns("I agree");
+            Mock<IWebElement> consentButton1 = new();
+            Mock<IWebElement> consentButton2 = new();
+            consentButton1.Setup(x => x.Text).Throws(new StaleElementReferenceException());
+            consentButton2.Setup(x => x.Text).Returns("I agree");
 
             Mock<IWebElement> searchButton = new();
             searchButton.Setup(x => x.GetAttribute("aria-label")).Returns("Done. Search for");
@@ -103,7 +109,8 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             driverMock.Setup(x => x.FindElement(By.CssSelector("[role=radiogroup]"))).Returns(radioGroup.Object);
 
             driverMock.SetupSequence(x => x.FindElements(By.CssSelector("button")))
-                .Returns(new ReadOnlyCollection<IWebElement>(noConsentButtons ? new List<IWebElement>() : new List<IWebElement>() { consentButton.Object }))
+                .Returns(new ReadOnlyCollection<IWebElement>(noConsentButtons ? new List<IWebElement>() : new List<IWebElement>() { consentButton1.Object, consentButton2.Object }))
+                .Returns(new ReadOnlyCollection<IWebElement>(searchingForButtonsReturnsEmptyList ? new List<IWebElement>() : new List<IWebElement>() { searchButton.Object }))
                 .Returns(new ReadOnlyCollection<IWebElement>(searchingForButtonsReturnsEmptyList ? new List<IWebElement>() : new List<IWebElement>() { searchButton.Object }))
                 .Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { stopsButton.Object }));
 
@@ -123,23 +130,34 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             driverMock.Setup(x => x.FindElements(By.CssSelector("input"))).Returns(inputs);
 
             ChromeWorker chromeWorker = new(driverMock.Object, logger.Object, new Mock<IDelayer>().Object);
-            List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results = await chromeWorker.ProcessPaths(paths, new DateTime(2000, 10, 10), new DateTime(2000, 10, 10));
+            List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results = await chromeWorker.ProcessPaths(paths, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11));
 
             AssertCommonExpectation(results);
             if (!hasNoFlightList && !flightListThrowsException && !flightsAreNull)
             {
-                Assert.IsTrue(results[0].Value[0].Value.Count() == 1);
-                Assert.IsTrue(results[0].Value[0].Value[0].ToString().Equals(@"LTN–VAR - 10/10/2000 21:45:00 - 11/10/2000 02:55:00 - 27"));
+                AssertEqualFlights(results, 0);
+                AssertEqualFlights(results, 1);
             }
             else Assert.IsTrue(results[0].Value[0].Value.Count() == 0);
         }
 
+
         private static void AssertCommonExpectation(List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results)
         {
-            Assert.IsTrue(results.Count == 1);
-            Assert.IsTrue(results[0].Key.ToString().Equals("ABZ-SOF"));
+            Assert.IsTrue(results.Count == 2);
+            Assert.IsTrue(results[0].Key.ToString().Equals("LTN-VAR"));
             Assert.IsTrue(results[0].Value.Count == 1);
-            Assert.IsTrue(results[0].Value[0].Key.ToString().Equals("ABZ-SOF"));
+            Assert.IsTrue(results[0].Value[0].Key.ToString().Equals("LTN-VAR"));
+            Assert.IsTrue(results[1].Key.ToString().Equals("LTN-VAR"));
+            Assert.IsTrue(results[1].Value.Count == 1);
+            Assert.IsTrue(results[1].Value[0].Key.ToString().Equals("LTN-VAR"));
+        }
+
+        private static void AssertEqualFlights(List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results, int index)
+        {
+            Assert.IsTrue(results[index].Value[0].Value.Count() == 2);
+            Assert.IsTrue(results[index].Value[0].Value[0].ToString().Equals(@"LTN-VAR - 10/10/2000 21:45:00 - 11/10/2000 02:55:00 - Wizz Air - 03:10:00 - 27"));
+            Assert.IsTrue(results[index].Value[0].Value[1].ToString().Equals(@"LTN-VAR - 11/10/2000 21:45:00 - 11/10/2000 23:45:00 - Wizz Air - 02:00:00 - 0"));
         }
     }
 }

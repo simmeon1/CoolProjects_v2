@@ -12,7 +12,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void ToStringIsCorrect()
         {
-            Assert.IsTrue(flight.ToString().Equals(@"ABZ-EDI - 10/10/2000 10:20:30 - 11/11/2000 11:30:40 - 25"));
+            Assert.IsTrue(flight.ToString().Equals(@"ABZ-EDI - 10/10/2000 10:20:30 - 11/11/2000 11:30:40 - easyJet - 03:05:10 - 25"));
         }
         
         [TestMethod]
