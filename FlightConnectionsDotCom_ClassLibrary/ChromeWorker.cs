@@ -109,14 +109,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 {
                     await Delayer.Delay(1000);
                     flightList = await FindElementAndWait(By.CssSelector("[role=list]"));
-                    if (flightList == null) return;
                 }
                 catch (NoSuchElementException)
                 {
                     return;
                 }
                 flights = await FindElementsAndWait(flightList, By.CssSelector("[role=listitem]"));
-                if (flights == null) return;
                 if (flights[flights.Count - 1].GetAttribute("innerText").Contains("more flights")) flights[flights.Count - 1].Click();
                 else break;
             }
@@ -139,10 +137,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 string airlineText = flightText[3].Trim();
 
                 string durationText = flightText[4];
-                Match match = Regex.Match(durationText, "(\\d+).*?(\\d+).*");
-                durationText = match.Success
-                    ? Regex.Replace(durationText, "(\\d+).*?(\\d+).*", "$1:$2").Trim()
-                    : Regex.Replace(durationText, "(\\d+).*", "$1:00").Trim();
+                if (Regex.Match(durationText, "(\\d+)\\D+(\\d+).*").Success) durationText = Regex.Replace(durationText, "(\\d+).*?(\\d+).*", "$1:$2").Trim();
+                else if (Regex.Match(durationText, "(\\d+).*hr").Success) durationText = Regex.Replace(durationText, "(\\d+).*", "$1:00").Trim();
+                else durationText = Regex.Replace(durationText, "(\\d+).*", "0:$1").Trim();
 
                 string pathText = flightText[5].Trim();
                 string costText = Regex.Replace(flightText[7], ".*?(\\d+).*", "$1").Trim();
