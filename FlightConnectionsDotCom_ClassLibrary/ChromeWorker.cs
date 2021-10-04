@@ -45,6 +45,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             await SetToOneWayTrip();
 
             foreach (Path path in paths) for (int i = 0; i < path.Count() - 1; i++) PagesToOpen++;
+            Logger.Log($"Starting search for {PagesToOpen} paths.");
             foreach (Path path in paths) results.Add(await ProcessPath(path, dateFrom, dateTo));
             return results;
         }
