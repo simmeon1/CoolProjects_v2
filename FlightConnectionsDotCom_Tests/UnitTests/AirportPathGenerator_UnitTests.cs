@@ -11,6 +11,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         private const string codeSOF = "SOF";
         private const string codeEDI = "EDI";
         private const string codeCIA = "CIA";
+        List<Airport> airports;
         Dictionary<string, HashSet<string>> airportAndDestinationsList;
         AirportPathGenerator generator;
 
@@ -25,6 +26,11 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                 { codeCIA, new HashSet<string>() { codeSOF, codeABZ, codeEDI } }
             };
             generator = new(airportAndDestinationsList);
+            airports = new();
+            airports.Add(new Airport(codeABZ, "", "United Kingdom", "", ""));
+            //airports.Add(new Airport(codeEDI, "", "United Kingdom", "", ""));
+            airports.Add(new Airport(codeSOF, "", "Bulgaria", "", ""));
+            airports.Add(new Airport(codeCIA, "", "Italy", "", ""));
         }
 
         [TestMethod]
@@ -35,9 +41,17 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         }
 
         [TestMethod]
-        public void GetAirportConnections_ReturnsExpectedOnePathWhenMaxFlightsAreOne()
+        public void GetAirportConnections_ReturnsExpectedOnePathWhenMaxFlightsAreOne_1()
         {
             List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 1);
+            Assert.IsTrue(paths.Count == 1);
+            VerifyAbzSofPath(paths);
+        }
+        
+        [TestMethod]
+        public void GetAirportConnections_ReturnsExpectedOnePathWhenMaxFlightsAreOne_2()
+        {
+            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 1, airports);
             Assert.IsTrue(paths.Count == 1);
             VerifyAbzSofPath(paths);
         }
@@ -69,6 +83,14 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             VerifyAbzSofPath(paths);
             VerifyAbzCiaSofPath(paths);
             VerifyAbzEdiSofPath(paths);
+        }
+
+        [TestMethod]
+        public void GetAirportConnections_ReturnsExpectedThreePathsWhenMaxFlightsAreTwo_FlightsFiltered()
+        {
+            List<Path> paths = generator.GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 2, airports, new UKBulgariaFilterer());
+            Assert.IsTrue(paths.Count == 1);
+            VerifyAbzSofPath(paths);
         }
 
         [TestMethod]

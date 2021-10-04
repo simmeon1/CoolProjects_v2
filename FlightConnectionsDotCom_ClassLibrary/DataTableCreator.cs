@@ -37,7 +37,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             DataColumn sameDayFinishColumn = new("SameDayFinish", TypeBool);
             DataColumn startColumn = new("Start", TypeString);
             DataColumn endColumn = new("End", TypeString);
-            DataColumn lengthColumn = new("Length", TypeString);
+            DataColumn lengthColumn = new("Length", TypeDouble);
             DataColumn costColumn = new("Cost", TypeDouble);
             mainTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, doableColumn, sameDayFinishColumn, startColumn, endColumn, lengthColumn, costColumn }.ToArray());
 
@@ -53,7 +53,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.StartsAndEndsOnSameDay();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetStartTime().ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetEndTime().ToString();
-                row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetTotalTime().ToString();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetTotalTime();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetCost();
                 mainTable.Rows.Add(row);
                 tables.Add(GetSubTable(seqCollection, id));
