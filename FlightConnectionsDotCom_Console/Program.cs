@@ -42,7 +42,9 @@ namespace FlightConnectionsDotCom_Console
             runSummary += " - " + parameters.DateFrom.ToString("yyyy-MM-dd");
             runSummary += " - " + parameters.DateTo.ToString("yyyy-MM-dd");
             string runId = Globals.GetDateTimeFileNameFriendlyConcatenatedWithString(DateTime.Now, runSummary);
-            if (!useLocalAirportList) System.IO.File.WriteAllText($"{parameters.FileSavePath}\\{runId}_airportList.json", JsonConvert.SerializeObject(airportsList, Formatting.Indented));
+            string runResultsPath = System.IO.Path.Combine(parameters.FileSavePath, runId);
+            if (!System.IO.Directory.Exists(runResultsPath)) System.IO.Directory.CreateDirectory(runResultsPath);
+            if (!useLocalAirportList) System.IO.File.WriteAllText($"{runResultsPath}\\{runId}_airportList.json", JsonConvert.SerializeObject(airportsList, Formatting.Indented));
 
             IAirportFilterer filterer = new NoFilterer();
             if (parameters.EuropeOnly) filterer = new EuropeFilterer();
@@ -52,7 +54,7 @@ namespace FlightConnectionsDotCom_Console
             Dictionary<string, HashSet<string>> airportsAndDestinations = useLocalAirportDestinations
                 ? JsonConvert.DeserializeObject<Dictionary<string, HashSet<string>>>(System.IO.File.ReadAllText(parameters.LocalAirportDestinationsFile))
                 : populator.PopulateAirports(airportsList, filterer);
-            if (!useLocalAirportDestinations) System.IO.File.WriteAllText($"{parameters.FileSavePath}\\{runId}_airportDestinations.json", JsonConvert.SerializeObject(airportsAndDestinations, Formatting.Indented));
+            if (!useLocalAirportDestinations) System.IO.File.WriteAllText($"{runResultsPath}\\{runId}_airportDestinations.json", JsonConvert.SerializeObject(airportsAndDestinations, Formatting.Indented));
 
             if (driver1 != null) driver1.Quit();
 
@@ -65,13 +67,13 @@ namespace FlightConnectionsDotCom_Console
                 for (int i = 0; i < path.Count(); i++) pathDetailed.Add(airportsList.FirstOrDefault(x => x.Code.Equals(path[i])).ToString());
                 pathsDetailed.Add(pathDetailed);
             }
-            System.IO.File.WriteAllText($"{parameters.FileSavePath}\\{runId}_latestPaths.json", JsonConvert.SerializeObject(pathsDetailed, Formatting.Indented));
+            System.IO.File.WriteAllText($"{runResultsPath}\\{runId}_latestPaths.json", JsonConvert.SerializeObject(pathsDetailed, Formatting.Indented));
 
             if (!parameters.OpenGoogleFlights) return;
             ChromeDriver driver2 = new();
             ChromeWorker chromeWorker = new(driver2, logger, new RealDelayer());
             List<FullPathAndListOfPathsAndFlightCollections> pathsAndFlights = await chromeWorker.ProcessPaths(paths, parameters.DateFrom, parameters.DateTo);
-            System.IO.File.WriteAllText($"{parameters.FileSavePath}\\{runId}_pathsAndFlights.json", JsonConvert.SerializeObject(pathsAndFlights, Formatting.Indented));
+            System.IO.File.WriteAllText($"{runResultsPath}\\{runId}_pathsAndFlights.json", JsonConvert.SerializeObject(pathsAndFlights, Formatting.Indented));
 
             FullPathCombinationOfFlightsCollector flightCollector = new();
             List<SequentialFlightCollection> results2 = new();
@@ -82,8 +84,8 @@ namespace FlightConnectionsDotCom_Console
 
             DataTableCreator dtCreator = new();
             ExcelPrinter printer = new();
-            printer.PrintTablesToWorksheet(dtCreator.GetTables(results2), $"{parameters.FileSavePath}\\{runId}_results.xlsx");
-            logger.Log($"Saved files to {parameters.FileSavePath}");
+            printer.PrintTablesToWorksheet(dtCreator.GetTables(results2), $"{runResultsPath}\\{runId}_results.xlsx");
+            logger.Log($"Saved files to {runResultsPath}");
         }
     }
 }
