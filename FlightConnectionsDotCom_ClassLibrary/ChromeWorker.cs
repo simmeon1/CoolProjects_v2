@@ -145,7 +145,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
                     ? Regex.Replace(durationText, "(\\d+).*", "$1:00").Trim()
                     : Regex.Replace(durationText, "(\\d+).*", "0:$1").Trim();
 
-                string pathText = flightText[5].Trim();
+                Match pathMatch = Regex.Match(flightText[5].Trim(), @"(\w+)\W+(\w+)");
+                string pathText = $"{pathMatch.Groups[1].Value}-{pathMatch.Groups[2].Value}";
                 string costText = Regex.Replace(flightText[7], ".*?(\\d+).*", "$1").Trim();
                 int.TryParse(costText, out int cost);
                 Flight item = new(
