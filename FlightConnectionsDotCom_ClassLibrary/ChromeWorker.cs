@@ -33,9 +33,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Delayer = delayer;
         }
 
-        public async Task<List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>>> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo)
+        public async Task<List<FullPathAndListOfPathsAndFlightCollections>> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo)
         {
-            List<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> results = new();
+            List<FullPathAndListOfPathsAndFlightCollections> results = new();
             CollectedPathFlights = new();
             PagesToOpen = 0;
             PagesOpened = 0;
@@ -50,9 +50,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return results;
         }
 
-        private async Task<KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>> ProcessPath(Path path, DateTime dateFrom, DateTime dateTo)
+        private async Task<FullPathAndListOfPathsAndFlightCollections> ProcessPath(Path path, DateTime dateFrom, DateTime dateTo)
         {
-            List<KeyValuePair<Path, FlightCollection>> pathsAndFlights = new();
+            List<PathAndFlightCollection> pathsAndFlights = new();
             for (int i = 0; i < path.Count() - 1; i++)
             {
                 string origin = path[i];
@@ -78,7 +78,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                     }
                     flights = await GetFlights(dateFrom, listOfExtraDates);
                 }
-                KeyValuePair<Path, FlightCollection> flightsForOriginToTarget = new(pathName, flights);
+                PathAndFlightCollection flightsForOriginToTarget = new(pathName, flights);
                 if (!CollectedPathFlights.ContainsKey(pathName.ToString())) CollectedPathFlights.Add(pathName.ToString(), flights);
                 PagesOpened++;
                 pathsAndFlights.Add(flightsForOriginToTarget);

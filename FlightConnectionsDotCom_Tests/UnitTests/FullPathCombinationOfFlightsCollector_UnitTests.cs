@@ -26,13 +26,13 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Flight flight6 = new(new DateTime(2000, 1, 13, 11, 15, 0), new DateTime(2000, 1, 13, 13, 30, 0), "easyJet", new TimeSpan(4, 0, 0), path3.ToString(), 12);
             Flight flight7 = new(new DateTime(2000, 1, 13, 19, 15, 0), new DateTime(2000, 1, 13, 18, 30, 0), "easyJet", new TimeSpan(5, 0, 0), path3.ToString(), 10);
 
-            List<KeyValuePair<Path, FlightCollection>> data = new();
-            data.Add(new KeyValuePair<Path, FlightCollection>(path1, new(new List<Flight>() { flight1, flight2 })));
-            data.Add(new KeyValuePair<Path, FlightCollection>(path2, new(new List<Flight>() { flight3, flight4 })));
-            data.Add(new KeyValuePair<Path, FlightCollection>(path3, new(new List<Flight>() { flight5, flight6, flight7 })));
+            List<PathAndFlightCollection> data = new();
+            data.Add(new (path1, new(new List<Flight>() { flight1, flight2 })));
+            data.Add(new (path2, new(new List<Flight>() { flight3, flight4 })));
+            data.Add(new (path3, new(new List<Flight>() { flight5, flight6, flight7 })));
 
             FullPathCombinationOfFlightsCollector collector = new();
-            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights(new KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>(allPath, data));
+            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights(new FullPathAndListOfPathsAndFlightCollections(allPath, data));
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 12);
             Assert.IsTrue(fullPathCombinationOfFlights[0][0].ToString().Equals(flight1.ToString()));
             Assert.IsTrue(fullPathCombinationOfFlights[1][0].ToString().Equals(flight1.ToString()));
@@ -85,11 +85,16 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Path allPath = new(new List<string>() { "VAR", "LTN", "ABZ" });
             Flight flight1 = new(new DateTime(2000, 1, 13, 6, 5, 0), new DateTime(2000, 1, 13, 7, 45, 0), "Wizz Air", new TimeSpan(3, 40, 0), path1.ToString(), 52);
 
-            List<KeyValuePair<Path, FlightCollection>> data = new();
-            data.Add(new KeyValuePair<Path, FlightCollection>(path1, new(new List<Flight>() { flight1 })));
+            List<PathAndFlightCollection> data = new();
+            data.Add(new (path1, new(new List<Flight>() { flight1 })));
+            Assert.IsTrue(data[0].ToString().Equals($"{path1}, 1 flights"));
 
             FullPathCombinationOfFlightsCollector collector = new();
-            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights(new KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>(allPath, data));
+
+            FullPathAndListOfPathsAndFlightCollections dataWithFlightsForSinglePaths = new(allPath, data);
+            Assert.IsTrue(dataWithFlightsForSinglePaths.ToString().Equals($"{allPath}, 1 paths with flights"));
+
+            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights(dataWithFlightsForSinglePaths);
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 1);
             Assert.IsTrue(fullPathCombinationOfFlights[0].Count() == 1);
             Assert.IsTrue(fullPathCombinationOfFlights[0][0].ToString().Equals(flight1.ToString()));
@@ -99,9 +104,9 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         public void GetFullPathCombinationOfFLights_NoFlights()
         {
             Path allPath = new(new List<string>() { "VAR", "LTN" });
-            List<KeyValuePair<Path, FlightCollection>> data = new();
+            List<PathAndFlightCollection> data = new();
             FullPathCombinationOfFlightsCollector collector = new();
-            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights(new KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>>(allPath, data));
+            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights(new FullPathAndListOfPathsAndFlightCollections(allPath, data));
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 0);
         }
     }

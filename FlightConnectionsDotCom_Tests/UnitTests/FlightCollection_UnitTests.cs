@@ -31,6 +31,12 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         }
 
         [TestMethod]
+        public void ToStringIsCorrect()
+        {
+            Assert.IsTrue(collection.ToString().Equals("2 flights"));
+        }
+
+        [TestMethod]
         public void SerialiseDeserialize()
         {
             string json = collection.SerializeObject();

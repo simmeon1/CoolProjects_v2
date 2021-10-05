@@ -7,13 +7,13 @@ namespace FlightConnectionsDotCom_ClassLibrary
 {
     public class FullPathCombinationOfFlightsCollector
     {
-        private KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>> DataWithFlightsForSinglePaths { get; set; }
+        private FullPathAndListOfPathsAndFlightCollections DataWithFlightsForSinglePaths { get; set; }
 
-        public List<SequentialFlightCollection> GetFullPathCombinationOfFLights(KeyValuePair<Path, List<KeyValuePair<Path, FlightCollection>>> dataWithFlightsForSinglePaths)
+        public List<SequentialFlightCollection> GetFullPathCombinationOfFLights(FullPathAndListOfPathsAndFlightCollections dataWithFlightsForSinglePaths)
         {
             DataWithFlightsForSinglePaths = dataWithFlightsForSinglePaths;
-            string fullPathName = DataWithFlightsForSinglePaths.Key.ToString();
-            List<KeyValuePair<Path, FlightCollection>> pathsAndFlights = DataWithFlightsForSinglePaths.Value;
+            string fullPathName = DataWithFlightsForSinglePaths.Path.ToString();
+            List<PathAndFlightCollection> pathsAndFlights = DataWithFlightsForSinglePaths.PathsAndFlightCollections;
             List<SequentialFlightCollection> fullPathCombinationsOfFlights = new();
             LinkedList<Flight> flight = new();
             BuildUpCombinationOfFlights(0, flight, fullPathCombinationsOfFlights);
@@ -22,15 +22,16 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private void BuildUpCombinationOfFlights(int index, LinkedList<Flight> listOfFlights, List<SequentialFlightCollection> combos)
         {
-            for (int i = index; i < DataWithFlightsForSinglePaths.Value.Count; i++)
+            int count = DataWithFlightsForSinglePaths.PathsAndFlightCollections.Count;
+            for (int i = index; i < count; i++)
             {
-                KeyValuePair<Path, FlightCollection> pathAndFlights = DataWithFlightsForSinglePaths.Value[i];
-                FlightCollection pathFlights = pathAndFlights.Value;
+                PathAndFlightCollection pathAndFlights = DataWithFlightsForSinglePaths.PathsAndFlightCollections[i];
+                FlightCollection pathFlights = pathAndFlights.FlightCollection;
                 for (int j = 0; j < pathFlights.Count(); j++)
                 {
                     listOfFlights.AddLast(pathFlights[j]);
-                    if (index < DataWithFlightsForSinglePaths.Value.Count - 1) BuildUpCombinationOfFlights(i + 1, listOfFlights, combos);
-                    else if (listOfFlights.Count == DataWithFlightsForSinglePaths.Value.Count) combos.Add(new SequentialFlightCollection(new(listOfFlights.ToList())));
+                    if (index < count - 1) BuildUpCombinationOfFlights(i + 1, listOfFlights, combos);
+                    else if (listOfFlights.Count == count) combos.Add(new SequentialFlightCollection(new(listOfFlights.ToList())));
                     listOfFlights.RemoveLast();
                 }
             }

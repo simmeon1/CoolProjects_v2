@@ -45,5 +45,10 @@ namespace FlightConnectionsDotCom_ClassLibrary
         {
             return Flights[Count() - 1];
         }
+
+        public override string ToString()
+        {
+            return $"{Flights.Count} flights";
+        }
     }
 }
