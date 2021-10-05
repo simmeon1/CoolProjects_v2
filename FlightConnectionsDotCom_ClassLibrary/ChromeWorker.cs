@@ -25,6 +25,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private IWebElement DateInput1 { get; set; }
         private IWebElement DateInput2 { get; set; }
         private bool ControlsKnown { get; set; }
+        private int DefaultDelay { get; set; }
 
         public ChromeWorker(IWebDriver driver, ILogger logger, IDelayer delayer)
         {
@@ -33,8 +34,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Delayer = delayer;
         }
 
-        public async Task<List<FullPathAndListOfPathsAndFlightCollections>> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo)
+        public async Task<List<FullPathAndListOfPathsAndFlightCollections>> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo, int defaultDelay = 500)
         {
+            DefaultDelay = defaultDelay;
             List<FullPathAndListOfPathsAndFlightCollections> results = new();
             CollectedPathFlights = new();
             PagesToOpen = 0;
@@ -80,9 +82,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 }
                 PathAndFlightCollection flightsForOriginToTarget = new(pathName, flights);
                 if (!CollectedPathFlights.ContainsKey(pathName.ToString())) CollectedPathFlights.Add(pathName.ToString(), flights);
-                PagesOpened++;
                 pathsAndFlights.Add(flightsForOriginToTarget);
-                Logger.Log($"Populated page for {origin} to {target} ({GetProgressString()})");
+                PagesOpened++;
+                Logger.Log($"Populated page for {origin} to {target} ({Globals.GetPercentageAndCountString(PagesOpened, PagesToOpen)})");
             }
             return new(path, pathsAndFlights);
         }
@@ -161,28 +163,28 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private async Task<ReadOnlyCollection<IWebElement>> FindElementsAndWait(IWebElement element, By by)
         {
             ReadOnlyCollection<IWebElement> result = element.FindElements(by);
-            await Delayer.Delay(300);
+            await Delayer.Delay(DefaultDelay);
             return result;
         }
 
         private async Task<ReadOnlyCollection<IWebElement>> FindElementsAndWait(By by)
         {
             ReadOnlyCollection<IWebElement> result = Driver.FindElements(by);
-            await Delayer.Delay(300);
+            await Delayer.Delay(DefaultDelay);
             return result;
         }
 
         private async Task<IWebElement> FindElementAndWait(By by)
         {
             IWebElement result = Driver.FindElement(by);
-            await Delayer.Delay(300);
+            await Delayer.Delay(DefaultDelay);
             return result;
         }
 
         private async Task ClickAndWait(IWebElement element)
         {
             element.Click();
-            await Delayer.Delay(300);
+            await Delayer.Delay(DefaultDelay);
         }
 
         private async Task SetStopsToNone()
@@ -197,16 +199,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private async Task ClickHeader()
         {
             await ClickAndWait(await FindElementAndWait(By.CssSelector("header")));
-        }
-
-        private string GetProgressString()
-        {
-            string percentageString = $"{PagesOpened / (double)PagesToOpen * 100}";
-            if (Regex.IsMatch(percentageString, @"^\d+$")) percentageString += ".00";
-            else if (Regex.IsMatch(percentageString, @"^\d+\.\d$")) percentageString += "0";
-            percentageString += "%";
-            percentageString = $"{Regex.Match(percentageString, @"(.*?\.\d\d).*%").Groups[1].Value}%";
-            return $"{PagesOpened}/{PagesToOpen} ({percentageString}) at {DateTime.Now}";
         }
 
         private void NavigateToUrl()
