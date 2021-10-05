@@ -30,16 +30,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
                                                                     .ToList();
 
             List<DataTable> tables = new();
-            DataTable mainTable = new("0");
-            DataColumn pathColumn = new("Path", TypeString);
-            DataColumn idColumn = new("Id", TypeInt32);
-            DataColumn doableColumn = new("Doable", TypeBool);
-            DataColumn sameDayFinishColumn = new("SameDayFinish", TypeBool);
-            DataColumn startColumn = new("Start", TypeString);
-            DataColumn endColumn = new("End", TypeString);
-            DataColumn lengthColumn = new("Length", TypeDouble);
-            DataColumn costColumn = new("Cost", TypeDouble);
-            mainTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, doableColumn, sameDayFinishColumn, startColumn, endColumn, lengthColumn, costColumn }.ToArray());
+            DataTable mainTable = GetMainTable();
+            DataTable subTable = GetSubTable();
 
             for (int i = 0; i < sequentialCollectionsOrdered.Count; i++)
             {
@@ -56,29 +48,53 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetTotalTime();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetCost();
                 mainTable.Rows.Add(row);
-                tables.Add(GetSubTable(seqCollection, id));
+                AddRowsToSubTable(seqCollection, id, subTable);
             }
             tables.Add(mainTable);
-            return tables.OrderBy(t =>  int.Parse(t.TableName)).ToList();
+            tables.Add(subTable);
+            return tables;
         }
 
-        private DataTable GetSubTable(SequentialFlightCollection sequentialCollection, int id)
+        private DataTable GetMainTable()
         {
-            DataTable subTable = new(id.ToString());
+            DataTable mainTable = new("Summary");
+
             DataColumn pathColumn = new("Path", TypeString);
+            DataColumn idColumn = new("Id", TypeInt32);
+            DataColumn doableColumn = new("Doable", TypeBool);
+            DataColumn sameDayFinishColumn = new("SameDayFinish", TypeBool);
+            DataColumn startColumn = new("Start", TypeString);
+            DataColumn endColumn = new("End", TypeString);
+            DataColumn lengthColumn = new("Length", TypeDouble);
+            DataColumn costColumn = new("Cost", TypeDouble);
+            mainTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, doableColumn, sameDayFinishColumn, startColumn, endColumn, lengthColumn, costColumn }.ToArray());
+            return mainTable;
+        }
+
+        private DataTable GetSubTable()
+        {
+            DataTable subTable = new("Details");
+
+            DataColumn pathColumn = new("Path", TypeString);
+            DataColumn idColumn = new("Id", TypeInt32);
             DataColumn departingColumn = new("Departing", TypeString);
             DataColumn arrivingColumn = new("Arriving", TypeString);
             DataColumn durationColumn = new("Duration", TypeString);
             DataColumn airlineColumn = new("Airline", TypeString);
             DataColumn costColumn = new("Cost", TypeDouble);
-            subTable.Columns.AddRange(new List<DataColumn> { pathColumn, departingColumn, arrivingColumn, durationColumn, airlineColumn, costColumn }.ToArray());
+            subTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, departingColumn, arrivingColumn, durationColumn, airlineColumn, costColumn }.ToArray());
+            return subTable;
+        }
 
+        private void AddRowsToSubTable(SequentialFlightCollection sequentialCollection, int id, DataTable subTable)
+        {
             for (int i = 0; i < sequentialCollection.Count(); i++)
             {
                 Flight flightCollection = sequentialCollection[i];
                 ColumnIndexCounter = 0;
                 DataRow row = subTable.NewRow();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Path;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = id;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Departing.ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Arriving.ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Duration.ToString();
@@ -86,7 +102,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Cost;
                 subTable.Rows.Add(row);
             }
-            return subTable;
         }
 
         private int ReturnColumnIndexCounterAndIncrementIt()
