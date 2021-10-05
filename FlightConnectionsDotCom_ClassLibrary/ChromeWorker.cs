@@ -139,8 +139,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
                 string durationText = flightText[4];
                 if (Regex.Match(durationText, "(\\d+)\\D+(\\d+).*").Success) durationText = Regex.Replace(durationText, "(\\d+).*?(\\d+).*", "$1:$2").Trim();
-                else if (Regex.Match(durationText, "(\\d+).*hr").Success) durationText = Regex.Replace(durationText, "(\\d+).*", "$1:00").Trim();
-                else durationText = Regex.Replace(durationText, "(\\d+).*", "0:$1").Trim();
+                else durationText = Regex.Match(durationText, "(\\d+).*hr").Success
+                    ? Regex.Replace(durationText, "(\\d+).*", "$1:00").Trim()
+                    : Regex.Replace(durationText, "(\\d+).*", "0:$1").Trim();
 
                 string pathText = flightText[5].Trim();
                 string costText = Regex.Replace(flightText[7], ".*?(\\d+).*", "$1").Trim();

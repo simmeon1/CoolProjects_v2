@@ -5,9 +5,9 @@ using System.Text;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
-    public class FlightCollection : IEnumerable<Flight>
+    public class FlightCollection
     {
-        private List<Flight> Flights { get; set; }
+        public List<Flight> Flights { get; set; }
         public FlightCollection()
         {
             Flights = new();
@@ -31,19 +31,19 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
         }
 
-        public IEnumerator<Flight> GetEnumerator()
-        {
-            return Flights.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-        
         public int Count()
         {
             return Flights.Count;
+        }
+        
+        public Flight GetFirst()
+        {
+            return Flights[0];
+        }
+        
+        public Flight GetLast()
+        {
+            return Flights[Count() - 1];
         }
     }
 }

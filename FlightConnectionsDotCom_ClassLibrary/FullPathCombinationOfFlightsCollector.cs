@@ -26,9 +26,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             {
                 KeyValuePair<Path, FlightCollection> pathAndFlights = DataWithFlightsForSinglePaths.Value[i];
                 FlightCollection pathFlights = pathAndFlights.Value;
-                foreach (Flight pathFlight in pathFlights)
+                for (int j = 0; j < pathFlights.Count(); j++)
                 {
-                    listOfFlights.AddLast(pathFlight);
+                    listOfFlights.AddLast(pathFlights[j]);
                     if (index < DataWithFlightsForSinglePaths.Value.Count - 1) BuildUpCombinationOfFlights(i + 1, listOfFlights, combos);
                     else if (listOfFlights.Count == DataWithFlightsForSinglePaths.Value.Count) combos.Add(new SequentialFlightCollection(new(listOfFlights.ToList())));
                     listOfFlights.RemoveLast();

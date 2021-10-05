@@ -1,4 +1,5 @@
-﻿using FlightConnectionsDotCom_ClassLibrary;
+﻿using Common_ClassLibrary;
+using FlightConnectionsDotCom_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -16,11 +17,13 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         {
             Assert.IsTrue(path.ToString().Equals("ABZ-EDI"));
         }
-        
+
         [TestMethod]
-        public void GetEnumeratorIsCorrect()
+        public void SerialiseDeserialize()
         {
-            Assert.IsTrue(path.GetEnumerator().Equals(entries.GetEnumerator()));
+            string json = path.SerializeObject();
+            Path path2 = json.DeserializeObject<Path>();
+            Assert.IsTrue(path.ToString().Equals(path2.ToString()));
         }
         
         [TestMethod]

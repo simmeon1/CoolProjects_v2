@@ -8,9 +8,9 @@ using System.Text;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
-    public class SequentialFlightCollection : IEnumerable<Flight>
+    public class SequentialFlightCollection
     {
-        private FlightCollection FlightCollection { get; set; }
+        public FlightCollection FlightCollection { get; set; }
 
         public SequentialFlightCollection()
         {
@@ -59,16 +59,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
         }
 
-        public IEnumerator<Flight> GetEnumerator()
-        {
-            return FlightCollection.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
         private bool IsNotValid()
         {
             return FlightCollection == null || FlightCollection.Count() == 0;
@@ -113,18 +103,18 @@ namespace FlightConnectionsDotCom_ClassLibrary
         {
             int cost = 0;
             if (IsNotValid()) return cost;
-            foreach (Flight flight in FlightCollection) cost += flight.Cost;
+            for (int i = 0; i < FlightCollection.Count(); i++) cost += FlightCollection[i].Cost;
             return cost;
         }
 
         public DateTime? GetStartTime()
         {
-            return IsNotValid() ? null : FlightCollection.First().Departing;
+            return IsNotValid() ? null : FlightCollection.GetFirst().Departing;
         }
 
         public DateTime? GetEndTime()
         {
-            return IsNotValid() ? null : FlightCollection.Last().Arriving;
+            return IsNotValid() ? null : FlightCollection.GetLast().Arriving;
         }
 
         public double GetTotalTime()
@@ -136,7 +126,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         {
             double time = 0;
             if (IsNotValid()) return time;
-            foreach (Flight flight in FlightCollection) time += flight.Duration.TotalHours;
+            for (int i = 0; i < FlightCollection.Count(); i++) time += FlightCollection[i].Duration.TotalHours;
             return time;
         }
 

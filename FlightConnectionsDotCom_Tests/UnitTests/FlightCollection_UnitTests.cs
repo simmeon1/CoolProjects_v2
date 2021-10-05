@@ -1,4 +1,5 @@
-﻿using FlightConnectionsDotCom_ClassLibrary;
+﻿using Common_ClassLibrary;
+using FlightConnectionsDotCom_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -21,18 +22,20 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         }
 
         [TestMethod]
-        public void GetEnumeratorIsCorrect()
-        {
-            Assert.IsTrue(collection.GetEnumerator().Equals(entries.GetEnumerator()));
-        }
-
-        [TestMethod]
         public void GetSetWorks()
         {
             collection[0] = flight2;
             Assert.IsTrue(collection[0] == flight2);
             collection[0] = flight1;
             Assert.IsTrue(collection[0] == flight1);
+        }
+
+        [TestMethod]
+        public void SerialiseDeserialize()
+        {
+            string json = collection.SerializeObject();
+            FlightCollection collection2 = json.DeserializeObject<FlightCollection>();
+            Assert.IsTrue(collection.Count() == collection2.Count());
         }
     }
 }

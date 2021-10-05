@@ -80,8 +80,6 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                 .Returns(flightListMock5.Object)
                 .Returns(flightListMock6.Object);
 
-
-
             Mock<IWebElement> consentButton1 = new();
             Mock<IWebElement> consentButton2 = new();
             consentButton1.Setup(x => x.Text).Throws(new StaleElementReferenceException());

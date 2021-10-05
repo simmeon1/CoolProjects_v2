@@ -1,4 +1,5 @@
-﻿using FlightConnectionsDotCom_ClassLibrary;
+﻿using Common_ClassLibrary;
+using FlightConnectionsDotCom_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,15 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         }
 
         [TestMethod]
+        public void SerialiseDeserialize()
+        {
+            SequentialFlightCollection collection = CreateSeqCollectionWithFlights(flight1, flight2, flight3, flight4);
+            string json = collection.SerializeObject();
+            SequentialFlightCollection collection2 = json.DeserializeObject<SequentialFlightCollection>();
+            Assert.IsTrue(collection.ToString().Equals(collection2.ToString()));
+        }
+
+        [TestMethod]
         public void ToStringIsCorrectWithSomeFlights()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2, flight3, flight4).ToString().Equals("ABZ-EDI-VAR-BOJ-LTN, Doable = False, Start = 11/11/2000 10:20:30, End = 12/11/2000 01:00:00, Cost = 125"));
@@ -44,14 +54,6 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         public void ToStringIsCorrectWithNoFlightCollection()
         {
             Assert.IsTrue(new SequentialFlightCollection().ToString().Equals("No flights in sequence."));
-        }
-
-        [TestMethod]
-        public void GetEnumeratorIsCorrect()
-        {
-            FlightCollection collection = new(new List<Flight>() { flight1, flight2, flight3 });
-            SequentialFlightCollection seqCollection = new(collection);
-            Assert.IsTrue(collection.GetEnumerator().Equals(seqCollection.GetEnumerator()));
         }
 
         [TestMethod]
