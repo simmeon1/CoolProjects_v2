@@ -26,6 +26,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private IWebElement DateInput2 { get; set; }
         private bool ControlsKnown { get; set; }
         private int DefaultDelay { get; set; }
+        private string LastTypedOrigin { get; set; }
 
         public ChromeWorker(IWebDriver driver, ILogger logger, IDelayer delayer)
         {
@@ -37,6 +38,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public async Task<List<FullPathAndListOfPathsAndFlightCollections>> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo, int defaultDelay = 500)
         {
             DefaultDelay = defaultDelay;
+            LastTypedOrigin = "";
             List<FullPathAndListOfPathsAndFlightCollections> results = new();
             CollectedPathFlights = new();
             PagesToOpen = 0;
@@ -259,19 +261,37 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 getControlsAgain = true;
             }
 
-            await ClickAndWait(DestinationInput1);
-            DestinationInput2.Clear();
-            DestinationInput2.SendKeys(target);
-            DestinationInput2.SendKeys(Keys.Return);
-
-            await ClickAndWait(OriginInput1);
-            OriginInput2.Clear();
-            OriginInput2.SendKeys(origin);
-            OriginInput2.SendKeys(Keys.Return);
+            if (!LastTypedOrigin.Equals(target))
+            {
+                await InputTarget(target);
+                await InputOrigin(origin);
+            }
+            else
+            {
+                await InputOrigin(origin);
+                await InputTarget(target);
+            }
+            LastTypedOrigin = origin;
 
             await PopulateDateAndHitDone(date);
             if (getControlsAgain) await GetControls();
             ControlsKnown = true;
+        }
+
+        private async Task InputOrigin(string origin)
+        {
+            await ClickAndWait(OriginInput1);
+            OriginInput2.Clear();
+            OriginInput2.SendKeys(origin);
+            OriginInput2.SendKeys(Keys.Return);
+        }
+
+        private async Task InputTarget(string target)
+        {
+            await ClickAndWait(DestinationInput1);
+            DestinationInput2.Clear();
+            DestinationInput2.SendKeys(target);
+            DestinationInput2.SendKeys(Keys.Return);
         }
 
         private async Task GetControls()
