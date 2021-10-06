@@ -105,26 +105,40 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private async Task GetFlightsForDate(DateTime date, List<Flight> results)
         {
-            IWebElement flightList;
+            ReadOnlyCollection<IWebElement> flightLists;
             ReadOnlyCollection<IWebElement> flights;
+            List<IWebElement> allFlights;
 
             while (true)
             {
                 try
                 {
                     await Delayer.Delay(1000);
-                    flightList = await FindElementAndWait(By.CssSelector("[role=list]"));
+                    flightLists = await FindElementsAndWait(By.CssSelector("[role=list]"));
                 }
                 catch (NoSuchElementException)
                 {
                     return;
                 }
-                flights = await FindElementsAndWait(flightList, By.CssSelector("[role=listitem]"));
-                if (flights[flights.Count - 1].GetAttribute("innerText").Contains("more flights")) flights[flights.Count - 1].Click();
-                else break;
+
+                allFlights = new();
+                bool showMoreFlightsButtonClicked = false;
+                foreach (IWebElement flightList in flightLists)
+                {
+                    flights = await FindElementsAndWait(flightList, By.CssSelector("[role=listitem]"));
+                    allFlights.AddRange(flights);
+                    if (flights[flights.Count - 1].GetAttribute("innerText").Contains("more flights"))
+                    {
+                        flights[flights.Count - 1].Click();
+                        showMoreFlightsButtonClicked = true;
+                        break;
+                    }
+
+                }
+                if (!showMoreFlightsButtonClicked) break;
             }
 
-            foreach (IWebElement flight in flights)
+            foreach (IWebElement flight in allFlights)
             {
                 string text = flight.GetAttribute("innerText");
                 if (text.Contains("flights")) continue;
@@ -149,7 +163,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
                 Match pathMatch = Regex.Match(flightText[5].Trim(), @"(\w+)\W+(\w+)");
                 string pathText = $"{pathMatch.Groups[1].Value}-{pathMatch.Groups[2].Value}";
-                string costText = Regex.Replace(flightText[7], ".*?(\\d+).*", "$1").Trim();
+                string costText = Regex.Replace(flightText[flightText.Length - 1], ".*?(\\d+).*", "$1").Trim();
                 int.TryParse(costText, out int cost);
                 Flight item = new(
                                         DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {departingText}"),
