@@ -110,14 +110,5 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights(new FullPathAndListOfPathsAndFlightCollections(allPath, data));
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 0);
         }
-
-        [TestMethod]
-        public void GetFullPathCombinationOfFLights_NoFlights1()
-        {
-            FullPathCombinationOfFlightsCollector collector = new();
-            List<FullPathAndListOfPathsAndFlightCollections> x = System.IO.File.ReadAllText(@"C:\D\FlightConnectionsDotCom\Results\2021-10-06--12-03-04_ABZ, GLA, EDI - GOH - 2021-11-01 - 2021-11-07\2021-10-06--12-03-04_ABZ, GLA, EDI - GOH - 2021-11-01 - 2021-11-07_pathsAndFlights.json").DeserializeObject<List<FullPathAndListOfPathsAndFlightCollections>>();
-            List<SequentialFlightCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfFLights(x[0]);
-            Assert.IsTrue(fullPathCombinationOfFlights.Count == 0);
-        }
     }
 }
