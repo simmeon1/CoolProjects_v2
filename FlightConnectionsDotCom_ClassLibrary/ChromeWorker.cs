@@ -163,7 +163,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
                 Match pathMatch = Regex.Match(flightText[5].Trim(), @"(\w+)\W+(\w+)");
                 string pathText = $"{pathMatch.Groups[1].Value}-{pathMatch.Groups[2].Value}";
-                string costText = Regex.Replace(flightText[flightText.Length - 1], ".*?(\\d+).*", "$1").Trim();
+                string costText = Regex.Replace(flightText[flightText.Length - 1], "\\D", "").Trim();
                 int.TryParse(costText, out int cost);
                 Flight item = new(
                                         DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {departingText}"),
