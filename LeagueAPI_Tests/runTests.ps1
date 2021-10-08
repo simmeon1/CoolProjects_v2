@@ -6,3 +6,5 @@ $path = $env:USERPROFILE + "\.nuget\packages\reportgenerator\4.8.12\tools\net5.0
 $command1 = "-reports:" + $reportXml
 $command2 = "-targetdir:" + $testResultsPath + "\coveragereport"
 dotnet $path $command1 $command2 -reporttypes:Html
+Write-Host -NoNewLine 'Press any key to continue...';
+$null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
