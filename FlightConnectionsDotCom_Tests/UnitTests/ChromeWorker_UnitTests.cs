@@ -32,7 +32,6 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
 
             driverMock.Setup(x => x.Navigate()).Returns(new Mock<INavigation>().Object);
             driverMock.Setup(x => x.SwitchTo()).Returns(new Mock<ITargetLocator>().Object);
-            driverMock.Setup(x => x.WindowHandles).Returns(new ReadOnlyCollection<string>(new List<string>() { "1", "1", "1" }));
             driverMock.Setup(x => x.FindElement(By.CssSelector("header"))).Returns(new Mock<IWebElement>().Object);
 
             Mock<IWebElement> flightListMock1 = new();
@@ -71,14 +70,14 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             flightListMock4.Setup(x => x.FindElements(By.CssSelector("[role=listitem]"))).Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement> { flightMock4.Object }));
             flightListMock5.Setup(x => x.FindElements(By.CssSelector("[role=listitem]"))).Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement> { flightMock5.Object, flightMock6.Object }));
             flightListMock6.Setup(x => x.FindElements(By.CssSelector("[role=listitem]"))).Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement> { flightMock7.Object }));
-            driverMock.SetupSequence(x => x.FindElement(By.CssSelector("[role=list]")))
-                .Returns(flightListMock1.Object)
-                .Returns(flightListMock1.Object)
-                .Returns(flightListMock2.Object)
-                .Returns(flightListMock3.Object)
-                .Returns(flightListMock4.Object)
-                .Returns(flightListMock5.Object)
-                .Returns(flightListMock6.Object);
+            driverMock.SetupSequence(x => x.FindElements(By.CssSelector("[role=list]")))
+                .Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement> { flightListMock1.Object }))
+                .Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement> { flightListMock1.Object }))
+                .Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement> { flightListMock2.Object }))
+                .Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement> { flightListMock3.Object }))
+                .Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement> { flightListMock4.Object }))
+                .Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement> { flightListMock5.Object }))
+                .Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement> { flightListMock6.Object }));
 
             Mock<IWebElement> consentButton1 = new();
             Mock<IWebElement> consentButton2 = new();
