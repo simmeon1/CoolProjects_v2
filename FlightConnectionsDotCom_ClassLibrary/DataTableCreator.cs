@@ -21,16 +21,19 @@ namespace FlightConnectionsDotCom_ClassLibrary
             TypeBool = Type.GetType("System.Boolean");
         }
 
-        public List<DataTable> GetTables(List<SequentialFlightCollection> sequentialCollections)
+        public List<DataTable> GetTables(List<SequentialFlightCollection> sequentialCollections, bool skipUndoableFlights, bool skipNotSameDayFinishFlights)
         {
-            List<SequentialFlightCollection> sequentialCollectionsOrdered = sequentialCollections.OrderByDescending(c => c.SequenceIsDoable())
+            List<SequentialFlightCollection> sequentialCollectionsOrdered = sequentialCollections
+                                                                    .Where(c => !skipUndoableFlights || c.SequenceIsDoable())
+                                                                    .Where(c => !skipNotSameDayFinishFlights || c.StartsAndEndsOnSameDay())
+                                                                    .OrderByDescending(c => c.SequenceIsDoable())
                                                                     .ThenByDescending(c => c.StartsAndEndsOnSameDay())
                                                                     .ThenBy(c => c.GetTotalTime())
                                                                     .ThenBy(c => c.GetCost())
                                                                     .ToList();
 
             List<DataTable> tables = new();
-            DataTable mainTable = GetMainTable();
+            DataTable mainTable = GetMainTable(skipUndoableFlights, skipNotSameDayFinishFlights);
             DataTable subTable = GetSubTable();
 
             for (int i = 0; i < sequentialCollectionsOrdered.Count; i++)
@@ -41,8 +44,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 DataRow row = mainTable.NewRow();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetFullPath();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = id;
-                row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.SequenceIsDoable();
-                row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.StartsAndEndsOnSameDay();
+                if (!skipUndoableFlights) row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.SequenceIsDoable();
+                if (!skipNotSameDayFinishFlights) row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.StartsAndEndsOnSameDay();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetStartTime().ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetEndTime().ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetTotalTime();
@@ -55,7 +58,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return tables;
         }
 
-        private DataTable GetMainTable()
+        private DataTable GetMainTable(bool skipUndoableFlights, bool skipNotSameDayFinishFlights)
         {
             DataTable mainTable = new("Summary");
 
@@ -68,6 +71,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
             DataColumn lengthColumn = new("Length", TypeDouble);
             DataColumn costColumn = new("Cost", TypeDouble);
             mainTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, doableColumn, sameDayFinishColumn, startColumn, endColumn, lengthColumn, costColumn }.ToArray());
+            if (skipUndoableFlights) mainTable.Columns.Remove(doableColumn);
+            if (skipNotSameDayFinishFlights) mainTable.Columns.Remove(sameDayFinishColumn);
             return mainTable;
         }
 

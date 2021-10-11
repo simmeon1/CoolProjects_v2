@@ -13,6 +13,9 @@ namespace FlightConnectionsDotCom_Console
         public DateTime DateTo { get; set; }
         public string LocalAirportListFile { get; set; }
         public string LocalAirportDestinationsFile { get; set; }
+        public string LocalPathsAndFlightsFile{ get; set; }
+        public bool SkipUndoableFlights { get; set; }
+        public bool SkipNotSameDayFinishFlights { get; set; }
         public bool OpenGoogleFlights { get; set; }
         public string FileSavePath { get; set; }
         public bool EuropeOnly{ get; set; }

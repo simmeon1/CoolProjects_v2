@@ -69,11 +69,19 @@ namespace FlightConnectionsDotCom_Console
             }
             System.IO.File.WriteAllText($"{runResultsPath}\\{runId}_latestPaths.json", JsonConvert.SerializeObject(pathsDetailed, Formatting.Indented));
 
-            if (!parameters.OpenGoogleFlights) return;
-            ChromeDriver driver2 = new();
-            ChromeWorker chromeWorker = new(driver2, logger, new RealDelayer());
-            List<FullPathAndListOfPathsAndFlightCollections> pathsAndFlights = await chromeWorker.ProcessPaths(paths, parameters.DateFrom, parameters.DateTo);
-            System.IO.File.WriteAllText($"{runResultsPath}\\{runId}_pathsAndFlights.json", JsonConvert.SerializeObject(pathsAndFlights, Formatting.Indented));
+            List<FullPathAndListOfPathsAndFlightCollections> pathsAndFlights;
+            if (!parameters.LocalPathsAndFlightsFile.IsNullOrEmpty())
+            {
+                pathsAndFlights = System.IO.File.ReadAllText(parameters.LocalPathsAndFlightsFile).DeserializeObject<List<FullPathAndListOfPathsAndFlightCollections>>();
+            }
+            else
+            {
+                if (!parameters.OpenGoogleFlights) return;
+                ChromeDriver driver2 = new();
+                ChromeWorker chromeWorker = new(driver2, logger, new RealDelayer());
+                pathsAndFlights = await chromeWorker.ProcessPaths(paths, parameters.DateFrom, parameters.DateTo);
+                System.IO.File.WriteAllText($"{runResultsPath}\\{runId}_pathsAndFlights.json", JsonConvert.SerializeObject(pathsAndFlights, Formatting.Indented));
+            }
 
             FullPathCombinationOfFlightsCollector flightCollector = new();
             List<SequentialFlightCollection> results2 = new();
@@ -84,7 +92,7 @@ namespace FlightConnectionsDotCom_Console
 
             DataTableCreator dtCreator = new();
             ExcelPrinter printer = new();
-            printer.PrintTablesToWorksheet(dtCreator.GetTables(results2), $"{runResultsPath}\\{runId}_results.xlsx");
+            printer.PrintTablesToWorksheet(dtCreator.GetTables(results2, parameters.SkipUndoableFlights, parameters.SkipNotSameDayFinishFlights), $"{runResultsPath}\\{runId}_results.xlsx");
             logger.Log($"Saved files to {runResultsPath}");
         }
     }
