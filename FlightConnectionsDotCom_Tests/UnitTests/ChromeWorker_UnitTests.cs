@@ -121,7 +121,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                     new Mock<IWebElement>().Object });
             driverMock.Setup(x => x.FindElements(By.CssSelector("input"))).Returns(inputs);
 
-            ChromeWorker chromeWorker = new(driverMock.Object, logger.Object, new Mock<IDelayer>().Object);
+            ChromeWorker chromeWorker = new(logger.Object, new Mock<IDelayer>().Object, driverMock.Object);
             List<FullPathAndListOfPathsAndFlightCollections> results = await chromeWorker.ProcessPaths(paths, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11));
 
             Assert.IsTrue(results.Count == 2);

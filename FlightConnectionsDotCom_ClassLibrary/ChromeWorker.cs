@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
-    public class ChromeWorker
+    public class ChromeWorker : IChromeWorker
     {
         private IWebDriver Driver { get; set; }
         private ILogger Logger { get; set; }
@@ -28,7 +28,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private int DefaultDelay { get; set; }
         private string LastTypedOrigin { get; set; }
 
-        public ChromeWorker(IWebDriver driver, ILogger logger, IDelayer delayer)
+        public ChromeWorker(ILogger logger, IDelayer delayer, IWebDriver driver)
         {
             Driver = driver;
             Logger = logger;

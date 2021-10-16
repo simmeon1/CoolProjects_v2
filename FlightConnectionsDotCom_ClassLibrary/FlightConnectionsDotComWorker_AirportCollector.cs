@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
-    public class FlightConnectionsDotComWorker_AirportCollector
+    public class FlightConnectionsDotComWorker_AirportCollector : IFlightConnectionsDotComWorker_AirportCollector
     {
         private const string collectingAirports = "Collecting airports";
         private FlightConnectionsDotComWorker Worker { get; set; }

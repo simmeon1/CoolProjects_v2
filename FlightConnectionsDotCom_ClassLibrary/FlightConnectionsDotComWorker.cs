@@ -12,7 +12,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public ILogger Logger { get; set; }
         public IWebDriverWait WebDriverWait { get; set; }
 
-        public FlightConnectionsDotComWorker(IWebDriver driver, ILogger logger, IWebDriverWait webDriverWait)
+        public FlightConnectionsDotComWorker(ILogger logger, IWebDriver driver, IWebDriverWait webDriverWait)
         {
             Driver = driver;
             Logger = logger;

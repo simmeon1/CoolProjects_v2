@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace FlightConnectionsDotCom_Console
+namespace FlightConnectionsDotCom_ClassLibrary
 {
     public class Parameters
     {

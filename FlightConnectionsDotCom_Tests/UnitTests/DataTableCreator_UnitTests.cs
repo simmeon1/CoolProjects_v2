@@ -29,7 +29,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             DataTableCreator creator = new();
             SequentialFlightCollection correctSeq = new(new FlightCollection(new List<Flight>() { flight1, flight2 }));
             List<SequentialFlightCollection> flights = new() { correctSeq };
-            List<DataTable> tables = creator.GetTables(flights);
+            List<DataTable> tables = creator.GetTables(flights, false, false);
             DataTable mainTable = tables[0];
             DataTable subTable = tables[1];
             Assert.IsTrue(mainTable.TableName.Equals("Summary"));

@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
-    public class FlightConnectionsDotComWorker_AirportPopulator
+    public class FlightConnectionsDotComWorker_AirportPopulator : IFlightConnectionsDotComWorker_AirportPopulator
     {
         private const string gettingAirportsAndTheirConnections = "Getting airports and their connections";
         private const string collectingAirportDestinationsFromEachAirportPage = "Collecting airport destinations from each airport page";

@@ -26,7 +26,7 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
             chromeOptions.AddArgument("allow-insecure-localhost");
             chromeDriver = new(chromeOptions);
             logger = new();
-            worker = new(chromeDriver, logger, new RealWebDriverWait(chromeDriver));
+            worker = new(logger, chromeDriver, new RealWebDriverWait(chromeDriver));
         }
 
         [TestMethod]

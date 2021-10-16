@@ -28,7 +28,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             driverMock = new();
             logger = new();
             webDriverWait = new();
-            worker = new(driverMock.Object, logger.Object, webDriverWait.Object);
+            worker = new(logger.Object, driverMock.Object, webDriverWait.Object);
             airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "linkA");
             airport2 = new("SOF", "Sofia", "Bulgaria", "Sofia Airport", "linkB");
             airport3 = new("EDI", "Edinburgh", "United Kingdom", "Edinburgh Airport", "linkC");

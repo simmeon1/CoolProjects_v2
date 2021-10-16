@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace Common_ClassLibrary
 {
@@ -6,5 +7,7 @@ namespace Common_ClassLibrary
     {
         string ReadAllText(string path);
         void WriteAllText(string path, string contents);
+        bool DirectoryExists(string path);
+        DirectoryInfo CreateDirectory(string path);
     }
 }
