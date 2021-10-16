@@ -20,5 +20,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public string FileSavePath { get; set; }
         public bool EuropeOnly{ get; set; }
         public bool UKAndBulgariaOnly{ get; set; }
+        public int DefaultDelay { get; set; }
     }
 }

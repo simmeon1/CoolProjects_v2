@@ -108,7 +108,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
             else if (!Parameters.OpenGoogleFlights) return;
 
-            pathsAndFlights = await ChromeWorker.ProcessPaths(paths, Parameters.DateFrom, Parameters.DateTo);
+            pathsAndFlights = await ChromeWorker.ProcessPaths(paths, Parameters.DateFrom, Parameters.DateTo, Parameters.DefaultDelay);
             FileIO.WriteAllText($"{runResultsPath}\\{runId}_pathsAndFlights.json", pathsAndFlights.SerializeObject(Formatting.Indented));
 
             PrintPathsAndFlightsAndFinish(pathsAndFlights, runId, runResultsPath);
