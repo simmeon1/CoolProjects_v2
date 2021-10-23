@@ -9,31 +9,38 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public DateTime Arriving { get; set; }
         public string Airline { get; set; }
         public TimeSpan Duration { get; set; }
-        public string Path { get; set; }
+        public Airport DepartingAirport { get; set; }
+        public Airport ArrivingAirport { get; set; }
         public int Cost { get; set; }
-        public Flight(DateTime departing, DateTime arriving, string airline, TimeSpan duration, string path, int cost)
+        public Flight(DateTime departing, DateTime arriving, string airline, TimeSpan duration, Airport departingAirport, Airport arrivingAirport, int cost)
         {
             Departing = departing;
             Arriving = arriving;
             Airline = airline;
             Duration = duration;
-            Path = path;
+            DepartingAirport = departingAirport;
+            ArrivingAirport = arrivingAirport;
             Cost = cost;
         }
 
         public override string ToString()
         {
-            return $"{GetDepartingAirport()}-{GetArrivingAirport()} - {Departing} - {Arriving} - {Airline} - {Duration} - {Cost}";
+            return $"{GetDepartingAirport().Code}-{GetArrivingAirport().Code} - {Departing} - {Arriving} - {Airline} - {Duration} - {Cost}";
         }
         
-        public string GetDepartingAirport()
+        public Airport GetDepartingAirport()
         {
-            return Regex.Replace(Path, @"(\w+)\W+\w+", "$1");
+            return DepartingAirport;
         }
         
-        public string GetArrivingAirport()
+        public Airport GetArrivingAirport()
         {
-            return Regex.Replace(Path, @"\w+\W+(\w+)", "$1");
+            return ArrivingAirport;
+        }
+        
+        public string GetPath()
+        {
+            return $"{DepartingAirport.Code}-{ArrivingAirport.Code}";
         }
     }
 }

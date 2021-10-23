@@ -23,12 +23,18 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         }
 
         [TestMethod]
-        public async Task OpenFlights_ExpectedResultsWithStandartProcess()
+        public async Task OpenFlights_ExpectedResultsWithStandardProcess()
         {
             InitialiseMockObjects();
             List<string> path1 = new() { "ABZ", "LTN", "VAR" };
             List<string> path2 = new() { "EDI", "LTN", "VAR" };
             List<Path> paths = new() { new Path(path1), new Path(path2) };
+
+            Airport airport1 = new("ABZ", country: "UK");
+            Airport airport2 = new("LTN", country: "UK");
+            Airport airport3 = new("VAR", country: "BG");
+            Airport airport4 = new("EDI", country: "UK");
+            List<Airport> airportList = new() { airport1, airport2, airport3, airport4 };
 
             driverMock.Setup(x => x.Navigate()).Returns(new Mock<INavigation>().Object);
             driverMock.Setup(x => x.SwitchTo()).Returns(new Mock<ITargetLocator>().Object);
@@ -122,7 +128,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             driverMock.Setup(x => x.FindElements(By.CssSelector("input"))).Returns(inputs);
 
             ChromeWorker chromeWorker = new(logger.Object, new Mock<IDelayer>().Object, driverMock.Object);
-            ChromeWorkerResults results = await chromeWorker.ProcessPaths(paths, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11));
+            ChromeWorkerResults results = await chromeWorker.ProcessPaths(airportList, paths, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11));
 
             Dictionary<string, FlightCollection> workerFlights = results.PathsAndFlights;
             Assert.IsTrue(workerFlights.Count == 3);
@@ -155,13 +161,13 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         }
         
         [TestMethod]
-        public async Task asd()
+        public async Task ExceptionThrown()
         {
             InitialiseMockObjects();
             ChromeWorker chromeWorker = new(logger.Object, new Mock<IDelayer>().Object, driverMock.Object);
             Dictionary<string, FlightCollection> collectedPathFlights = new();
             collectedPathFlights.Add("ABZ-LTN", new());
-            ChromeWorkerResults results = await chromeWorker.ProcessPaths(new List<Path>() { new Path(new List<string>() { "ABZ", "LTN" }) }, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11), collectedPathFlights: collectedPathFlights);
+            ChromeWorkerResults results = await chromeWorker.ProcessPaths(new(), new List<Path>() { new Path(new List<string>() { "ABZ", "LTN" }) }, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11), collectedPathFlights: collectedPathFlights);
             logger.Verify(x => x.Log("An exception was thrown while collecting flights and the results have been returned early."), Times.Once());
             Assert.IsTrue(results.PathsAndFlights.SerializeObject().Equals(collectedPathFlights.SerializeObject()));
             Assert.IsTrue(results.FullPathsAndFlightCollections.Count == 0);

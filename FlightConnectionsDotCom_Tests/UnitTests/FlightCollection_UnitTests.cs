@@ -9,14 +9,19 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
     [TestClass]
     public class FlightCollection_UnitTests
     {
-        private readonly Flight flight1 = new(new DateTime(2000, 10, 10, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(3, 5, 10), "ABZ-EDI", 25);
-        private readonly Flight flight2 = new(new DateTime(2000, 10, 10, 20, 30, 40), new DateTime(2000, 11, 11, 21, 40, 50), "wizz", new TimeSpan(4, 0, 50), "EDI-VAR", 20);
+        private readonly Airport airport1 = new("ABZ", country: "UK");
+        private readonly Airport airport2 = new("EDI", country: "UK");
+        private readonly Airport airport3 = new("VAR", country: "BG");
+        private Flight flight1;
+        private Flight flight2;
         private List<Flight> entries;
         private FlightCollection collection;
 
         [TestInitialize]
         public void TestInitialize()
         {
+            flight1 = new(new DateTime(2000, 10, 10, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(3, 5, 10), airport1, airport2, 25);
+            flight2 = new(new DateTime(2000, 10, 10, 20, 30, 40), new DateTime(2000, 11, 11, 21, 40, 50), "wizz", new TimeSpan(4, 0, 50), airport2, airport3, 20);
             entries = new() { flight1, flight2 };
             collection = new(entries);
         }

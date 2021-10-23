@@ -45,7 +45,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Dictionary<string, FlightCollection> workerFlights = new();
             workerFlights.Add("ABZ-LTN", new());
             ChromeWorkerResults workerResults = new(workerFlights, fullPaths);
-            chromeWorkerMock.Setup(x => x.ProcessPaths(It.IsAny<List<Path>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<Dictionary<string, FlightCollection>>()).Result)
+            chromeWorkerMock.Setup(x => x.ProcessPaths(It.IsAny<List<Airport>>(), It.IsAny<List<Path>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<Dictionary<string, FlightCollection>>()).Result)
                     .Returns(workerResults);
 
             Mock<IFileIO> fileIOMock = new();

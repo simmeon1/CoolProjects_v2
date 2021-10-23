@@ -110,7 +110,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
             Dictionary<string, FlightCollection> collectedPathFlights = new();
             if (!Parameters.LocalCollectedPathFlightsFile.IsNullOrEmpty()) collectedPathFlights = FileIO.ReadAllText(Parameters.LocalCollectedPathFlightsFile).DeserializeObject<ChromeWorkerResults>().PathsAndFlights;
-            chromeWorkerResults = await ChromeWorker.ProcessPaths(paths, Parameters.DateFrom, Parameters.DateTo, Parameters.DefaultDelay, collectedPathFlights);
+            chromeWorkerResults = await ChromeWorker.ProcessPaths(airportsList, paths, Parameters.DateFrom, Parameters.DateTo, Parameters.DefaultDelay, collectedPathFlights);
             FileIO.WriteAllText($"{runResultsPath}\\{runId}_pathsAndFlights.json", chromeWorkerResults.SerializeObject(Formatting.Indented));
 
             PrintPathsAndFlightsAndFinish(chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);

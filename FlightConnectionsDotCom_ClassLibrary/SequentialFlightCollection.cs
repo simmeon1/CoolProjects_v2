@@ -28,7 +28,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Flight previousFlight = flightCollection[0];
             for (int i = 1; i < flightCollection.Count(); i++)
             {
-                if (!previousFlight.GetArrivingAirport().Equals(flightCollection[i].GetDepartingAirport()))
+                if (!previousFlight.GetArrivingAirport().Code.Equals(flightCollection[i].GetDepartingAirport().Code))
                 {
                     throw new Exception("Flights are not connected.");
                 }
@@ -77,11 +77,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public string GetFullPath()
         {
             StringBuilder path = new("");
-            path.Append(FlightCollection[0].Path);
+            path.Append(FlightCollection[0].GetPath());
             for (int i = 1; i < FlightCollection.Count(); i++)
             {
                 Flight flight = FlightCollection[i];
-                path.Append($"-{flight.GetArrivingAirport()}");
+                path.Append($"-{flight.GetArrivingAirport().Code}");
             }
             return path.ToString();
         }
@@ -138,6 +138,22 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public bool StartsAndEndsOnSameDay()
         {
             return !IsNotValid() && GetStartTime().Value.Day == GetEndTime().Value.Day;
+        }
+        
+        public int GetCountryChanges()
+        {
+            if (IsNotValid()) return 0;
+
+            int changes = 0;
+            Flight previousFlight = FlightCollection[0];
+            if (!previousFlight.GetDepartingAirport().Country.Equals(previousFlight.GetArrivingAirport().Country)) changes++;
+            for (int i = 1; i < FlightCollection.Count(); i++)
+            {
+                Flight currentFlight = FlightCollection[i];
+                if (!currentFlight.GetArrivingAirport().Country.Equals(previousFlight.GetArrivingAirport().Country)) changes++;
+                previousFlight = currentFlight;
+            }
+            return changes;
         }
     }
 }
