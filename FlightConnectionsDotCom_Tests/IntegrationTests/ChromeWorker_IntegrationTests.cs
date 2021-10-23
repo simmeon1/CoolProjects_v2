@@ -30,19 +30,13 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
         [TestMethod]
         public async Task OpenFlights_ExpectedTabsOpenedWithNoErrors()
         {
-            Airport airport1 = new("ABZ", country: "UK");
-            Airport airport2 = new("LTN", country: "UK");
-            Airport airport3 = new("EDI", country: "UK");
-            Airport airport4 = new("SOF", country: "BG");
-            List<Airport> airportList = new() { airport1, airport2, airport3, airport4 };
-
             List<string> path1 = new() { "ABZ", "LTN", "VAR" };
             List<string> path2 = new() { "EDI", "SOF" };
             List<string> path3 = new() { "VAR", "LTN", "ABZ" };
             List<Path> paths = new() { new Path(path1), new Path(path2), new Path(path3) };
 
             ChromeWorker chromeWorker = new(logger, new RealDelayer(), chromeDriver);
-            ChromeWorkerResults results = await chromeWorker.ProcessPaths(airportList, paths, new DateTime(2022, 1, 13), new DateTime(2022, 1, 14));
+            ChromeWorkerResults results = await chromeWorker.ProcessPaths(paths, new DateTime(2022, 1, 13), new DateTime(2022, 1, 14));
             Assert.IsTrue(results.PathsAndFlights.Count > 0);
             Assert.IsTrue(results.FullPathsAndFlightCollections.Count > 0);
         }

@@ -29,7 +29,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
                                                                     .OrderByDescending(c => c.SequenceIsDoable())
                                                                     .ThenByDescending(c => c.StartsAndEndsOnSameDay())
                                                                     .ThenBy(c => c.GetTotalTime())
-                                                                    .ThenBy(c => c.GetCountryChanges())
                                                                     .ThenBy(c => c.GetCost())
                                                                     .ToList();
 
@@ -50,7 +49,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetStartTime().ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetEndTime().ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetTotalTime();
-                row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetCountryChanges();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetCost();
                 mainTable.Rows.Add(row);
                 AddRowsToSubTable(seqCollection, id, subTable);
@@ -71,9 +69,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
             DataColumn startColumn = new("Start", TypeString);
             DataColumn endColumn = new("End", TypeString);
             DataColumn lengthColumn = new("Length", TypeDouble);
-            DataColumn countryChanges = new("CountryChanges", TypeInt32);
             DataColumn costColumn = new("Cost", TypeDouble);
-            mainTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, doableColumn, sameDayFinishColumn, startColumn, endColumn, lengthColumn, countryChanges, costColumn }.ToArray());
+            mainTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, doableColumn, sameDayFinishColumn, startColumn, endColumn, lengthColumn, costColumn }.ToArray());
             if (skipUndoableFlights) mainTable.Columns.Remove(doableColumn);
             if (skipNotSameDayFinishFlights) mainTable.Columns.Remove(sameDayFinishColumn);
             return mainTable;
@@ -102,7 +99,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 Flight flightCollection = sequentialCollection[i];
                 ColumnIndexCounter = 0;
                 DataRow row = subTable.NewRow();
-                row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.GetPath();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Path;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = id;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = i + 1;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Departing.ToString();

@@ -3,7 +3,6 @@ using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +26,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private IWebElement DateInput2 { get; set; }
         private bool ControlsKnown { get; set; }
         private int DefaultDelay { get; set; }
-        private List<Airport> AirportList { get; set; }
         private string LastTypedOrigin { get; set; }
 
         public ChromeWorker(ILogger logger, IDelayer delayer, IWebDriver driver)
@@ -37,10 +35,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Delayer = delayer;
         }
 
-        public async Task<ChromeWorkerResults> ProcessPaths(List<Airport> airportList, List<Path> paths, DateTime dateFrom, DateTime dateTo, int defaultDelay = 500, Dictionary<string, FlightCollection> collectedPathFlights = null)
+        public async Task<ChromeWorkerResults> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo, int defaultDelay = 500, Dictionary<string, FlightCollection> collectedPathFlights = null)
         {
             DefaultDelay = defaultDelay;
-            AirportList = airportList;
             LastTypedOrigin = "";
             List<FullPathAndListOfPathsAndFlightCollections> results = new();
             CollectedPathFlights = collectedPathFlights ?? new();
@@ -178,16 +175,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 string pathText = $"{pathMatch.Groups[1].Value}-{pathMatch.Groups[2].Value}";
                 string costText = Regex.Replace(flightText[flightText.Length - 1], "\\D", "").Trim();
                 int.TryParse(costText, out int cost);
-                string departingAirport = Regex.Replace(pathText, @"(\w+)\W+\w+", "$1");
-                string arrivingAirport = Regex.Replace(pathText, @"\w+\W+(\w+)", "$1");
-
                 Flight item = new(
                                         DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {departingText}"),
                                         DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {arrivingText}").AddDays(arrivesNextDay ? 1 : 0),
                                         airlineText,
                                         TimeSpan.Parse(durationText),
-                                        AirportList.FirstOrDefault(x => x.Code.Equals(departingAirport)),
-                                        AirportList.FirstOrDefault(x => x.Code.Equals(arrivingAirport)),
+                                        pathText,
                                         cost
                                     );
                 results.Add(item);

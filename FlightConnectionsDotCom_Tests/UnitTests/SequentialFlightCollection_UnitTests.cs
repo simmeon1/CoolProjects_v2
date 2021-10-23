@@ -10,28 +10,11 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
     [TestClass]
     public class SequentialFlightCollection_UnitTests
     {
-        private readonly Airport airport1 = new("ABZ", country: "UK");
-        private readonly Airport airport2 = new("EDI", country: "UK");
-        private readonly Airport airport3 = new("VAR", country: "BG");
-        private readonly Airport airport4 = new("BOJ", country: "BG");
-        private readonly Airport airport5 = new("LTN", country: "UK");
-
-        private Flight flight1;
-        private Flight flight2;
-        private Flight flight3;
-        private Flight flight4;
-        private Flight flight4Copy;
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            List<Airport> airportList = new() { airport1, airport2, airport3, airport4, airport5 };
-            flight1 = new(new DateTime(2000, 11, 11, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(1, 10, 40), airport1, airport2, 25);
-            flight2 = new(new DateTime(2000, 11, 11, 14, 0, 0), new DateTime(2000, 11, 11, 18, 0, 0), "wizz", new TimeSpan(2, 0, 0), airport2, airport3, 50);
-            flight3 = new(new DateTime(2000, 11, 11, 21, 30, 0), new DateTime(2000, 11, 11, 23, 0, 0), "wizz", new TimeSpan(1, 30, 0), airport3, airport4, 10);
-            flight4 = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizz", new TimeSpan(3, 30, 00), airport4, airport5, 40);
-            flight4Copy = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizzd", new TimeSpan(3, 30, 00), airport4, airport5, 40);
-        }
+        private readonly Flight flight1 = new(new DateTime(2000, 11, 11, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(1, 10, 40), "ABZ-EDI", 25);
+        private readonly Flight flight2 = new(new DateTime(2000, 11, 11, 14, 0, 0), new DateTime(2000, 11, 11, 18, 0, 0), "wizz", new TimeSpan(2, 0, 0), "EDI-VAR", 50);
+        private readonly Flight flight3 = new(new DateTime(2000, 11, 11, 21, 30, 0), new DateTime(2000, 11, 11, 23, 0, 0), "wizz", new TimeSpan(1, 30, 0), "VAR-BOJ", 10);
+        private readonly Flight flight4 = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizz", new TimeSpan(3, 30, 00), "BOJ-LTN", 40);
+        private readonly Flight flight4Copy = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizzd", new TimeSpan(3, 30, 00), "BOJ-LTN", 40);
 
         [TestMethod]
         public void ExceptionIsThrownForNoSequence()
@@ -82,79 +65,79 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             seqCollection[3] = flight4;
             Assert.IsTrue(seqCollection[3] == flight4);
         }
-
+        
         [TestMethod]
         public void GetSetThrowsException()
         {
             Assert.ThrowsException<Exception>(() => CreateSeqCollectionWithFlights(flight1, flight2, flight3)[0] = flight2);
         }
-
+        
         [TestMethod]
         public void CountIsCorrectWhenValid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).Count() == 2);
         }
-
+        
         [TestMethod]
         public void CountIsCorrectWhenNotValid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(null).Count() == 0);
         }
-
+        
         [TestMethod]
         public void SequenceIsValidAndDoableWithOneFlight()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1).SequenceIsDoable());
         }
-
+        
         [TestMethod]
         public void SequenceIsValidAndDoableWithMultipleFlights()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).SequenceIsDoable());
         }
-
+        
         [TestMethod]
         public void SequenceIsValidAndNotDoableWithMultipleFlights()
         {
             Assert.IsFalse(CreateSeqCollectionWithFlights(flight3, flight4).SequenceIsDoable());
         }
-
+        
         [TestMethod]
         public void SequenceIsInvalidAndNotDoable()
         {
             Assert.IsFalse(CreateSeqCollectionWithFlights(null).SequenceIsDoable());
         }
-
+        
         [TestMethod]
         public void CostIsZeroWhenInvalid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetCost() == 0);
         }
-
+        
         [TestMethod]
         public void CostIsCorrect()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).GetCost() == 75);
         }
-
+        
         [TestMethod]
         public void GetStartTimeIsNullWhenInvalid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetStartTime() == null);
         }
-
+        
         [TestMethod]
         public void GetStartTimeIsCorrect()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).GetStartTime() == flight1.Departing);
         }
-
+        
         [TestMethod]
         public void GetEndTimeIsNullWhenInvalid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetEndTime() == null);
         }
-
+        
         [TestMethod]
         public void GetEndTimeIsCorrect()
         {
@@ -166,7 +149,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetTotalTime() == 0);
         }
-
+        
         [TestMethod]
         public void GetTotalTimeIsCorrect()
         {
@@ -199,7 +182,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             double time = CreateSeqCollectionWithFlights(flight1, flight2).GetTotalIdleTime();
             Assert.IsTrue(time > 4 && time < 5);
         }
-
+        
         [TestMethod]
         public void StartsAndEndsOnSameDayIsFalseIfInvalid()
         {
@@ -216,22 +199,6 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         public void StartsAndEndsOnSameDayIsFalseIfNotTrue()
         {
             Assert.IsFalse(CreateSeqCollectionWithFlights(flight3, flight4).StartsAndEndsOnSameDay());
-        }
-        
-        [TestMethod]
-        public void CountryChangesIsCorrect()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(flight1).GetCountryChanges() == 0);
-            Assert.IsTrue(CreateSeqCollectionWithFlights(flight2).GetCountryChanges() == 1);
-            Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).GetCountryChanges() == 1);
-            Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2, flight3).GetCountryChanges() == 1);
-            Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2, flight3, flight4).GetCountryChanges() == 2);
-        }
-        
-        [TestMethod]
-        public void CountryChangesIsZeroIfInvalid()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetCountryChanges() == 0);
         }
 
         private static SequentialFlightCollection CreateSeqCollectionWithFlights(params Flight[] flights)

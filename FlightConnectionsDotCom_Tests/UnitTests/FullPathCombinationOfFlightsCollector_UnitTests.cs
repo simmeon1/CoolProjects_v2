@@ -12,27 +12,20 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetFullPathCombinationOfFLights_MultipleFlights()
         {
-            Airport airport1 = new("VAR", country: "BG");
-            Airport airport2 = new("LTN", country: "UK");
-            Airport airport3 = new("ABZ", country: "UK");
-            Airport airport4 = new("EDI", country: "UK");
-            List<Airport> airportList = new() { airport1, airport2, airport3, airport4 };
-
             Path path1 = new(new List<string>() { "VAR", "LTN" });
             Path path2 = new(new List<string>() { "LTN", "ABZ" });
             Path path3 = new(new List<string>() { "ABZ", "EDI" });
-            
             Path allPath = new(new List<string>() { "VAR", "LTN", "ABZ", "EDI" });
 
-            Flight flight1 = new(new DateTime(2000, 1, 13, 6, 5, 0), new DateTime(2000, 1, 13, 7, 45, 0), "Wizz Air", new TimeSpan(3, 40, 0), airport1, airport2, 52);
-            Flight flight2 = new(new DateTime(2000, 1, 13, 19, 25, 0), new DateTime(2000, 1, 13, 21, 5, 0), "Wizz Air", new TimeSpan(3, 40, 0), airport1, airport2, 60);
+            Flight flight1 = new(new DateTime(2000, 1, 13, 6, 5, 0), new DateTime(2000, 1, 13, 7, 45, 0), "Wizz Air", new TimeSpan(3, 40, 0), path1.ToString(), 52);
+            Flight flight2 = new(new DateTime(2000, 1, 13, 19, 25, 0), new DateTime(2000, 1, 13, 21, 5, 0), "Wizz Air", new TimeSpan(3, 40, 0), path1.ToString(), 60);
 
-            Flight flight3 = new(new DateTime(2000, 1, 13, 19, 0, 0), new DateTime(2000, 1, 13, 20, 25, 0), "easyJet", new TimeSpan(1, 25, 0), airport2, airport3, 23);
-            Flight flight4 = new(new DateTime(2000, 1, 13, 7, 0, 0), new DateTime(2000, 1, 13, 10, 10, 0), "easyJet", new TimeSpan(3, 0, 0), airport2, airport3, 15);
+            Flight flight3 = new(new DateTime(2000, 1, 13, 19, 0, 0), new DateTime(2000, 1, 13, 20, 25, 0), "easyJet", new TimeSpan(1, 25, 0), path2.ToString(), 23);
+            Flight flight4 = new(new DateTime(2000, 1, 13, 7, 0, 0), new DateTime(2000, 1, 13, 10, 10, 0), "easyJet", new TimeSpan(3, 0, 0), path2.ToString(), 15);
 
-            Flight flight5 = new(new DateTime(2000, 1, 13, 22, 0, 0), new DateTime(2000, 1, 13, 23, 0, 0), "easyJet", new TimeSpan(2, 0, 0), airport3, airport4, 15);
-            Flight flight6 = new(new DateTime(2000, 1, 13, 11, 15, 0), new DateTime(2000, 1, 13, 13, 30, 0), "easyJet", new TimeSpan(4, 0, 0), airport3, airport4, 12);
-            Flight flight7 = new(new DateTime(2000, 1, 13, 19, 15, 0), new DateTime(2000, 1, 13, 18, 30, 0), "easyJet", new TimeSpan(5, 0, 0), airport3, airport4, 10);
+            Flight flight5 = new(new DateTime(2000, 1, 13, 22, 0, 0), new DateTime(2000, 1, 13, 23, 0, 0), "easyJet", new TimeSpan(2, 0, 0), path3.ToString(), 15);
+            Flight flight6 = new(new DateTime(2000, 1, 13, 11, 15, 0), new DateTime(2000, 1, 13, 13, 30, 0), "easyJet", new TimeSpan(4, 0, 0), path3.ToString(), 12);
+            Flight flight7 = new(new DateTime(2000, 1, 13, 19, 15, 0), new DateTime(2000, 1, 13, 18, 30, 0), "easyJet", new TimeSpan(5, 0, 0), path3.ToString(), 10);
 
             List<PathAndFlightCollection> data = new();
             data.Add(new (path1, new(new List<Flight>() { flight1, flight2 })));
@@ -89,13 +82,9 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetFullPathCombinationOfFLights_OneFlight()
         {
-            Airport airport1 = new("VAR", country: "BG");
-            Airport airport2 = new("LTN", country: "UK");
-            List<Airport> airportList = new() { airport1, airport2};
-
             Path path1 = new(new List<string>() { "VAR", "LTN" });
             Path allPath = new(new List<string>() { "VAR", "LTN", "ABZ" });
-            Flight flight1 = new(new DateTime(2000, 1, 13, 6, 5, 0), new DateTime(2000, 1, 13, 7, 45, 0), "Wizz Air", new TimeSpan(3, 40, 0), airport1, airport2, 52);
+            Flight flight1 = new(new DateTime(2000, 1, 13, 6, 5, 0), new DateTime(2000, 1, 13, 7, 45, 0), "Wizz Air", new TimeSpan(3, 40, 0), path1.ToString(), 52);
 
             List<PathAndFlightCollection> data = new();
             data.Add(new (path1, new(new List<Flight>() { flight1 })));

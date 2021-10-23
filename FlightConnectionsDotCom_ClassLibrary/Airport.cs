@@ -4,12 +4,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
 {
     public class Airport
     {
-        public string Code { get; set; } = "";
-        public string City { get; set; } = "";
-        public string Country { get; set; } = "";
-        public string Name { get; set; } = "";
-        public string Link { get; set; } = "";
-        public Airport(string code = "", string city = "", string country = "", string name = "", string link = "")
+        public string Code { get; set; }
+        public string City { get; set; }
+        public string Country { get; set; }
+        public string Name { get; set; }
+        public string Link { get; set; }
+        public Airport(string code, string city, string country, string name, string link)
         {
             Code = code;
             City = city;

@@ -7,15 +7,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
     [TestClass]
     public class Flight_UnitTests
     {
-        private readonly Airport airport1 = new("ABZ", country: "UK");
-        private readonly Airport airport2 = new("EDI", country: "UK");
-        private Flight flight;
-        
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            flight = new(new DateTime(2000, 10, 10, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(3, 5, 10), airport1, airport2, 25);
-        }
+        private readonly Flight flight = new(new DateTime(2000, 10, 10, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(3, 5, 10), "ABZ-EDI", 25);
         
         [TestMethod]
         public void ToStringIsCorrect()
@@ -26,13 +18,13 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetDepartingAirportIsCorrect()
         {
-            Assert.IsTrue(flight.GetDepartingAirport().Equals(airport1));
+            Assert.IsTrue(flight.GetDepartingAirport().Equals("ABZ"));
         }
         
         [TestMethod]
         public void GetArrivingAirportIsCorrect()
         {
-            Assert.IsTrue(flight.GetArrivingAirport().Equals(airport2));
+            Assert.IsTrue(flight.GetArrivingAirport().Equals("EDI"));
         }
     }
 }
