@@ -82,12 +82,13 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
             DataColumn pathColumn = new("Path", TypeString);
             DataColumn idColumn = new("Id", TypeInt32);
+            DataColumn flightNumber = new("Flight #", TypeInt32);
             DataColumn departingColumn = new("Departing", TypeString);
             DataColumn arrivingColumn = new("Arriving", TypeString);
             DataColumn durationColumn = new("Duration", TypeString);
             DataColumn airlineColumn = new("Airline", TypeString);
             DataColumn costColumn = new("Cost", TypeDouble);
-            subTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, departingColumn, arrivingColumn, durationColumn, airlineColumn, costColumn }.ToArray());
+            subTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, flightNumber, departingColumn, arrivingColumn, durationColumn, airlineColumn, costColumn }.ToArray());
             return subTable;
         }
 
@@ -100,6 +101,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 DataRow row = subTable.NewRow();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Path;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = id;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = i + 1;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Departing.ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Arriving.ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Duration.ToString();

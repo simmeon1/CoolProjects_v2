@@ -23,7 +23,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         }
 
         [TestMethod]
-        public async Task OpenFlights_ExpectedTabsOpenedWithNoErrors()
+        public async Task OpenFlights_ExpectedResultsWithStandartProcess()
         {
             InitialiseMockObjects();
             List<string> path1 = new() { "ABZ", "LTN", "VAR" };
@@ -48,13 +48,13 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Mock<IWebElement> flightMock6 = new();
             Mock<IWebElement> flightMock7 = new();
 
-            string flightText1 = "08:00 AM\n– \n08:30 AM\nWizz Air\n30 min\nABZ–LTN\nNonstop\nPrice £10";
-            string flightText2 = "09:30 AM\n– \n10:30 AM\nWizz Air\n1 hr\nABZ–LTN\nNonstop\nPrice £15";
-            string flightText3 = "9:45 PM\n– \n2:55 AM+1\nWizz Air\n3 hr 10 min\nLTN–VAR\nNonstop\n£27";
-            string flightText4 = "9:45 PM\n– \n11:45 PM\nWizz Air\n2 hr\nLTN–VAR\nNonstop\nPrice unavailable";
-            string flightText5 = "06:00 AM\n– \n07:00 AM\neasyJet\n1 hr\nEDI-LTN\nNonstop\n£25";
-            string flightText6 = "13:45 PM\n– \n14:45 PM\neasyJet\n1 hr\nEDI-LTN\nNonstop\n£30";
-            string flightText7 = "20:00 PM\n– \n21:00 PM\neasyJet\n1 hr\nEDI-LTN\nNonstop\n£40";
+            string flightText1 = "08:00 AM\n- \n08:30 AM\nWizz Air\n30 min\nABZ-LTN\nNonstop\nPrice £10";
+            string flightText2 = "09:30 AM\n- \n10:30 AM\nWizz Air\n1 hr\nABZ-LTN\nNonstop\nPrice £15";
+            string flightText3 = "9:45 PM\n- \n2:55 AM+1\nWizz Air\n3 hr 10 min\nLTN-VAR\nNonstop\n£27";
+            string flightText4 = "9:45 PM\n- \n11:45 PM\nWizz Air\n2 hr\nLTN-VAR\nNonstop\nPrice unavailable";
+            string flightText5 = "06:00 AM\n- \n07:00 AM\neasyJet\n1 hr\nEDI-LTN\nNonstop\n£25";
+            string flightText6 = "13:45 PM\n- \n14:45 PM\neasyJet\n1 hr\nEDI-LTN\nNonstop\n£30";
+            string flightText7 = "20:00 PM\n- \n21:00 PM\neasyJet\n1 hr\nEDI-LTN\nNonstop\n£40";
 
             flightMock1.SetupSequence(x => x.GetAttribute("innerText")).Returns("more flights").Returns(flightText1).Returns(flightText1);
             flightMock2.SetupSequence(x => x.GetAttribute("innerText")).Returns(flightText2).Returns(flightText2);
@@ -122,29 +122,49 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             driverMock.Setup(x => x.FindElements(By.CssSelector("input"))).Returns(inputs);
 
             ChromeWorker chromeWorker = new(logger.Object, new Mock<IDelayer>().Object, driverMock.Object);
-            List<FullPathAndListOfPathsAndFlightCollections> results = await chromeWorker.ProcessPaths(paths, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11));
+            ChromeWorkerResults results = await chromeWorker.ProcessPaths(paths, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11));
 
-            Assert.IsTrue(results.Count == 2);
-            Assert.IsTrue(results[0].Path.ToString().Equals("ABZ-LTN-VAR"));
-            Assert.IsTrue(results[0].PathsAndFlightCollections.Count == 2);
-            Assert.IsTrue(results[0].PathsAndFlightCollections[0].Path.ToString().Equals("ABZ-LTN"));
-            Assert.IsTrue(results[0].PathsAndFlightCollections[1].Path.ToString().Equals("LTN-VAR"));
-            Assert.IsTrue(results[1].Path.ToString().Equals("EDI-LTN-VAR"));
-            Assert.IsTrue(results[1].PathsAndFlightCollections.Count == 2);
-            Assert.IsTrue(results[1].PathsAndFlightCollections[0].Path.ToString().Equals("EDI-LTN"));
-            Assert.IsTrue(results[1].PathsAndFlightCollections[1].Path.ToString().Equals("LTN-VAR"));
+            Dictionary<string, FlightCollection> workerFlights = results.PathsAndFlights;
+            Assert.IsTrue(workerFlights.Count == 3);
+            Assert.IsTrue(workerFlights["ABZ-LTN"].Count() == 2);
+            Assert.IsTrue(workerFlights["LTN-VAR"].Count() == 2);
+            Assert.IsTrue(workerFlights["EDI-LTN"].Count() == 3);
 
-            Assert.IsTrue(results[0].PathsAndFlightCollections[0].FlightCollection.Count() == 2);
-            Assert.IsTrue(results[0].PathsAndFlightCollections[0].FlightCollection[0].ToString().Equals(@"ABZ-LTN - 10/10/2000 08:00:00 - 10/10/2000 08:30:00 - Wizz Air - 00:30:00 - 10"));
-            Assert.IsTrue(results[0].PathsAndFlightCollections[0].FlightCollection[1].ToString().Equals(@"ABZ-LTN - 11/10/2000 09:30:00 - 11/10/2000 10:30:00 - Wizz Air - 01:00:00 - 15"));
-            Assert.IsTrue(results[0].PathsAndFlightCollections[1].FlightCollection[0].ToString().Equals(@"LTN-VAR - 10/10/2000 21:45:00 - 11/10/2000 02:55:00 - Wizz Air - 03:10:00 - 27"));
-            Assert.IsTrue(results[0].PathsAndFlightCollections[1].FlightCollection[1].ToString().Equals(@"LTN-VAR - 11/10/2000 21:45:00 - 11/10/2000 23:45:00 - Wizz Air - 02:00:00 - 0"));
+            List<FullPathAndListOfPathsAndFlightCollections> workerPaths = results.FullPathsAndFlightCollections;
+            Assert.IsTrue(workerPaths.Count == 2);
+            Assert.IsTrue(workerPaths[0].Path.ToString().Equals("ABZ-LTN-VAR"));
+            Assert.IsTrue(workerPaths[0].PathsAndFlightCollections.Count == 2);
+            Assert.IsTrue(workerPaths[0].PathsAndFlightCollections[0].Path.ToString().Equals("ABZ-LTN"));
+            Assert.IsTrue(workerPaths[0].PathsAndFlightCollections[1].Path.ToString().Equals("LTN-VAR"));
+            Assert.IsTrue(workerPaths[1].Path.ToString().Equals("EDI-LTN-VAR"));
+            Assert.IsTrue(workerPaths[1].PathsAndFlightCollections.Count == 2);
+            Assert.IsTrue(workerPaths[1].PathsAndFlightCollections[0].Path.ToString().Equals("EDI-LTN"));
+            Assert.IsTrue(workerPaths[1].PathsAndFlightCollections[1].Path.ToString().Equals("LTN-VAR"));
 
-            Assert.IsTrue(results[1].PathsAndFlightCollections[0].FlightCollection[0].ToString().Equals(@"EDI-LTN - 10/10/2000 06:00:00 - 10/10/2000 07:00:00 - easyJet - 01:00:00 - 25"));
-            Assert.IsTrue(results[1].PathsAndFlightCollections[0].FlightCollection[1].ToString().Equals(@"EDI-LTN - 10/10/2000 13:45:00 - 10/10/2000 14:45:00 - easyJet - 01:00:00 - 30"));
-            Assert.IsTrue(results[1].PathsAndFlightCollections[0].FlightCollection[2].ToString().Equals(@"EDI-LTN - 11/10/2000 20:00:00 - 11/10/2000 21:00:00 - easyJet - 01:00:00 - 40"));
-            Assert.IsTrue(results[1].PathsAndFlightCollections[1].FlightCollection[0].ToString().Equals(@"LTN-VAR - 10/10/2000 21:45:00 - 11/10/2000 02:55:00 - Wizz Air - 03:10:00 - 27"));
-            Assert.IsTrue(results[1].PathsAndFlightCollections[1].FlightCollection[1].ToString().Equals(@"LTN-VAR - 11/10/2000 21:45:00 - 11/10/2000 23:45:00 - Wizz Air - 02:00:00 - 0"));
+            Assert.IsTrue(workerPaths[0].PathsAndFlightCollections[0].FlightCollection.Count() == 2);
+            Assert.IsTrue(workerPaths[0].PathsAndFlightCollections[0].FlightCollection[0].ToString().Equals(@"ABZ-LTN - 10/10/2000 08:00:00 - 10/10/2000 08:30:00 - Wizz Air - 00:30:00 - 10"));
+            Assert.IsTrue(workerPaths[0].PathsAndFlightCollections[0].FlightCollection[1].ToString().Equals(@"ABZ-LTN - 11/10/2000 09:30:00 - 11/10/2000 10:30:00 - Wizz Air - 01:00:00 - 15"));
+            Assert.IsTrue(workerPaths[0].PathsAndFlightCollections[1].FlightCollection[0].ToString().Equals(@"LTN-VAR - 10/10/2000 21:45:00 - 11/10/2000 02:55:00 - Wizz Air - 03:10:00 - 27"));
+            Assert.IsTrue(workerPaths[0].PathsAndFlightCollections[1].FlightCollection[1].ToString().Equals(@"LTN-VAR - 11/10/2000 21:45:00 - 11/10/2000 23:45:00 - Wizz Air - 02:00:00 - 0"));
+
+            Assert.IsTrue(workerPaths[1].PathsAndFlightCollections[0].FlightCollection[0].ToString().Equals(@"EDI-LTN - 10/10/2000 06:00:00 - 10/10/2000 07:00:00 - easyJet - 01:00:00 - 25"));
+            Assert.IsTrue(workerPaths[1].PathsAndFlightCollections[0].FlightCollection[1].ToString().Equals(@"EDI-LTN - 10/10/2000 13:45:00 - 10/10/2000 14:45:00 - easyJet - 01:00:00 - 30"));
+            Assert.IsTrue(workerPaths[1].PathsAndFlightCollections[0].FlightCollection[2].ToString().Equals(@"EDI-LTN - 11/10/2000 20:00:00 - 11/10/2000 21:00:00 - easyJet - 01:00:00 - 40"));
+            Assert.IsTrue(workerPaths[1].PathsAndFlightCollections[1].FlightCollection[0].ToString().Equals(@"LTN-VAR - 10/10/2000 21:45:00 - 11/10/2000 02:55:00 - Wizz Air - 03:10:00 - 27"));
+            Assert.IsTrue(workerPaths[1].PathsAndFlightCollections[1].FlightCollection[1].ToString().Equals(@"LTN-VAR - 11/10/2000 21:45:00 - 11/10/2000 23:45:00 - Wizz Air - 02:00:00 - 0"));
+        }
+        
+        [TestMethod]
+        public async Task asd()
+        {
+            InitialiseMockObjects();
+            ChromeWorker chromeWorker = new(logger.Object, new Mock<IDelayer>().Object, driverMock.Object);
+            Dictionary<string, FlightCollection> collectedPathFlights = new();
+            collectedPathFlights.Add("ABZ-LTN", new());
+            ChromeWorkerResults results = await chromeWorker.ProcessPaths(new List<Path>() { new Path(new List<string>() { "ABZ", "LTN" }) }, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11), collectedPathFlights: collectedPathFlights);
+            logger.Verify(x => x.Log("An exception was thrown while collecting flights and the results have been returned early."), Times.Once());
+            Assert.IsTrue(results.PathsAndFlights.SerializeObject().Equals(collectedPathFlights.SerializeObject()));
+            Assert.IsTrue(results.FullPathsAndFlightCollections.Count == 0);
         }
     }
 }

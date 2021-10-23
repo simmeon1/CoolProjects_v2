@@ -99,19 +99,21 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
             FileIO.WriteAllText($"{runResultsPath}\\{runId}_latestPaths.json", pathsDetailed.SerializeObject(Formatting.Indented));
 
-            List<FullPathAndListOfPathsAndFlightCollections> pathsAndFlights;
-            if (!Parameters.LocalPathsAndFlightsFile.IsNullOrEmpty())
+            ChromeWorkerResults chromeWorkerResults;
+            if (!Parameters.LocalChromeWorkerResultsFile.IsNullOrEmpty())
             {
-                pathsAndFlights = FileIO.ReadAllText(Parameters.LocalPathsAndFlightsFile).DeserializeObject<List<FullPathAndListOfPathsAndFlightCollections>>();
-                PrintPathsAndFlightsAndFinish(pathsAndFlights, runId, runResultsPath);
+                chromeWorkerResults = FileIO.ReadAllText(Parameters.LocalChromeWorkerResultsFile).DeserializeObject<ChromeWorkerResults>();
+                PrintPathsAndFlightsAndFinish(chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);
                 return;
             }
             else if (!Parameters.OpenGoogleFlights) return;
 
-            pathsAndFlights = await ChromeWorker.ProcessPaths(paths, Parameters.DateFrom, Parameters.DateTo, Parameters.DefaultDelay);
-            FileIO.WriteAllText($"{runResultsPath}\\{runId}_pathsAndFlights.json", pathsAndFlights.SerializeObject(Formatting.Indented));
+            Dictionary<string, FlightCollection> collectedPathFlights = new();
+            if (!Parameters.LocalCollectedPathFlightsFile.IsNullOrEmpty()) collectedPathFlights = FileIO.ReadAllText(Parameters.LocalCollectedPathFlightsFile).DeserializeObject<Dictionary<string, FlightCollection>>();
+            chromeWorkerResults = await ChromeWorker.ProcessPaths(paths, Parameters.DateFrom, Parameters.DateTo, Parameters.DefaultDelay, collectedPathFlights);
+            FileIO.WriteAllText($"{runResultsPath}\\{runId}_pathsAndFlights.json", chromeWorkerResults.SerializeObject(Formatting.Indented));
 
-            PrintPathsAndFlightsAndFinish(pathsAndFlights, runId, runResultsPath);
+            PrintPathsAndFlightsAndFinish(chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);
         }
 
         private void PrintPathsAndFlightsAndFinish(List<FullPathAndListOfPathsAndFlightCollections> pathsAndFlights, string runId, string runResultsPath)

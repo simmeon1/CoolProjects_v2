@@ -35,23 +35,33 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Delayer = delayer;
         }
 
-        public async Task<List<FullPathAndListOfPathsAndFlightCollections>> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo, int defaultDelay = 500)
+        public async Task<ChromeWorkerResults> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo, int defaultDelay = 500, Dictionary<string, FlightCollection> collectedPathFlights = null)
         {
             DefaultDelay = defaultDelay;
             LastTypedOrigin = "";
             List<FullPathAndListOfPathsAndFlightCollections> results = new();
-            CollectedPathFlights = new();
+            CollectedPathFlights = collectedPathFlights ?? new();
             PagesToOpen = 0;
             PagesOpened = 0;
 
-            NavigateToUrl();
-            if (!ConsentAgreed) await AgreeToConsent();
-            await SetToOneWayTrip();
+            try
+            {
+                NavigateToUrl();
+                if (!ConsentAgreed) await AgreeToConsent();
+                await SetToOneWayTrip();
 
-            foreach (Path path in paths) for (int i = 0; i < path.Count() - 1; i++) PagesToOpen++;
-            Logger.Log($"Starting search for {PagesToOpen} paths.");
-            foreach (Path path in paths) results.Add(await ProcessPath(path, dateFrom, dateTo));
-            return results;
+                foreach (Path path in paths) for (int i = 0; i < path.Count() - 1; i++) PagesToOpen++;
+                Logger.Log($"Starting search for {PagesToOpen} paths.");
+
+                foreach (Path path in paths) results.Add(await ProcessPath(path, dateFrom, dateTo));
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("An exception was thrown while collecting flights and the results have been returned early.");
+                Logger.Log($"Exception details: {ex}");
+                return new(CollectedPathFlights, results);
+            }
+            return new(CollectedPathFlights, results);
         }
 
         private async Task<FullPathAndListOfPathsAndFlightCollections> ProcessPath(Path path, DateTime dateFrom, DateTime dateTo)
@@ -133,7 +143,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
                         showMoreFlightsButtonClicked = true;
                         break;
                     }
-
                 }
                 if (!showMoreFlightsButtonClicked) break;
             }
@@ -156,8 +165,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 string airlineText = flightText[3].Trim();
 
                 string durationText = flightText[4];
-                if (Regex.Match(durationText, "(\\d+)\\D+(\\d+).*").Success) durationText = Regex.Replace(durationText, "(\\d+).*?(\\d+).*", "$1:$2").Trim();
-                else durationText = Regex.Match(durationText, "(\\d+).*hr").Success
+                durationText = Regex.Match(durationText, "(\\d+)\\D+(\\d+).*").Success
+                    ? Regex.Replace(durationText, "(\\d+).*?(\\d+).*", "$1:$2").Trim()
+                    : Regex.Match(durationText, "(\\d+).*hr").Success
                     ? Regex.Replace(durationText, "(\\d+).*", "$1:00").Trim()
                     : Regex.Replace(durationText, "(\\d+).*", "0:$1").Trim();
 

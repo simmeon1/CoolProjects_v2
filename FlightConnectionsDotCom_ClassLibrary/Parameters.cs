@@ -13,7 +13,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public DateTime DateTo { get; set; }
         public string LocalAirportListFile { get; set; }
         public string LocalAirportDestinationsFile { get; set; }
-        public string LocalPathsAndFlightsFile{ get; set; }
+        public string LocalChromeWorkerResultsFile{ get; set; }
+        public string LocalCollectedPathFlightsFile { get; set; }
         public bool SkipUndoableFlights { get; set; }
         public bool SkipNotSameDayFinishFlights { get; set; }
         public bool OpenGoogleFlights { get; set; }

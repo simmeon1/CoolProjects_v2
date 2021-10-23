@@ -6,6 +6,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
 {
     public interface IChromeWorker
     {
-        Task<List<FullPathAndListOfPathsAndFlightCollections>> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo, int defaultDelay = 500);
+        Task<ChromeWorkerResults> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo, int defaultDelay, Dictionary<string, FlightCollection> collectedPathFlights);
     }
 }
