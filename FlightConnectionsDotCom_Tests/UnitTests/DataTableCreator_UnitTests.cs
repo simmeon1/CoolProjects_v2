@@ -18,6 +18,12 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             TimeSpan flight1span = new(1, 10, 40);
             const string flight1Airline = "easyJet";
             const string flight1Path = "ABZ-EDI";
+
+            Airport airport1 = new("ABZ", "", "UK", "", "");
+            Airport airport2 = new("EDI", "", "UK", "", "");
+            Airport airport3 = new("VAR", "", "BG", "", "");
+            List<Airport> airportList = new() { airport1, airport2, airport3 };
+
             Flight flight1 = new(flight1Departing, flight1Arriving, flight1Airline, flight1span, flight1Path, 25);
             DateTime flight2Departing = new(2000, 11, 11, 14, 0, 0);
             DateTime flight2Arriving = new(2000, 11, 11, 18, 0, 0);
@@ -29,12 +35,12 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             DataTableCreator creator = new();
             SequentialFlightCollection correctSeq = new(new FlightCollection(new List<Flight>() { flight1, flight2 }));
             List<SequentialFlightCollection> flights = new() { correctSeq };
-            List<DataTable> tables = creator.GetTables(flights, false, false);
+            List<DataTable> tables = creator.GetTables(airportList, flights, false, false);
             DataTable mainTable = tables[0];
             DataTable subTable = tables[1];
             Assert.IsTrue(mainTable.TableName.Equals("Summary"));
             Assert.IsTrue(mainTable.Rows.Count == 1);
-            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 8);
+            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 9);
             Assert.IsTrue(mainTable.Rows[0].ItemArray[0].Equals("ABZ-EDI-VAR"));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[1].Equals(1));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[2].Equals(true));
@@ -42,8 +48,9 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Assert.IsTrue(mainTable.Rows[0].ItemArray[4].Equals(flight1Departing.ToString()));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[5].Equals(flight2Arriving.ToString()));
             Assert.IsTrue((double)mainTable.Rows[0].ItemArray[6] == 8);
-            Assert.IsTrue((double)mainTable.Rows[0].ItemArray[7] == 75);
-            
+            Assert.IsTrue((int)mainTable.Rows[0].ItemArray[7] == 1);
+            Assert.IsTrue((double)mainTable.Rows[0].ItemArray[8] == 75);
+
             Assert.IsTrue(subTable.TableName.Equals("Details"));
             Assert.IsTrue(subTable.Rows.Count == 2);
             Assert.IsTrue(subTable.Rows[0].ItemArray.Length == 8);
@@ -66,7 +73,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Assert.IsTrue(subTable.Rows[1].ItemArray[6].Equals(flight2Airline));
             Assert.IsTrue((double)subTable.Rows[1].ItemArray[7] == 50);
         }
-        
+
         [TestMethod]
         public void CorrectTables_SomeColumns()
         {
@@ -75,6 +82,12 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             TimeSpan flight1span = new(1, 10, 40);
             const string flight1Airline = "easyJet";
             const string flight1Path = "ABZ-EDI";
+
+            Airport airport1 = new("ABZ", "", "UK", "", "");
+            Airport airport2 = new("EDI", "", "UK", "", "");
+            Airport airport3 = new("VAR", "", "BG", "", "");
+            List<Airport> airportList = new() { airport1, airport2, airport3 };
+
             Flight flight1 = new(flight1Departing, flight1Arriving, flight1Airline, flight1span, flight1Path, 25);
             DateTime flight2Departing = new(2000, 11, 11, 14, 0, 0);
             DateTime flight2Arriving = new(2000, 11, 11, 18, 0, 0);
@@ -86,18 +99,41 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             DataTableCreator creator = new();
             SequentialFlightCollection correctSeq = new(new FlightCollection(new List<Flight>() { flight1, flight2 }));
             List<SequentialFlightCollection> flights = new() { correctSeq };
-            List<DataTable> tables = creator.GetTables(flights, true, true);
+            List<DataTable> tables = creator.GetTables(airportList, flights, true, true);
             DataTable mainTable = tables[0];
             DataTable subTable = tables[1];
             Assert.IsTrue(mainTable.TableName.Equals("Summary"));
             Assert.IsTrue(mainTable.Rows.Count == 1);
-            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 6);
+            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 7);
             Assert.IsTrue(mainTable.Rows[0].ItemArray[0].Equals("ABZ-EDI-VAR"));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[1].Equals(1));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[2].Equals(flight1Departing.ToString()));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[3].Equals(flight2Arriving.ToString()));
             Assert.IsTrue((double)mainTable.Rows[0].ItemArray[4] == 8);
-            Assert.IsTrue((double)mainTable.Rows[0].ItemArray[5] == 75);
+            Assert.IsTrue((int)mainTable.Rows[0].ItemArray[5] == 1);
+            Assert.IsTrue((double)mainTable.Rows[0].ItemArray[6] == 75);
+        }
+        
+        [TestMethod]
+        public void CorrectTables_CountryChangesIsCorrect()
+        {
+            DateTime flight1Departing = new(2000, 11, 11, 10, 0, 00);
+            DateTime flight1Arriving = new(2000, 11, 11, 11, 30, 40);
+            TimeSpan flight1span = new(1, 10, 40);
+            const string flight1Airline = "easyJet";
+            const string flight1Path = "ABZ-VAR";
+
+            Airport airport1 = new("ABZ", "", "UK", "", "");
+            Airport airport2 = new("VAR", "", "BG", "", "");
+            List<Airport> airportList = new() { airport1, airport2 };
+
+            Flight flight1 = new(flight1Departing, flight1Arriving, flight1Airline, flight1span, flight1Path, 25);
+            DataTableCreator creator = new();
+            SequentialFlightCollection correctSeq = new(new FlightCollection(new List<Flight>() { flight1 }));
+            List<SequentialFlightCollection> flights = new() { correctSeq };
+            List<DataTable> tables = creator.GetTables(airportList, flights, true, true);
+            DataTable mainTable = tables[0];
+            Assert.IsTrue((int)mainTable.Rows[0].ItemArray[5] == 1);
         }
     }
 }

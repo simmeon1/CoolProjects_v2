@@ -103,7 +103,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             if (!Parameters.LocalChromeWorkerResultsFile.IsNullOrEmpty())
             {
                 chromeWorkerResults = FileIO.ReadAllText(Parameters.LocalChromeWorkerResultsFile).DeserializeObject<ChromeWorkerResults>();
-                PrintPathsAndFlightsAndFinish(chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);
+                PrintPathsAndFlightsAndFinish(airportsList, chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);
                 return;
             }
             else if (!Parameters.OpenGoogleFlights) return;
@@ -113,10 +113,10 @@ namespace FlightConnectionsDotCom_ClassLibrary
             chromeWorkerResults = await ChromeWorker.ProcessPaths(paths, Parameters.DateFrom, Parameters.DateTo, Parameters.DefaultDelay, collectedPathFlights);
             FileIO.WriteAllText($"{runResultsPath}\\{runId}_pathsAndFlights.json", chromeWorkerResults.SerializeObject(Formatting.Indented));
 
-            PrintPathsAndFlightsAndFinish(chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);
+            PrintPathsAndFlightsAndFinish(airportsList, chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);
         }
 
-        private void PrintPathsAndFlightsAndFinish(List<FullPathAndListOfPathsAndFlightCollections> pathsAndFlights, string runId, string runResultsPath)
+        private void PrintPathsAndFlightsAndFinish(List<Airport> airportsList, List<FullPathAndListOfPathsAndFlightCollections> pathsAndFlights, string runId, string runResultsPath)
         {
             FullPathCombinationOfFlightsCollector flightCollector = new();
             List<SequentialFlightCollection> results2 = new();
@@ -126,7 +126,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
 
             DataTableCreator dtCreator = new();
-            Printer.PrintTablesToWorksheet(dtCreator.GetTables(results2, Parameters.SkipUndoableFlights, Parameters.SkipNotSameDayFinishFlights), $"{runResultsPath}\\{runId}_results.xlsx");
+            Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results2, Parameters.SkipUndoableFlights, Parameters.SkipNotSameDayFinishFlights), $"{runResultsPath}\\{runId}_results.xlsx");
             Logger.Log($"Saved files to {runResultsPath}");
         }
     }

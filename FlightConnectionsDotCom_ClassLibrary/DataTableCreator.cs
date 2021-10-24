@@ -21,19 +21,42 @@ namespace FlightConnectionsDotCom_ClassLibrary
             TypeBool = Type.GetType("System.Boolean");
         }
 
-        public List<DataTable> GetTables(List<SequentialFlightCollection> sequentialCollections, bool skipUndoableFlights, bool skipNotSameDayFinishFlights)
+        public List<DataTable> GetTables(List<Airport> airportList, List<SequentialFlightCollection> sequentialCollections, bool skipUndoableFlights, bool skipNotSameDayFinishFlights)
         {
+            Dictionary<string, string> airportsAndCountries = new();
+            foreach (Airport airport in airportList)
+            {
+                if (!airportsAndCountries.ContainsKey(airport.Code)) airportsAndCountries.Add(airport.Code, airport.Country);
+            }
+
             List<SequentialFlightCollection> sequentialCollectionsOrdered = sequentialCollections
                                                                     .Where(c => !skipUndoableFlights || c.SequenceIsDoable())
                                                                     .Where(c => !skipNotSameDayFinishFlights || c.StartsAndEndsOnSameDay())
                                                                     .OrderByDescending(c => c.SequenceIsDoable())
                                                                     .ThenByDescending(c => c.StartsAndEndsOnSameDay())
                                                                     .ThenBy(c => c.GetTotalTime())
+                                                                    .ThenBy(c => GetCountryChanges(airportsAndCountries, c))
                                                                     .ThenBy(c => c.GetCost())
                                                                     .ToList();
 
             List<DataTable> tables = new();
-            DataTable mainTable = GetMainTable(skipUndoableFlights, skipNotSameDayFinishFlights);
+            DataTable mainTable = new("Summary");
+            DataColumn doableColumn = new("Doable", TypeBool);
+            DataColumn sameDayFinishColumn = new("SameDayFinish", TypeBool);
+            mainTable.Columns.AddRange(new List<DataColumn> {
+                new("Path", TypeString),
+                new("Id", TypeInt32),
+                doableColumn,
+                sameDayFinishColumn,
+                new("Start", TypeString),
+                new("End", TypeString),
+                new("Length", TypeDouble),
+                new("CountryChanges", TypeInt32),
+                new("Cost", TypeDouble)
+            }.ToArray());
+            if (skipUndoableFlights) mainTable.Columns.Remove(doableColumn);
+            if (skipNotSameDayFinishFlights) mainTable.Columns.Remove(sameDayFinishColumn);
+
             DataTable subTable = GetSubTable();
 
             for (int i = 0; i < sequentialCollectionsOrdered.Count; i++)
@@ -49,6 +72,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetStartTime().ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetEndTime().ToString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetTotalTime();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = GetCountryChanges(airportsAndCountries, seqCollection);
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetCost();
                 mainTable.Rows.Add(row);
                 AddRowsToSubTable(seqCollection, id, subTable);
@@ -58,37 +82,34 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return tables;
         }
 
-        private DataTable GetMainTable(bool skipUndoableFlights, bool skipNotSameDayFinishFlights)
+        private static int GetCountryChanges(Dictionary<string, string> airportsAndCountries, SequentialFlightCollection c)
         {
-            DataTable mainTable = new("Summary");
-
-            DataColumn pathColumn = new("Path", TypeString);
-            DataColumn idColumn = new("Id", TypeInt32);
-            DataColumn doableColumn = new("Doable", TypeBool);
-            DataColumn sameDayFinishColumn = new("SameDayFinish", TypeBool);
-            DataColumn startColumn = new("Start", TypeString);
-            DataColumn endColumn = new("End", TypeString);
-            DataColumn lengthColumn = new("Length", TypeDouble);
-            DataColumn costColumn = new("Cost", TypeDouble);
-            mainTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, doableColumn, sameDayFinishColumn, startColumn, endColumn, lengthColumn, costColumn }.ToArray());
-            if (skipUndoableFlights) mainTable.Columns.Remove(doableColumn);
-            if (skipNotSameDayFinishFlights) mainTable.Columns.Remove(sameDayFinishColumn);
-            return mainTable;
+            int changes = 0;
+            Flight previousFlight = c.FlightCollection[0];
+            if (!airportsAndCountries[previousFlight.GetDepartingAirport()].Equals(airportsAndCountries[previousFlight.GetArrivingAirport()])) changes++;
+            for (int i = 1; i < c.FlightCollection.Count(); i++)
+            {
+                Flight currentFlight = c.FlightCollection[i];
+                if (!airportsAndCountries[currentFlight.GetArrivingAirport()].Equals(airportsAndCountries[previousFlight.GetArrivingAirport()])) changes++;
+                previousFlight = currentFlight;
+            }
+            return changes;
         }
 
         private DataTable GetSubTable()
         {
             DataTable subTable = new("Details");
 
-            DataColumn pathColumn = new("Path", TypeString);
-            DataColumn idColumn = new("Id", TypeInt32);
-            DataColumn flightNumber = new("Flight #", TypeInt32);
-            DataColumn departingColumn = new("Departing", TypeString);
-            DataColumn arrivingColumn = new("Arriving", TypeString);
-            DataColumn durationColumn = new("Duration", TypeString);
-            DataColumn airlineColumn = new("Airline", TypeString);
-            DataColumn costColumn = new("Cost", TypeDouble);
-            subTable.Columns.AddRange(new List<DataColumn> { pathColumn, idColumn, flightNumber, departingColumn, arrivingColumn, durationColumn, airlineColumn, costColumn }.ToArray());
+            subTable.Columns.AddRange(new List<DataColumn> {
+                new DataColumn("Path", TypeString), 
+                new DataColumn("Id", TypeInt32), 
+                new DataColumn("Flight #", TypeInt32), 
+                new DataColumn("Departing", TypeString), 
+                new DataColumn("Arriving", TypeString), 
+                new DataColumn("Duration", TypeString), 
+                new DataColumn("Airline", TypeString), 
+                new DataColumn("Cost", TypeDouble)
+            }.ToArray());
             return subTable;
         }
 
