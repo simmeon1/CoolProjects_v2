@@ -106,13 +106,16 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 PrintPathsAndFlightsAndFinish(airportsList, chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);
                 return;
             }
-            else if (!Parameters.OpenGoogleFlights) return;
+            else if (!Parameters.OpenGoogleFlights)
+            {
+                SaveLogAndQuitDriver(runId, runResultsPath);
+                return;
+            }
 
             Dictionary<string, FlightCollection> collectedPathFlights = new();
             if (!Parameters.LocalCollectedPathFlightsFile.IsNullOrEmpty()) collectedPathFlights = FileIO.ReadAllText(Parameters.LocalCollectedPathFlightsFile).DeserializeObject<ChromeWorkerResults>().PathsAndFlights;
             chromeWorkerResults = await ChromeWorker.ProcessPaths(paths, Parameters.DateFrom, Parameters.DateTo, Parameters.DefaultDelay, collectedPathFlights);
             FileIO.WriteAllText($"{runResultsPath}\\{runId}_pathsAndFlights.json", chromeWorkerResults.SerializeObject(Formatting.Indented));
-
             PrintPathsAndFlightsAndFinish(airportsList, chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);
         }
 
@@ -128,6 +131,13 @@ namespace FlightConnectionsDotCom_ClassLibrary
             DataTableCreator dtCreator = new();
             Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results2, Parameters.SkipUndoableFlights, Parameters.SkipNotSameDayFinishFlights), $"{runResultsPath}\\{runId}_results.xlsx");
             Logger.Log($"Saved files to {runResultsPath}");
+            SaveLogAndQuitDriver(runId, runResultsPath);
+        }
+
+        private void SaveLogAndQuitDriver(string runId, string runResultsPath)
+        {
+            FileIO.WriteAllText($"{runResultsPath}\\{runId}_log.txt", Logger.GetContent().SerializeObject(Formatting.Indented));
+            Driver.Quit();
         }
     }
 }
