@@ -40,6 +40,7 @@ namespace FlightConnectionsDotCom_Console
                 chromeWorker: new ChromeWorker(logger, delayer, driver)
             );
             await runner.DoRun(parameters);
+            Console.WriteLine("Run finished. Press any key to continue");
         }
     }
 }
