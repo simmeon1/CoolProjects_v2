@@ -200,6 +200,18 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         {
             Assert.IsFalse(CreateSeqCollectionWithFlights(flight3, flight4).StartsAndEndsOnSameDay());
         }
+        
+        [TestMethod]
+        public void CountOfFlightsIsCorrect()
+        {
+            Assert.IsTrue(CreateSeqCollectionWithFlights(flight3, flight4).GetCountOfFlights() == 2);
+        }
+        
+        [TestMethod]
+        public void CountOfFlightsIsZeroInInvalid()
+        {
+            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetCountOfFlights() == 0);
+        }
 
         private static SequentialFlightCollection CreateSeqCollectionWithFlights(params Flight[] flights)
         {

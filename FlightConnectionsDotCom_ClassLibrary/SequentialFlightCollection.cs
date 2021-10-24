@@ -117,6 +117,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return IsNotValid() ? null : FlightCollection.GetLast().Arriving;
         }
 
+        public int GetCountOfFlights()
+        {
+            return IsNotValid() ? 0 : FlightCollection.Count();
+        }
+
         public double GetTotalTime()
         {
             return IsNotValid() ? 0 : (GetEndTime().Value - GetStartTime().Value).TotalHours;

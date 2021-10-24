@@ -34,6 +34,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                                                                     .Where(c => !skipNotSameDayFinishFlights || c.StartsAndEndsOnSameDay())
                                                                     .OrderByDescending(c => c.SequenceIsDoable())
                                                                     .ThenByDescending(c => c.StartsAndEndsOnSameDay())
+                                                                    .ThenBy(c => c.GetCountOfFlights())
                                                                     .ThenBy(c => c.GetTotalTime())
                                                                     .ThenBy(c => GetCountryChanges(airportsAndCountries, c))
                                                                     .ThenBy(c => c.GetCost())
@@ -46,12 +47,13 @@ namespace FlightConnectionsDotCom_ClassLibrary
             mainTable.Columns.AddRange(new List<DataColumn> {
                 new("Path", TypeString),
                 new("Id", TypeInt32),
+                new("Count of Flights", TypeInt32),
                 doableColumn,
                 sameDayFinishColumn,
                 new("Start", TypeString),
                 new("End", TypeString),
                 new("Length", TypeDouble),
-                new("CountryChanges", TypeInt32),
+                new("Country Changes", TypeInt32),
                 new("Cost", TypeDouble)
             }.ToArray());
             if (skipUndoableFlights) mainTable.Columns.Remove(doableColumn);
@@ -67,6 +69,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 DataRow row = mainTable.NewRow();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetFullPath();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = id;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetCountOfFlights();
                 if (!skipUndoableFlights) row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.SequenceIsDoable();
                 if (!skipNotSameDayFinishFlights) row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.StartsAndEndsOnSameDay();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetStartTime().ToString();
