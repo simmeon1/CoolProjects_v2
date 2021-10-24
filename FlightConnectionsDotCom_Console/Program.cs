@@ -41,6 +41,7 @@ namespace FlightConnectionsDotCom_Console
             );
             await runner.DoRun(parameters);
             Console.WriteLine("Run finished. Press any key to continue");
+            Console.ReadKey();
         }
     }
 }
