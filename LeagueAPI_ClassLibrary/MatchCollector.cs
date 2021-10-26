@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace LeagueAPI_ClassLibrary
@@ -18,27 +19,28 @@ namespace LeagueAPI_ClassLibrary
         }
 
         /// <summary>
-        /// Gets a result saying if the target version is greater than the game version.
+        /// Gets a result saying if the target versions are greater than the game version.
         /// </summary>
-        /// <param name="targetVersion"></param>
+        /// <param name="rangeOfTargetVersions"></param>
         /// <param name="gameVersion"></param>
-        /// <returns>1 if target is greater than game version, 0 if equal, -1 if lesser.</returns>
-        public static int CompareTargetVersionAgainstGameVersion(string targetVersion, string gameVersion)
+        /// <returns>1 if targets are greater than game version, 0 if equal, -1 if lesser.</returns>
+        public static int CompareTargetVersionAgainstGameVersion(List<string> rangeOfTargetVersions, string gameVersion)
         {
-            string[] targetVersionArray = targetVersion.Split('.');
-            string[] gameVersionArray = gameVersion.Split('.');
-
-            int minLength = Math.Min(targetVersionArray.Length, gameVersionArray.Length);
-            for (int i = 0; i < minLength; i++)
-            {
-                int targetVersionCharDigit = int.Parse(targetVersionArray[i].ToString());
-                int gameVersionCharDigit = int.Parse(gameVersionArray[i].ToString());
-                if (targetVersionCharDigit != gameVersionCharDigit) return targetVersionCharDigit > gameVersionCharDigit ? 1 : -1;
-            }
-            return 0;
+            int gameVersionInt = GetVersion(gameVersion);
+            List<string> rangeOfTargetVersionsOrdered = rangeOfTargetVersions.OrderBy(v => GetVersion(v)).ToList();
+            int minVersionInt = GetVersion(rangeOfTargetVersionsOrdered.First());
+            int maxVersionInt = GetVersion(rangeOfTargetVersionsOrdered.Last());
+            if (gameVersionInt >= minVersionInt && gameVersionInt <= maxVersionInt) return 0;
+            else if (gameVersionInt > maxVersionInt) return -1;
+            return 1;
         }
 
-        public async Task<List<LeagueMatch>> GetMatches(string startPuuid, int queueId, string targetVersion, int maxCount = 0)
+        private static int GetVersion(string gameVersion)
+        {
+            return int.Parse(Regex.Replace(gameVersion, @"\D", "").Substring(0, 4));
+        }
+
+        public async Task<List<LeagueMatch>> GetMatches(string startPuuid, int queueId, List<string> rangeOfTargetVersions, int maxCount = 0)
         {
             HashSet<string> scannedMatchIds = new();
             Queue<string> puuidQueue = new();
@@ -62,7 +64,7 @@ namespace LeagueAPI_ClassLibrary
                         scannedMatchIds.Add(matchId);
 
                         if (match == null) continue;
-                        int versionComparisonResult = CompareTargetVersionAgainstGameVersion(targetVersion, match.gameVersion);
+                        int versionComparisonResult = CompareTargetVersionAgainstGameVersion(rangeOfTargetVersions, match.gameVersion);
                         if (versionComparisonResult == -1) continue;
                         else if (versionComparisonResult == 1) break;
 

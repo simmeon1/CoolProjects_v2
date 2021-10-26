@@ -15,7 +15,7 @@ namespace LeagueAPI_Tests.UnitTests
         public async Task FullRunner_ExpectedFileNames_MatchesNotProvided()
         {
             Parameters paramms = GetParams();
-            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, includeWinRatesForMinutes: paramms.IncludeWinRatesForMinutes);
+            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, includeWinRatesForMinutes: paramms.IncludeWinRatesForMinutes);
             Assert.IsTrue(result.Count == 5);
             Assert.IsTrue(result[0].Equals($"C:\\Matches_2020-02-02--00-00-00_someGuid.json"));
             Assert.IsTrue(result[1].Equals($"C:\\ItemSet_All_2020-02-02--00-00-00_someGuid.json"));
@@ -29,7 +29,7 @@ namespace LeagueAPI_Tests.UnitTests
         {
 
             Parameters paramms = GetParams();
-            List<string> result = await SetupFullRunner(throwExceptionOnMatchCollection: true).DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid);
+            List<string> result = await SetupFullRunner(throwExceptionOnMatchCollection: true).DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions);
             Assert.IsTrue(result.Count == 1);
             Assert.IsTrue(result[0].Equals($"C:\\Log_2020-02-02--00-00-00_someGuid.txt"));
         }
@@ -64,7 +64,7 @@ namespace LeagueAPI_Tests.UnitTests
                 MaxCount = 1,
                 OutputDirectory = "C:\\",
                 QueueId = 1,
-                TargetVersion = "ss",
+                RangeOfTargetVersions = new List<string> { "ss" },
                 Token = "ss",
                 IncludeWinRatesForMinutes = new List<int>() { 20 }
             };
@@ -76,8 +76,8 @@ namespace LeagueAPI_Tests.UnitTests
 
             Mock<IMatchCollector> collector = new();
 
-            if (throwExceptionOnMatchCollection) collector.Setup(x => x.GetMatches(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()).Result).Throws(new Exception("ex"));
-            else collector.Setup(x => x.GetMatches(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()).Result).Returns(new List<LeagueMatch>());
+            if (throwExceptionOnMatchCollection) collector.Setup(x => x.GetMatches(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<int>()).Result).Throws(new Exception("ex"));
+            else collector.Setup(x => x.GetMatches(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<int>()).Result).Returns(new List<LeagueMatch>());
 
             Mock<IDDragonRepository> repo = new();
             Mock<IFileIO> fileIO = new();

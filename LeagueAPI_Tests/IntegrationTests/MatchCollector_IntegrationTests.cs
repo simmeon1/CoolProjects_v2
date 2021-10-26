@@ -32,7 +32,7 @@ namespace LeagueAPI_Tests.IntegrationTests
         public async Task CollectMatches_GetsResults_VersionProvided()
         {
             int maxCount = 1;
-            List<LeagueMatch> matches = await MatchCollector.GetMatches(TestData.AccountPuuid, 450, TestData.TargetVersion, maxCount: maxCount);
+            List<LeagueMatch> matches = await MatchCollector.GetMatches(TestData.AccountPuuid, 450, TestData.RangeOfTargetVersions, maxCount: maxCount);
             Assert.IsTrue(matches.Count == maxCount);
             Assert.IsTrue(matches.Select(m => m.matchId).Distinct().Count() == maxCount);
             DataCollector dataCollector = new();
@@ -49,7 +49,7 @@ namespace LeagueAPI_Tests.IntegrationTests
         [TestMethod]
         public async Task CollectMatches_FullTest()
         {
-            List<LeagueMatch> matches = await MatchCollector.GetMatches(TestData.AccountPuuid, 450, TestData.TargetVersion, maxCount: 0);
+            List<LeagueMatch> matches = await MatchCollector.GetMatches(TestData.AccountPuuid, 450, TestData.RangeOfTargetVersions, maxCount: 0);
             Assert.IsTrue(matches.Count > 0);
         }
     }

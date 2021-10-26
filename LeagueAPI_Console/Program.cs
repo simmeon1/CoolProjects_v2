@@ -31,7 +31,7 @@ namespace LeagueAPI_Console
             RealGuidProvider guidProvider = new();
             ExcelPrinter printer = new();
             FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger);
-            List<string> files = await runner.DoFullRun(parameters.OutputDirectory, parameters.QueueId, parameters.AccountPuuid, targetVersion: parameters.TargetVersion, maxCount: parameters.MaxCount, parameters.IncludeWinRatesForMinutes);
+            List<string> files = await runner.DoFullRun(parameters.OutputDirectory, parameters.QueueId, parameters.AccountPuuid, targetVersions: parameters.RangeOfTargetVersions, maxCount: parameters.MaxCount, parameters.IncludeWinRatesForMinutes);
             if (files.Count > 0) logger.Log($"{files.Count} files written at {parameters.OutputDirectory}. Press any key to exit." );
             Console.ReadKey();
         }

@@ -7,7 +7,7 @@ namespace LeagueAPI_ClassLibrary
         public string AccountName { get; set; }
         public string AccountPuuid { get; set; }
         public string Token { get; set; }
-        public string TargetVersion { get; set; }
+        public List<string> RangeOfTargetVersions { get; set; }
         public string DdragonJsonFilesDirectoryPath { get; set; }
         public string OutputDirectory { get; set; }
         public int QueueId { get; set; }

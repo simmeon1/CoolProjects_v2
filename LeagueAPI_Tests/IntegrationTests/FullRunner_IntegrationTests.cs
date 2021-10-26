@@ -34,7 +34,7 @@ namespace LeagueAPI_Tests.IntegrationTests
             RealGuidProvider guidProvider = new();
             ExcelPrinter printer = new();
             FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger);
-            List<string> createdFiles = await runner.DoFullRun(TestData.OutputDirectory, 450, TestData.AccountPuuid, maxCount: 1);
+            List<string> createdFiles = await runner.DoFullRun(TestData.OutputDirectory, 450, TestData.AccountPuuid, TestData.RangeOfTargetVersions, maxCount: 1);
             Assert.IsTrue(createdFiles.Count == 4);
             DeleteCreatedFiles(createdFiles);
         }

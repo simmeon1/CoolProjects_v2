@@ -51,14 +51,14 @@ namespace LeagueAPI_ClassLibrary
             }
         }
 
-        public async Task<List<string>> DoFullRun(string outputDirectory, int queueId, string startPuuid, string targetVersion = null, int maxCount = 0, List<int> includeWinRatesForMinutes = null)
+        public async Task<List<string>> DoFullRun(string outputDirectory, int queueId, string startPuuid, List<string> targetVersions, int maxCount = 0, List<int> includeWinRatesForMinutes = null)
         {
             InitialiseFileNames(outputDirectory);
             List<string> createdFiles = new();
 
             try
             {
-                List<LeagueMatch> matches = await MatchCollector.GetMatches(startPuuid, queueId, targetVersion, maxCount);
+                List<LeagueMatch> matches = await MatchCollector.GetMatches(startPuuid, queueId, targetVersions, maxCount);
                 FileIO.WriteAllText(MatchesFilePath, matches.SerializeObject());
                 createdFiles.Add(MatchesFilePath);
                 return GetCreatedFilesAfterMatchAnalysis(createdFiles, matches, includeWinRatesForMinutes);
