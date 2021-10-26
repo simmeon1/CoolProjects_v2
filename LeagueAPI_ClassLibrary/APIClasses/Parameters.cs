@@ -1,4 +1,6 @@
-﻿namespace LeagueAPI_ClassLibrary
+﻿using System.Collections.Generic;
+
+namespace LeagueAPI_ClassLibrary
 {
     public class Parameters
     {
@@ -10,5 +12,6 @@
         public string OutputDirectory { get; set; }
         public int QueueId { get; set; }
         public int MaxCount { get; set; }
+        public List<int> IncludeWinRatesForMinutes { get; set; }
     }
 }

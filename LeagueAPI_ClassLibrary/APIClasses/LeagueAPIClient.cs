@@ -123,6 +123,9 @@ namespace LeagueAPI_ClassLibrary
             match.mapId = int.Parse(obj["info"]["mapId"].ToString());
             match.queueId = int.Parse(obj["info"]["queueId"].ToString());
 
+            long duration = long.Parse(obj["info"]["gameDuration"].ToString());
+            match.duration = obj["info"]["gameEndTimestamp"] == null ? TimeSpan.FromMilliseconds(duration) : TimeSpan.FromSeconds(duration);
+
             List<Participant> participants = new();
             JToken arr = obj["info"]["participants"];
             foreach (JToken p in arr)

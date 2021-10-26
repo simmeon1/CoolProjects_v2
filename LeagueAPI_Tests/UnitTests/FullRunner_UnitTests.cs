@@ -15,12 +15,13 @@ namespace LeagueAPI_Tests.UnitTests
         public async Task FullRunner_ExpectedFileNames_MatchesNotProvided()
         {
             Parameters paramms = GetParams();
-            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid);
-            Assert.IsTrue(result.Count == 4);
+            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, includeWinRatesForMinutes: paramms.IncludeWinRatesForMinutes);
+            Assert.IsTrue(result.Count == 5);
             Assert.IsTrue(result[0].Equals($"C:\\Matches_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[1].Equals($"C:\\ItemSet_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[2].Equals($"C:\\Stats_2020-02-02--00-00-00_someGuid.xlsx"));
-            Assert.IsTrue(result[3].Equals($"C:\\Log_2020-02-02--00-00-00_someGuid.txt"));
+            Assert.IsTrue(result[1].Equals($"C:\\ItemSet_All_2020-02-02--00-00-00_someGuid.json"));
+            Assert.IsTrue(result[2].Equals($"C:\\ItemSet_Sub20_2020-02-02--00-00-00_someGuid.json"));
+            Assert.IsTrue(result[3].Equals($"C:\\Stats_2020-02-02--00-00-00_someGuid.xlsx"));
+            Assert.IsTrue(result[4].Equals($"C:\\Log_2020-02-02--00-00-00_someGuid.txt"));
         }
 
         [TestMethod]
@@ -39,7 +40,7 @@ namespace LeagueAPI_Tests.UnitTests
 
             List<string> result = SetupFullRunner().DoFullRun(GetParams().OutputDirectory, "matchesPath");
             Assert.IsTrue(result.Count == 3);
-            Assert.IsTrue(result[0].Equals($"C:\\ItemSet_2020-02-02--00-00-00_someGuid.json"));
+            Assert.IsTrue(result[0].Equals($"C:\\ItemSet_All_2020-02-02--00-00-00_someGuid.json"));
             Assert.IsTrue(result[1].Equals($"C:\\Stats_2020-02-02--00-00-00_someGuid.xlsx"));
             Assert.IsTrue(result[2].Equals($"C:\\Log_2020-02-02--00-00-00_someGuid.txt"));
         }
@@ -64,7 +65,8 @@ namespace LeagueAPI_Tests.UnitTests
                 OutputDirectory = "C:\\",
                 QueueId = 1,
                 TargetVersion = "ss",
-                Token = "ss"
+                Token = "ss",
+                IncludeWinRatesForMinutes = new List<int>() { 20 }
             };
         }
 
