@@ -46,7 +46,7 @@ namespace LeagueAPI_ClassLibrary
             }
             catch (Exception ex)
             {
-                Logger.Log(ex.Message);
+                Logger.Log(ex.ToString());
                 return CreateLogFileAndReturnListOfCreatedFiles(createdFiles);
             }
         }
@@ -65,7 +65,7 @@ namespace LeagueAPI_ClassLibrary
             }
             catch (Exception ex)
             {
-                Logger.Log(ex.Message);
+                Logger.Log(ex.ToString());
                 return CreateLogFileAndReturnListOfCreatedFiles(createdFiles);
             }
         }

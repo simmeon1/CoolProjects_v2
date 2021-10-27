@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "LeagueAPI_Console": {
+      "commandName": "Project",
+      "commandLineArgs": "parametersPath-C:\\D\\LeagueAPI\\leagueAPIParameters.json"
+    }
+  }
+}

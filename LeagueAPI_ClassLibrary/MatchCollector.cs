@@ -63,7 +63,11 @@ namespace LeagueAPI_ClassLibrary
                         LeagueMatch match = await Client.GetMatch(matchId);
                         scannedMatchIds.Add(matchId);
 
-                        if (match == null) continue;
+                        if (match == null || match.queueId == 0 || match.participants.Count == 0)
+                        {
+                            Logger.Log($"Skipped adding match {match.matchId} due to bad data from server.");
+                            continue;
+                        }
                         int versionComparisonResult = CompareTargetVersionAgainstGameVersion(rangeOfTargetVersions, match.gameVersion);
                         if (versionComparisonResult == -1) continue;
                         else if (versionComparisonResult == 1) break;
@@ -84,7 +88,7 @@ namespace LeagueAPI_ClassLibrary
             catch (Exception ex)
             {
                 Logger.Log("Collections of matches stopped due to exception. Details:");
-                Logger.Log(ex.Message);
+                Logger.Log(ex.ToString());
                 Logger.Log($"Matches to be returned: {result.Count}.");
                 return result;
             }
