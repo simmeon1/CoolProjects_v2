@@ -57,11 +57,8 @@ namespace LeagueAPI_ClassLibrary
                     result.AddRange(alreadyScannedMatches);
                     if (result.Count >= maxCount) return result;
 
-                    foreach (LeagueMatch match in alreadyScannedMatches)
-                    {
-                        scannedMatchIds.Add(match.matchId);
-                        foreach (Participant p in match.participants) puuidsToScan.Add(p.puuid);
-                    }
+                    foreach (LeagueMatch match in alreadyScannedMatches) scannedMatchIds.Add(match.matchId);
+                    foreach (Participant p in alreadyScannedMatches.Last().participants) puuidsToScan.Add(p.puuid);
                     foreach (string puuidToScan in puuidsToScan) puuidQueue.Enqueue(puuidToScan);
                 }
 
