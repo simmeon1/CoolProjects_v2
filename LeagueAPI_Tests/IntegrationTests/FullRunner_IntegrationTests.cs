@@ -38,25 +38,6 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(createdFiles.Count == 4);
             DeleteCreatedFiles(createdFiles);
         }
-        
-        [TestMethod]
-        public void FullRun_DoTest_HasPredefinedMatchFile()
-        {
-            RealHttpClient http = new();
-            RealDelayer delayer = new();
-            Logger_Debug logger = new();
-            LeagueAPIClient client = new(http, TestData.Token, delayer, logger);
-            MatchCollector collector = new(client, logger);
-            DdragonRepository repo = new(new RealFileIO(), TestData.DdragonJsonFilesDirectoryPath);
-            RealFileIO fileIO = new();
-            RealDateTimeProvider dateTimeProvider = new();
-            ExcelPrinter printer = new();
-            RealGuidProvider guidProvider = new();
-            FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger);
-            List<string> createdFiles = runner.DoFullRun(TestData.OutputDirectory, Path.Combine(TestData.OutputDirectory, "matches.json"));
-            Assert.IsTrue(createdFiles.Count == 3);
-            DeleteCreatedFiles(createdFiles);
-        }
 
         private static void DeleteCreatedFiles(List<string> createdFiles)
         {

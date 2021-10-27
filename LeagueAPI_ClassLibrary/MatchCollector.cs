@@ -40,7 +40,7 @@ namespace LeagueAPI_ClassLibrary
             return int.Parse(Regex.Replace(gameVersion, @"\D", "").Substring(0, 4));
         }
 
-        public async Task<List<LeagueMatch>> GetMatches(string startPuuid, int queueId, List<string> rangeOfTargetVersions, int maxCount = 0)
+        public async Task<List<LeagueMatch>> GetMatches(string startPuuid, int queueId, List<string> rangeOfTargetVersions, int maxCount, List<LeagueMatch> alreadyScannedMatches = null)
         {
             HashSet<string> scannedMatchIds = new();
             Queue<string> puuidQueue = new();
@@ -51,6 +51,20 @@ namespace LeagueAPI_ClassLibrary
             {
                 puuidQueue.Enqueue(startPuuid);
                 puuidsToScan.Add(startPuuid);
+
+                if (alreadyScannedMatches != null)
+                {
+                    result.AddRange(alreadyScannedMatches);
+                    if (result.Count >= maxCount) return result;
+
+                    foreach (LeagueMatch match in alreadyScannedMatches)
+                    {
+                        scannedMatchIds.Add(match.matchId);
+                        foreach (Participant p in match.participants) puuidsToScan.Add(p.puuid);
+                    }
+                    foreach (string puuidToScan in puuidsToScan) puuidQueue.Enqueue(puuidToScan);
+                }
+
                 while (puuidQueue.Count > 0)
                 {
                     string puuid = puuidQueue.Dequeue();
@@ -63,7 +77,7 @@ namespace LeagueAPI_ClassLibrary
                         LeagueMatch match = await Client.GetMatch(matchId);
                         scannedMatchIds.Add(matchId);
 
-                        if (match == null || match.queueId == 0 || match.participants.Count == 0)
+                        if (match == null || match.queueId == 0 || match.participants == null || match.participants.Count == 0)
                         {
                             Logger.Log($"Skipped adding match {match.matchId} due to bad data from server.");
                             continue;
@@ -74,7 +88,7 @@ namespace LeagueAPI_ClassLibrary
 
                         result.Add(match);
                         Logger.Log($"Added match {match.matchId} (version {match.gameVersion}, queueId {match.queueId}), current count is {result.Count}");
-                        if (maxCount > 0 && result.Count >= maxCount) return result;
+                        if (result.Count >= maxCount) return result;
                         foreach (Participant participant in match.participants)
                         {
                             if (puuidsToScan.Contains(participant.puuid)) continue;

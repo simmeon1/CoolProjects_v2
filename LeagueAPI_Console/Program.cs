@@ -19,6 +19,7 @@ namespace LeagueAPI_Console
                 Match match = Regex.Match(arg, "parametersPath-(.*)");
                 if (match.Success) parametersPath = match.Groups[1].Value;
             }
+
             Parameters parameters = File.ReadAllText(parametersPath).DeserializeObject<Parameters>();
             RealFileIO fileIO = new();
             RealHttpClient http = new();
@@ -31,7 +32,14 @@ namespace LeagueAPI_Console
             RealGuidProvider guidProvider = new();
             ExcelPrinter printer = new();
             FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger);
-            List<string> files = await runner.DoFullRun(parameters.OutputDirectory, parameters.QueueId, parameters.AccountPuuid, targetVersions: parameters.RangeOfTargetVersions, maxCount: parameters.MaxCount, parameters.IncludeWinRatesForMinutes);
+            List<string> files = await runner.DoFullRun(
+                parameters.OutputDirectory,
+                parameters.QueueId,
+                parameters.AccountPuuid,
+                targetVersions: parameters.RangeOfTargetVersions,
+                maxCount: parameters.MaxCount,
+                parameters.IncludeWinRatesForMinutes,
+                parameters.ExistingMatchesFile);
             if (files.Count > 0) logger.Log($"{files.Count} files written at {parameters.OutputDirectory}. Press any key to exit." );
             Console.ReadKey();
         }

@@ -67,7 +67,7 @@ namespace LeagueAPI_Tests.UnitTests
             clientMock.Setup(x => x.GetMatch(matchId4).Result).Returns(matchWIthOutdatedVersion);
 
             MatchCollector collector = new(clientMock.Object, new Logger_Debug());
-            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, new List<string> { targetVersion });
+            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, new List<string> { targetVersion }, 10);
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));
         }
@@ -90,7 +90,7 @@ namespace LeagueAPI_Tests.UnitTests
             clientMock.Setup(x => x.GetMatch(matchId2).Result).Returns(matchWithCorrectVersion);
 
             MatchCollector collector = new(clientMock.Object, new Logger_Debug());
-            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, new List<string> { targetVersion });
+            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, new List<string> { targetVersion }, 10);
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));
         }
@@ -116,6 +116,60 @@ namespace LeagueAPI_Tests.UnitTests
             List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, new List<string> { targetVersion }, 1);
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));
+        }
+        
+        [TestMethod]
+        public async Task CollectMatches_OnlyOneMatch_MatchesProvided()
+        {
+            const string matchId = "2";
+            const string targetVersion = "11.14";
+            const int queueId = 450;
+            const string startingPuuid = "startingPuuid";
+
+            LeagueMatch match = new();
+            match.gameVersion = targetVersion;
+            match.matchId = matchId;
+            match.participants = new() { new Participant() };
+
+            Mock<ILeagueAPIClient> clientMock = new();
+            clientMock.Setup(x => x.GetMatchIds(queueId, startingPuuid).Result).Returns(new List<string>() { matchId });
+            clientMock.Setup(x => x.GetMatch(matchId).Result).Returns(match);
+
+            MatchCollector collector = new(clientMock.Object, new Logger_Debug());
+            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, new List<string> { targetVersion }, 1, new List<LeagueMatch>() { match });
+            Assert.IsTrue(matches.Count == 1);
+            Assert.IsTrue(matches[0].matchId.Equals(matchId));
+        }
+        
+        [TestMethod]
+        public async Task CollectMatches_TwoMatches_MatchesProvided()
+        {
+            const string matchId1 = "1";
+            const string matchId2 = "2";
+            const string targetVersion = "11.14";
+            const int queueId = 450;
+            const string startingPuuid = "startingPuuid";
+
+            LeagueMatch match1 = new();
+            match1.gameVersion = targetVersion;
+            match1.matchId = matchId1;
+            match1.participants = new() { new Participant() { puuid = "p1" } };
+            
+            LeagueMatch match2 = new();
+            match2.gameVersion = targetVersion;
+            match2.matchId = matchId2;
+            match2.participants = new() { new Participant() { puuid = "p2" } };
+
+            Mock<ILeagueAPIClient> clientMock = new();
+            clientMock.Setup(x => x.GetMatchIds(queueId, It.IsAny<string>()).Result).Returns(new List<string>() { matchId1, matchId2 });
+            clientMock.Setup(x => x.GetMatch(matchId1).Result).Returns(match1);
+            clientMock.Setup(x => x.GetMatch(matchId2).Result).Returns(match2);
+
+            MatchCollector collector = new(clientMock.Object, new Logger_Debug());
+            List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, new List<string> { targetVersion }, 10, new List<LeagueMatch>() { match1 });
+            Assert.IsTrue(matches.Count == 2);
+            Assert.IsTrue(matches[0].matchId.Equals(matchId1));
+            Assert.IsTrue(matches[1].matchId.Equals(matchId2));
         }
     }
 }

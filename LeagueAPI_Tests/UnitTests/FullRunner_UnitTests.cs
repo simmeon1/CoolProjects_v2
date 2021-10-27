@@ -12,10 +12,23 @@ namespace LeagueAPI_Tests.UnitTests
     public class FullRunner_UnitTests
     {
         [TestMethod]
-        public async Task FullRunner_ExpectedFileNames_MatchesNotProvided()
+        public async Task FullRunner_ExpectedFileNames()
         {
             Parameters paramms = GetParams();
-            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, includeWinRatesForMinutes: paramms.IncludeWinRatesForMinutes);
+            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, includeWinRatesForMinutes: paramms.IncludeWinRatesForMinutes);
+            DefaultAssert(result);
+        }
+        
+        [TestMethod]
+        public async Task FullRunner_ExpectedFileNames_MatchesProvided()
+        {
+            Parameters paramms = GetParams();
+            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, includeWinRatesForMinutes: paramms.IncludeWinRatesForMinutes, paramms.ExistingMatchesFile);
+            DefaultAssert(result);
+        }
+
+        private static void DefaultAssert(List<string> result)
+        {
             Assert.IsTrue(result.Count == 5);
             Assert.IsTrue(result[0].Equals($"C:\\Matches_2020-02-02--00-00-00_someGuid.json"));
             Assert.IsTrue(result[1].Equals($"C:\\ItemSet_All_2020-02-02--00-00-00_someGuid.json"));
@@ -25,31 +38,23 @@ namespace LeagueAPI_Tests.UnitTests
         }
 
         [TestMethod]
+        public async Task FullRunner_ExpectedFileNames_NoWinRatesIncluded()
+        {
+            Parameters paramms = GetParams();
+            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10);
+            Assert.IsTrue(result.Count == 4);
+            Assert.IsTrue(result[0].Equals($"C:\\Matches_2020-02-02--00-00-00_someGuid.json"));
+            Assert.IsTrue(result[1].Equals($"C:\\ItemSet_All_2020-02-02--00-00-00_someGuid.json"));
+            Assert.IsTrue(result[2].Equals($"C:\\Stats_2020-02-02--00-00-00_someGuid.xlsx"));
+            Assert.IsTrue(result[3].Equals($"C:\\Log_2020-02-02--00-00-00_someGuid.txt"));
+        }
+
+        [TestMethod]
         public async Task FullRunner_ExpectedFileNames_ExceptionDuringMatchCollection()
         {
 
             Parameters paramms = GetParams();
-            List<string> result = await SetupFullRunner(throwExceptionOnMatchCollection: true).DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions);
-            Assert.IsTrue(result.Count == 1);
-            Assert.IsTrue(result[0].Equals($"C:\\Log_2020-02-02--00-00-00_someGuid.txt"));
-        }
-
-        [TestMethod]
-        public void FullRunner_ExpectedFileNames_MatchesProvided()
-        {
-
-            List<string> result = SetupFullRunner().DoFullRun(GetParams().OutputDirectory, "matchesPath");
-            Assert.IsTrue(result.Count == 3);
-            Assert.IsTrue(result[0].Equals($"C:\\ItemSet_All_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[1].Equals($"C:\\Stats_2020-02-02--00-00-00_someGuid.xlsx"));
-            Assert.IsTrue(result[2].Equals($"C:\\Log_2020-02-02--00-00-00_someGuid.txt"));
-        }
-
-        [TestMethod]
-        public void FullRunner_ExpectedFileNames_ExceptionDuringMatchFileReading()
-        {
-
-            List<string> result = SetupFullRunner(throwExceptionOnMatchFileRead: true).DoFullRun(GetParams().OutputDirectory, "matchesPath");
+            List<string> result = await SetupFullRunner(throwExceptionOnMatchCollection: true).DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10);
             Assert.IsTrue(result.Count == 1);
             Assert.IsTrue(result[0].Equals($"C:\\Log_2020-02-02--00-00-00_someGuid.txt"));
         }
@@ -66,7 +71,8 @@ namespace LeagueAPI_Tests.UnitTests
                 QueueId = 1,
                 RangeOfTargetVersions = new List<string> { "ss" },
                 Token = "ss",
-                IncludeWinRatesForMinutes = new List<int>() { 20 }
+                IncludeWinRatesForMinutes = new List<int>() { 20 },
+                ExistingMatchesFile = "gg"
             };
         }
 
@@ -76,8 +82,8 @@ namespace LeagueAPI_Tests.UnitTests
 
             Mock<IMatchCollector> collector = new();
 
-            if (throwExceptionOnMatchCollection) collector.Setup(x => x.GetMatches(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<int>()).Result).Throws(new Exception("ex"));
-            else collector.Setup(x => x.GetMatches(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<int>()).Result).Returns(new List<LeagueMatch>());
+            if (throwExceptionOnMatchCollection) collector.Setup(x => x.GetMatches(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<int>(), It.IsAny<List<LeagueMatch>>()).Result).Throws(new Exception("ex"));
+            else collector.Setup(x => x.GetMatches(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<List<string>>(), It.IsAny<int>(), It.IsAny<List<LeagueMatch>>()).Result).Returns(new List<LeagueMatch>());
 
             Mock<IDDragonRepository> repo = new();
             Mock<IFileIO> fileIO = new();

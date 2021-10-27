@@ -13,5 +13,6 @@ namespace LeagueAPI_ClassLibrary
         public int QueueId { get; set; }
         public int MaxCount { get; set; }
         public List<int> IncludeWinRatesForMinutes { get; set; }
+        public string ExistingMatchesFile { get; set; }
     }
 }

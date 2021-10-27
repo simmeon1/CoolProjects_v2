@@ -34,31 +34,17 @@ namespace LeagueAPI_ClassLibrary
             Logger = logger;
         }
 
-        public List<string> DoFullRun(string outputDirectory, string existingMatchesFilePath, List<int> includeWinRatesForMinutes = null)
+        public async Task<List<string>> DoFullRun(string outputDirectory, int queueId, string startPuuid, List<string> targetVersions, int maxCount, List<int> includeWinRatesForMinutes = null, string existingMatchesFile = null)
         {
             InitialiseFileNames(outputDirectory);
             List<string> createdFiles = new();
 
             try
             {
-                List<LeagueMatch> matches = FileIO.ReadAllText(existingMatchesFilePath).DeserializeObject<List<LeagueMatch>>();
-                return GetCreatedFilesAfterMatchAnalysis(createdFiles, matches, includeWinRatesForMinutes);
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(ex.ToString());
-                return CreateLogFileAndReturnListOfCreatedFiles(createdFiles);
-            }
-        }
+                List<LeagueMatch> alreadyScannedMatches = null;
+                if (!existingMatchesFile.IsNullOrEmpty()) alreadyScannedMatches = FileIO.ReadAllText(existingMatchesFile).DeserializeObject<List<LeagueMatch>>();
 
-        public async Task<List<string>> DoFullRun(string outputDirectory, int queueId, string startPuuid, List<string> targetVersions, int maxCount = 0, List<int> includeWinRatesForMinutes = null)
-        {
-            InitialiseFileNames(outputDirectory);
-            List<string> createdFiles = new();
-
-            try
-            {
-                List<LeagueMatch> matches = await MatchCollector.GetMatches(startPuuid, queueId, targetVersions, maxCount);
+                List<LeagueMatch> matches = await MatchCollector.GetMatches(startPuuid, queueId, targetVersions, maxCount, alreadyScannedMatches);
                 FileIO.WriteAllText(MatchesFilePath, matches.SerializeObject());
                 createdFiles.Add(MatchesFilePath);
                 return GetCreatedFilesAfterMatchAnalysis(createdFiles, matches, includeWinRatesForMinutes);
