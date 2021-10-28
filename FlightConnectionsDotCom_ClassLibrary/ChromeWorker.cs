@@ -26,6 +26,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private IWebElement DateInput2 { get; set; }
         private bool ControlsKnown { get; set; }
         private int DefaultDelay { get; set; }
+        private bool StopsSet { get; set; }
         private string LastTypedOrigin { get; set; }
 
         public ChromeWorker(ILogger logger, IDelayer delayer, IWebDriver driver)
@@ -39,6 +40,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         {
             DefaultDelay = defaultDelay;
             LastTypedOrigin = "";
+            StopsSet = false;
             List<FullPathAndListOfPathsAndFlightCollections> results = new();
             CollectedPathFlights = collectedPathFlights ?? new();
             PagesToOpen = 0;
@@ -81,7 +83,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 else
                 {
                     await PopulateControls(origin, target, dateFrom);
-                    if (CollectedPathFlights.Count == 0) await SetStopsToNone();
+                    if (!StopsSet)
+                    {
+                        await SetStopsToNone();
+                        StopsSet = true;
+                    }
 
                     List<DateTime> listOfExtraDates = new() { };
                     DateTime tempDate = dateFrom.AddDays(1);
