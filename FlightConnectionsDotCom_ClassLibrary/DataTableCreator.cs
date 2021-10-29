@@ -21,7 +21,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             TypeBool = Type.GetType("System.Boolean");
         }
 
-        public List<DataTable> GetTables(List<Airport> airportList, List<SequentialFlightCollection> sequentialCollections, bool skipUndoableFlights, bool skipNotSameDayFinishFlights)
+        public List<DataTable> GetTables(List<Airport> airportList, List<SequentialFlightCollection> sequentialCollections, bool skipUndoableFlights, bool skipNotSameDayFinishFlights, int noLongerThan)
         {
             Dictionary<string, string> airportsAndCountries = new();
             foreach (Airport airport in airportList)
@@ -29,10 +29,17 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 if (!airportsAndCountries.ContainsKey(airport.Code)) airportsAndCountries.Add(airport.Code, airport.Country);
             }
 
-            List<SequentialFlightCollection> sequentialCollectionsOrdered = sequentialCollections
+            List<SequentialFlightCollection> reducedList = sequentialCollections
                                                                     .Where(c => !skipUndoableFlights || c.SequenceIsDoable())
                                                                     .Where(c => !skipNotSameDayFinishFlights || c.StartsAndEndsOnSameDay())
+                                                                    .Where(c => c.GetTotalTime() <= noLongerThan).ToList();
+            
+            double avgLength = reducedList.Count == 0 ? 0 : reducedList.Average(x => x.GetTotalTime());
+            double avgCost = reducedList.Count == 0 ? 0 : reducedList.Average(x => x.GetCost());
+
+            List<SequentialFlightCollection> reducedAndOrderedList = reducedList
                                                                     .OrderByDescending(c => c.SequenceIsDoable())
+                                                                    .ThenByDescending(c => GetBargainPercentage(c, avgLength, avgCost))
                                                                     .ThenByDescending(c => c.StartsAndEndsOnSameDay())
                                                                     .ThenBy(c => c.GetCountOfFlights())
                                                                     .ThenBy(c => c.GetTotalTime())
@@ -54,16 +61,17 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 new("End", TypeString),
                 new("Length", TypeDouble),
                 new("Country Changes", TypeInt32),
-                new("Cost", TypeDouble)
+                new("Cost", TypeDouble),
+                new("Bargain %", TypeDouble)
             }.ToArray());
             if (skipUndoableFlights) mainTable.Columns.Remove(doableColumn);
             if (skipNotSameDayFinishFlights) mainTable.Columns.Remove(sameDayFinishColumn);
 
             DataTable subTable = GetSubTable();
 
-            for (int i = 0; i < sequentialCollectionsOrdered.Count; i++)
+            for (int i = 0; i < reducedAndOrderedList.Count; i++)
             {
-                SequentialFlightCollection seqCollection = sequentialCollectionsOrdered[i];
+                SequentialFlightCollection seqCollection = reducedAndOrderedList[i];
                 int id = i + 1;
                 ColumnIndexCounter = 0;
                 DataRow row = mainTable.NewRow();
@@ -77,12 +85,18 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetTotalTime();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = GetCountryChanges(airportsAndCountries, seqCollection);
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetCost();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = GetBargainPercentage(seqCollection, avgLength, avgCost);
                 mainTable.Rows.Add(row);
                 AddRowsToSubTable(seqCollection, id, subTable);
             }
             tables.Add(mainTable);
             tables.Add(subTable);
             return tables;
+        }
+
+        private static double GetBargainPercentage(SequentialFlightCollection seqCollection, double avgLength, double avgCost)
+        {
+            return (100 - (seqCollection.GetTotalTime() / avgLength) * 100) + (100 - (seqCollection.GetCost() / avgCost * 100));
         }
 
         private static int GetCountryChanges(Dictionary<string, string> airportsAndCountries, SequentialFlightCollection c)
@@ -104,13 +118,13 @@ namespace FlightConnectionsDotCom_ClassLibrary
             DataTable subTable = new("Details");
 
             subTable.Columns.AddRange(new List<DataColumn> {
-                new DataColumn("Path", TypeString), 
-                new DataColumn("Id", TypeInt32), 
-                new DataColumn("Flight #", TypeInt32), 
-                new DataColumn("Departing", TypeString), 
-                new DataColumn("Arriving", TypeString), 
-                new DataColumn("Duration", TypeString), 
-                new DataColumn("Airline", TypeString), 
+                new DataColumn("Path", TypeString),
+                new DataColumn("Id", TypeInt32),
+                new DataColumn("Flight #", TypeInt32),
+                new DataColumn("Departing", TypeString),
+                new DataColumn("Arriving", TypeString),
+                new DataColumn("Duration", TypeString),
+                new DataColumn("Airline", TypeString),
                 new DataColumn("Cost", TypeDouble)
             }.ToArray());
             return subTable;

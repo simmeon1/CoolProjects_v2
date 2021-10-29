@@ -129,7 +129,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
 
             DataTableCreator dtCreator = new();
-            Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results2, Parameters.SkipUndoableFlights, Parameters.SkipNotSameDayFinishFlights), $"{runResultsPath}\\{runId}_results.xlsx");
+            Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results2, Parameters.SkipUndoableFlights, Parameters.SkipNotSameDayFinishFlights, Parameters.NoLongerThan), $"{runResultsPath}\\{runId}_results.xlsx");
             Logger.Log($"Saved files to {runResultsPath}");
             SaveLogAndQuitDriver(runId, runResultsPath);
         }

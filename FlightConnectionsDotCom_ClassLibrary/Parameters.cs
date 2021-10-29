@@ -22,5 +22,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public bool EuropeOnly{ get; set; }
         public bool UKAndBulgariaOnly{ get; set; }
         public int DefaultDelay { get; set; }
+        public int NoLongerThan { get; set; }
     }
 }
