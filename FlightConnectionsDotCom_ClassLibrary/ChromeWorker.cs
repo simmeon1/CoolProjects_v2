@@ -95,6 +95,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                         listOfExtraDates.Add(tempDate);
                         tempDate = tempDate.AddDays(1);
                     }
+                    Logger.Log($"Getting flights for path {pathName} from {dateFrom} to {dateTo}.");
                     flights = await GetFlights(dateFrom, listOfExtraDates);
                 }
                 PathAndFlightCollection flightsForOriginToTarget = new(pathName, flights);
@@ -120,7 +121,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private async Task GetFlightsForDate(DateTime date, List<Flight> results)
         {
-            Logger.Log($"Getting flights for date {date}.");
             ReadOnlyCollection<IWebElement> flightLists;
             ReadOnlyCollection<IWebElement> flights;
             List<IWebElement> allFlights;
@@ -129,7 +129,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             {
                 try
                 {
-                    await Delayer.Delay(1000);
+                    await Delayer.Delay(3000);
                     flightLists = await FindElementsAndWait(By.CssSelector("[role=list]"));
                 }
                 catch (NoSuchElementException)
