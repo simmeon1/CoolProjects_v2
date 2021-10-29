@@ -137,7 +137,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private void SaveLogAndQuitDriver(string runId, string runResultsPath)
         {
             FileIO.WriteAllText($"{runResultsPath}\\{runId}_log.txt", Logger.GetContent().SerializeObject(Formatting.Indented));
-            Driver.Quit();
+            //Driver.Quit();
         }
     }
 }

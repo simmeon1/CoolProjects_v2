@@ -74,20 +74,19 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 string origin = path[i];
                 string target = path[i + 1];
                 Path pathName = new(new List<string> { origin, target });
+                Logger.Log($"Collecting path {pathName}.");
 
                 FlightCollection flights;
                 if (CollectedPathFlights.ContainsKey(pathName.ToString()))
                 {
+                    Logger.Log($"Path {pathName} already collected.");
                     flights = CollectedPathFlights[pathName.ToString()];
                 }
                 else
                 {
+                    Logger.Log($"Initial population of controls for path {pathName}, date {dateFrom}.");
                     await PopulateControls(origin, target, dateFrom);
-                    if (!StopsSet)
-                    {
-                        await SetStopsToNone();
-                        StopsSet = true;
-                    }
+                    if (!StopsSet) await SetStopsToNone();
 
                     List<DateTime> listOfExtraDates = new() { };
                     DateTime tempDate = dateFrom.AddDays(1);
@@ -121,6 +120,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private async Task GetFlightsForDate(DateTime date, List<Flight> results)
         {
+            Logger.Log($"Getting flights for date {date}.");
             ReadOnlyCollection<IWebElement> flightLists;
             ReadOnlyCollection<IWebElement> flights;
             List<IWebElement> allFlights;
@@ -227,6 +227,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             ReadOnlyCollection<IWebElement> radioGroupChildren = await FindElementsAndWait(radioGroup, By.CssSelector("input"));
             await ClickAndWait(radioGroupChildren[1]);
             await ClickHeader();
+            StopsSet = true;
         }
 
         private async Task ClickHeader()
