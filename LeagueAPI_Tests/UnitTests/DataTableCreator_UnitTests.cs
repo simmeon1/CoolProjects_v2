@@ -110,7 +110,6 @@ namespace LeagueAPI_Tests.UnitTests
             TestDefaultColumns(table);
         }
 
-
         [TestMethod]
         public void CreateStatPerkTable_ExpectedResults_DataWithMinutes_AdditionalDataNotAvailable()
         {

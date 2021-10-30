@@ -26,6 +26,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             parameters.FileSavePath = "C:\\D";
             parameters.OpenGoogleFlights = true;
             parameters.EuropeOnly = true;
+            parameters.Headless = true;
 
             Mock<IFlightConnectionsDotComWorker_AirportCollector> collectorMock = new();
             List<Airport> airportList = new() { new Airport("LTN", "London", "United Kingdom", "Luton", ""), new Airport("VAR", "Varna", "Bulgaria", "Varna", "") };
@@ -44,7 +45,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             List<FullPathAndListOfPathsAndFlightCollections> fullPaths = new() { fullPathAndFlights };
             Dictionary<string, FlightCollection> workerFlights = new();
             workerFlights.Add("ABZ-LTN", new());
-            ChromeWorkerResults workerResults = new(workerFlights, fullPaths);
+            ChromeWorkerResults workerResults = new(true, workerFlights, fullPaths);
             chromeWorkerMock.Setup(x => x.ProcessPaths(It.IsAny<List<Path>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<Dictionary<string, FlightCollection>>()).Result)
                     .Returns(workerResults);
 
@@ -57,8 +58,6 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                 new Mock<IDateTimeProvider>().Object
 ,
                 printerMock.Object,
-                new Mock<IWebDriver>().Object,
-                new Mock<IWebDriverWait>().Object,
                 collectorMock.Object,
                 populatorMock.Object,
                 chromeWorkerMock.Object);
@@ -119,7 +118,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             List<FullPathAndListOfPathsAndFlightCollections> fullPaths = new() { fullPathAndFlights };
             Dictionary<string, FlightCollection> workerFlights = new();
             workerFlights.Add("ABZ-LTN", new());
-            ChromeWorkerResults workerResults = new(workerFlights, fullPaths);
+            ChromeWorkerResults workerResults = new(true, workerFlights, fullPaths);
             fileIOMock.Setup(x => x.ReadAllText(parameters.LocalChromeWorkerResultsFile)).Returns(workerResults.SerializeObject());
 
             Mock<IExcelPrinter> printerMock = new();
@@ -132,8 +131,6 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                 new Mock<IDateTimeProvider>().Object
 ,
                 printerMock.Object,
-                new Mock<IWebDriver>().Object,
-                new Mock<IWebDriverWait>().Object,
                 collectorMock.Object,
                 populatorMock.Object,
                 chromeWorkerMock.Object);

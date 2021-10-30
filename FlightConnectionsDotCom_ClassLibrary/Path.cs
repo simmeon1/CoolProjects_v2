@@ -1,7 +1,5 @@
 ﻿using Common_ClassLibrary;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
@@ -34,6 +32,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public int Count()
         {
             return Entries.Count;
+        }
+        
+        public string GetSummarisedPath()
+        {
+            return Extensions.ConcatenateListOfStringsToDashString(new List<string>() { Entries[0], Entries[Count() - 1] });
         }
     }
 }

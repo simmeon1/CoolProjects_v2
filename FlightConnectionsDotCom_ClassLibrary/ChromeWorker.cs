@@ -14,7 +14,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private IWebDriver Driver { get; set; }
         private ILogger Logger { get; set; }
         private IDelayer Delayer { get; set; }
-        private bool ConsentAgreed { get; set; }
         private int PagesToOpen { get; set; }
         private int PagesOpened { get; set; }
         private Dictionary<string, FlightCollection> CollectedPathFlights { get; set; }
@@ -49,7 +48,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             try
             {
                 NavigateToUrl();
-                if (!ConsentAgreed) await AgreeToConsent();
+                await AgreeToConsent();
                 await SetToOneWayTrip();
 
                 foreach (Path path in paths) for (int i = 0; i < path.Count() - 1; i++) PagesToOpen++;
@@ -61,9 +60,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             {
                 Logger.Log("An exception was thrown while collecting flights and the results have been returned early.");
                 Logger.Log($"Exception details: {ex}");
-                return new(CollectedPathFlights, results);
+                return new(false, CollectedPathFlights, results);
             }
-            return new(CollectedPathFlights, results);
+            return new(true, CollectedPathFlights, results);
         }
 
         private async Task<FullPathAndListOfPathsAndFlightCollections> ProcessPath(Path path, DateTime dateFrom, DateTime dateTo)
@@ -74,17 +73,17 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 string origin = path[i];
                 string target = path[i + 1];
                 Path pathName = new(new List<string> { origin, target });
-                Logger.Log($"Collecting path {pathName}.");
+                Logger.Log($"Collecting data for {pathName}.");
 
                 FlightCollection flights;
                 if (CollectedPathFlights.ContainsKey(pathName.ToString()))
                 {
-                    Logger.Log($"Path {pathName} already collected.");
+                    Logger.Log($"Data for {pathName} already collected.");
                     flights = CollectedPathFlights[pathName.ToString()];
                 }
                 else
                 {
-                    Logger.Log($"Initial population of controls for path {pathName}, date {dateFrom}.");
+                    Logger.Log($"Initial population of controls for {pathName}, date {dateFrom}.");
                     await PopulateControls(origin, target, dateFrom);
                     if (!StopsSet) await SetStopsToNone();
 
@@ -95,14 +94,14 @@ namespace FlightConnectionsDotCom_ClassLibrary
                         listOfExtraDates.Add(tempDate);
                         tempDate = tempDate.AddDays(1);
                     }
-                    Logger.Log($"Getting flights for path {pathName} from {dateFrom} to {dateTo}.");
+                    Logger.Log($"Getting flights for {pathName} from {dateFrom} to {dateTo}.");
                     flights = await GetFlights(dateFrom, listOfExtraDates);
                 }
                 PathAndFlightCollection flightsForOriginToTarget = new(pathName, flights);
                 if (!CollectedPathFlights.ContainsKey(pathName.ToString())) CollectedPathFlights.Add(pathName.ToString(), flights);
                 pathsAndFlights.Add(flightsForOriginToTarget);
                 PagesOpened++;
-                Logger.Log($"Populated page for {origin} to {target} ({Globals.GetPercentageAndCountString(PagesOpened, PagesToOpen)})");
+                Logger.Log($"Collected data for {pathName} ({Globals.GetPercentageAndCountString(PagesOpened, PagesToOpen)})");
             }
             return new(path, pathsAndFlights);
         }
@@ -129,7 +128,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             {
                 try
                 {
-                    await Delayer.Delay(3000);
+                    await Delayer.Delay(2000);
                     flightLists = await FindElementsAndWait(By.CssSelector("[role=list]"));
                 }
                 catch (NoSuchElementException)
@@ -137,20 +136,27 @@ namespace FlightConnectionsDotCom_ClassLibrary
                     return;
                 }
 
-                allFlights = new();
-                bool showMoreFlightsButtonClicked = false;
-                foreach (IWebElement flightList in flightLists)
+                try
                 {
-                    flights = await FindElementsAndWait(flightList, By.CssSelector("[role=listitem]"));
-                    allFlights.AddRange(flights);
-                    if (flights[flights.Count - 1].GetAttribute("innerText").Contains("more flights"))
+                    allFlights = new();
+                    bool showMoreFlightsButtonClicked = false;
+                    foreach (IWebElement flightList in flightLists)
                     {
-                        flights[flights.Count - 1].Click();
-                        showMoreFlightsButtonClicked = true;
-                        break;
+                        flights = await FindElementsAndWait(flightList, By.CssSelector("[role=listitem]"));
+                        allFlights.AddRange(flights);
+                        if (flights[flights.Count - 1].GetAttribute("innerText").Contains("more flights"))
+                        {
+                            flights[flights.Count - 1].Click();
+                            showMoreFlightsButtonClicked = true;
+                            break;
+                        }
                     }
+                    if (!showMoreFlightsButtonClicked) break;
                 }
-                if (!showMoreFlightsButtonClicked) break;
+                catch (StaleElementReferenceException)
+                {
+                    //Repeat
+                }
             }
 
             foreach (IWebElement flight in allFlights)
@@ -251,7 +257,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 try
                 {
                     buttonText = button.Text;
-
                 }
                 catch (StaleElementReferenceException)
                 {
@@ -259,7 +264,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 }
                 if (!buttonText.Contains("I agree")) continue;
                 await ClickAndWait(button);
-                ConsentAgreed = true;
                 return;
             }
         }

@@ -36,22 +36,30 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetAirportConnections_ReturnsZeroResultsWhenMaxFlightsAreZero()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 0);
+            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 0, false);
             Assert.IsTrue(paths.Count == 0);
         }
 
         [TestMethod]
         public void GetAirportConnections_ReturnsExpectedOnePathWhenMaxFlightsAreOne_1()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 1);
+            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 1, false);
             Assert.IsTrue(paths.Count == 1);
             VerifyAbzSofPath(paths);
         }
-        
+
+        [TestMethod]
+        public void GetAirportConnections_ReturnsExpectedOnePathWhenMaxFlightsAreOne_OnlyShortestFlightIsReturned()
+        {
+            List<Path> paths = generator.GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 2, true);
+            Assert.IsTrue(paths.Count == 1);
+            VerifyAbzSofPath(paths);
+        }
+
         [TestMethod]
         public void GetAirportConnections_ReturnsExpectedOnePathWhenMaxFlightsAreOne_2()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 1, airports);
+            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 1, false, airports);
             Assert.IsTrue(paths.Count == 1);
             VerifyAbzSofPath(paths);
         }
@@ -59,7 +67,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetAirportConnections_MultipleOriginsAndTargets()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ, codeEDI }, new List<string>(){ codeSOF, codeCIA }, 1);
+            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ, codeEDI }, new List<string>(){ codeSOF, codeCIA }, 1, false);
             Assert.IsTrue(paths.Count == 4);
             Assert.IsTrue(paths[0].Count() == 2);
             Assert.IsTrue(paths[0][0].Equals(codeABZ));
@@ -78,7 +86,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetAirportConnections_ReturnsExpectedThreePathsWhenMaxFlightsAreTwo()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 2);
+            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 2, false);
             Assert.IsTrue(paths.Count == 3);
             VerifyAbzSofPath(paths);
             VerifyAbzCiaSofPath(paths);
@@ -88,7 +96,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetAirportConnections_ReturnsExpectedThreePathsWhenMaxFlightsAreTwo_FlightsFiltered()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 2, airports, new UKBulgariaFilterer());
+            List<Path> paths = generator.GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 2, false, airports, new UKBulgariaFilterer());
             Assert.IsTrue(paths.Count == 1);
             VerifyAbzSofPath(paths);
         }
@@ -96,7 +104,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetAirportConnections_ReturnsExpectedFivePathsWhenMaxFlightsAreThreeOrMore()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 10);
+            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 10, false);
             Assert.IsTrue(paths.Count == 5);
             VerifyAbzSofPath(paths);
             VerifyAbzCiaSofPath(paths);

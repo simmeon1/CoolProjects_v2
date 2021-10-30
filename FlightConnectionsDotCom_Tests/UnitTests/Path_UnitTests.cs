@@ -34,5 +34,11 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             path[0] = "ABZ";
             Assert.IsTrue(path[0].Equals("ABZ"));
         }
+        
+        [TestMethod]
+        public void GetSummarisedPath()
+        {
+            Assert.IsTrue(new Path(new List<string>() { "ABZ", "LTN", "SOF" }).GetSummarisedPath().Equals("ABZ-SOF"));
+        }
     }
 }

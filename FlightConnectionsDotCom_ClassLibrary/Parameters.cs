@@ -23,5 +23,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public bool UKAndBulgariaOnly{ get; set; }
         public int DefaultDelay { get; set; }
         public int NoLongerThan { get; set; }
+        public bool OnlyIncludeShortestPaths { get; set; }
+        public bool Headless { get; set; }
     }
 }

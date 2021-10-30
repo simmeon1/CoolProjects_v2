@@ -23,7 +23,22 @@ namespace FlightConnectionsDotCom_Console
             Parameters parameters = System.IO.File.ReadAllText(parametersPath).DeserializeObject<Parameters>();
 
             Logger_Console logger = new();
-            ChromeDriver driver = new();
+            ChromeDriver driver = null;
+            if (parameters.LocalAirportListFile.IsNullOrEmpty() ||
+                parameters.LocalAirportDestinationsFile.IsNullOrEmpty() ||
+                (parameters.OpenGoogleFlights && parameters.LocalChromeWorkerResultsFile.IsNullOrEmpty())
+                )
+            {
+                if (parameters.Headless)
+                {
+                    ChromeOptions chromeOptions = new();
+                    chromeOptions.AddArgument("headless");
+                    chromeOptions.AddArgument("window-size=1280,800");
+                    driver = new(chromeOptions);
+                }
+                else driver = new();
+            }
+
             RealWebDriverWait webDriverWait = new(driver);
             FlightConnectionsDotComWorker worker = new(logger, driver, webDriverWait);
             RealDelayer delayer = new();
@@ -33,13 +48,12 @@ namespace FlightConnectionsDotCom_Console
                 fileIO: new RealFileIO(),
                 dateTimeProvider: new RealDateTimeProvider(),
                 printer: new ExcelPrinter(),
-                driver: driver,
-                webDriverWait: webDriverWait,
                 airportCollector: new FlightConnectionsDotComWorker_AirportCollector(worker),
                 airportPopulator: new FlightConnectionsDotComWorker_AirportPopulator(worker),
                 chromeWorker: new ChromeWorker(logger, delayer, driver)
             );
-            await runner.DoRun(parameters);
+            bool success = await runner.DoRun(parameters);
+            if ((success || parameters.Headless) && driver != null) driver.Quit();
             Console.WriteLine("Run finished. Press any key to continue");
             Console.ReadKey();
         }

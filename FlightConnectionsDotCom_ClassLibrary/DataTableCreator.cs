@@ -39,12 +39,13 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
             List<SequentialFlightCollection> reducedAndOrderedList = reducedList
                                                                     .OrderByDescending(c => c.SequenceIsDoable())
-                                                                    .ThenByDescending(c => GetBargainPercentage(c, avgLength, avgCost))
                                                                     .ThenByDescending(c => c.StartsAndEndsOnSameDay())
                                                                     .ThenBy(c => c.GetCountOfFlights())
-                                                                    .ThenBy(c => c.GetTotalTime())
                                                                     .ThenBy(c => GetCountryChanges(airportsAndCountries, c))
+                                                                    .ThenByDescending(c => GetBargainPercentage(c, avgLength, avgCost))
+                                                                    .ThenBy(c => c.GetTotalTime())
                                                                     .ThenBy(c => c.GetCost())
+                                                                    .ThenBy(c => c.GetStartTime())
                                                                     .ToList();
 
             List<DataTable> tables = new();
@@ -96,7 +97,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private static double GetBargainPercentage(SequentialFlightCollection seqCollection, double avgLength, double avgCost)
         {
-            return (100 - (seqCollection.GetTotalTime() / avgLength) * 100) + (100 - (seqCollection.GetCost() / avgCost * 100));
+            return (100 - ((seqCollection.GetTotalTime() / avgLength) * 100)) + (100 - ((seqCollection.GetCost() / avgCost) * 100));
         }
 
         private static int GetCountryChanges(Dictionary<string, string> airportsAndCountries, SequentialFlightCollection c)

@@ -8,9 +8,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
     public class ChromeWorkerResults
     {
         public Dictionary<string, FlightCollection> PathsAndFlights { get; set; }
-        public List<FullPathAndListOfPathsAndFlightCollections> FullPathsAndFlightCollections { get; set; }        
-        public ChromeWorkerResults(Dictionary<string, FlightCollection> pathsAndFlights, List<FullPathAndListOfPathsAndFlightCollections> fullPathsAndFlightCollections)
+        public List<FullPathAndListOfPathsAndFlightCollections> FullPathsAndFlightCollections { get; set; }
+        public bool Success { get; set; }
+
+        public ChromeWorkerResults(bool success, Dictionary<string, FlightCollection> pathsAndFlights, List<FullPathAndListOfPathsAndFlightCollections> fullPathsAndFlightCollections)
         {
+            Success = success;
             FullPathsAndFlightCollections = fullPathsAndFlightCollections;
             PathsAndFlights = pathsAndFlights;
         }

@@ -15,8 +15,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public ILogger Logger { get; set; }
         public IDelayer Delayer { get; set; }
         public IFileIO FileIO { get; set; }
-        public IWebDriver Driver { get; set; }
-        public IWebDriverWait WebDriverWait { get; set; }
         public IExcelPrinter Printer { get; set; }
         public IFlightConnectionsDotComWorker_AirportCollector AirportCollector { get; set; }
         public IFlightConnectionsDotComWorker_AirportPopulator AirportPopulator { get; set; }
@@ -29,8 +27,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
             IFileIO fileIO,
             IDateTimeProvider dateTimeProvider,
             IExcelPrinter printer,
-            IWebDriver driver,
-            IWebDriverWait webDriverWait,
             IFlightConnectionsDotComWorker_AirportCollector airportCollector,
             IFlightConnectionsDotComWorker_AirportPopulator airportPopulator,
             IChromeWorker chromeWorker)
@@ -38,8 +34,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Logger = logger;
             Delayer = delayer;
             FileIO = fileIO;
-            Driver = driver;
-            WebDriverWait = webDriverWait;
             Printer = printer;
             AirportCollector = airportCollector;
             AirportPopulator = airportPopulator;
@@ -47,7 +41,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             DateTimeProvider = dateTimeProvider;
         }
 
-        public async Task DoRun(Parameters paramss)
+        public async Task<bool> DoRun(Parameters paramss)
         {
             Parameters = paramss;
 
@@ -58,12 +52,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
             string runResultsPath = System.IO.Path.Combine(Parameters.FileSavePath, runId);
             if (!FileIO.DirectoryExists(runResultsPath)) FileIO.CreateDirectory(runResultsPath);
 
-            bool useLocalAirportList = !Parameters.LocalAirportListFile.IsNullOrEmpty();
-            bool useLocalAirportDestinations = !Parameters.LocalAirportDestinationsFile.IsNullOrEmpty();
-
-            FlightConnectionsDotComWorker worker = new(Logger, Driver, WebDriverWait);
             List<Airport> airportsList;
-            if (useLocalAirportList)
+            if (!Parameters.LocalAirportListFile.IsNullOrEmpty())
             {
                 airportsList = FileIO.ReadAllText(Parameters.LocalAirportListFile).DeserializeObject<List<Airport>>();
             }
@@ -78,7 +68,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             else if (Parameters.UKAndBulgariaOnly) filterer = new UKBulgariaFilterer();
 
             Dictionary<string, HashSet<string>> airportsAndDestinations;
-            if (useLocalAirportDestinations)
+            if (!Parameters.LocalAirportDestinationsFile.IsNullOrEmpty())
             {
                 airportsAndDestinations = FileIO.ReadAllText(Parameters.LocalAirportDestinationsFile).DeserializeObject<Dictionary<string, HashSet<string>>>();
             }
@@ -89,7 +79,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
 
             AirportPathGenerator generator = new(airportsAndDestinations);
-            List<Path> paths = generator.GeneratePaths(Parameters.Origins, Parameters.Destinations, Parameters.MaxFlights, airportsList, filterer);
+            List<Path> paths = generator.GeneratePaths(Parameters.Origins, Parameters.Destinations, Parameters.MaxFlights, Parameters.OnlyIncludeShortestPaths, airportsList, filterer);
             List<List<string>> pathsDetailed = new();
             foreach (Path path in paths)
             {
@@ -104,12 +94,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
             {
                 chromeWorkerResults = FileIO.ReadAllText(Parameters.LocalChromeWorkerResultsFile).DeserializeObject<ChromeWorkerResults>();
                 PrintPathsAndFlightsAndFinish(airportsList, chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);
-                return;
+                return true;
             }
             else if (!Parameters.OpenGoogleFlights)
             {
                 SaveLogAndQuitDriver(runId, runResultsPath);
-                return;
+                return true;
             }
 
             Dictionary<string, FlightCollection> collectedPathFlights = new();
@@ -117,6 +107,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             chromeWorkerResults = await ChromeWorker.ProcessPaths(paths, Parameters.DateFrom, Parameters.DateTo, Parameters.DefaultDelay, collectedPathFlights);
             FileIO.WriteAllText($"{runResultsPath}\\{runId}_pathsAndFlights.json", chromeWorkerResults.SerializeObject(Formatting.Indented));
             PrintPathsAndFlightsAndFinish(airportsList, chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);
+            return chromeWorkerResults.Success;
         }
 
         private void PrintPathsAndFlightsAndFinish(List<Airport> airportsList, List<FullPathAndListOfPathsAndFlightCollections> pathsAndFlights, string runId, string runResultsPath)
