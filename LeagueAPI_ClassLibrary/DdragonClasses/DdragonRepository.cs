@@ -56,15 +56,7 @@ namespace LeagueAPI_ClassLibrary
                     Gold = int.Parse(itemEntry.Value["gold"]["total"].ToString())
                 };
                 JArray buildsInto = (JArray)itemEntry.Value["into"];
-                if (buildsInto == null)
-                {
-                    item.IsFinished = true;
-                }
-                else if (buildsInto.Count == 1)
-                {
-                    Item intoItem = GetItem(int.Parse(buildsInto[0].ToString()));
-                    if (intoItem != null) item.IsFinished = intoItem.IsOrnnItem();
-                }
+                item.IsFinished = buildsInto == null;
                 List<string> tags = new();
                 foreach (JToken tag in itemEntry.Value["tags"]) tags.Add(tag.ToString());
                 item.Tags = tags;

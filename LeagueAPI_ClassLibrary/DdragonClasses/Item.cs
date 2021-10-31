@@ -33,20 +33,20 @@ namespace LeagueAPI_ClassLibrary
         {
             return Gold > 2000;
         }
-        
-        public bool IsOrnnItem()
-        {
-            return Description.Contains("ornnBonus");
-        }
 
         public bool IsGuardian()
         {
-            return Name.Contains("Guardian");
+            return Name.Contains("Guardian") && !Name.Contains("Angel");
         }     
 
         public bool IsBoots()
         {
             return Tags.Contains("Boots");
+        }
+        
+        public bool IsDoran()
+        {
+            return Name.Contains("Doran");
         }
     }
 }

@@ -42,10 +42,15 @@ namespace LeagueAPI_ClassLibrary
             try
             {
                 List<LeagueMatch> alreadyScannedMatches = null;
-                if (!existingMatchesFile.IsNullOrEmpty()) alreadyScannedMatches = FileIO.ReadAllText(existingMatchesFile).DeserializeObject<List<LeagueMatch>>();
+                bool matchesProvided = !existingMatchesFile.IsNullOrEmpty();
+                if (matchesProvided)
+                {
+                    Logger.Log("Reading already scanned matches...");
+                    alreadyScannedMatches = FileIO.ReadAllText(existingMatchesFile).DeserializeObject<List<LeagueMatch>>();
+                }
 
                 List<LeagueMatch> matches = await MatchCollector.GetMatches(startPuuid, queueId, targetVersions, maxCount, alreadyScannedMatches);
-                FileIO.WriteAllText(MatchesFilePath, matches.SerializeObject());
+                if (!matchesProvided) FileIO.WriteAllText(MatchesFilePath, matches.SerializeObject());
                 createdFiles.Add(MatchesFilePath);
                 return GetCreatedFilesAfterMatchAnalysis(createdFiles, matches, includeWinRatesForMinutes);
             }
@@ -59,10 +64,13 @@ namespace LeagueAPI_ClassLibrary
         private void InitialiseFileNames(string outputDirectory)
         {
             string idString = Globals.GetDateTimeFileNameFriendlyConcatenatedWithString(DateTimeProvider.Now(), GuidProvider.NewGuid());
-            MatchesFilePath = Path.Combine(outputDirectory, $"Matches_{idString}.json");
-            ItemSetFilePath = Path.Combine(outputDirectory, $"ItemSet_All_{idString}.json");
-            StatsFilePath = Path.Combine(outputDirectory, $"Stats_{idString}.xlsx");
-            LogFilePath = Path.Combine(outputDirectory, $"Log_{idString}.txt");
+            string resultsFolder = $"Results_{idString}";
+            string path = Path.Combine(outputDirectory, resultsFolder);
+            if (!FileIO.DirectoryExists(path)) FileIO.CreateDirectory(path);
+            MatchesFilePath = Path.Combine(path, $"Matches_{idString}.json");
+            ItemSetFilePath = Path.Combine(path, $"ItemSet_All_{idString}.json");
+            StatsFilePath = Path.Combine(path, $"Stats_{idString}.xlsx");
+            LogFilePath = Path.Combine(path, $"Log_{idString}.txt");
         }
 
         private List<string> GetCreatedFilesAfterMatchAnalysis(List<string> createdFiles, List<LeagueMatch> matches, List<int> includeWinRatesForMinutes)
@@ -70,7 +78,7 @@ namespace LeagueAPI_ClassLibrary
             if (includeWinRatesForMinutes == null) includeWinRatesForMinutes = new();
             DataCollector collector = new();
 
-            List<KeyValuePair<int,DataCollectorResults>> resultsList = new();
+            List<KeyValuePair<int, DataCollectorResults>> resultsList = new();
             resultsList.Add(new KeyValuePair<int, DataCollectorResults>(0, collector.GetData(matches)));
             foreach (int minute in includeWinRatesForMinutes)
             {

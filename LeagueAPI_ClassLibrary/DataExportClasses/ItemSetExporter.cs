@@ -9,6 +9,7 @@ namespace LeagueAPI_ClassLibrary
         const string jsonTitle = "jsonTitle";
         const string guardianJson = "guardianJson";
         const string bootsJson = "bootsJson";
+        const string doranJson = "doranJson";
         const string mythics50PlusJson = "mythics50PlusJson";
         const string mythics50MinusJson = "mythics50MinusJson";
         const string legendaries50PlusJson = "legendaries50PlusJson";
@@ -26,6 +27,10 @@ namespace LeagueAPI_ClassLibrary
             {
               'items': " + guardianJson + @",
               'type': 'Guardian'
+            },
+            {
+              'items': " + doranJson + @",
+              'type': 'Doran'
             },
             {
               'items': " + bootsJson + @",
@@ -59,6 +64,7 @@ namespace LeagueAPI_ClassLibrary
         {
             List<object> guardianJsonArray = new();
             List<object> bootsJsonArray = new();
+            List<object> doranJsonArray = new();
             List<object> mythics50PlusJsonArray = new();
             List<object> mythics50MinusJsonArray = new();
             List<object> legendaries50PlusJsonArray = new();
@@ -70,9 +76,10 @@ namespace LeagueAPI_ClassLibrary
                 int id = entry.Key;
                 double winRate = entry.Value.GetWinRate();
                 Item item = Repository.GetItem(id);
-                if (item == null || item.IsOrnnItem()) continue;
+                if (item == null) continue;
                 if (item.IsGuardian()) AddItemToList(id, guardianJsonArray);
                 else if (item.IsBoots()) AddItemToList(id, bootsJsonArray);
+                else if (item.IsDoran()) AddItemToList(id, doranJsonArray);
                 else if (item.IsMythic() && winRate >= 50) AddItemToList(id, mythics50PlusJsonArray);
                 else if (item.IsMythic()) AddItemToList(id, mythics50MinusJsonArray);
                 else if (item.IsFinished && item.IsMoreThan2000G() && winRate >= 50) AddItemToList(id, legendaries50PlusJsonArray);
@@ -82,6 +89,7 @@ namespace LeagueAPI_ClassLibrary
                 .Replace(jsonTitle, itemSetName)
                 .Replace(guardianJson, guardianJsonArray.SerializeObject())
                 .Replace(bootsJson, bootsJsonArray.SerializeObject())
+                .Replace(doranJson, doranJsonArray.SerializeObject())
                 .Replace(mythics50PlusJson, mythics50PlusJsonArray.SerializeObject())
                 .Replace(mythics50MinusJson, mythics50MinusJsonArray.SerializeObject())
                 .Replace(legendaries50PlusJson, legendaries50PlusJsonArray.SerializeObject())
@@ -89,7 +97,7 @@ namespace LeagueAPI_ClassLibrary
                 .Replace("'", "\"");
         }
 
-        private void AddItemToList(int id, List<object> list)
+        private static void AddItemToList(int id, List<object> list)
         {
             list.Add(new { id = id.ToString(), count = 1 });
         }

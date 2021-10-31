@@ -66,17 +66,16 @@ namespace LeagueAPI_Tests.UnitTests
             DataTable table = creator.GetItemTable(GetDefaultTestData());
             Assert.IsTrue(table.TableName.Equals("Items"));
             Assert.IsTrue(table.Rows.Count == 1);
-            Assert.IsTrue(table.Rows[0].ItemArray.Length == 18);
+            Assert.IsTrue(table.Rows[0].ItemArray.Length == 17);
             Assert.IsTrue(table.Rows[0].ItemArray[0].Equals("name"));
             TestDefaultColumns(table);
             Assert.IsTrue(table.Rows[0].ItemArray[10].Equals(250));
             Assert.IsTrue(table.Rows[0].ItemArray[11].Equals(false));
             Assert.IsTrue(table.Rows[0].ItemArray[12].Equals(false));
             Assert.IsTrue(table.Rows[0].ItemArray[13].Equals(false));
-            Assert.IsTrue(table.Rows[0].ItemArray[14].Equals(false));
-            Assert.IsTrue(table.Rows[0].ItemArray[15].Equals(""));
-            Assert.IsTrue(table.Rows[0].ItemArray[16].Equals("plainText"));
-            Assert.IsTrue(table.Rows[0].ItemArray[17].Equals("desc"));
+            Assert.IsTrue(table.Rows[0].ItemArray[14].Equals(""));
+            Assert.IsTrue(table.Rows[0].ItemArray[15].Equals("plainText"));
+            Assert.IsTrue(table.Rows[0].ItemArray[16].Equals("desc"));
         }
 
         [TestMethod]

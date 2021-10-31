@@ -18,7 +18,7 @@ namespace LeagueAPI_Tests.UnitTests
             Mock<IFileIO> fileIOMock = new();
             fileIOMock.SetupSequence(x => x.ReadAllText(It.IsAny<string>()))
                 .Returns(@"{'data':{'Aatrox':{'key': '266', 'name':'Aatrox','info':{'difficulty':4},'tags':['Fighter','Tank']}}}")
-                .Returns(@"{'data':{'1001':{'name':'Boots','description':'rarityMythic<asd>ornnBonus','plaintext':'plaintext','into':['3158'],'gold':{'total':300},
+                .Returns(@"{'data':{'1001':{'name':'Boots','description':'rarityMythic<asd>ornnBonus','plaintext':'plaintext','gold':{'total':300},
                             'tags':['Boots', 'b']},'3158':{'name':'s','description':'ornnBonus','plaintext':'s','gold':{'total':300},'tags':['Boots']}}}")
                 .Returns(@"[{'name':'Domination','slots':[{'runes':[{'id':8112,'name':'name','longDesc':'long<asd>desc'}]}]}]")
                 .Returns(@"{'5008': 'someText'}")
@@ -56,7 +56,6 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(obj.Gold.Equals(300));
             Assert.IsTrue(obj.IsMoreThan2000G().Equals(false));
             Assert.IsTrue(obj.IsMythic().Equals(true));
-            Assert.IsTrue(obj.IsOrnnItem().Equals(true));
             Assert.IsTrue(obj.GetTagsString().Equals("Boots, b"));
         }
         

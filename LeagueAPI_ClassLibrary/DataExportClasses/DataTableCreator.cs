@@ -43,7 +43,7 @@ namespace LeagueAPI_ClassLibrary
                 row[ReturnColumnIndexCounterAndIncrementIt()] = champ.Difficulty;
                 table.Rows.Add(row);
             }
-            return table;
+            return GetSortedTable(table, (t => t.OrderBy(r => r.ItemArray[0])));
         }
 
         private void AddDefaultDataToRow(string name, KeyValuePair<int, WinLossData> entry, Dictionary<int, Dictionary<int, WinLossData>> fullData, DataRow row)
@@ -74,13 +74,15 @@ namespace LeagueAPI_ClassLibrary
                 new DataColumn("Gold", TypeInt32),
                 new DataColumn("More than 2000G", TypeBool),
                 new DataColumn("Is Mythic", TypeBool),
-                new DataColumn("Is Ornn Item", TypeBool),
                 new DataColumn("Is Finished", TypeBool),
                 new DataColumn("Tags", TypeString),
                 new DataColumn("Plaintext", TypeString),
                 new DataColumn("Description", TypeString)
             }.ToArray());
 
+            int mythicIndex = 0;
+            int isFinishedIndex = 0;
+            int isOver2000GoldIndex = 0;
             foreach (KeyValuePair<int, WinLossData> itemEntry in itemData[0])
             {
                 ColumnIndexCounter = 0;
@@ -88,17 +90,25 @@ namespace LeagueAPI_ClassLibrary
                 if (item == null) continue;
                 DataRow row = table.NewRow();
                 AddDefaultDataToRow(item.Name, itemEntry, itemData, row);
+
                 row[ReturnColumnIndexCounterAndIncrementIt()] = item.Gold;
-                row[ReturnColumnIndexCounterAndIncrementIt()] = item.IsMoreThan2000G();
-                row[ReturnColumnIndexCounterAndIncrementIt()] = item.IsMythic();
-                row[ReturnColumnIndexCounterAndIncrementIt()] = item.IsOrnnItem();
-                row[ReturnColumnIndexCounterAndIncrementIt()] = item.IsFinished;
+                isOver2000GoldIndex = ReturnColumnIndexCounterAndIncrementIt();
+                row[isOver2000GoldIndex] = item.IsMoreThan2000G();
+                mythicIndex = ReturnColumnIndexCounterAndIncrementIt();
+                row[mythicIndex] = item.IsMythic();
+                isFinishedIndex = ReturnColumnIndexCounterAndIncrementIt();
+                row[isFinishedIndex] = item.IsFinished;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = item.GetTagsString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = item.Plaintext;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = item.GetCleanDescription();
                 table.Rows.Add(row);
             }
-            return table;
+            return GetSortedTable(table, (t => t
+            .OrderByDescending(r => r.ItemArray[mythicIndex])
+            .ThenByDescending(r => r.ItemArray[isFinishedIndex])
+            .ThenByDescending(r => r.ItemArray[isOver2000GoldIndex])
+            .ThenByDescending(r => r.ItemArray[4])
+            ));
         }
 
         private DataTable GetTableWithDefaultColumns(string tableName, List<int> minuteKeys)
@@ -139,18 +149,26 @@ namespace LeagueAPI_ClassLibrary
                 new DataColumn("Description", TypeString)
             }.ToArray());
 
+            int treeIndex = 0;
+            int slotIndex = 0;
             foreach (KeyValuePair<int, WinLossData> entry in data[0])
             {
                 ColumnIndexCounter = 0;
                 Rune item = DDragonRepository.GetRune(entry.Key);
                 DataRow row = table.NewRow();
                 AddDefaultDataToRow(item.Name, entry, data, row);
-                row[ReturnColumnIndexCounterAndIncrementIt()] = item.Tree;
-                row[ReturnColumnIndexCounterAndIncrementIt()] = item.Slot;
+                treeIndex = ReturnColumnIndexCounterAndIncrementIt();
+                row[treeIndex] = item.Tree;
+                slotIndex = ReturnColumnIndexCounterAndIncrementIt();
+                row[slotIndex] = item.Slot;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = item.GetCleanDescription();
                 table.Rows.Add(row);
             }
-            return table;
+            return GetSortedTable(table, (t => t
+            .OrderBy(r => r.ItemArray[treeIndex])
+            .ThenBy(r => r.ItemArray[slotIndex])
+            .ThenByDescending(r => r.ItemArray[4])
+            ));
         }
 
         public DataTable GetSpellTable(Dictionary<int, Dictionary<int, WinLossData>> data)
@@ -171,7 +189,9 @@ namespace LeagueAPI_ClassLibrary
                 row[ReturnColumnIndexCounterAndIncrementIt()] = spell.Description;
                 table.Rows.Add(row);
             }
-            return table;
+            return GetSortedTable(table, (t => t
+            .OrderByDescending(r => r.ItemArray[4])
+            ));
         }
 
         public DataTable GetStatPerkTable(Dictionary<int, Dictionary<int, WinLossData>> data)
@@ -184,7 +204,9 @@ namespace LeagueAPI_ClassLibrary
                 AddDefaultDataToRow(DDragonRepository.GetStatPerk(entry.Key), entry, data, row);
                 table.Rows.Add(row);
             }
-            return table;
+            return GetSortedTable(table, (t => t
+            .OrderByDescending(r => r.ItemArray[4])
+            ));
         }
 
         private int ReturnColumnIndexCounterAndIncrementIt()
@@ -192,6 +214,27 @@ namespace LeagueAPI_ClassLibrary
             int result = ColumnIndexCounter;
             ColumnIndexCounter++;
             return result;
+        }
+
+        private static DataTable GetSortedTable(DataTable table, Func<List<DataRow>, IOrderedEnumerable<DataRow>> sortingFunc)
+        {
+            DataTable sortedTable = new(table.TableName);
+            foreach (DataColumn column in table.Columns)
+            {
+                sortedTable.Columns.Add(new DataColumn(column.ColumnName, column.DataType));
+            }
+
+            DataRow[] rows = new DataRow[table.Rows.Count];
+            table.Rows.CopyTo(rows, 0);
+
+            List<DataRow> sortedRowsList = sortingFunc.Invoke(rows.ToList()).ToList();
+            foreach (DataRow sortedRow in sortedRowsList)
+            {
+                DataRow newRow = sortedTable.NewRow();
+                newRow.ItemArray = sortedRow.ItemArray;
+                sortedTable.Rows.Add(newRow);
+            }
+            return sortedTable;
         }
     }
 }

@@ -11,7 +11,7 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public void ItemSetCreatedAsExpected()
         {
-            Item item1 = new() { Name = "Guardian" };
+            Item item1 = new() { Name = "Guardian Hammer" };
             Item item2 = new() { Tags = new List<string>() { "Boots" } };
             Item item3 = new() { Description = "rarityMythic" };
             Item item4 = new() { Description = "rarityMythic" };
@@ -19,6 +19,7 @@ namespace LeagueAPI_Tests.UnitTests
             Item item6 = new() { IsFinished = true, Gold = 2500 };
             Item item7 = new() { };
             Item item8 = null;
+            Item item9 = new() { Name = "Doran Blade" };
 
             Dictionary<int, WinLossData> itemWinLossData = new();
             itemWinLossData.Add(3184, new WinLossData());
@@ -29,6 +30,7 @@ namespace LeagueAPI_Tests.UnitTests
             itemWinLossData.Add(3009, new WinLossData(0, 1));
             itemWinLossData.Add(1, new WinLossData());
             itemWinLossData.Add(2, new WinLossData());
+            itemWinLossData.Add(99, new WinLossData());
 
             Mock<IDDragonRepository> repo = new();
             repo.Setup(x => x.GetItem(3184)).Returns(item1);
@@ -39,6 +41,7 @@ namespace LeagueAPI_Tests.UnitTests
             repo.Setup(x => x.GetItem(3009)).Returns(item6);
             repo.Setup(x => x.GetItem(1)).Returns(item7);
             repo.Setup(x => x.GetItem(2)).Returns(item8);
+            repo.Setup(x => x.GetItem(99)).Returns(item9);
 
             ItemSetExporter exporter = new(repo.Object);
             string result = exporter.GetItemSet(itemWinLossData, "test");
@@ -54,6 +57,10 @@ namespace LeagueAPI_Tests.UnitTests
             {
               ""items"": [{""id"":""3184"",""count"":1}],
               ""type"": ""Guardian""
+            },
+            {
+              ""items"": [{""id"":""99"",""count"":1}],
+              ""type"": ""Doran""
             },
             {
               ""items"": [{""id"":""3177"",""count"":1}],
