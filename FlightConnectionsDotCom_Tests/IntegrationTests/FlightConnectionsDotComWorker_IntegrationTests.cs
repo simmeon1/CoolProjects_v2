@@ -21,9 +21,7 @@ namespace FlightConnectionsDotCom_Tests.IntegrationTests
         {
             ChromeOptions chromeOptions = new();
             chromeOptions.AddArgument("headless");
-            chromeOptions.AddArgument("disable-gpu");
             chromeOptions.AddArgument("window-size=1280,800");
-            chromeOptions.AddArgument("allow-insecure-localhost");
             chromeDriver = new(chromeOptions);
             logger = new();
             worker = new(logger, chromeDriver, new RealWebDriverWait(chromeDriver));

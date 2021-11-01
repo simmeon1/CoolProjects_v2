@@ -76,25 +76,27 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
 
             Assert.IsTrue(subTable.TableName.Equals("Details"));
             Assert.IsTrue(subTable.Rows.Count == 2);
-            Assert.IsTrue(subTable.Rows[0].ItemArray.Length == 8);
+            Assert.IsTrue(subTable.Rows[0].ItemArray.Length == 9);
             Assert.IsTrue(subTable.Rows[0].ItemArray[0].Equals(flight1Path));
             Assert.IsTrue((int)subTable.Rows[0].ItemArray[1] == 1);
             Assert.IsTrue((int)subTable.Rows[0].ItemArray[2] == 1);
             Assert.IsTrue(subTable.Rows[0].ItemArray[3].Equals(flight1Departing.ToString()));
             Assert.IsTrue(subTable.Rows[0].ItemArray[4].Equals(flight1Arriving.ToString()));
             Assert.IsTrue(subTable.Rows[0].ItemArray[5].Equals(flight1span.ToString()));
-            Assert.IsTrue(subTable.Rows[0].ItemArray[6].Equals(flight1Airline));
-            Assert.IsTrue((double)subTable.Rows[0].ItemArray[7] == 25);
+            Assert.IsTrue(subTable.Rows[0].ItemArray[6].Equals(new TimeSpan().ToString()));
+            Assert.IsTrue(subTable.Rows[0].ItemArray[7].Equals(flight1Airline));
+            Assert.IsTrue((double)subTable.Rows[0].ItemArray[8] == 25);
 
-            Assert.IsTrue(subTable.Rows[1].ItemArray.Length == 8);
+            Assert.IsTrue(subTable.Rows[1].ItemArray.Length == 9);
             Assert.IsTrue(subTable.Rows[1].ItemArray[0].Equals(flight2Path));
             Assert.IsTrue((int)subTable.Rows[1].ItemArray[1] == 1);
             Assert.IsTrue((int)subTable.Rows[1].ItemArray[2] == 2);
             Assert.IsTrue(subTable.Rows[1].ItemArray[3].Equals(flight2Departing.ToString()));
             Assert.IsTrue(subTable.Rows[1].ItemArray[4].Equals(flight2Arriving.ToString()));
             Assert.IsTrue(subTable.Rows[1].ItemArray[5].Equals(flight2span.ToString()));
-            Assert.IsTrue(subTable.Rows[1].ItemArray[6].Equals(flight2Airline));
-            Assert.IsTrue((double)subTable.Rows[1].ItemArray[7] == 50);
+            Assert.IsTrue(subTable.Rows[1].ItemArray[6].Equals(new TimeSpan(2, 29, 20).ToString()));
+            Assert.IsTrue(subTable.Rows[1].ItemArray[7].Equals(flight2Airline));
+            Assert.IsTrue((double)subTable.Rows[1].ItemArray[8] == 50);
         }
 
         [TestMethod]

@@ -33,7 +33,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                                                                     .Where(c => !skipUndoableFlights || c.SequenceIsDoable())
                                                                     .Where(c => !skipNotSameDayFinishFlights || c.StartsAndEndsOnSameDay())
                                                                     .Where(c => c.GetTotalTime() <= noLongerThan).ToList();
-            
+
             double avgLength = reducedList.Count == 0 ? 0 : reducedList.Average(x => x.GetTotalTime());
             double avgCost = reducedList.Count == 0 ? 0 : reducedList.Average(x => x.GetCost());
 
@@ -125,6 +125,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 new DataColumn("Departing", TypeString),
                 new DataColumn("Arriving", TypeString),
                 new DataColumn("Duration", TypeString),
+                new DataColumn("Wait Time From Prev", TypeString),
                 new DataColumn("Airline", TypeString),
                 new DataColumn("Cost", TypeDouble)
             }.ToArray());
@@ -135,17 +136,18 @@ namespace FlightConnectionsDotCom_ClassLibrary
         {
             for (int i = 0; i < sequentialCollection.Count(); i++)
             {
-                Flight flightCollection = sequentialCollection[i];
+                Flight flight = sequentialCollection[i];
                 ColumnIndexCounter = 0;
                 DataRow row = subTable.NewRow();
-                row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Path;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = flight.Path;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = id;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = i + 1;
-                row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Departing.ToString();
-                row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Arriving.ToString();
-                row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Duration.ToString();
-                row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Airline;
-                row[ReturnColumnIndexCounterAndIncrementIt()] = flightCollection.Cost;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = flight.Departing.ToString();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = flight.Arriving.ToString();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = flight.Duration.ToString();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = i == 0 ? new TimeSpan().ToString() : (flight.Departing - sequentialCollection[i - 1].Arriving).ToString();
+                row[ReturnColumnIndexCounterAndIncrementIt()] = flight.Airline;
+                row[ReturnColumnIndexCounterAndIncrementIt()] = flight.Cost;
                 subTable.Rows.Add(row);
             }
         }
