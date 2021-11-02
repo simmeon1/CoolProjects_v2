@@ -51,7 +51,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             List<DataTable> tables = new();
             DataTable mainTable = new("Summary");
             DataColumn doableColumn = new("Doable", TypeBool);
-            DataColumn sameDayFinishColumn = new("SameDayFinish", TypeBool);
+            DataColumn sameDayFinishColumn = new("Same Day Finish", TypeBool);
             mainTable.Columns.AddRange(new List<DataColumn> {
                 new("Path", TypeString),
                 new("Id", TypeInt32),
@@ -82,9 +82,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[index++] = seqCollection.GetCountOfFlights();
                 if (!skipUndoableFlights) row[index++] = seqCollection.SequenceIsDoable();
                 if (!skipNotSameDayFinishFlights) row[index++] = seqCollection.StartsAndEndsOnSameDay();
-                row[index++] = seqCollection.GetStartTime().ToString();
-                row[index++] = seqCollection.GetEndTime().ToString();
-                row[index++] = seqCollection.GetTotalTime().ToString();
+                row[index++] = GetShortDateTime(seqCollection.GetStartTime());
+                row[index++] = GetShortDateTime(seqCollection.GetEndTime());
+                row[index++] = GetShortTimeSpan(seqCollection.GetTotalTime());
                 row[index++] = GetCountryChanges(airportDict, seqCollection);
                 row[index++] = seqCollection.GetCost();
                 row[index++] = GetBargainPercentage(seqCollection, avgLength, avgCost);
@@ -99,7 +99,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private static double GetBargainPercentage(SequentialFlightCollection seqCollection, double avgLength, double avgCost)
         {
-            return (100 - ((seqCollection.GetTotalTime().TotalHours / avgLength) * 100)) + (100 - ((seqCollection.GetCost() / avgCost) * 100));
+            return Math.Round((100 - ((seqCollection.GetTotalTime().TotalHours / avgLength) * 100)) + (100 - ((seqCollection.GetCost() / avgCost) * 100)), 2);
         }
 
         private static int GetCountryChanges(Dictionary<string, Airport> airportDict, SequentialFlightCollection c)
@@ -138,7 +138,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return subTable;
         }
 
-        private void AddRowsToSubTable(SequentialFlightCollection sequentialCollection, int id, DataTable subTable, Dictionary<string, Airport> airportDict)
+        private static void AddRowsToSubTable(SequentialFlightCollection sequentialCollection, int id, DataTable subTable, Dictionary<string, Airport> airportDict)
         {
             for (int i = 0; i < sequentialCollection.Count(); i++)
             {
@@ -148,18 +148,28 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[index++] = flight.Path;
                 row[index++] = id;
                 row[index++] = i + 1;
-                row[index++] = flight.Departing.ToString();
-                row[index++] = flight.Arriving.ToString();
+                row[index++] = GetShortDateTime(flight.Departing);
+                row[index++] = GetShortDateTime(flight.Arriving);
                 row[index++] = airportDict[flight.GetDepartingAirport()].City;
                 row[index++] = airportDict[flight.GetArrivingAirport()].City;
                 row[index++] = airportDict[flight.GetDepartingAirport()].Country;
                 row[index++] = airportDict[flight.GetArrivingAirport()].Country;
-                row[index++] = flight.Duration.ToString();
-                row[index++] = i == 0 ? new TimeSpan().ToString() : (flight.Departing - sequentialCollection[i - 1].Arriving).ToString();
+                row[index++] = GetShortTimeSpan(flight.Duration);
+                row[index++] = GetShortTimeSpan(i == 0 ? new TimeSpan() : (flight.Departing - sequentialCollection[i - 1].Arriving));
                 row[index++] = flight.Airline;
                 row[index++] = flight.Cost;
                 subTable.Rows.Add(row);
             }
+        }
+
+        public static string GetShortDateTime(DateTime? dt)
+        {
+            return dt.Value.ToString("dd/MM") + " " + dt.Value.ToString("t");
+        }
+
+        public static string GetShortTimeSpan(TimeSpan? ts)
+        {
+            return ts.Value.ToString("hh") + ":" + ts.Value.ToString("mm");
         }
     }
 }
