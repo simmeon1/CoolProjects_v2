@@ -147,40 +147,40 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetTotalTimeIsZeroWhenInvalid()
         {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetTotalTime() == 0);
+            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetTotalTime().TotalHours == 0);
         }
 
         [TestMethod]
         public void GetTotalTimeIsCorrect()
         {
-            double time = CreateSeqCollectionWithFlights(flight1, flight2).GetTotalTime();
-            Assert.IsTrue(time > 7 && time < 8);
+            TimeSpan time = CreateSeqCollectionWithFlights(flight1, flight2).GetTotalTime();
+            Assert.IsTrue(time.TotalHours > 7 && time.TotalHours < 8);
         }
 
         [TestMethod]
         public void GetTotalTimeInFlightsIsZeroWhenInvalid()
         {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetTotalTimeInFlights() == 0);
+            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetTotalTimeInFlights().TotalHours == 0);
         }
 
         [TestMethod]
         public void GetTotalTimeInFlightsIsCorrect()
         {
-            double time = CreateSeqCollectionWithFlights(flight1, flight2).GetTotalTimeInFlights();
-            Assert.IsTrue(time > 3 && time < 4);
+            TimeSpan time = CreateSeqCollectionWithFlights(flight1, flight2).GetTotalTimeInFlights();
+            Assert.IsTrue(time.TotalHours > 3 && time.TotalHours < 4);
         }
 
         [TestMethod]
         public void GetTotalIdleTimeIsZeroWhenInvalid()
         {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetTotalIdleTime() == 0);
+            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetTotalIdleTime().TotalHours == 0);
         }
 
         [TestMethod]
         public void GetTotalIdleTimeIsCorrect()
         {
-            double time = CreateSeqCollectionWithFlights(flight1, flight2).GetTotalIdleTime();
-            Assert.IsTrue(time > 4 && time < 5);
+            TimeSpan time = CreateSeqCollectionWithFlights(flight1, flight2).GetTotalIdleTime();
+            Assert.IsTrue(time.TotalHours > 4 && time.TotalHours < 5);
         }
 
         [TestMethod]
