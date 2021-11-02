@@ -144,5 +144,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
         {
             return !IsNotValid() && GetStartTime().Value.Day == GetEndTime().Value.Day;
         }
+        
+        public bool HasFlightWithZeroCost()
+        {
+            if (IsNotValid()) return false;
+            for (int i = 0; i < FlightCollection.Count(); i++) if (FlightCollection[i].Cost == 0) return true;
+            return false;
+        }
     }
 }

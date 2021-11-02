@@ -65,79 +65,79 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             seqCollection[3] = flight4;
             Assert.IsTrue(seqCollection[3] == flight4);
         }
-        
+
         [TestMethod]
         public void GetSetThrowsException()
         {
             Assert.ThrowsException<Exception>(() => CreateSeqCollectionWithFlights(flight1, flight2, flight3)[0] = flight2);
         }
-        
+
         [TestMethod]
         public void CountIsCorrectWhenValid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).Count() == 2);
         }
-        
+
         [TestMethod]
         public void CountIsCorrectWhenNotValid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(null).Count() == 0);
         }
-        
+
         [TestMethod]
         public void SequenceIsValidAndDoableWithOneFlight()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1).SequenceIsDoable());
         }
-        
+
         [TestMethod]
         public void SequenceIsValidAndDoableWithMultipleFlights()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).SequenceIsDoable());
         }
-        
+
         [TestMethod]
         public void SequenceIsValidAndNotDoableWithMultipleFlights()
         {
             Assert.IsFalse(CreateSeqCollectionWithFlights(flight3, flight4).SequenceIsDoable());
         }
-        
+
         [TestMethod]
         public void SequenceIsInvalidAndNotDoable()
         {
             Assert.IsFalse(CreateSeqCollectionWithFlights(null).SequenceIsDoable());
         }
-        
+
         [TestMethod]
         public void CostIsZeroWhenInvalid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetCost() == 0);
         }
-        
+
         [TestMethod]
         public void CostIsCorrect()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).GetCost() == 75);
         }
-        
+
         [TestMethod]
         public void GetStartTimeIsNullWhenInvalid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetStartTime() == null);
         }
-        
+
         [TestMethod]
         public void GetStartTimeIsCorrect()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).GetStartTime() == flight1.Departing);
         }
-        
+
         [TestMethod]
         public void GetEndTimeIsNullWhenInvalid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetEndTime() == null);
         }
-        
+
         [TestMethod]
         public void GetEndTimeIsCorrect()
         {
@@ -149,7 +149,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetTotalTime() == 0);
         }
-        
+
         [TestMethod]
         public void GetTotalTimeIsCorrect()
         {
@@ -182,7 +182,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             double time = CreateSeqCollectionWithFlights(flight1, flight2).GetTotalIdleTime();
             Assert.IsTrue(time > 4 && time < 5);
         }
-        
+
         [TestMethod]
         public void StartsAndEndsOnSameDayIsFalseIfInvalid()
         {
@@ -200,17 +200,36 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         {
             Assert.IsFalse(CreateSeqCollectionWithFlights(flight3, flight4).StartsAndEndsOnSameDay());
         }
-        
+
         [TestMethod]
         public void CountOfFlightsIsCorrect()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight3, flight4).GetCountOfFlights() == 2);
         }
-        
+
         [TestMethod]
         public void CountOfFlightsIsZeroInInvalid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetCountOfFlights() == 0);
+        }
+
+        [TestMethod]
+        public void HasZeroCostIsCorrect()
+        {
+            Flight flight4CopyZeroCost = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizzd", new TimeSpan(3, 30, 00), "BOJ-LTN", 0);
+            Assert.IsTrue(CreateSeqCollectionWithFlights(flight3, flight4CopyZeroCost).HasFlightWithZeroCost());
+        }
+        
+        [TestMethod]
+        public void HasZeroCostIsIncorrect()
+        {
+            Assert.IsTrue(!CreateSeqCollectionWithFlights(flight3, flight4).HasFlightWithZeroCost());
+        }
+
+        [TestMethod]
+        public void HasZeroCostIsInvalid()
+        {
+            Assert.IsTrue(!CreateSeqCollectionWithFlights(null).HasFlightWithZeroCost());
         }
 
         private static SequentialFlightCollection CreateSeqCollectionWithFlights(params Flight[] flights)

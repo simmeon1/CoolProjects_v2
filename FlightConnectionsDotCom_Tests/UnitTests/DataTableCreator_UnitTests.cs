@@ -61,7 +61,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             DataTable subTable = tables[1];
             Assert.IsTrue(mainTable.TableName.Equals("Summary"));
             Assert.IsTrue(mainTable.Rows.Count == 1);
-            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 11);
+            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 12);
             Assert.IsTrue(mainTable.Rows[0].ItemArray[0].Equals("ABZ-EDI-VAR"));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[1].Equals(1));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[2].Equals(2));
@@ -73,6 +73,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Assert.IsTrue((int)mainTable.Rows[0].ItemArray[8] == 1);
             Assert.IsTrue((double)mainTable.Rows[0].ItemArray[9] == 75);
             Assert.IsTrue((double)mainTable.Rows[0].ItemArray[10] == 0);
+            Assert.IsTrue(mainTable.Rows[0].ItemArray[11].Equals(false));
 
             Assert.IsTrue(subTable.TableName.Equals("Details"));
             Assert.IsTrue(subTable.Rows.Count == 2);
@@ -107,7 +108,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             DataTable subTable = tables[1];
             Assert.IsTrue(mainTable.TableName.Equals("Summary"));
             Assert.IsTrue(mainTable.Rows.Count == 1);
-            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 9);
+            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 10);
             Assert.IsTrue(mainTable.Rows[0].ItemArray[0].Equals("ABZ-EDI-VAR"));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[1].Equals(1));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[2].Equals(2));
@@ -117,6 +118,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Assert.IsTrue((int)mainTable.Rows[0].ItemArray[6] == 1);
             Assert.IsTrue((double)mainTable.Rows[0].ItemArray[7] == 75);
             Assert.IsTrue((double)mainTable.Rows[0].ItemArray[8] == 0);
+            Assert.IsTrue(mainTable.Rows[0].ItemArray[9].Equals(false));
         }
 
         [TestMethod]

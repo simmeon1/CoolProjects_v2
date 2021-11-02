@@ -42,6 +42,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                                                                     .ThenByDescending(c => c.StartsAndEndsOnSameDay())
                                                                     .ThenBy(c => c.GetCountOfFlights())
                                                                     .ThenBy(c => GetCountryChanges(airportsAndCountries, c))
+                                                                    .ThenBy(c => c.HasFlightWithZeroCost())
                                                                     .ThenByDescending(c => GetBargainPercentage(c, avgLength, avgCost))
                                                                     .ThenBy(c => c.GetTotalTime())
                                                                     .ThenBy(c => c.GetCost())
@@ -63,7 +64,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 new("Length", TypeDouble),
                 new("Country Changes", TypeInt32),
                 new("Cost", TypeDouble),
-                new("Bargain %", TypeDouble)
+                new("Bargain %", TypeDouble),
+                new("Has Flight With 0 Cost", TypeBool)
             }.ToArray());
             if (skipUndoableFlights) mainTable.Columns.Remove(doableColumn);
             if (skipNotSameDayFinishFlights) mainTable.Columns.Remove(sameDayFinishColumn);
@@ -87,6 +89,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[ReturnColumnIndexCounterAndIncrementIt()] = GetCountryChanges(airportsAndCountries, seqCollection);
                 row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.GetCost();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = GetBargainPercentage(seqCollection, avgLength, avgCost);
+                row[ReturnColumnIndexCounterAndIncrementIt()] = seqCollection.HasFlightWithZeroCost();
                 mainTable.Rows.Add(row);
                 AddRowsToSubTable(seqCollection, id, subTable);
             }

@@ -70,7 +70,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Dictionary<string, List<Path>> shortPathAndFullPaths = new();
             foreach (Path path in Paths)
             {
-                string shortPath = $"{path.GetSummarisedPath()}";
+                string shortPath = path.GetSummarisedPath();
                 if (!shortPathAndFullPaths.ContainsKey(shortPath)) shortPathAndFullPaths.Add(shortPath, new List<Path>() { path });
                 else shortPathAndFullPaths[shortPath].Add(path);
             }
