@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
@@ -169,7 +170,10 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         public static string GetShortTimeSpan(TimeSpan? ts)
         {
-            return ts.Value.ToString("hh") + ":" + ts.Value.ToString("mm");
+            StringBuilder sb = new($"{ts.Value.TotalHours}:{ts.Value.Minutes}");
+            if (ts.Value.TotalHours < 10) sb.Insert(0, "0");
+            if (ts.Value.Minutes < 10) sb.Append(0);
+            return sb.ToString();
         }
     }
 }
