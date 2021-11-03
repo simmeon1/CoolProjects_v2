@@ -122,22 +122,17 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return IsNotValid() ? 0 : FlightCollection.Count();
         }
 
-        public TimeSpan GetTotalTime()
+        public TimeSpan GetLength()
         {
-            return IsNotValid() ? new() : (GetEndTime().Value - GetStartTime().Value);
-        }
-
-        public TimeSpan GetTotalTimeInFlights()
-        {
+            if (IsNotValid()) return new();
             TimeSpan time = new();
-            if (IsNotValid()) return time;
-            for (int i = 0; i < FlightCollection.Count(); i++) time += FlightCollection[i].Duration;
+            for (int i = 0; i < FlightCollection.Count(); i++)
+            {
+                Flight flight = FlightCollection[i];
+                TimeSpan waitFromPrev = i == 0 ? new TimeSpan() : (flight.Departing - FlightCollection[i - 1].Arriving);
+                time += waitFromPrev + flight.Duration;
+            }
             return time;
-        }
-
-        public TimeSpan GetTotalIdleTime()
-        {
-            return IsNotValid() ? new() : GetTotalTime() - GetTotalTimeInFlights();
         }
         
         public bool StartsAndEndsOnSameDay()

@@ -32,9 +32,9 @@ namespace FlightConnectionsDotCom_ClassLibrary
             List<SequentialFlightCollection> reducedList = sequentialCollections
                                                                     .Where(c => !skipUndoableFlights || c.SequenceIsDoable())
                                                                     .Where(c => !skipNotSameDayFinishFlights || c.StartsAndEndsOnSameDay())
-                                                                    .Where(c => c.GetTotalTime().TotalHours <= noLongerThan).ToList();
+                                                                    .Where(c => c.GetLength().TotalHours <= noLongerThan).ToList();
 
-            double avgLength = reducedList.Count == 0 ? 0 : reducedList.Average(x => x.GetTotalTime().TotalHours);
+            double avgLength = reducedList.Count == 0 ? 0 : reducedList.Average(x => x.GetLength().TotalMinutes);
             double avgCost = reducedList.Count == 0 ? 0 : reducedList.Average(x => x.GetCost());
 
             List<SequentialFlightCollection> reducedAndOrderedList = reducedList
@@ -44,7 +44,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                                                                     .ThenBy(c => GetCountryChanges(airportDict, c))
                                                                     .ThenBy(c => c.HasFlightWithZeroCost())
                                                                     .ThenByDescending(c => GetBargainPercentage(c, avgLength, avgCost))
-                                                                    .ThenBy(c => c.GetTotalTime().TotalHours)
+                                                                    .ThenBy(c => c.GetLength())
                                                                     .ThenBy(c => c.GetCost())
                                                                     .ThenBy(c => c.GetStartTime())
                                                                     .ToList();
@@ -85,7 +85,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 if (!skipNotSameDayFinishFlights) row[index++] = seqCollection.StartsAndEndsOnSameDay();
                 row[index++] = GetShortDateTime(seqCollection.GetStartTime());
                 row[index++] = GetShortDateTime(seqCollection.GetEndTime());
-                row[index++] = GetShortTimeSpan(seqCollection.GetTotalTime());
+                row[index++] = GetShortTimeSpan(seqCollection.GetLength());
                 row[index++] = GetCountryChanges(airportDict, seqCollection);
                 row[index++] = seqCollection.GetCost();
                 row[index++] = GetBargainPercentage(seqCollection, avgLength, avgCost);
@@ -100,7 +100,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private static double GetBargainPercentage(SequentialFlightCollection seqCollection, double avgLength, double avgCost)
         {
-            return Math.Round((100 - ((seqCollection.GetTotalTime().TotalHours / avgLength) * 100)) + (100 - ((seqCollection.GetCost() / avgCost) * 100)), 2);
+            return Math.Round((100 - ((seqCollection.GetLength().TotalMinutes / avgLength) * 100)) + (100 - ((seqCollection.GetCost() / avgCost) * 100)), 2);
         }
 
         private static int GetCountryChanges(Dictionary<string, Airport> airportDict, SequentialFlightCollection c)
@@ -170,7 +170,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         public static string GetShortTimeSpan(TimeSpan? ts)
         {
-            StringBuilder sb = new($"{ts.Value.TotalHours}:{ts.Value.Minutes}");
+            StringBuilder sb = new($"{Math.Floor(ts.Value.TotalHours)}:{ts.Value.Minutes}");
             if (ts.Value.TotalHours < 10) sb.Insert(0, "0");
             if (ts.Value.Minutes < 10) sb.Append(0);
             return sb.ToString();

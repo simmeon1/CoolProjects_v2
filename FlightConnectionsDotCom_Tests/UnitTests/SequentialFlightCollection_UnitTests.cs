@@ -10,7 +10,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
     [TestClass]
     public class SequentialFlightCollection_UnitTests
     {
-        private readonly Flight flight1 = new(new DateTime(2000, 11, 11, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(1, 10, 40), "ABZ-EDI", 25);
+        private readonly Flight flight1 = new(new DateTime(2000, 11, 11, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(1, 10, 10), "ABZ-EDI", 25);
         private readonly Flight flight2 = new(new DateTime(2000, 11, 11, 14, 0, 0), new DateTime(2000, 11, 11, 18, 0, 0), "wizz", new TimeSpan(2, 0, 0), "EDI-VAR", 50);
         private readonly Flight flight3 = new(new DateTime(2000, 11, 11, 21, 30, 0), new DateTime(2000, 11, 11, 23, 0, 0), "wizz", new TimeSpan(1, 30, 0), "VAR-BOJ", 10);
         private readonly Flight flight4 = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizz", new TimeSpan(3, 30, 00), "BOJ-LTN", 40);
@@ -147,40 +147,14 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetTotalTimeIsZeroWhenInvalid()
         {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetTotalTime().TotalHours == 0);
+            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetLength().TotalHours == 0);
         }
 
         [TestMethod]
         public void GetTotalTimeIsCorrect()
         {
-            TimeSpan time = CreateSeqCollectionWithFlights(flight1, flight2).GetTotalTime();
-            Assert.IsTrue(time.TotalHours > 7 && time.TotalHours < 8);
-        }
-
-        [TestMethod]
-        public void GetTotalTimeInFlightsIsZeroWhenInvalid()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetTotalTimeInFlights().TotalHours == 0);
-        }
-
-        [TestMethod]
-        public void GetTotalTimeInFlightsIsCorrect()
-        {
-            TimeSpan time = CreateSeqCollectionWithFlights(flight1, flight2).GetTotalTimeInFlights();
-            Assert.IsTrue(time.TotalHours > 3 && time.TotalHours < 4);
-        }
-
-        [TestMethod]
-        public void GetTotalIdleTimeIsZeroWhenInvalid()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetTotalIdleTime().TotalHours == 0);
-        }
-
-        [TestMethod]
-        public void GetTotalIdleTimeIsCorrect()
-        {
-            TimeSpan time = CreateSeqCollectionWithFlights(flight1, flight2).GetTotalIdleTime();
-            Assert.IsTrue(time.TotalHours > 4 && time.TotalHours < 5);
+            TimeSpan time = CreateSeqCollectionWithFlights(flight1, flight2).GetLength();
+            Assert.IsTrue(time.ToString().Equals("05:39:30"));
         }
 
         [TestMethod]

@@ -35,7 +35,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         {
             flight1Departing = new DateTime(2000, 11, 11, 10, 0, 00);
             flight1Arriving = new DateTime(2000, 11, 11, 11, 30, 40);
-            flight1span = new TimeSpan(1, 10, 40);
+            flight1span = new TimeSpan(1, 30, 40);
 
             airport1 = new Airport("ABZ", "Aberdeen", "UK", "", "");
             airport2 = new Airport("EDI", "Edinburgh", "UK", "", "");
@@ -70,7 +70,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(true));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(DataTableCreator.GetShortDateTime(flight1Departing)));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(DataTableCreator.GetShortDateTime(flight2Arriving)));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals("08:00"));
+            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals("06:00"));
             Assert.IsTrue((int)mainTable.Rows[0].ItemArray[index++] == 1);
             Assert.IsTrue((double)mainTable.Rows[0].ItemArray[index++] == 75);
             Assert.IsTrue((double)mainTable.Rows[0].ItemArray[index++] == 0);
@@ -126,7 +126,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(2));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(DataTableCreator.GetShortDateTime(flight1Departing)));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(DataTableCreator.GetShortDateTime(flight2Arriving)));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals("08:00"));
+            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals("06:00"));
             Assert.IsTrue((int)mainTable.Rows[0].ItemArray[index++] == 1);
             Assert.IsTrue((double)mainTable.Rows[0].ItemArray[index++] == 75);
             Assert.IsTrue((double)mainTable.Rows[0].ItemArray[index++] == 0);
@@ -136,9 +136,9 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void CorrectTables_FlightTooLong()
         {
-            Assert.IsTrue(creator.GetTables(airportList, flights, true, true, 7)[0].Rows.Count == 0);
-            Assert.IsTrue(creator.GetTables(airportList, flights, true, true, 8)[0].Rows.Count == 1);
-            Assert.IsTrue(creator.GetTables(airportList, flights, true, true, 9)[0].Rows.Count == 1);
+            Assert.IsTrue(creator.GetTables(airportList, flights, true, true, 5)[0].Rows.Count == 0);
+            Assert.IsTrue(creator.GetTables(airportList, flights, true, true, 6)[0].Rows.Count == 1);
+            Assert.IsTrue(creator.GetTables(airportList, flights, true, true, 7)[0].Rows.Count == 1);
         }
 
         [TestMethod]
