@@ -29,14 +29,15 @@ namespace FlightConnectionsDotCom_Console
                 (parameters.OpenGoogleFlights && parameters.LocalChromeWorkerResultsFile.IsNullOrEmpty())
                 )
             {
+                ChromeOptions chromeOptions = new();
+                chromeOptions.AddArgument("--log-level=3");
                 if (parameters.Headless)
                 {
-                    ChromeOptions chromeOptions = new();
                     chromeOptions.AddArgument("headless");
                     chromeOptions.AddArgument("window-size=1280,800");
                     driver = new(chromeOptions);
                 }
-                else driver = new();
+                driver = new(chromeOptions);
             }
 
             RealWebDriverWait webDriverWait = new(driver);
