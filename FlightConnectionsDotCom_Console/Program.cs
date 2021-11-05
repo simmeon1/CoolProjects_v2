@@ -35,7 +35,6 @@ namespace FlightConnectionsDotCom_Console
                 {
                     chromeOptions.AddArgument("headless");
                     chromeOptions.AddArgument("window-size=1280,800");
-                    driver = new(chromeOptions);
                 }
                 driver = new(chromeOptions);
             }
