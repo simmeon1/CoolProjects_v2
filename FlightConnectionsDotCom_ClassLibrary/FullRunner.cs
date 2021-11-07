@@ -78,8 +78,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 FileIO.WriteAllText($"{runResultsPath}\\{runId}_airportDestinations.json", airportsAndDestinations.SerializeObject(Formatting.Indented));
             }
 
-            AirportPathGenerator generator = new(airportsAndDestinations);
-            List<Path> paths = generator.GeneratePaths(Parameters.Origins, Parameters.Destinations, Parameters.MaxFlights, Parameters.OnlyIncludeShortestPaths, airportsList, filterer);
+            AirportListFilterer airportListFilterer = new(airportsList);
+            Dictionary<string, HashSet<string>> filteredAirports = airportListFilterer.FilterAirports(airportsAndDestinations, filterer);
+
+            AirportPathGenerator generator = new(filteredAirports);
+            List<Path> paths = generator.GeneratePaths(Parameters.Origins, Parameters.Destinations, Parameters.MaxFlights, Parameters.OnlyIncludeShortestPaths);
             List<List<string>> pathsDetailed = new();
             foreach (Path path in paths)
             {

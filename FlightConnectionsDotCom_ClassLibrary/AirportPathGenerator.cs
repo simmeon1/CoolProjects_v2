@@ -9,7 +9,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
     public class AirportPathGenerator
     {
         private Dictionary<string, HashSet<string>> AirportsAndDestinations { get; set; }
-        private Dictionary<string, HashSet<string>> AirportsAndDestinationsFiltered { get; set; }
         private LinkedList<string> CurrentPath { get; set; }
         private int MaxFlights { get; set; }
         private List<Path> Paths { get; set; }
@@ -21,33 +20,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
         }
 
         public List<Path> GeneratePaths(List<string> origins, List<string> targets, int maxFlights, bool onlyIncludeShortestPaths)
-        {
-            AirportsAndDestinationsFiltered = AirportsAndDestinations;
-            return GetPaths(origins, targets, maxFlights, onlyIncludeShortestPaths);
-        }
-        
-        public List<Path> GeneratePaths(List<string> origins, List<string> targets, int maxFlights, bool onlyIncludeShortestPaths, List<Airport> airports, IAirportFilterer filterer = null)
-        {
-            if (filterer == null) filterer = new NoFilterer();
-            AirportsAndDestinationsFiltered = new();
-
-            Dictionary<string, Airport> airportsDictionary = airports.ToDictionary(a => a.Code, a => a);
-            foreach (KeyValuePair<string, HashSet<string>> airportAndDestinations in AirportsAndDestinations)
-            {
-                Airport airport = airportsDictionary.ContainsKey(airportAndDestinations.Key) ? airportsDictionary[airportAndDestinations.Key] : null;
-                if (airport == null || !filterer.AirportMeetsCondition(airport)) continue;
-                AirportsAndDestinationsFiltered.Add(airport.Code, new HashSet<string>());
-                foreach (string destination in airportAndDestinations.Value)
-                {
-                    Airport airport2 = airportsDictionary.ContainsKey(destination) ? airportsDictionary[destination] : null;
-                    if (airport2 != null && filterer.AirportMeetsCondition(airport2)) AirportsAndDestinationsFiltered[airport.Code].Add(airport2.Code);
-                }
-            }
-
-            return GetPaths(origins, targets, maxFlights, onlyIncludeShortestPaths);
-        }
-
-        private List<Path> GetPaths(List<string> origins, List<string> targets, int maxFlights, bool onlyIncludeShortestPaths)
         {
             Paths = new List<Path>();
             MaxFlights = maxFlights;
@@ -64,7 +36,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 ? Paths.OrderBy(p => p.Count()).ThenBy(p => p.ToString()).ToList()
                 : GetShortestPaths().OrderBy(p => p.Count()).ThenBy(p => p.ToString()).ToList();
         }
-
+       
         private List<Path> GetShortestPaths()
         {
             Dictionary<string, List<Path>> shortPathAndFullPaths = new();
@@ -120,7 +92,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private void ScanCurrentPath(string origin, string target)
         {
-            HashSet<string> destinations = AirportsAndDestinationsFiltered[origin];
+            HashSet<string> destinations = AirportsAndDestinations[origin];
             foreach (string destination in destinations)
             {
                 if (destination.Equals(target)) Paths.Add(new Path(new List<string>(CurrentPath) { destination }));

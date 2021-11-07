@@ -28,7 +28,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             generator = new(airportAndDestinationsList);
             airports = new();
             airports.Add(new Airport(codeABZ, "", "United Kingdom", "", ""));
-            //airports.Add(new Airport(codeEDI, "", "United Kingdom", "", ""));
+            airports.Add(new Airport(codeEDI, "", "United Kingdom", "", ""));
             airports.Add(new Airport(codeSOF, "", "Bulgaria", "", ""));
             airports.Add(new Airport(codeCIA, "", "Italy", "", ""));
         }
@@ -52,14 +52,6 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         public void GetAirportConnections_ReturnsExpectedOnePathWhenMaxFlightsAreOne_OnlyShortestFlightIsReturned()
         {
             List<Path> paths = generator.GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 2, true);
-            Assert.IsTrue(paths.Count == 1);
-            VerifyAbzSofPath(paths);
-        }
-
-        [TestMethod]
-        public void GetAirportConnections_ReturnsExpectedOnePathWhenMaxFlightsAreOne_2()
-        {
-            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 1, false, airports);
             Assert.IsTrue(paths.Count == 1);
             VerifyAbzSofPath(paths);
         }
@@ -91,14 +83,6 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             VerifyAbzSofPath(paths);
             VerifyAbzCiaSofPath(paths);
             VerifyAbzEdiSofPath(paths);
-        }
-
-        [TestMethod]
-        public void GetAirportConnections_ReturnsExpectedThreePathsWhenMaxFlightsAreTwo_FlightsFiltered()
-        {
-            List<Path> paths = generator.GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 2, false, airports, new UKBulgariaFilterer());
-            Assert.IsTrue(paths.Count == 1);
-            VerifyAbzSofPath(paths);
         }
 
         [TestMethod]
