@@ -32,12 +32,12 @@ namespace Common_ClassLibrary
             return ConcatenateListOfStrings(list, ", ");
         }
         
-        public static string ConcatenateListOfStringsToDashString(this List<string> list)
+        public static string ConcatenateListOfStringsToDashString(this IEnumerable<string> list)
         {
             return ConcatenateListOfStrings(list, "-");
         }
 
-        private static string ConcatenateListOfStrings(List<string> list, string replacement)
+        private static string ConcatenateListOfStrings(IEnumerable<string> list, string replacement)
         {
             if (list == null) return "";
             StringBuilder result = new("");

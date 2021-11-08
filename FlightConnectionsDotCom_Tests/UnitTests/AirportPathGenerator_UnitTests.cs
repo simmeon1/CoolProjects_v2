@@ -11,39 +11,58 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         private const string codeSOF = "SOF";
         private const string codeEDI = "EDI";
         private const string codeCIA = "CIA";
-        List<Airport> airports;
-        Dictionary<string, HashSet<string>> airportAndDestinationsList;
-        AirportPathGenerator generator;
+        private const string codeLTN = "LTN";
+        private const string codeLHR = "LHR";
+        private const string codeVAR = "VAR";
 
-        [TestInitialize]
-        public void TestInitialize()
+        private AirportPathGenerator GetFullAirportAndDestinationsListWithoutLocalLinks()
         {
-            airportAndDestinationsList = new()
+            Dictionary<string, HashSet<string>> airportAndDestinationsList = new()
             {
                 { codeABZ, new HashSet<string>() { codeSOF, codeEDI, codeCIA } },
                 { codeSOF, new HashSet<string>() { codeEDI, codeCIA, codeABZ } },
                 { codeEDI, new HashSet<string>() { codeSOF, codeABZ, codeCIA } },
                 { codeCIA, new HashSet<string>() { codeSOF, codeABZ, codeEDI } }
             };
-            generator = new(airportAndDestinationsList);
-            airports = new();
-            airports.Add(new Airport(codeABZ, "", "United Kingdom", "", ""));
-            airports.Add(new Airport(codeEDI, "", "United Kingdom", "", ""));
-            airports.Add(new Airport(codeSOF, "", "Bulgaria", "", ""));
-            airports.Add(new Airport(codeCIA, "", "Italy", "", ""));
+            return new AirportPathGenerator(airportAndDestinationsList);
+        }
+        
+        private AirportPathGenerator GetPartialAirportAndDestinationsListWithLinks()
+        {
+            Dictionary<string, HashSet<string>> airportAndDestinationsList = new()
+            {
+                { codeABZ, new HashSet<string>() { } },
+                { codeSOF, new HashSet<string>() { codeEDI, codeCIA } },
+                { codeEDI, new HashSet<string>() { codeSOF, codeCIA } },
+                { codeCIA, new HashSet<string>() { codeSOF, codeEDI } }
+            };
+
+            Dictionary<string, HashSet<string>> airportLocalLinks = new()
+            {
+                { codeABZ, new HashSet<string>() { codeEDI } }
+            };
+            return new AirportPathGenerator(airportAndDestinationsList, airportLocalLinks);
         }
 
         [TestMethod]
         public void GetAirportConnections_ReturnsZeroResultsWhenMaxFlightsAreZero()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 0, false);
+            List<Path> paths = GetFullAirportAndDestinationsListWithoutLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 0, false);
             Assert.IsTrue(paths.Count == 0);
         }
 
         [TestMethod]
-        public void GetAirportConnections_ReturnsExpectedOnePathWhenMaxFlightsAreOne_1()
+        public void GetAirportConnections_ReturnsExpectedOnePathWhenMaxFlightsAreOne()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 1, false);
+            List<Path> paths = GetFullAirportAndDestinationsListWithoutLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 1, false);
+            Assert.IsTrue(paths.Count == 1);
+            VerifyAbzSofPath(paths);
+        }
+
+        [TestMethod]
+        public void GetAirportConnections_ReturnsExpectedTwoPathWhenMaxFlightsAreOne_WithBus()
+        {
+            List<Path> paths = GetFullAirportAndDestinationsListWithoutLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 1, false);
             Assert.IsTrue(paths.Count == 1);
             VerifyAbzSofPath(paths);
         }
@@ -51,7 +70,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetAirportConnections_ReturnsExpectedOnePathWhenMaxFlightsAreOne_OnlyShortestFlightIsReturned()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 2, true);
+            List<Path> paths = GetFullAirportAndDestinationsListWithoutLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 2, true);
             Assert.IsTrue(paths.Count == 1);
             VerifyAbzSofPath(paths);
         }
@@ -59,7 +78,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetAirportConnections_MultipleOriginsAndTargets()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ, codeEDI }, new List<string>(){ codeSOF, codeCIA }, 1, false);
+            List<Path> paths = GetFullAirportAndDestinationsListWithoutLocalLinks().GeneratePaths(new List<string>() { codeABZ, codeEDI }, new List<string>() { codeSOF, codeCIA }, 1, false);
             Assert.IsTrue(paths.Count == 4);
             Assert.IsTrue(paths[0].Count() == 2);
             Assert.IsTrue(paths[0][0].Equals(codeABZ));
@@ -78,7 +97,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         [TestMethod]
         public void GetAirportConnections_ReturnsExpectedThreePathsWhenMaxFlightsAreTwo()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 2, false);
+            List<Path> paths = GetFullAirportAndDestinationsListWithoutLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 2, false);
             Assert.IsTrue(paths.Count == 3);
             VerifyAbzSofPath(paths);
             VerifyAbzCiaSofPath(paths);
@@ -86,9 +105,109 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         }
 
         [TestMethod]
+        public void NoResultsWhenUsingPartialAirportDestinationsAndNoLocalLinks()
+        {
+            List<Path> paths = GetPartialAirportAndDestinationsListWithLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 2, false, false);
+            Assert.IsTrue(paths.Count == 0);
+        }
+        
+        [TestMethod]
+        public void OneResultWhenUsingPartialAirportDestinationsAndLocalLinks()
+        {
+            List<Path> paths = GetPartialAirportAndDestinationsListWithLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 1, false, true);
+            Assert.IsTrue(paths.Count == 1);
+            Assert.IsTrue(paths[0].ToString().Equals("ABZ-EDI-SOF"));
+        }
+        
+        [TestMethod]
+        public void TwoResultsWhenUsingPartialAirportDestinationsAndLocalLinks()
+        {
+            List<Path> paths = GetPartialAirportAndDestinationsListWithLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 2, false, true);
+            Assert.IsTrue(paths.Count == 2);
+            Assert.IsTrue(paths[0].ToString().Equals("ABZ-EDI-SOF"));
+            Assert.IsTrue(paths[1].ToString().Equals("ABZ-EDI-CIA-SOF"));
+        }
+        
+        [TestMethod]
+        public void ExpectedResultsWhenGettingAberdeenToVarnaPathsWithoutLocalLinks()
+        {
+            List<Path> paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 1, false, false);
+            Assert.IsTrue(paths.Count == 0);
+            
+            paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 1, true, false);
+            Assert.IsTrue(paths.Count == 0);
+
+            paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 2, false, false);
+            Assert.IsTrue(paths.Count == 1);
+            Assert.IsTrue(paths[0].ToString().Equals("ABZ-LTN-VAR"));
+            
+            paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 2, true, false);
+            Assert.IsTrue(paths.Count == 1);
+            Assert.IsTrue(paths[0].ToString().Equals("ABZ-LTN-VAR"));
+
+            paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 3, false, false);
+            Assert.IsTrue(paths.Count == 1);
+            Assert.IsTrue(paths[0].ToString().Equals("ABZ-LTN-VAR"));
+            
+            paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 3, true, false);
+            Assert.IsTrue(paths.Count == 1);
+            Assert.IsTrue(paths[0].ToString().Equals("ABZ-LTN-VAR"));
+        }
+        
+        [TestMethod]
+        public void ExpectedResultsWhenGettingAberdeenToVarnaPathsWithLocalLinks()
+        {
+            List<Path> paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 1, false, true);
+            Assert.IsTrue(paths.Count == 0);
+            
+            paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 1, true, true);
+            Assert.IsTrue(paths.Count == 0);
+
+            paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 2, false, true);
+            Assert.IsTrue(paths.Count == 2);
+            Assert.IsTrue(paths[0].ToString().Equals("ABZ-LTN-VAR"));
+            Assert.IsTrue(paths[1].ToString().Equals("ABZ-LTN-LHR-VAR"));
+
+            paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 2, true, true);
+            Assert.IsTrue(paths.Count == 2);
+            Assert.IsTrue(paths[0].ToString().Equals("ABZ-LTN-VAR"));
+            Assert.IsTrue(paths[1].ToString().Equals("ABZ-LTN-LHR-VAR"));
+            
+            paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 3, false, true);
+            Assert.IsTrue(paths.Count == 3);
+            Assert.IsTrue(paths[0].ToString().Equals("ABZ-LTN-VAR"));
+            Assert.IsTrue(paths[1].ToString().Equals("ABZ-LTN-LHR-VAR"));
+            Assert.IsTrue(paths[2].ToString().Equals("ABZ-LTN-LHR-SOF-VAR"));
+            
+            paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 3, true, true);
+            Assert.IsTrue(paths.Count == 2);
+            Assert.IsTrue(paths[0].ToString().Equals("ABZ-LTN-VAR"));
+            Assert.IsTrue(paths[1].ToString().Equals("ABZ-LTN-LHR-VAR"));
+        }
+
+        private static AirportPathGenerator GetAberdeenToVarnaPathGeneratorWithLocalLinks()
+        {
+            Dictionary<string, HashSet<string>> airportAndDestinationsList = new()
+            {
+                { codeABZ, new HashSet<string>() { codeLTN } },
+                { codeLTN, new HashSet<string>() { codeVAR } },
+                { codeLHR, new HashSet<string>() { codeVAR, codeSOF } },
+                { codeSOF, new HashSet<string>() { codeVAR } },
+                { codeVAR, new HashSet<string>() { codeSOF, codeLHR } }
+            };
+
+            Dictionary<string, HashSet<string>> airportLocalLinks = new()
+            {
+                { codeLTN, new HashSet<string>() { codeLHR } }
+            };
+            AirportPathGenerator generator = new(airportAndDestinationsList, airportLocalLinks);
+            return generator;
+        }
+
+        [TestMethod]
         public void GetAirportConnections_ReturnsExpectedFivePathsWhenMaxFlightsAreThreeOrMore()
         {
-            List<Path> paths = generator.GeneratePaths(new List<string>(){ codeABZ }, new List<string>(){ codeSOF }, 10, false);
+            List<Path> paths = GetFullAirportAndDestinationsListWithoutLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeSOF }, 10, false);
             Assert.IsTrue(paths.Count == 5);
             VerifyAbzSofPath(paths);
             VerifyAbzCiaSofPath(paths);

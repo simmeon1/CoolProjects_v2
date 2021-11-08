@@ -1,4 +1,5 @@
-﻿using FlightConnectionsDotCom_ClassLibrary;
+﻿using Common_ClassLibrary;
+using FlightConnectionsDotCom_ClassLibrary;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,35 +10,62 @@ namespace FlightConnectionsDotCom_ClassLibrary
     public class AirportPathGenerator
     {
         private Dictionary<string, HashSet<string>> AirportsAndDestinations { get; set; }
+        private Dictionary<string, HashSet<string>> AirportLocalLinks { get; set; }
         private LinkedList<string> CurrentPath { get; set; }
         private int MaxFlights { get; set; }
         private List<Path> Paths { get; set; }
-        private string Target { get; set; }
+        private HashSet<string> LocalLinksStrings { get; set; }
 
-        public AirportPathGenerator(Dictionary<string, HashSet<string>> airportsAndDestinations)
+        public AirportPathGenerator(Dictionary<string, HashSet<string>> airportsAndDestinations, Dictionary<string, HashSet<string>> airportLocalLinks = null)
         {
             AirportsAndDestinations = airportsAndDestinations;
+            AirportLocalLinks = airportLocalLinks ?? new();
         }
 
-        public List<Path> GeneratePaths(List<string> origins, List<string> targets, int maxFlights, bool onlyIncludeShortestPaths)
+        public List<Path> GeneratePaths(List<string> origins, List<string> targets, int maxFlights, bool onlyIncludeShortestPaths, bool includeLocalLinks = false)
         {
             Paths = new List<Path>();
             MaxFlights = maxFlights;
+            LocalLinksStrings = new();
+
+            if (includeLocalLinks) AddLocalLinksToAirportDestinations();
+
             foreach (string origin in origins)
             {
                 foreach (string target in targets)
                 {
                     CurrentPath = new LinkedList<string>();
-                    Target = target;
                     UpdateCurrentPathAndScanItIfNeeded(origin, target);
                 }
             }
-            return !onlyIncludeShortestPaths
-                ? Paths.OrderBy(p => p.Count()).ThenBy(p => p.ToString()).ToList()
-                : GetShortestPaths().OrderBy(p => p.Count()).ThenBy(p => p.ToString()).ToList();
+            List<Path> result = !onlyIncludeShortestPaths ? Paths : GetShortestPathsExcludingLocalLinks();
+            return result.OrderBy(p => GetCountOfTripsExcludingLocalLinks(p)).ThenBy(p => p.Count()).ThenBy(p => p.ToString()).ToList();
         }
-       
-        private List<Path> GetShortestPaths()
+
+        private int GetCountOfTripsExcludingLocalLinks(Path p)
+        {
+            int allCount = p.Count() - 1;
+            int localLinksCount = 0;
+            foreach (string link in LocalLinksStrings)
+            {
+                if (p.ToString().Contains(link)) localLinksCount++;
+            }
+            return allCount - localLinksCount;
+        }
+
+        private void AddLocalLinksToAirportDestinations()
+        {
+            foreach (KeyValuePair<string, HashSet<string>> pair in AirportLocalLinks)
+            {
+                foreach (string item in AirportLocalLinks[pair.Key])
+                {
+                    AirportsAndDestinations[pair.Key].Add(item);
+                    LocalLinksStrings.Add($"{pair.Key}-{item}");
+                }
+            }
+        }
+
+        private List<Path> GetShortestPathsExcludingLocalLinks()
         {
             Dictionary<string, List<Path>> shortPathAndFullPaths = new();
             foreach (Path path in Paths)
@@ -50,29 +78,24 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Dictionary<string, int> shortPathAndMinCounts = new();
             foreach (KeyValuePair<string, List<Path>> pair in shortPathAndFullPaths)
             {
-                int minCount = pair.Value.Min(x => x.Count());
+                int minCount = pair.Value.Min(x => GetCountOfTripsExcludingLocalLinks(x));
                 shortPathAndMinCounts.Add(pair.Key, minCount);
             }
 
             List<Path> newPaths = new();
             foreach (KeyValuePair<string, int> pair in shortPathAndMinCounts)
             {
-                newPaths.AddRange(shortPathAndFullPaths[pair.Key].Where(x => x.Count() == pair.Value));
+                newPaths.AddRange(shortPathAndFullPaths[pair.Key].Where(x => GetCountOfTripsExcludingLocalLinks(x) == pair.Value));
             }
             return newPaths;
         }
 
         private void UpdateCurrentPathAndScanItIfNeeded(string origin, string target)
         {
-            if (CurrentPathHasReachedTargetOrExceededMaxFlightCount()) return;
             CurrentPath.AddLast(origin);
-            if (!CurrentPathContainsRepeatedAirport()) ScanCurrentPath(origin, target);
+            if (!CurrentPathContainsRepeatedAirport() && origin.Equals(target)) Paths.Add(new Path(new List<string>(CurrentPath)));
+            if (GetCountOfTripsExcludingLocalLinks(new Path(CurrentPath.ToList())) < MaxFlights) ScanCurrentPath(origin, target);
             CurrentPath.RemoveLast();
-        }
-
-        private bool CurrentPathHasReachedTargetOrExceededMaxFlightCount()
-        {
-            return CurrentPath.Count >= MaxFlights || (CurrentPath.Last != null && CurrentPath.Last.Value.Equals(Target));
         }
 
         private bool CurrentPathContainsRepeatedAirport()
@@ -95,7 +118,6 @@ namespace FlightConnectionsDotCom_ClassLibrary
             HashSet<string> destinations = AirportsAndDestinations[origin];
             foreach (string destination in destinations)
             {
-                if (destination.Equals(target)) Paths.Add(new Path(new List<string>(CurrentPath) { destination }));
                 UpdateCurrentPathAndScanItIfNeeded(destination, target);
             }
         }
