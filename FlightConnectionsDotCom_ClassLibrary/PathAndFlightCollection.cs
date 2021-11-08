@@ -17,7 +17,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         public override string ToString()
         {
-            return $"{Path}, {FlightCollection.Count()} flights";
+            return $"{Path}, {FlightCollection.GetCountOfFlights()} flights, {FlightCollection.GetCountOfBuses()} buses";
         }
     }
 }

@@ -57,6 +57,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 new("Path", TypeString),
                 new("Id", TypeInt32),
                 new("Count of Flights", TypeInt32),
+                new("Count of Buses", TypeInt32),
                 doableColumn,
                 sameDayFinishColumn,
                 new("Start", TypeString),
@@ -81,6 +82,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[index++] = seqCollection.GetFullPath();
                 row[index++] = id;
                 row[index++] = seqCollection.GetCountOfFlights();
+                row[index++] = seqCollection.GetCountOfBuses();
                 if (!skipUndoableFlights) row[index++] = seqCollection.SequenceIsDoable();
                 if (!skipNotSameDayFinishFlights) row[index++] = seqCollection.StartsAndEndsOnSameDay();
                 row[index++] = GetShortDateTime(seqCollection.GetStartTime());
@@ -108,7 +110,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             int changes = 0;
             Flight previousFlight = c.FlightCollection[0];
             if (!airportDict[previousFlight.GetDepartingAirport()].Country.Equals(airportDict[previousFlight.GetArrivingAirport()].Country)) changes++;
-            for (int i = 1; i < c.FlightCollection.Count(); i++)
+            for (int i = 1; i < c.FlightCollection.GetCount(); i++)
             {
                 Flight currentFlight = c.FlightCollection[i];
                 if (!airportDict[currentFlight.GetArrivingAirport()].Country.Equals(airportDict[previousFlight.GetArrivingAirport()].Country)) changes++;
@@ -125,6 +127,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 new DataColumn("Path", TypeString),
                 new DataColumn("Id", TypeInt32),
                 new DataColumn("Flight #", TypeInt32),
+                new DataColumn("Type", TypeString),
                 new DataColumn("Departing Time", TypeString),
                 new DataColumn("Arriving Time", TypeString),
                 new DataColumn("Departing City", TypeString),
@@ -149,6 +152,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[index++] = flight.Path;
                 row[index++] = id;
                 row[index++] = i + 1;
+                row[index++] = flight.Type;
                 row[index++] = GetShortDateTime(flight.Departing);
                 row[index++] = GetShortDateTime(flight.Arriving);
                 row[index++] = airportDict[flight.GetDepartingAirport()].City;

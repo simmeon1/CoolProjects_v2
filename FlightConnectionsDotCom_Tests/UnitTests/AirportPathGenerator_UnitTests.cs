@@ -10,12 +10,13 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         private const string codeABZ = "ABZ";
         private const string codeSOF = "SOF";
         private const string codeEDI = "EDI";
+        private const string codeGLA = "GLA";
         private const string codeCIA = "CIA";
         private const string codeLTN = "LTN";
         private const string codeLHR = "LHR";
         private const string codeVAR = "VAR";
 
-        private AirportPathGenerator GetFullAirportAndDestinationsListWithoutLocalLinks()
+        private static AirportPathGenerator GetFullAirportAndDestinationsListWithoutLocalLinks()
         {
             Dictionary<string, HashSet<string>> airportAndDestinationsList = new()
             {
@@ -27,7 +28,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             return new AirportPathGenerator(airportAndDestinationsList);
         }
         
-        private AirportPathGenerator GetPartialAirportAndDestinationsListWithLinks()
+        private static AirportPathGenerator GetPartialAirportAndDestinationsListWithLinks()
         {
             Dictionary<string, HashSet<string>> airportAndDestinationsList = new()
             {

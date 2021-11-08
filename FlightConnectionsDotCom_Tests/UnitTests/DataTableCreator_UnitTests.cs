@@ -62,10 +62,11 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             int index = 0;
             Assert.IsTrue(mainTable.TableName.Equals("Summary"));
             Assert.IsTrue(mainTable.Rows.Count == 1);
-            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 12);
+            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 13);
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals("ABZ-EDI-VAR"));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(1));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(2));
+            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(0));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(true));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(true));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(DataTableCreator.GetShortDateTime(flight1Departing)));
@@ -79,10 +80,11 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             int subIndex = 0;
             Assert.IsTrue(subTable.TableName.Equals("Details"));
             Assert.IsTrue(subTable.Rows.Count == 2);
-            Assert.IsTrue(subTable.Rows[0].ItemArray.Length == 13);
+            Assert.IsTrue(subTable.Rows[0].ItemArray.Length == 14);
             Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(flight1Path));
             Assert.IsTrue((int)subTable.Rows[0].ItemArray[subIndex++] == 1);
             Assert.IsTrue((int)subTable.Rows[0].ItemArray[subIndex++] == 1);
+            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals("Flight"));
             Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(DataTableCreator.GetShortDateTime(flight1Departing)));
             Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(DataTableCreator.GetShortDateTime(flight1Arriving)));
             Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(airport1.City));
@@ -95,10 +97,11 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Assert.IsTrue((double)subTable.Rows[0].ItemArray[subIndex++] == 25);
 
             subIndex = 0;
-            Assert.IsTrue(subTable.Rows[1].ItemArray.Length == 13);
+            Assert.IsTrue(subTable.Rows[1].ItemArray.Length == 14);
             Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(flight2Path));
             Assert.IsTrue((int)subTable.Rows[1].ItemArray[subIndex++] == 1);
             Assert.IsTrue((int)subTable.Rows[1].ItemArray[subIndex++] == 2);
+            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals("Flight"));
             Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(DataTableCreator.GetShortDateTime(flight2Departing)));
             Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(DataTableCreator.GetShortDateTime(flight2Arriving)));
             Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(airport2.City));
@@ -120,10 +123,11 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             int index = 0;
             Assert.IsTrue(mainTable.TableName.Equals("Summary"));
             Assert.IsTrue(mainTable.Rows.Count == 1);
-            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 10);
+            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 11);
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals("ABZ-EDI-VAR"));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(1));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(2));
+            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(0));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(DataTableCreator.GetShortDateTime(flight1Departing)));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(DataTableCreator.GetShortDateTime(flight2Arriving)));
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals("06:00"));
@@ -160,7 +164,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             List<SequentialFlightCollection> flights = new() { correctSeq };
             List<DataTable> tables = creator.GetTables(airportList, flights, true, true, 100);
             DataTable mainTable = tables[0];
-            Assert.IsTrue((int)mainTable.Rows[0].ItemArray[6] == 1);
+            Assert.IsTrue((int)mainTable.Rows[0].ItemArray[7] == 1);
         }
     }
 }

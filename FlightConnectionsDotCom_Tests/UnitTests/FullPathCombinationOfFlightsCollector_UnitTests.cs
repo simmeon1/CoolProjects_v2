@@ -88,7 +88,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
 
             List<PathAndFlightCollection> data = new();
             data.Add(new (path1, new(new List<Flight>() { flight1 })));
-            Assert.IsTrue(data[0].ToString().Equals($"{path1}, 1 flights"));
+            Assert.IsTrue(data[0].ToString().Equals($"{path1}, 1 flights, 0 buses"));
 
             FullPathCombinationOfFlightsCollector collector = new();
 

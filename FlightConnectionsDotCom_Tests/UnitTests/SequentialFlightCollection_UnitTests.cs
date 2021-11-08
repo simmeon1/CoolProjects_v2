@@ -11,10 +11,12 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
     public class SequentialFlightCollection_UnitTests
     {
         private readonly Flight flight1 = new(new DateTime(2000, 11, 11, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(1, 10, 10), "ABZ-EDI", 25);
+        private readonly Flight bus1 = new(new DateTime(2000, 11, 11, 07, 00, 00), new DateTime(2000, 11, 11, 13, 00, 00), "easyJet", new TimeSpan(4, 0, 0), "ABZ-EDI", 15, JourneyType.Bus);
         private readonly Flight flight2 = new(new DateTime(2000, 11, 11, 14, 0, 0), new DateTime(2000, 11, 11, 18, 0, 0), "wizz", new TimeSpan(2, 0, 0), "EDI-VAR", 50);
         private readonly Flight flight3 = new(new DateTime(2000, 11, 11, 21, 30, 0), new DateTime(2000, 11, 11, 23, 0, 0), "wizz", new TimeSpan(1, 30, 0), "VAR-BOJ", 10);
-        private readonly Flight flight4 = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizz", new TimeSpan(3, 30, 00), "BOJ-LTN", 40);
-        private readonly Flight flight4Copy = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizzd", new TimeSpan(3, 30, 00), "BOJ-LTN", 40);
+        private readonly Flight bus3 = new(new DateTime(2000, 11, 11, 18, 40, 00), new DateTime(2000, 11, 11, 21, 00, 00), "easyJet", new TimeSpan(4, 0, 0), "VAR-BOJ", 15, JourneyType.Bus);
+        private readonly Flight flight4 = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizz", new TimeSpan(3, 30, 0), "BOJ-LTN", 40);
+        private readonly Flight flight4Copy = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizzd", new TimeSpan(3, 30, 0), "BOJ-LTN", 40);
 
         [TestMethod]
         public void ExceptionIsThrownForNoSequence()
@@ -94,6 +96,12 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         public void SequenceIsValidAndDoableWithMultipleFlights()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).SequenceIsDoable());
+        }
+        
+        [TestMethod]
+        public void SequenceIsValidAndDoableWithFlightAndBus()
+        {
+            Assert.IsTrue(CreateSeqCollectionWithFlights(flight2, bus3).SequenceIsDoable());
         }
 
         [TestMethod]
@@ -185,6 +193,18 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         public void CountOfFlightsIsZeroInInvalid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetCountOfFlights() == 0);
+        }
+        
+        [TestMethod]
+        public void CountOfBusesIsCorrect()
+        {
+            Assert.IsTrue(CreateSeqCollectionWithFlights(bus1, flight2).GetCountOfBuses() == 1);
+        }
+
+        [TestMethod]
+        public void CountOfBusesIsZeroInInvalid()
+        {
+            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetCountOfBuses() == 0);
         }
 
         [TestMethod]

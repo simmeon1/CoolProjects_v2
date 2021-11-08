@@ -27,7 +27,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             {
                 PathAndFlightCollection pathAndFlights = DataWithFlightsForSinglePaths.PathsAndFlightCollections[i];
                 FlightCollection pathFlights = pathAndFlights.FlightCollection;
-                for (int j = 0; j < pathFlights.Count(); j++)
+                for (int j = 0; j < pathFlights.GetCount(); j++)
                 {
                     listOfFlights.AddLast(pathFlights[j]);
                     if (index < count - 1) BuildUpCombinationOfFlights(i + 1, listOfFlights, combos);

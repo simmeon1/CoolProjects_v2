@@ -1,6 +1,7 @@
 ﻿using Common_ClassLibrary;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace FlightConnectionsDotCom_ClassLibrary
@@ -31,9 +32,19 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
         }
 
-        public int Count()
+        public int GetCount()
         {
             return Flights.Count;
+        }
+        
+        public int GetCountOfFlights()
+        {
+            return Flights.Where(x => x.Type == JourneyType.Flight).Count();
+        }
+        
+        public int GetCountOfBuses()
+        {
+            return Flights.Where(x => x.Type == JourneyType.Bus).Count();
         }
         
         public Flight GetFirst()
@@ -43,7 +54,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         
         public Flight GetLast()
         {
-            return Flights[Count() - 1];
+            return Flights[GetCount() - 1];
         }
 
         public override string ToString()

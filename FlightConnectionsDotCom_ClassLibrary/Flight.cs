@@ -11,7 +11,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public TimeSpan Duration { get; set; }
         public string Path { get; set; }
         public int Cost { get; set; }
-        public Flight(DateTime departing, DateTime arriving, string airline, TimeSpan duration, string path, int cost)
+        public JourneyType Type { get; set; }
+        public Flight(DateTime departing, DateTime arriving, string airline, TimeSpan duration, string path, int cost, JourneyType type = JourneyType.Flight)
         {
             Departing = departing;
             Arriving = arriving;
@@ -19,11 +20,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Duration = duration;
             Path = path;
             Cost = cost;
+            Type = type;
         }
 
         public override string ToString()
         {
-            return $"{GetDepartingAirport()}-{GetArrivingAirport()} - {Departing} - {Arriving} - {Airline} - {Duration} - {Cost}";
+            return $"{GetDepartingAirport()}-{GetArrivingAirport()} - {Departing} - {Arriving} - {Airline} - {Duration} - {Cost} - {Type}";
         }
         
         public string GetDepartingAirport()

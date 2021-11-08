@@ -19,14 +19,14 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         public SequentialFlightCollection(FlightCollection flightCollection)
         {
-            if (flightCollection != null && flightCollection.Count() > 1) DoSequenceCheck(flightCollection);
+            if (flightCollection != null && flightCollection.GetCount() > 1) DoSequenceCheck(flightCollection);
             FlightCollection = flightCollection;
         }
 
         private static void DoSequenceCheck(FlightCollection flightCollection)
         {
             Flight previousFlight = flightCollection[0];
-            for (int i = 1; i < flightCollection.Count(); i++)
+            for (int i = 1; i < flightCollection.GetCount(); i++)
             {
                 if (!previousFlight.GetArrivingAirport().Equals(flightCollection[i].GetDepartingAirport()))
                 {
@@ -61,12 +61,12 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         private bool IsNotValid()
         {
-            return FlightCollection == null || FlightCollection.Count() == 0;
+            return FlightCollection == null || FlightCollection.GetCount() == 0;
         }
         
         public int Count()
         {
-            return IsNotValid() ? 0 : FlightCollection.Count();
+            return IsNotValid() ? 0 : FlightCollection.GetCount();
         }
 
         public override string ToString()
@@ -78,7 +78,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         {
             StringBuilder path = new("");
             path.Append(FlightCollection[0].Path);
-            for (int i = 1; i < FlightCollection.Count(); i++)
+            for (int i = 1; i < FlightCollection.GetCount(); i++)
             {
                 Flight flight = FlightCollection[i];
                 path.Append($"-{flight.GetArrivingAirport()}");
@@ -89,21 +89,26 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public bool SequenceIsDoable()
         {
             if (IsNotValid()) return false;
-            if (FlightCollection.Count() == 1) return true;
+            if (FlightCollection.GetCount() == 1) return true;
             Flight previousFlight = FlightCollection[0];
-            for (int i = 1; i < FlightCollection.Count(); i++)
+            for (int i = 1; i < FlightCollection.GetCount(); i++)
             {
-                if ((FlightCollection[i].Departing - previousFlight.Arriving).TotalMinutes < 120) return false;
+                if ((FlightCollection[i].Departing - previousFlight.Arriving).TotalMinutes < GetFreeMinutesNeededBeforeDeparture(FlightCollection[i].Type)) return false;
                 previousFlight = FlightCollection[i];
             }
             return true;
+        }
+
+        private static double GetFreeMinutesNeededBeforeDeparture(JourneyType type)
+        {
+            return type == JourneyType.Flight ? 120 : 30;
         }
 
         public int GetCost()
         {
             int cost = 0;
             if (IsNotValid()) return cost;
-            for (int i = 0; i < FlightCollection.Count(); i++) cost += FlightCollection[i].Cost;
+            for (int i = 0; i < FlightCollection.GetCount(); i++) cost += FlightCollection[i].Cost;
             return cost;
         }
 
@@ -119,14 +124,19 @@ namespace FlightConnectionsDotCom_ClassLibrary
 
         public int GetCountOfFlights()
         {
-            return IsNotValid() ? 0 : FlightCollection.Count();
+            return IsNotValid() ? 0 : FlightCollection.GetCountOfFlights();
+        }
+        
+        public int GetCountOfBuses()
+        {
+            return IsNotValid() ? 0 : FlightCollection.GetCountOfBuses();
         }
 
         public TimeSpan GetLength()
         {
             if (IsNotValid()) return new();
             TimeSpan time = new();
-            for (int i = 0; i < FlightCollection.Count(); i++)
+            for (int i = 0; i < FlightCollection.GetCount(); i++)
             {
                 Flight flight = FlightCollection[i];
                 TimeSpan waitFromPrev = i == 0 ? new TimeSpan() : (flight.Departing - FlightCollection[i - 1].Arriving);
@@ -143,7 +153,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public bool HasFlightWithZeroCost()
         {
             if (IsNotValid()) return false;
-            for (int i = 0; i < FlightCollection.Count(); i++) if (FlightCollection[i].Cost == 0) return true;
+            for (int i = 0; i < FlightCollection.GetCount(); i++) if (FlightCollection[i].Cost == 0) return true;
             return false;
         }
     }

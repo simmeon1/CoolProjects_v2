@@ -41,7 +41,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         {
             string json = collection.SerializeObject();
             FlightCollection collection2 = json.DeserializeObject<FlightCollection>();
-            Assert.IsTrue(collection.Count() == collection2.Count());
+            Assert.IsTrue(collection.GetCount() == collection2.GetCount());
         }
     }
 }
