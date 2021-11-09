@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
-    public class ChromeWorker : IChromeWorker
+    public class GoogleFlightsWorker : IGoogleFlightsWorker
     {
         private IWebDriver Driver { get; set; }
         private ILogger Logger { get; set; }
         private IDelayer Delayer { get; set; }
         private int PagesToOpen { get; set; }
         private int PagesOpened { get; set; }
-        private Dictionary<string, FlightCollection> CollectedPathFlights { get; set; }
+        private Dictionary<string, JourneyCollection> CollectedPathJourneys { get; set; }
         private IWebElement OriginInput1 { get; set; }
         private IWebElement OriginInput2 { get; set; }
         private IWebElement DestinationInput1 { get; set; }
@@ -28,20 +28,20 @@ namespace FlightConnectionsDotCom_ClassLibrary
         private bool StopsSet { get; set; }
         private string LastTypedOrigin { get; set; }
 
-        public ChromeWorker(ILogger logger, IDelayer delayer, IWebDriver driver)
+        public GoogleFlightsWorker(ILogger logger, IDelayer delayer, IWebDriver driver)
         {
             Driver = driver;
             Logger = logger;
             Delayer = delayer;
         }
 
-        public async Task<ChromeWorkerResults> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo, int defaultDelay = 500, Dictionary<string, FlightCollection> collectedPathFlights = null)
+        public async Task<GoogleFlightsWorkerResults> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo, int defaultDelay = 500, Dictionary<string, JourneyCollection> collectedPathJourneys = null)
         {
             DefaultDelay = defaultDelay;
             LastTypedOrigin = "";
             StopsSet = false;
-            List<FullPathAndListOfPathsAndFlightCollections> results = new();
-            CollectedPathFlights = collectedPathFlights ?? new();
+            List<FullPathAndListOfPathsAndJourneyCollections> results = new();
+            CollectedPathJourneys = collectedPathJourneys ?? new();
             PagesToOpen = 0;
             PagesOpened = 0;
 
@@ -60,14 +60,14 @@ namespace FlightConnectionsDotCom_ClassLibrary
             {
                 Logger.Log("An exception was thrown while collecting flights and the results have been returned early.");
                 Logger.Log($"Exception details: {ex}");
-                return new(false, CollectedPathFlights, results);
+                return new(false, CollectedPathJourneys, results);
             }
-            return new(true, CollectedPathFlights, results);
+            return new(true, CollectedPathJourneys, results);
         }
 
-        private async Task<FullPathAndListOfPathsAndFlightCollections> ProcessPath(Path path, DateTime dateFrom, DateTime dateTo)
+        private async Task<FullPathAndListOfPathsAndJourneyCollections> ProcessPath(Path path, DateTime dateFrom, DateTime dateTo)
         {
-            List<PathAndFlightCollection> pathsAndFlights = new();
+            List<PathAndJourneyCollection> pathsAndFlights = new();
             for (int i = 0; i < path.Count() - 1; i++)
             {
                 string origin = path[i];
@@ -75,11 +75,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 Path pathName = new(new List<string> { origin, target });
                 Logger.Log($"Collecting data for {pathName}.");
 
-                FlightCollection flights;
-                if (CollectedPathFlights.ContainsKey(pathName.ToString()))
+                JourneyCollection flights;
+                if (CollectedPathJourneys.ContainsKey(pathName.ToString()))
                 {
                     Logger.Log($"Data for {pathName} already collected.");
-                    flights = CollectedPathFlights[pathName.ToString()];
+                    flights = CollectedPathJourneys[pathName.ToString()];
                 }
                 else
                 {
@@ -97,8 +97,8 @@ namespace FlightConnectionsDotCom_ClassLibrary
                     Logger.Log($"Getting flights for {pathName} from {dateFrom} to {dateTo}.");
                     flights = await GetFlights(dateFrom, listOfExtraDates);
                 }
-                PathAndFlightCollection flightsForOriginToTarget = new(pathName, flights);
-                if (!CollectedPathFlights.ContainsKey(pathName.ToString())) CollectedPathFlights.Add(pathName.ToString(), flights);
+                PathAndJourneyCollection flightsForOriginToTarget = new(pathName, flights);
+                if (!CollectedPathJourneys.ContainsKey(pathName.ToString())) CollectedPathJourneys.Add(pathName.ToString(), flights);
                 pathsAndFlights.Add(flightsForOriginToTarget);
                 PagesOpened++;
                 Logger.Log($"Collected data for {pathName} ({Globals.GetPercentageAndCountString(PagesOpened, PagesToOpen)})");
@@ -106,19 +106,19 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return new(path, pathsAndFlights);
         }
 
-        private async Task<FlightCollection> GetFlights(DateTime date, List<DateTime> extraDates)
+        private async Task<JourneyCollection> GetFlights(DateTime date, List<DateTime> extraDates)
         {
-            List<Flight> results = new();
+            List<Journey> results = new();
             await GetFlightsForDate(date, results);
             foreach (DateTime extraDate in extraDates)
             {
                 await PopulateDateAndHitDone(extraDate);
                 await GetFlightsForDate(extraDate, results);
             }
-            return new FlightCollection(results);
+            return new JourneyCollection(results);
         }
 
-        private async Task GetFlightsForDate(DateTime date, List<Flight> results)
+        private async Task GetFlightsForDate(DateTime date, List<Journey> results)
         {
             ReadOnlyCollection<IWebElement> flightLists;
             ReadOnlyCollection<IWebElement> flights;
@@ -187,7 +187,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 string pathText = $"{pathMatch.Groups[1].Value}-{pathMatch.Groups[2].Value}";
                 string costText = Regex.Replace(flightText[flightText.Length - 1], "\\D", "").Trim();
                 int.TryParse(costText, out int cost);
-                Flight item = new(
+                Journey item = new(
                                         DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {departingText}"),
                                         DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {arrivingText}").AddDays(arrivesNextDay ? 1 : 0),
                                         airlineText,

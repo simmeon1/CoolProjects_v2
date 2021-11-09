@@ -21,7 +21,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             TypeBool = Type.GetType("System.Boolean");
         }
 
-        public List<DataTable> GetTables(List<Airport> airportList, List<SequentialFlightCollection> sequentialCollections, bool skipUndoableFlights, bool skipNotSameDayFinishFlights, int noLongerThan)
+        public List<DataTable> GetTables(List<Airport> airportList, List<SequentialJourneyCollection> sequentialCollections, bool skipUndoableJourneys, bool skipNotSameDayFinishJourneys, int noLongerThan)
         {
             Dictionary<string, Airport> airportDict = new();
             foreach (Airport airport in airportList)
@@ -29,20 +29,20 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 if (!airportDict.ContainsKey(airport.Code)) airportDict.Add(airport.Code, airport);
             }
 
-            List<SequentialFlightCollection> reducedList = sequentialCollections
-                                                                    .Where(c => !skipUndoableFlights || c.SequenceIsDoable())
-                                                                    .Where(c => !skipNotSameDayFinishFlights || c.StartsAndEndsOnSameDay())
+            List<SequentialJourneyCollection> reducedList = sequentialCollections
+                                                                    .Where(c => !skipUndoableJourneys || c.SequenceIsDoable())
+                                                                    .Where(c => !skipNotSameDayFinishJourneys || c.StartsAndEndsOnSameDay())
                                                                     .Where(c => c.GetLength().TotalHours <= noLongerThan).ToList();
 
             double avgLength = reducedList.Count == 0 ? 0 : reducedList.Average(x => x.GetLength().TotalMinutes);
             double avgCost = reducedList.Count == 0 ? 0 : reducedList.Average(x => x.GetCost());
 
-            List<SequentialFlightCollection> reducedAndOrderedList = reducedList
+            List<SequentialJourneyCollection> reducedAndOrderedList = reducedList
                                                                     .OrderByDescending(c => c.SequenceIsDoable())
                                                                     .ThenByDescending(c => c.StartsAndEndsOnSameDay())
                                                                     .ThenBy(c => c.GetCountOfFlights())
                                                                     .ThenBy(c => GetCountryChanges(airportDict, c))
-                                                                    .ThenBy(c => c.HasFlightWithZeroCost())
+                                                                    .ThenBy(c => c.HasJourneyWithZeroCost())
                                                                     .ThenByDescending(c => GetBargainPercentage(c, avgLength, avgCost))
                                                                     .ThenBy(c => c.GetLength())
                                                                     .ThenBy(c => c.GetCost())
@@ -66,16 +66,16 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 new("Country Changes", TypeInt32),
                 new("Cost", TypeDouble),
                 new("Bargain %", TypeDouble),
-                new("Has Flight With 0 Cost", TypeBool)
+                new("Has Journey With 0 Cost", TypeBool)
             }.ToArray());
-            if (skipUndoableFlights) mainTable.Columns.Remove(doableColumn);
-            if (skipNotSameDayFinishFlights) mainTable.Columns.Remove(sameDayFinishColumn);
+            if (skipUndoableJourneys) mainTable.Columns.Remove(doableColumn);
+            if (skipNotSameDayFinishJourneys) mainTable.Columns.Remove(sameDayFinishColumn);
 
             DataTable subTable = GetSubTable();
 
             for (int i = 0; i < reducedAndOrderedList.Count; i++)
             {
-                SequentialFlightCollection seqCollection = reducedAndOrderedList[i];
+                SequentialJourneyCollection seqCollection = reducedAndOrderedList[i];
                 int id = i + 1;
                 int index = 0;
                 DataRow row = mainTable.NewRow();
@@ -83,15 +83,15 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 row[index++] = id;
                 row[index++] = seqCollection.GetCountOfFlights();
                 row[index++] = seqCollection.GetCountOfBuses();
-                if (!skipUndoableFlights) row[index++] = seqCollection.SequenceIsDoable();
-                if (!skipNotSameDayFinishFlights) row[index++] = seqCollection.StartsAndEndsOnSameDay();
+                if (!skipUndoableJourneys) row[index++] = seqCollection.SequenceIsDoable();
+                if (!skipNotSameDayFinishJourneys) row[index++] = seqCollection.StartsAndEndsOnSameDay();
                 row[index++] = GetShortDateTime(seqCollection.GetStartTime());
                 row[index++] = GetShortDateTime(seqCollection.GetEndTime());
                 row[index++] = GetShortTimeSpan(seqCollection.GetLength());
                 row[index++] = GetCountryChanges(airportDict, seqCollection);
                 row[index++] = seqCollection.GetCost();
                 row[index++] = GetBargainPercentage(seqCollection, avgLength, avgCost);
-                row[index++] = seqCollection.HasFlightWithZeroCost();
+                row[index++] = seqCollection.HasJourneyWithZeroCost();
                 mainTable.Rows.Add(row);
                 AddRowsToSubTable(seqCollection, id, subTable, airportDict);
             }
@@ -100,21 +100,21 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return tables;
         }
 
-        private static double GetBargainPercentage(SequentialFlightCollection seqCollection, double avgLength, double avgCost)
+        private static double GetBargainPercentage(SequentialJourneyCollection seqCollection, double avgLength, double avgCost)
         {
             return Math.Round((100 - ((seqCollection.GetLength().TotalMinutes / avgLength) * 100)) + (100 - ((seqCollection.GetCost() / avgCost) * 100)), 2);
         }
 
-        private static int GetCountryChanges(Dictionary<string, Airport> airportDict, SequentialFlightCollection c)
+        private static int GetCountryChanges(Dictionary<string, Airport> airportDict, SequentialJourneyCollection c)
         {
             int changes = 0;
-            Flight previousFlight = c.FlightCollection[0];
-            if (!airportDict[previousFlight.GetDepartingAirport()].Country.Equals(airportDict[previousFlight.GetArrivingAirport()].Country)) changes++;
-            for (int i = 1; i < c.FlightCollection.GetCount(); i++)
+            Journey previousJourney = c.JourneyCollection[0];
+            if (!airportDict[previousJourney.GetDepartingAirport()].Country.Equals(airportDict[previousJourney.GetArrivingAirport()].Country)) changes++;
+            for (int i = 1; i < c.JourneyCollection.GetCount(); i++)
             {
-                Flight currentFlight = c.FlightCollection[i];
-                if (!airportDict[currentFlight.GetArrivingAirport()].Country.Equals(airportDict[previousFlight.GetArrivingAirport()].Country)) changes++;
-                previousFlight = currentFlight;
+                Journey currentJourney = c.JourneyCollection[i];
+                if (!airportDict[currentJourney.GetArrivingAirport()].Country.Equals(airportDict[previousJourney.GetArrivingAirport()].Country)) changes++;
+                previousJourney = currentJourney;
             }
             return changes;
         }
@@ -126,7 +126,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             subTable.Columns.AddRange(new List<DataColumn> {
                 new DataColumn("Path", TypeString),
                 new DataColumn("Id", TypeInt32),
-                new DataColumn("Flight #", TypeInt32),
+                new DataColumn("Journey #", TypeInt32),
                 new DataColumn("Type", TypeString),
                 new DataColumn("Departing Time", TypeString),
                 new DataColumn("Arriving Time", TypeString),
@@ -142,27 +142,27 @@ namespace FlightConnectionsDotCom_ClassLibrary
             return subTable;
         }
 
-        private static void AddRowsToSubTable(SequentialFlightCollection sequentialCollection, int id, DataTable subTable, Dictionary<string, Airport> airportDict)
+        private static void AddRowsToSubTable(SequentialJourneyCollection sequentialCollection, int id, DataTable subTable, Dictionary<string, Airport> airportDict)
         {
             for (int i = 0; i < sequentialCollection.Count(); i++)
             {
-                Flight flight = sequentialCollection[i];
+                Journey journey = sequentialCollection[i];
                 int index = 0;
                 DataRow row = subTable.NewRow();
-                row[index++] = flight.Path;
+                row[index++] = journey.Path;
                 row[index++] = id;
                 row[index++] = i + 1;
-                row[index++] = flight.Type;
-                row[index++] = GetShortDateTime(flight.Departing);
-                row[index++] = GetShortDateTime(flight.Arriving);
-                row[index++] = airportDict[flight.GetDepartingAirport()].City;
-                row[index++] = airportDict[flight.GetArrivingAirport()].City;
-                row[index++] = airportDict[flight.GetDepartingAirport()].Country;
-                row[index++] = airportDict[flight.GetArrivingAirport()].Country;
-                row[index++] = GetShortTimeSpan(flight.Duration);
-                row[index++] = GetShortTimeSpan(i == 0 ? new TimeSpan() : (flight.Departing - sequentialCollection[i - 1].Arriving));
-                row[index++] = flight.Airline;
-                row[index++] = flight.Cost;
+                row[index++] = journey.Type;
+                row[index++] = GetShortDateTime(journey.Departing);
+                row[index++] = GetShortDateTime(journey.Arriving);
+                row[index++] = airportDict[journey.GetDepartingAirport()].City;
+                row[index++] = airportDict[journey.GetArrivingAirport()].City;
+                row[index++] = airportDict[journey.GetDepartingAirport()].Country;
+                row[index++] = airportDict[journey.GetArrivingAirport()].Country;
+                row[index++] = GetShortTimeSpan(journey.Duration);
+                row[index++] = GetShortTimeSpan(i == 0 ? new TimeSpan() : (journey.Departing - sequentialCollection[i - 1].Arriving));
+                row[index++] = journey.Airline;
+                row[index++] = journey.Cost;
                 subTable.Rows.Add(row);
             }
         }

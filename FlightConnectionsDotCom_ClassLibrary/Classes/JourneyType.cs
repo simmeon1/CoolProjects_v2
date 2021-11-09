@@ -3,6 +3,6 @@
     public enum JourneyType
     {
         Flight,
-        Bus
+        Local
     }
 }

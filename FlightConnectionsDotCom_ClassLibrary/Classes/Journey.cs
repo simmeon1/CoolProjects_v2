@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace FlightConnectionsDotCom_ClassLibrary
 {
-    public class Flight
+    public class Journey
     {
         public DateTime Departing { get; set; }
         public DateTime Arriving { get; set; }
@@ -12,7 +12,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public string Path { get; set; }
         public int Cost { get; set; }
         public JourneyType Type { get; set; }
-        public Flight(DateTime departing, DateTime arriving, string airline, TimeSpan duration, string path, int cost, JourneyType type = JourneyType.Flight)
+        public Journey(DateTime departing, DateTime arriving, string airline, TimeSpan duration, string path, int cost, JourneyType type = JourneyType.Flight)
         {
             Departing = departing;
             Arriving = arriving;

@@ -39,10 +39,10 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 }
             }
             List<Path> result = !onlyIncludeShortestPaths ? Paths : GetShortestPathsExcludingLocalLinks();
-            return result.OrderBy(p => GetCountOfTripsExcludingLocalLinks(p)).ThenBy(p => p.Count()).ThenBy(p => p.ToString()).ToList();
+            return result.OrderBy(p => GetCountOfFlights(p)).ThenBy(p => p.Count()).ThenBy(p => p.ToString()).ToList();
         }
 
-        private int GetCountOfTripsExcludingLocalLinks(Path p)
+        private int GetCountOfFlights(Path p)
         {
             int allCount = p.Count() - 1;
             int localLinksCount = 0;
@@ -78,14 +78,14 @@ namespace FlightConnectionsDotCom_ClassLibrary
             Dictionary<string, int> shortPathAndMinCounts = new();
             foreach (KeyValuePair<string, List<Path>> pair in shortPathAndFullPaths)
             {
-                int minCount = pair.Value.Min(x => GetCountOfTripsExcludingLocalLinks(x));
+                int minCount = pair.Value.Min(x => GetCountOfFlights(x));
                 shortPathAndMinCounts.Add(pair.Key, minCount);
             }
 
             List<Path> newPaths = new();
             foreach (KeyValuePair<string, int> pair in shortPathAndMinCounts)
             {
-                newPaths.AddRange(shortPathAndFullPaths[pair.Key].Where(x => GetCountOfTripsExcludingLocalLinks(x) == pair.Value));
+                newPaths.AddRange(shortPathAndFullPaths[pair.Key].Where(x => GetCountOfFlights(x) == pair.Value));
             }
             return newPaths;
         }
@@ -94,7 +94,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         {
             CurrentPath.AddLast(origin);
             if (!CurrentPathContainsRepeatedAirport() && origin.Equals(target)) Paths.Add(new Path(new List<string>(CurrentPath)));
-            if (GetCountOfTripsExcludingLocalLinks(new Path(CurrentPath.ToList())) < MaxFlights) ScanCurrentPath(origin, target);
+            if (GetCountOfFlights(new Path(CurrentPath.ToList())) < MaxFlights) ScanCurrentPath(origin, target);
             CurrentPath.RemoveLast();
         }
 

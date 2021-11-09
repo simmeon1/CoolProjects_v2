@@ -37,16 +37,16 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             destinations.Add("LTN", new HashSet<string>() { "VAR" });
             populatorMock.Setup(x => x.PopulateAirports(It.IsAny<List<Airport>>(), It.IsAny<IAirportFilterer>())).Returns(destinations);
 
-            Mock<IChromeWorker> chromeWorkerMock = new();
-            List<PathAndFlightCollection> data = new();
-            data.Add(new PathAndFlightCollection(new Path(new List<string>() { "VAR", "LTN" }), new FlightCollection()));
-            FullPathAndListOfPathsAndFlightCollections fullPathAndFlights = new(new Path(new List<string>() { "VAR", "LTN" }), data);
+            Mock<IGoogleFlightsWorker> chromeWorkerMock = new();
+            List<PathAndJourneyCollection> data = new();
+            data.Add(new PathAndJourneyCollection(new Path(new List<string>() { "VAR", "LTN" }), new JourneyCollection()));
+            FullPathAndListOfPathsAndJourneyCollections fullPathAndFlights = new(new Path(new List<string>() { "VAR", "LTN" }), data);
 
-            List<FullPathAndListOfPathsAndFlightCollections> fullPaths = new() { fullPathAndFlights };
-            Dictionary<string, FlightCollection> workerFlights = new();
+            List<FullPathAndListOfPathsAndJourneyCollections> fullPaths = new() { fullPathAndFlights };
+            Dictionary<string, JourneyCollection> workerFlights = new();
             workerFlights.Add("ABZ-LTN", new());
-            ChromeWorkerResults workerResults = new(true, workerFlights, fullPaths);
-            chromeWorkerMock.Setup(x => x.ProcessPaths(It.IsAny<List<Path>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<Dictionary<string, FlightCollection>>()).Result)
+            GoogleFlightsWorkerResults workerResults = new(true, workerFlights, fullPaths);
+            chromeWorkerMock.Setup(x => x.ProcessPaths(It.IsAny<List<Path>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int>(), It.IsAny<Dictionary<string, JourneyCollection>>()).Result)
                     .Returns(workerResults);
 
             Mock<IFileIO> fileIOMock = new();
@@ -78,7 +78,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
                 It.IsAny<string>()
             ), Times.Once());
             fileIOMock.Verify(x => x.WriteAllText(
-                @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21_pathsAndFlights.json",
+                @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21_pathsAndJourneys.json",
                 workerResults.SerializeObject(Formatting.Indented)
             ), Times.Once());
             printerMock.Verify(x => x.PrintTablesToWorksheet(
@@ -101,7 +101,7 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             parameters.UKAndBulgariaOnly = true;
             parameters.LocalAirportListFile = "LocalAirportListFile";
             parameters.LocalAirportDestinationsFile = "LocalAirportDestinationsFile";
-            parameters.LocalChromeWorkerResultsFile = "LocalChromeWorkerResultsFile";
+            parameters.LocalGoogleFlightsWorkerResultsFile = "LocalChromeWorkerResultsFile";
             Mock<IFileIO> fileIOMock = new();
             List<Airport> airportList = new() { new Airport("LTN", "London", "United Kingdom", "Luton", ""), new Airport("VAR", "Varna", "Bulgaria", "Varna", "") };
             fileIOMock.Setup(x => x.ReadAllText(parameters.LocalAirportListFile)).Returns(airportList.SerializeObject());
@@ -110,16 +110,16 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             destinations.Add("LTN", new HashSet<string>() { "VAR" });
             fileIOMock.Setup(x => x.ReadAllText(parameters.LocalAirportDestinationsFile)).Returns(destinations.SerializeObject());
 
-            Mock<IChromeWorker> chromeWorkerMock = new();
-            List<PathAndFlightCollection> data = new();
-            data.Add(new PathAndFlightCollection(new Path(new List<string>() { "VAR", "LTN" }), new FlightCollection()));
-            FullPathAndListOfPathsAndFlightCollections fullPathAndFlights = new(new Path(new List<string>() { "VAR", "LTN" }), data);
+            Mock<IGoogleFlightsWorker> chromeWorkerMock = new();
+            List<PathAndJourneyCollection> data = new();
+            data.Add(new PathAndJourneyCollection(new Path(new List<string>() { "VAR", "LTN" }), new JourneyCollection()));
+            FullPathAndListOfPathsAndJourneyCollections fullPathAndFlights = new(new Path(new List<string>() { "VAR", "LTN" }), data);
 
-            List<FullPathAndListOfPathsAndFlightCollections> fullPaths = new() { fullPathAndFlights };
-            Dictionary<string, FlightCollection> workerFlights = new();
+            List<FullPathAndListOfPathsAndJourneyCollections> fullPaths = new() { fullPathAndFlights };
+            Dictionary<string, JourneyCollection> workerFlights = new();
             workerFlights.Add("ABZ-LTN", new());
-            ChromeWorkerResults workerResults = new(true, workerFlights, fullPaths);
-            fileIOMock.Setup(x => x.ReadAllText(parameters.LocalChromeWorkerResultsFile)).Returns(workerResults.SerializeObject());
+            GoogleFlightsWorkerResults workerResults = new(true, workerFlights, fullPaths);
+            fileIOMock.Setup(x => x.ReadAllText(parameters.LocalGoogleFlightsWorkerResultsFile)).Returns(workerResults.SerializeObject());
 
             Mock<IExcelPrinter> printerMock = new();
             Mock<IFlightConnectionsDotComWorker_AirportCollector> collectorMock = new();

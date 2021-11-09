@@ -18,7 +18,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
         public IExcelPrinter Printer { get; set; }
         public IFlightConnectionsDotComWorker_AirportCollector AirportCollector { get; set; }
         public IFlightConnectionsDotComWorker_AirportPopulator AirportPopulator { get; set; }
-        public IChromeWorker ChromeWorker { get; set; }
+        public IGoogleFlightsWorker ChromeWorker { get; set; }
         public IDateTimeProvider DateTimeProvider { get; set; }
 
         public FullRunner(
@@ -29,7 +29,7 @@ namespace FlightConnectionsDotCom_ClassLibrary
             IExcelPrinter printer,
             IFlightConnectionsDotComWorker_AirportCollector airportCollector,
             IFlightConnectionsDotComWorker_AirportPopulator airportPopulator,
-            IChromeWorker chromeWorker)
+            IGoogleFlightsWorker chromeWorker)
         {
             Logger = logger;
             Delayer = delayer;
@@ -92,11 +92,11 @@ namespace FlightConnectionsDotCom_ClassLibrary
             }
             FileIO.WriteAllText($"{runResultsPath}\\{runId}_latestPaths.json", pathsDetailed.SerializeObject(Formatting.Indented));
 
-            ChromeWorkerResults chromeWorkerResults;
-            if (!Parameters.LocalChromeWorkerResultsFile.IsNullOrEmpty())
+            GoogleFlightsWorkerResults chromeWorkerResults;
+            if (!Parameters.LocalGoogleFlightsWorkerResultsFile.IsNullOrEmpty())
             {
-                chromeWorkerResults = FileIO.ReadAllText(Parameters.LocalChromeWorkerResultsFile).DeserializeObject<ChromeWorkerResults>();
-                PrintPathsAndFlightsAndFinish(airportsList, chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);
+                chromeWorkerResults = FileIO.ReadAllText(Parameters.LocalGoogleFlightsWorkerResultsFile).DeserializeObject<GoogleFlightsWorkerResults>();
+                PrintPathsAndJourneysAndFinish(airportsList, chromeWorkerResults.FullPathsAndJourneyCollections, runId, runResultsPath);
                 return true;
             }
             else if (!Parameters.OpenGoogleFlights)
@@ -105,25 +105,25 @@ namespace FlightConnectionsDotCom_ClassLibrary
                 return true;
             }
 
-            Dictionary<string, FlightCollection> collectedPathFlights = new();
-            if (!Parameters.LocalCollectedPathFlightsFile.IsNullOrEmpty()) collectedPathFlights = FileIO.ReadAllText(Parameters.LocalCollectedPathFlightsFile).DeserializeObject<ChromeWorkerResults>().PathsAndFlights;
-            chromeWorkerResults = await ChromeWorker.ProcessPaths(paths, Parameters.DateFrom, Parameters.DateTo, Parameters.DefaultDelay, collectedPathFlights);
-            FileIO.WriteAllText($"{runResultsPath}\\{runId}_pathsAndFlights.json", chromeWorkerResults.SerializeObject(Formatting.Indented));
-            PrintPathsAndFlightsAndFinish(airportsList, chromeWorkerResults.FullPathsAndFlightCollections, runId, runResultsPath);
+            Dictionary<string, JourneyCollection> collectedPathJourneys = new();
+            if (!Parameters.LocalCollectedPathJourneysFile.IsNullOrEmpty()) collectedPathJourneys = FileIO.ReadAllText(Parameters.LocalCollectedPathJourneysFile).DeserializeObject<GoogleFlightsWorkerResults>().PathsAndJourneys;
+            chromeWorkerResults = await ChromeWorker.ProcessPaths(paths, Parameters.DateFrom, Parameters.DateTo, Parameters.DefaultDelay, collectedPathJourneys);
+            FileIO.WriteAllText($"{runResultsPath}\\{runId}_pathsAndJourneys.json", chromeWorkerResults.SerializeObject(Formatting.Indented));
+            PrintPathsAndJourneysAndFinish(airportsList, chromeWorkerResults.FullPathsAndJourneyCollections, runId, runResultsPath);
             return chromeWorkerResults.Success;
         }
 
-        private void PrintPathsAndFlightsAndFinish(List<Airport> airportsList, List<FullPathAndListOfPathsAndFlightCollections> pathsAndFlights, string runId, string runResultsPath)
+        private void PrintPathsAndJourneysAndFinish(List<Airport> airportsList, List<FullPathAndListOfPathsAndJourneyCollections> pathsAndJourneys, string runId, string runResultsPath)
         {
-            FullPathCombinationOfFlightsCollector flightCollector = new();
-            List<SequentialFlightCollection> results2 = new();
-            foreach (FullPathAndListOfPathsAndFlightCollections pathAndFlights in pathsAndFlights)
+            SequentialJourneyCollectionBuilder builder = new();
+            List<SequentialJourneyCollection> results = new();
+            foreach (FullPathAndListOfPathsAndJourneyCollections pathAndJourney in pathsAndJourneys)
             {
-                results2.AddRange(flightCollector.GetFullPathCombinationOfFLights(pathAndFlights));
+                results.AddRange(builder.GetFullPathCombinationOfJourneys(pathAndJourney));
             }
 
             DataTableCreator dtCreator = new();
-            Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results2, Parameters.SkipUndoableFlights, Parameters.SkipNotSameDayFinishFlights, Parameters.NoLongerThan), $"{runResultsPath}\\{runId}_results.xlsx");
+            Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results, Parameters.SkipUndoableJourneys, Parameters.SkipNotSameDayFinishJourneys, Parameters.NoLongerThan), $"{runResultsPath}\\{runId}_results.xlsx");
             Logger.Log($"Saved files to {runResultsPath}");
             SaveLogAndQuitDriver(runId, runResultsPath);
         }

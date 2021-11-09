@@ -26,7 +26,7 @@ namespace FlightConnectionsDotCom_Console
             ChromeDriver driver = null;
             if (parameters.LocalAirportListFile.IsNullOrEmpty() ||
                 parameters.LocalAirportDestinationsFile.IsNullOrEmpty() ||
-                (parameters.OpenGoogleFlights && parameters.LocalChromeWorkerResultsFile.IsNullOrEmpty())
+                (parameters.OpenGoogleFlights && parameters.LocalGoogleFlightsWorkerResultsFile.IsNullOrEmpty())
                 )
             {
                 ChromeOptions chromeOptions = new();
@@ -50,7 +50,7 @@ namespace FlightConnectionsDotCom_Console
                 printer: new ExcelPrinter(),
                 airportCollector: new FlightConnectionsDotComWorker_AirportCollector(worker),
                 airportPopulator: new FlightConnectionsDotComWorker_AirportPopulator(worker),
-                chromeWorker: new ChromeWorker(logger, delayer, driver)
+                chromeWorker: new GoogleFlightsWorker(logger, delayer, driver)
             );
             bool success = await runner.DoRun(parameters);
             if ((success || parameters.Headless) && driver != null) driver.Quit();

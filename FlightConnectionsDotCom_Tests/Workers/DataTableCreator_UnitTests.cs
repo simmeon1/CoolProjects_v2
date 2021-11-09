@@ -21,14 +21,14 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
         private Airport airport2;
         private Airport airport3;
         private List<Airport> airportList;
-        private Flight flight1;
+        private Journey flight1;
         private DateTime flight2Departing;
         private DateTime flight2Arriving;
         private TimeSpan flight2span;
-        private Flight flight2;
+        private Journey flight2;
         private DataTableCreator creator;
-        private SequentialFlightCollection correctSeq;
-        private List<SequentialFlightCollection> flights;
+        private SequentialJourneyCollection correctSeq;
+        private List<SequentialJourneyCollection> flights;
 
         [TestInitialize]
         public void TestInitialize()
@@ -42,15 +42,15 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             airport3 = new Airport("VAR", "Varna", "BG", "", "");
             airportList = new List<Airport>() { airport1, airport2, airport3 };
 
-            flight1 = new Flight(flight1Departing, flight1Arriving, flight1Airline, flight1span, flight1Path, 25);
+            flight1 = new Journey(flight1Departing, flight1Arriving, flight1Airline, flight1span, flight1Path, 25);
             flight2Departing = new DateTime(2000, 11, 11, 14, 0, 0);
             flight2Arriving = new DateTime(2000, 11, 11, 18, 0, 0);
             flight2span = new TimeSpan(2, 0, 0);
-            flight2 = new Flight(flight2Departing, flight2Arriving, flight2Airline, flight2span, flight2Path, 50);
+            flight2 = new Journey(flight2Departing, flight2Arriving, flight2Airline, flight2span, flight2Path, 50);
 
             creator = new DataTableCreator();
-            correctSeq = new SequentialFlightCollection(new FlightCollection(new List<Flight>() { flight1, flight2 }));
-            flights = new List<SequentialFlightCollection>() { correctSeq };
+            correctSeq = new SequentialJourneyCollection(new JourneyCollection(new List<Journey>() { flight1, flight2 }));
+            flights = new List<SequentialJourneyCollection>() { correctSeq };
         }
 
         [TestMethod]
@@ -158,10 +158,10 @@ namespace FlightConnectionsDotCom_Tests.UnitTests
             Airport airport2 = new("VAR", "", "BG", "", "");
             List<Airport> airportList = new() { airport1, airport2 };
 
-            Flight flight1 = new(flight1Departing, flight1Arriving, flight1Airline, flight1span, flight1Path, 25);
+            Journey flight1 = new(flight1Departing, flight1Arriving, flight1Airline, flight1span, flight1Path, 25);
             DataTableCreator creator = new();
-            SequentialFlightCollection correctSeq = new(new FlightCollection(new List<Flight>() { flight1 }));
-            List<SequentialFlightCollection> flights = new() { correctSeq };
+            SequentialJourneyCollection correctSeq = new(new JourneyCollection(new List<Journey>() { flight1 }));
+            List<SequentialJourneyCollection> flights = new() { correctSeq };
             List<DataTable> tables = creator.GetTables(airportList, flights, true, true, 100);
             DataTable mainTable = tables[0];
             Assert.IsTrue((int)mainTable.Rows[0].ItemArray[7] == 1);
