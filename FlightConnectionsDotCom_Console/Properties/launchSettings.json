@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "FlightConnectionsDotCom_Console": {
-      "commandName": "Project",
-      "commandLineArgs": "parametersPath-C:\\D\\FlightConnectionsDotCom\\parameters-useLocalData.json"
-    }
-  }
-}
