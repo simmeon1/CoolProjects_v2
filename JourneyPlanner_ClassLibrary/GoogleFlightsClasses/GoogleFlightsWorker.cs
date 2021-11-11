@@ -4,19 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace JourneyPlanner_ClassLibrary
 {
-    public class GoogleFlightsWorker : IGoogleFlightsWorker
+    public class GoogleFlightsWorker : IJourneyRetriever
     {
-        private IWebDriver Driver { get; set; }
-        private ILogger Logger { get; set; }
-        private IDelayer Delayer { get; set; }
-        private int PagesToOpen { get; set; }
-        private int PagesOpened { get; set; }
-        private Dictionary<string, JourneyCollection> CollectedPathJourneys { get; set; }
+        public JourneyRetrieverComponents C { get; set; }
+        private int PathsToSearch { get; set; }
+        private int PathsCollected { get; set; }
+        private JourneyCollection CollectedJourneys { get; set; }
         private IWebElement OriginInput1 { get; set; }
         private IWebElement OriginInput2 { get; set; }
         private IWebElement DestinationInput1 { get; set; }
@@ -24,26 +21,23 @@ namespace JourneyPlanner_ClassLibrary
         private IWebElement DateInput1 { get; set; }
         private IWebElement DateInput2 { get; set; }
         private bool ControlsKnown { get; set; }
-        private int DefaultDelay { get; set; }
         private bool StopsSet { get; set; }
         private string LastTypedOrigin { get; set; }
+        private JourneyRetrieverData JourneyRetrieverData { get; set; }
 
-        public GoogleFlightsWorker(ILogger logger, IDelayer delayer, IWebDriver driver)
+        public GoogleFlightsWorker(JourneyRetrieverComponents c)
         {
-            Driver = driver;
-            Logger = logger;
-            Delayer = delayer;
+            C = c;
         }
 
-        public async Task<GoogleFlightsWorkerResults> ProcessPaths(List<Path> paths, DateTime dateFrom, DateTime dateTo, int defaultDelay = 500, Dictionary<string, JourneyCollection> collectedPathJourneys = null)
+        public async Task<JourneyCollection> CollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo)
         {
-            DefaultDelay = defaultDelay;
             LastTypedOrigin = "";
             StopsSet = false;
-            List<FullPathAndListOfPathsAndJourneyCollections> results = new();
-            CollectedPathJourneys = collectedPathJourneys ?? new();
-            PagesToOpen = 0;
-            PagesOpened = 0;
+            CollectedJourneys = new();
+            PathsToSearch = 0;
+            PathsCollected = 0;
+            JourneyRetrieverData = data;
 
             try
             {
@@ -51,62 +45,55 @@ namespace JourneyPlanner_ClassLibrary
                 await AgreeToConsent();
                 await SetToOneWayTrip();
 
-                foreach (Path path in paths) for (int i = 0; i < path.Count() - 1; i++) PagesToOpen++;
-                Logger.Log($"Starting search for {PagesToOpen} paths.");
+                foreach (DirectPath directPath in data.DirectPaths) PathsToSearch ++;
+                Log($"Starting search for {PathsToSearch} paths.");
 
-                foreach (Path path in paths) results.Add(await ProcessPath(path, dateFrom, dateTo));
+                foreach (DirectPath directPath in data.DirectPaths) await GetPathJourneys(directPath, dateFrom, dateTo);
             }
             catch (Exception ex)
             {
-                Logger.Log("An exception was thrown while collecting flights and the results have been returned early.");
-                Logger.Log($"Exception details: {ex}");
-                return new(false, CollectedPathJourneys, results);
+                Log("An exception was thrown while collecting flights and the results have been returned early.");
+                Log($"Exception details: {ex}");
+                return CollectedJourneys;
             }
-            return new(true, CollectedPathJourneys, results);
+            return CollectedJourneys;
         }
 
-        private async Task<FullPathAndListOfPathsAndJourneyCollections> ProcessPath(Path path, DateTime dateFrom, DateTime dateTo)
+        private void Log(string m)
         {
-            List<PathAndJourneyCollection> pathsAndFlights = new();
-            for (int i = 0; i < path.Count() - 1; i++)
-            {
-                string origin = path[i];
-                string target = path[i + 1];
-                Path pathName = new(new List<string> { origin, target });
-                Logger.Log($"Collecting data for {pathName}.");
-
-                JourneyCollection flights;
-                if (CollectedPathJourneys.ContainsKey(pathName.ToString()))
-                {
-                    Logger.Log($"Data for {pathName} already collected.");
-                    flights = CollectedPathJourneys[pathName.ToString()];
-                }
-                else
-                {
-                    Logger.Log($"Initial population of controls for {pathName}, date {dateFrom}.");
-                    await PopulateControls(origin, target, dateFrom);
-                    if (!StopsSet) await SetStopsToNone();
-
-                    List<DateTime> listOfExtraDates = new() { };
-                    DateTime tempDate = dateFrom.AddDays(1);
-                    while (DateTime.Compare(tempDate, dateTo) <= 0)
-                    {
-                        listOfExtraDates.Add(tempDate);
-                        tempDate = tempDate.AddDays(1);
-                    }
-                    Logger.Log($"Getting flights for {pathName} from {dateFrom} to {dateTo}.");
-                    flights = await GetFlights(dateFrom, listOfExtraDates);
-                }
-                PathAndJourneyCollection flightsForOriginToTarget = new(pathName, flights);
-                if (!CollectedPathJourneys.ContainsKey(pathName.ToString())) CollectedPathJourneys.Add(pathName.ToString(), flights);
-                pathsAndFlights.Add(flightsForOriginToTarget);
-                PagesOpened++;
-                Logger.Log($"Collected data for {pathName} ({Globals.GetPercentageAndCountString(PagesOpened, PagesToOpen)})");
-            }
-            return new(path, pathsAndFlights);
+            C.Log(m);
         }
 
-        private async Task<JourneyCollection> GetFlights(DateTime date, List<DateTime> extraDates)
+        private async Task Delay(int m)
+        {
+            await C.Delay(m);
+        }
+
+        private async Task GetPathJourneys(DirectPath directPath, DateTime dateFrom, DateTime dateTo)
+        {
+            string origin = directPath.GetStart();
+            string target = directPath.GetEnd();
+
+            Path pathName = new(new List<string> { origin, target });
+            Log($"Collecting data for {pathName}.");
+            Log($"Initial population of controls for {pathName}, date {dateFrom}.");
+            await PopulateControls(origin, target, dateFrom);
+            if (!StopsSet) await SetStopsToNone();
+
+            List<DateTime> listOfExtraDates = new() { };
+            DateTime tempDate = dateFrom.AddDays(1);
+            while (DateTime.Compare(tempDate, dateTo) <= 0)
+            {
+                listOfExtraDates.Add(tempDate);
+                tempDate = tempDate.AddDays(1);
+            }
+            Log($"Getting flights for {pathName} from {dateFrom} to {dateTo}.");
+            CollectedJourneys.AddRange(await GetFlightsForDates(dateFrom, listOfExtraDates));
+            PathsCollected++;
+            Log($"Collected data for {pathName} ({Globals.GetPercentageAndCountString(PathsCollected, PathsToSearch)})");
+        }
+
+        private async Task<JourneyCollection> GetFlightsForDates(DateTime date, List<DateTime> extraDates)
         {
             List<Journey> results = new();
             await GetFlightsForDate(date, results);
@@ -128,8 +115,8 @@ namespace JourneyPlanner_ClassLibrary
             {
                 try
                 {
-                    await Delayer.Delay(2000);
-                    flightLists = await FindElementsAndWait(By.CssSelector("[role=list]"));
+                    await Delay(2000);
+                    flightLists = await C.FindElementsAndWait(By.CssSelector("[role=list]"));
                 }
                 catch (NoSuchElementException)
                 {
@@ -142,7 +129,7 @@ namespace JourneyPlanner_ClassLibrary
                     bool showMoreFlightsButtonClicked = false;
                     foreach (IWebElement flightList in flightLists)
                     {
-                        flights = await FindElementsAndWait(flightList, By.CssSelector("[role=listitem]"));
+                        flights = await C.FindElementsAndWait(flightList, By.CssSelector("[role=listitem]"));
                         allFlights.AddRange(flights);
                         if (flights[flights.Count - 1].GetAttribute("innerText").Contains("more flights"))
                         {
@@ -199,58 +186,31 @@ namespace JourneyPlanner_ClassLibrary
             }
         }
 
-        private async Task<ReadOnlyCollection<IWebElement>> FindElementsAndWait(IWebElement element, By by)
-        {
-            ReadOnlyCollection<IWebElement> result = element.FindElements(by);
-            await Delayer.Delay(DefaultDelay);
-            return result;
-        }
-
-        private async Task<ReadOnlyCollection<IWebElement>> FindElementsAndWait(By by)
-        {
-            ReadOnlyCollection<IWebElement> result = Driver.FindElements(by);
-            await Delayer.Delay(DefaultDelay);
-            return result;
-        }
-
-        private async Task<IWebElement> FindElementAndWait(By by)
-        {
-            IWebElement result = Driver.FindElement(by);
-            await Delayer.Delay(DefaultDelay);
-            return result;
-        }
-
-        private async Task ClickAndWait(IWebElement element)
-        {
-            element.Click();
-            await Delayer.Delay(DefaultDelay);
-        }
-
         private async Task SetStopsToNone()
         {
             await ClickButtonWithAriaLabelText("Stops");
-            IWebElement radioGroup = await FindElementAndWait(By.CssSelector("[role=radiogroup]"));
-            ReadOnlyCollection<IWebElement> radioGroupChildren = await FindElementsAndWait(radioGroup, By.CssSelector("input"));
-            await ClickAndWait(radioGroupChildren[1]);
+            IWebElement radioGroup = await C.FindElementAndWait(By.CssSelector("[role=radiogroup]"));
+            ReadOnlyCollection<IWebElement> radioGroupChildren = await C.FindElementsAndWait(radioGroup, By.CssSelector("input"));
+            await C.ClickAndWait(radioGroupChildren[1]);
             await ClickHeader();
             StopsSet = true;
         }
 
         private async Task ClickHeader()
         {
-            await ClickAndWait(await FindElementAndWait(By.CssSelector("header")));
+            await C.ClickAndWait(await C.FindElementAndWait(By.CssSelector("header")));
         }
 
         private void NavigateToUrl()
         {
-            INavigation navigation = Driver.Navigate();
+            INavigation navigation = C.Driver.Navigate();
             if (navigation != null) navigation.GoToUrl("https://www.google.com/travel/flights");
         }
 
         private async Task AgreeToConsent()
         {
-            await Delayer.Delay(1000);
-            ReadOnlyCollection<IWebElement> consentButtons = await FindElementsAndWait(By.CssSelector("button"));
+            await Delay(1000);
+            ReadOnlyCollection<IWebElement> consentButtons = await C.FindElementsAndWait(By.CssSelector("button"));
             foreach (IWebElement button in consentButtons)
             {
                 string buttonText;
@@ -263,25 +223,25 @@ namespace JourneyPlanner_ClassLibrary
                     continue;
                 }
                 if (!buttonText.Contains("I agree")) continue;
-                await ClickAndWait(button);
+                await C.ClickAndWait(button);
                 return;
             }
         }
 
         private async Task SetToOneWayTrip()
         {
-            ReadOnlyCollection<IWebElement> spans = await FindElementsAndWait(By.CssSelector("span"));
+            ReadOnlyCollection<IWebElement> spans = await C.FindElementsAndWait(By.CssSelector("span"));
             foreach (IWebElement span in spans)
             {
                 string spanText = span.Text;
                 if (!spanText.Equals("Round trip")) continue;
-                await ClickAndWait(span);
-                ReadOnlyCollection<IWebElement> lis = await FindElementsAndWait(By.CssSelector("li"));
+                await C.ClickAndWait(span);
+                ReadOnlyCollection<IWebElement> lis = await C.FindElementsAndWait(By.CssSelector("li"));
                 foreach (IWebElement li in lis)
                 {
                     string liText = li.Text;
                     if (!liText.Equals("One way")) continue;
-                    await ClickAndWait(li);
+                    await C.ClickAndWait(li);
                     return;
                 }
             }
@@ -315,23 +275,23 @@ namespace JourneyPlanner_ClassLibrary
 
         private async Task InputOrigin(string origin)
         {
-            await ClickAndWait(OriginInput1);
+            await C.ClickAndWait(OriginInput1);
             OriginInput2.Clear();
-            OriginInput2.SendKeys(origin);
+            OriginInput2.SendKeys(JourneyRetrieverData.GetTranslation(origin));
             OriginInput2.SendKeys(Keys.Return);
         }
 
         private async Task InputTarget(string target)
         {
-            await ClickAndWait(DestinationInput1);
+            await C.ClickAndWait(DestinationInput1);
             DestinationInput2.Clear();
-            DestinationInput2.SendKeys(target);
+            DestinationInput2.SendKeys(JourneyRetrieverData.GetTranslation(target));
             DestinationInput2.SendKeys(Keys.Return);
         }
 
         private async Task GetControls()
         {
-            ReadOnlyCollection<IWebElement> inputs = await FindElementsAndWait(By.CssSelector("input"));
+            ReadOnlyCollection<IWebElement> inputs = await C.FindElementsAndWait(By.CssSelector("input"));
             OriginInput1 = inputs[0];
             OriginInput2 = inputs[1];
             DestinationInput1 = inputs[2];
@@ -342,7 +302,7 @@ namespace JourneyPlanner_ClassLibrary
 
         private async Task PopulateDateAndHitDone(DateTime date)
         {
-            await ClickAndWait(DateInput1);
+            await C.ClickAndWait(DateInput1);
             const string format = "ddd, MMM dd";
             foreach (char ch in format) DateInput2.SendKeys(Keys.Backspace);
             DateInput2.SendKeys(date.ToString(format));
@@ -352,12 +312,12 @@ namespace JourneyPlanner_ClassLibrary
 
         private async Task ClickButtonWithAriaLabelText(string text)
         {
-            ReadOnlyCollection<IWebElement> buttons = await FindElementsAndWait(By.CssSelector("button"));
+            ReadOnlyCollection<IWebElement> buttons = await C.FindElementsAndWait(By.CssSelector("button"));
             foreach (IWebElement button in buttons)
             {
                 string buttonText = button.GetAttribute("aria-label");
                 if (buttonText == null || !buttonText.Contains(text)) continue;
-                await ClickAndWait(button);
+                await C.ClickAndWait(button);
                 return;
             }
         }

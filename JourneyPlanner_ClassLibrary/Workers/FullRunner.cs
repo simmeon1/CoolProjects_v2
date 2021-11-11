@@ -12,33 +12,30 @@ namespace JourneyPlanner_ClassLibrary
     public class FullRunner
     {
         public Parameters Parameters { get; set; }
-        public ILogger Logger { get; set; }
-        public IDelayer Delayer { get; set; }
+        public JourneyRetrieverComponents Components { get; set; }
+        public IJourneyRetrieverInstanceCreator Creator { get; set; }
         public IFileIO FileIO { get; set; }
         public IExcelPrinter Printer { get; set; }
         public IFlightConnectionsDotComWorker_AirportCollector AirportCollector { get; set; }
         public IFlightConnectionsDotComWorker_AirportPopulator AirportPopulator { get; set; }
-        public IGoogleFlightsWorker ChromeWorker { get; set; }
         public IDateTimeProvider DateTimeProvider { get; set; }
 
         public FullRunner(
-            ILogger logger,
-            IDelayer delayer,
+            JourneyRetrieverComponents components,
             IFileIO fileIO,
             IDateTimeProvider dateTimeProvider,
             IExcelPrinter printer,
             IFlightConnectionsDotComWorker_AirportCollector airportCollector,
             IFlightConnectionsDotComWorker_AirportPopulator airportPopulator,
-            IGoogleFlightsWorker chromeWorker)
+            IJourneyRetrieverInstanceCreator creator)
         {
-            Logger = logger;
-            Delayer = delayer;
             FileIO = fileIO;
             Printer = printer;
             AirportCollector = airportCollector;
             AirportPopulator = airportPopulator;
-            ChromeWorker = chromeWorker;
             DateTimeProvider = dateTimeProvider;
+            Components = components;
+            Creator = creator;
         }
 
         public async Task<bool> DoRun(Parameters paramss)
@@ -92,46 +89,44 @@ namespace JourneyPlanner_ClassLibrary
             }
             FileIO.WriteAllText($"{runResultsPath}\\{runId}_latestPaths.json", pathsDetailed.SerializeObject(Formatting.Indented));
 
-            GoogleFlightsWorkerResults chromeWorkerResults;
-            if (!Parameters.LocalGoogleFlightsWorkerResultsFile.IsNullOrEmpty())
-            {
-                chromeWorkerResults = FileIO.ReadAllText(Parameters.LocalGoogleFlightsWorkerResultsFile).DeserializeObject<GoogleFlightsWorkerResults>();
-                PrintPathsAndJourneysAndFinish(airportsList, chromeWorkerResults.FullPathsAndJourneyCollections, runId, runResultsPath);
-                return true;
-            }
-            else if (!Parameters.OpenGoogleFlights)
+            if (Parameters.OnlyPrintPaths)
             {
                 SaveLogAndQuitDriver(runId, runResultsPath);
                 return true;
             }
 
-            Dictionary<string, JourneyCollection> collectedPathJourneys = new();
-            if (!Parameters.LocalCollectedPathJourneysFile.IsNullOrEmpty()) collectedPathJourneys = FileIO.ReadAllText(Parameters.LocalCollectedPathJourneysFile).DeserializeObject<GoogleFlightsWorkerResults>().PathsAndJourneys;
-            chromeWorkerResults = await ChromeWorker.ProcessPaths(paths, Parameters.DateFrom, Parameters.DateTo, Parameters.DefaultDelay, collectedPathJourneys);
-            FileIO.WriteAllText($"{runResultsPath}\\{runId}_pathsAndJourneys.json", chromeWorkerResults.SerializeObject(Formatting.Indented));
-            PrintPathsAndJourneysAndFinish(airportsList, chromeWorkerResults.FullPathsAndJourneyCollections, runId, runResultsPath);
-            return chromeWorkerResults.Success;
+            PathsToDirectPathGroupsConverter converter = new();
+            Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(paths);
+
+            MultiJourneyCollector mjc = new(Components, Creator);
+            //JourneyCollection journeys = await mjc.GetJourneys(results, Parameters.DateFrom, Parameters.DateTo);
+            JourneyCollection journeys = 
+                FileIO.ReadAllText(@"C:\D\FlightConnectionsDotCom\Results\2021-11-11--22-17-16_ABZ - VAR - 2021-01-01 - 2021-01-05\2021-11-11--22-17-16_ABZ - VAR - 2021-01-01 - 2021-01-05_journeys.json").DeserializeObject<JourneyCollection>();
+            FileIO.WriteAllText($"{runResultsPath}\\{runId}_journeys.json", journeys.SerializeObject(Formatting.Indented));
+            
+            List<List<JourneyCollection>> groupedJourneys = journeys.GetListOfCollectionsGroupedByDirectPaths(paths);
+            PrintPathsAndJourneysAndFinish(airportsList, groupedJourneys, runId, runResultsPath);
+            return true;
         }
 
-        private void PrintPathsAndJourneysAndFinish(List<Airport> airportsList, List<FullPathAndListOfPathsAndJourneyCollections> pathsAndJourneys, string runId, string runResultsPath)
+        private void PrintPathsAndJourneysAndFinish(List<Airport> airportsList, List<List<JourneyCollection>> fullJourneyCollections, string runId, string runResultsPath)
         {
             SequentialJourneyCollectionBuilder builder = new();
             List<SequentialJourneyCollection> results = new();
-            foreach (FullPathAndListOfPathsAndJourneyCollections pathAndJourney in pathsAndJourneys)
+            foreach (List<JourneyCollection> fullJourneyCollection in fullJourneyCollections)
             {
-                results.AddRange(builder.GetFullPathCombinationOfJourneys(pathAndJourney));
+                results.AddRange(builder.GetFullPathCombinationOfJourneys(fullJourneyCollection));
             }
 
             DataTableCreator dtCreator = new();
             Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results, Parameters.SkipUndoableJourneys, Parameters.SkipNotSameDayFinishJourneys, Parameters.NoLongerThan), $"{runResultsPath}\\{runId}_results.xlsx");
-            Logger.Log($"Saved files to {runResultsPath}");
+            Components.Logger.Log($"Saved files to {runResultsPath}");
             SaveLogAndQuitDriver(runId, runResultsPath);
         }
 
         private void SaveLogAndQuitDriver(string runId, string runResultsPath)
         {
-            FileIO.WriteAllText($"{runResultsPath}\\{runId}_log.txt", Logger.GetContent().SerializeObject(Formatting.Indented));
-            //Driver.Quit();
+            FileIO.WriteAllText($"{runResultsPath}\\{runId}_log.txt", Components.Logger.GetContent().SerializeObject(Formatting.Indented));
         }
     }
 }

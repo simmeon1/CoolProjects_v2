@@ -17,7 +17,7 @@ namespace JourneyPlanner_ClassLibrary
         public string LocalCollectedPathJourneysFile { get; set; }
         public bool SkipUndoableJourneys { get; set; }
         public bool SkipNotSameDayFinishJourneys { get; set; }
-        public bool OpenGoogleFlights { get; set; }
+        public bool OnlyPrintPaths { get; set; }
         public string FileSavePath { get; set; }
         public bool EuropeOnly { get; set; }
         public bool UKAndBulgariaOnly { get; set; }

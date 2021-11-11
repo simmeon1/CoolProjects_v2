@@ -26,7 +26,7 @@ namespace JourneyPlanner_Console
             ChromeDriver driver = null;
             if (parameters.LocalAirportListFile.IsNullOrEmpty() ||
                 parameters.LocalAirportDestinationsFile.IsNullOrEmpty() ||
-                (parameters.OpenGoogleFlights && parameters.LocalGoogleFlightsWorkerResultsFile.IsNullOrEmpty())
+                !parameters.OnlyPrintPaths
                 )
             {
                 ChromeOptions chromeOptions = new();
@@ -42,16 +42,24 @@ namespace JourneyPlanner_Console
             RealWebDriverWait webDriverWait = new(driver);
             FlightConnectionsDotComWorker worker = new(logger, driver, webDriverWait);
             RealDelayer delayer = new();
+
+            JourneyRetrieverComponents components = new()
+            {
+                Driver = driver,
+                Delayer = delayer,
+                Logger = logger,
+                DefaultDelay = parameters.DefaultDelay
+            };
+
             FullRunner runner = new(
-                logger: logger,
-                delayer: delayer,
+                components,
                 fileIO: new RealFileIO(),
                 dateTimeProvider: new RealDateTimeProvider(),
                 printer: new ExcelPrinter(),
                 airportCollector: new FlightConnectionsDotComWorker_AirportCollector(worker),
                 airportPopulator: new FlightConnectionsDotComWorker_AirportPopulator(worker),
-                chromeWorker: new GoogleFlightsWorker(logger, delayer, driver)
-            );
+                new JourneyRetrieverInstanceCreator());
+
             bool success = await runner.DoRun(parameters);
             if ((success || parameters.Headless) && driver != null) driver.Quit();
             Console.WriteLine("Run finished. Press any key to continue");

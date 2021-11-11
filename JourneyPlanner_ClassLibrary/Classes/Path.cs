@@ -38,5 +38,19 @@ namespace JourneyPlanner_ClassLibrary
         {
             return Extensions.ConcatenateListOfStringsToDashString(new List<string>() { Entries[0], Entries[Count() - 1] });
         }
+        
+        public List<DirectPath> GetDirectPaths()
+        {
+            if (Entries.Count < 2) return new();
+
+            List<DirectPath> directPaths = new();
+            string previousEntry = Entries[0];
+            for (int i = 1; i < Entries.Count; i++)
+            {
+                directPaths.Add(new(previousEntry, Entries[i]));
+                previousEntry = Entries[i];
+            }
+            return directPaths;
+        }
     }
 }

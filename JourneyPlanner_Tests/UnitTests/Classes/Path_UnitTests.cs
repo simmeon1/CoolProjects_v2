@@ -11,6 +11,7 @@ namespace JourneyPlanner_Tests.UnitTests
     {
         private static readonly List<string> entries = new() { "ABZ", "EDI" };
         private readonly Path path = new(entries);
+        private readonly List<string> bigPath = new() { "ABZ", "LTN", "SOF" };
 
         [TestMethod]
         public void ToStringIsCorrect()
@@ -38,7 +39,24 @@ namespace JourneyPlanner_Tests.UnitTests
         [TestMethod]
         public void GetSummarisedPath()
         {
-            Assert.IsTrue(new Path(new List<string>() { "ABZ", "LTN", "SOF" }).GetSummarisedPath().Equals("ABZ-SOF"));
+            Assert.IsTrue(new Path(bigPath).GetSummarisedPath().Equals("ABZ-SOF"));
+        }
+        
+        [TestMethod]
+        public void GetDirectPathsReturnsExpectedPaths()
+        {
+            List<DirectPath> directPaths = new Path(bigPath).GetDirectPaths();
+            Assert.IsTrue(directPaths.Count == 2);
+            Assert.IsTrue(directPaths[0].GetStart().Equals("ABZ"));
+            Assert.IsTrue(directPaths[0].GetEnd().Equals("LTN"));
+            Assert.IsTrue(directPaths[1].GetStart().Equals("LTN"));
+            Assert.IsTrue(directPaths[1].GetEnd().Equals("SOF"));
+        }
+        
+        [TestMethod]
+        public void GetDirectPathsReturnsExpectedNothing()
+        {
+            Assert.IsTrue(new Path(new List<string>() { "ABZ" }).GetDirectPaths().Count == 0);
         }
     }
 }

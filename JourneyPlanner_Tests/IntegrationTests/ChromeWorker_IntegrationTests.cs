@@ -27,19 +27,19 @@ namespace JourneyPlanner_Tests.IntegrationTests
             logger = new();
         }
 
-        [TestMethod]
-        public async Task OpenFlights_ExpectedTabsOpenedWithNoErrors()
-        {
-            List<string> path1 = new() { "ABZ", "LTN", "VAR" };
-            List<string> path2 = new() { "EDI", "SOF" };
-            List<string> path3 = new() { "VAR", "LTN", "ABZ" };
-            List<Path> paths = new() { new Path(path1), new Path(path2), new Path(path3) };
+        //[TestMethod]
+        //public async Task OpenFlights_ExpectedTabsOpenedWithNoErrors()
+        //{
+        //    List<string> path1 = new() { "ABZ", "LTN", "VAR" };
+        //    List<string> path2 = new() { "EDI", "SOF" };
+        //    List<string> path3 = new() { "VAR", "LTN", "ABZ" };
+        //    List<Path> paths = new() { new Path(path1), new Path(path2), new Path(path3) };
 
-            GoogleFlightsWorker chromeWorker = new(logger, new RealDelayer(), chromeDriver);
-            GoogleFlightsWorkerResults results = await chromeWorker.ProcessPaths(paths, new DateTime(2022, 1, 13), new DateTime(2022, 1, 14));
-            Assert.IsTrue(results.PathsAndJourneys.Count > 0);
-            Assert.IsTrue(results.FullPathsAndJourneyCollections.Count > 0);
-        }
+        //    GoogleFlightsWorker chromeWorker = new(logger, new RealDelayer(), chromeDriver);
+        //    GoogleFlightsWorkerResults results = await chromeWorker.ProcessPaths(paths, new DateTime(2022, 1, 13), new DateTime(2022, 1, 14));
+        //    Assert.IsTrue(results.PathsAndJourneys.Count > 0);
+        //    Assert.IsTrue(results.FullPathsAndJourneyCollections.Count > 0);
+        //}
 
         [TestCleanup]
         public void TestCleanup()
