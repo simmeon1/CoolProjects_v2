@@ -100,7 +100,7 @@ namespace JourneyPlanner_Tests.UnitTests
 //            parameters.DateFrom = new(2020, 5, 20);
 //            parameters.DateTo = new(2021, 6, 21);
 //            parameters.FileSavePath = "C:\\D";
-//            parameters.OpenGoogleFlights = true;
+//            parameters.OnlyPrintPaths = false;
 //            parameters.UKAndBulgariaOnly = true;
 //            parameters.LocalAirportListFile = "LocalAirportListFile";
 //            parameters.LocalAirportDestinationsFile = "LocalAirportDestinationsFile";

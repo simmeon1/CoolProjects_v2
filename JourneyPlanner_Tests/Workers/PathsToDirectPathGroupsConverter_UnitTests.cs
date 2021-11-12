@@ -70,12 +70,34 @@ namespace JourneyPlanner_Tests.UnitTests
             Assert.IsTrue(results[scotrail].DirectPaths[1].ToString().Equals("SOF-EDI"));
             Assert.IsTrue(results[scotrail].Translations.Count == 0);
         }
-        
+
+        [TestMethod]
+        public void DataGroupedAsExpected_SamePathsForDifferentCompanies()
+        {
+            Dictionary<string, JourneyRetrieverData> existingData = new();
+            JourneyRetrieverData data1 = new(new List<DirectPath>() { new DirectPath("ABZ", "LTN") }, null);
+            existingData.Add(megabus, data1);
+            existingData.Add(scotrail, data1);
+
+            PathsToDirectPathGroupsConverter converter = new();
+            Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(new List<Path>() { path1 }, existingData);
+
+            Assert.IsTrue(results.Count == 3);
+            Assert.IsTrue(results.ContainsKey(defaultWorker));
+            Assert.IsTrue(results.ContainsKey(megabus));
+            Assert.IsTrue(results.ContainsKey(scotrail));
+            Assert.IsTrue(results[megabus].DirectPaths.Count == 1);
+            Assert.IsTrue(results[megabus].DirectPaths[0].ToString().Equals("ABZ-LTN"));
+            Assert.IsTrue(results[scotrail].DirectPaths.Count == 1);
+            Assert.IsTrue(results[scotrail].DirectPaths[0].ToString().Equals("ABZ-LTN"));
+        }
+
+
         [TestMethod]
         public void DataGroupedAsExpected_NoExistingData()
         {
             PathsToDirectPathGroupsConverter converter = new();
-            Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(new List<Path>() { path1, path2 });
+            Dictionary<string, JourneyRetrieverData> results =  converter.GetGroups(new List<Path>() { path1, path2 });
 
             Assert.IsTrue(results.Count == 1);
             Assert.IsTrue(results.ContainsKey(defaultWorker));

@@ -16,12 +16,23 @@ namespace JourneyPlanner_ClassLibrary
             List<DirectPath> cleanDirectPaths = RemoveDuplicatesAndOrderDirectPaths(directPaths);
             existingData ??= new();
 
+            Dictionary<DirectPath, bool> directPathsThatHaveADefinedWorker = InitialiseDictWithDirectPathsWithPredefinedWorkers(cleanDirectPaths);
             Dictionary<string, JourneyRetrieverData> newData = new();
             foreach (KeyValuePair<string, JourneyRetrieverData> existingDataPair in existingData)
             {
-                AddDataFromPairToToNewData(existingDataPair, newData, cleanDirectPaths);
+                AddDataFromPairToToNewData(existingDataPair, newData, cleanDirectPaths, directPathsThatHaveADefinedWorker);
             }
-            return AddGoogleFlightsToNewDataIfPathsForItRemain(cleanDirectPaths, newData);
+            return AddGoogleFlightsToNewDataIfPathsForItRemain(newData, directPathsThatHaveADefinedWorker);
+        }
+
+        private static Dictionary<DirectPath, bool> InitialiseDictWithDirectPathsWithPredefinedWorkers(List<DirectPath> cleanDirectPaths)
+        {
+            Dictionary<DirectPath, bool> directPathsThatHaveADefinedWorker = new();
+            foreach (DirectPath directPath in cleanDirectPaths)
+            {
+                directPathsThatHaveADefinedWorker.Add(directPath, false);
+            }
+            return directPathsThatHaveADefinedWorker;
         }
 
         private static List<DirectPath> RemoveDuplicatesAndOrderDirectPaths(List<DirectPath> directPaths)
@@ -33,29 +44,39 @@ namespace JourneyPlanner_ClassLibrary
                 .ToList();
         }
 
-        private static void AddDataFromPairToToNewData(KeyValuePair<string, JourneyRetrieverData> existingDataPair, Dictionary<string, JourneyRetrieverData> newData, List<DirectPath> directPaths)
+        private static void AddDataFromPairToToNewData(
+            KeyValuePair<string, JourneyRetrieverData> existingDataPair,
+            Dictionary<string, JourneyRetrieverData> newData,
+            List<DirectPath> cleanDirectPaths,
+            Dictionary<DirectPath, bool> directPathsThatHaveADefinedWorker)
         {
             newData.Add(existingDataPair.Key, null);
-            string worker = existingDataPair.Key;
             JourneyRetrieverData data = existingDataPair.Value;
 
             Dictionary<string, string> translationsForPair = data.Translations;
             List<DirectPath> pathsForPair = new();
-            for (int i = 0; i < directPaths.Count; i++)
+            for (int i = 0; i < cleanDirectPaths.Count; i++)
             {
-                DirectPath directPath = directPaths[i];
+                DirectPath directPath = cleanDirectPaths[i];
                 if (data.DirectPaths.Any(d => d.ToString().Equals(directPath.ToString())))
                 {
                     pathsForPair.Add(directPath);
-                    directPaths.RemoveAt(i);
-                    i--;
+                    directPathsThatHaveADefinedWorker[directPath] = true;
                 }
             }
+            string worker = existingDataPair.Key;
             newData[worker] = new(pathsForPair, translationsForPair);
         }
 
-        private static Dictionary<string, JourneyRetrieverData> AddGoogleFlightsToNewDataIfPathsForItRemain(List<DirectPath> cleanDirectPaths, Dictionary<string, JourneyRetrieverData> newData)
+        private static Dictionary<string, JourneyRetrieverData> AddGoogleFlightsToNewDataIfPathsForItRemain(Dictionary<string, JourneyRetrieverData> newData, Dictionary<DirectPath, bool> directPathsThatHaveADefinedWorker)
         {
+            List<DirectPath> remainingDirectPaths = new();
+            foreach (KeyValuePair<DirectPath, bool> pair in directPathsThatHaveADefinedWorker)
+            {
+                if (!pair.Value) remainingDirectPaths.Add(pair.Key);
+            }
+
+            List<DirectPath> cleanDirectPaths = RemoveDuplicatesAndOrderDirectPaths(remainingDirectPaths);
             if (cleanDirectPaths.Count == 0) return newData;
             newData.Add(nameof(GoogleFlightsWorker), new(cleanDirectPaths, new()));
             return newData;
