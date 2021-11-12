@@ -27,13 +27,9 @@ namespace JourneyPlanner_Tests.UnitTests
             Journey flight6 = new(new DateTime(2000, 1, 13, 11, 15, 0), new DateTime(2000, 1, 13, 13, 30, 0), "easyJet", new TimeSpan(4, 0, 0), path3.ToString(), 12);
             Journey flight7 = new(new DateTime(2000, 1, 13, 19, 15, 0), new DateTime(2000, 1, 13, 18, 30, 0), "easyJet", new TimeSpan(5, 0, 0), path3.ToString(), 10);
 
-            JourneyCollection journeys1 = new(new List<Journey>() { flight1, flight2 });
-            JourneyCollection journeys2 = new(new List<Journey>() { flight3, flight4 });
-            JourneyCollection journeys3 = new(new List<Journey>() { flight5, flight6, flight7 });
-            List<JourneyCollection> journeysCollections = new() { journeys1, journeys2, journeys3 };
-
             SequentialJourneyCollectionBuilder collector = new();
-            List<SequentialJourneyCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfJourneys(journeysCollections);
+            List<SequentialJourneyCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfJourneys(
+                new List<Path>() { allPath }, new(new List<Journey>() { flight1, flight2, flight3, flight4, flight5, flight6, flight7 }));
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 12);
             Assert.IsTrue(fullPathCombinationOfFlights[0][0].ToString().Equals(flight1.ToString()));
             Assert.IsTrue(fullPathCombinationOfFlights[1][0].ToString().Equals(flight1.ToString()));
@@ -83,12 +79,16 @@ namespace JourneyPlanner_Tests.UnitTests
         public void GetFullPathCombinationOfFLights_OneFlight()
         {
             Path path1 = new(new List<string>() { "VAR", "LTN" });
-            Path allPath = new(new List<string>() { "VAR", "LTN", "ABZ" });
+            Path shortPath = new(new List<string>() { "VAR", "LTN" });
+            Path fullPath = new(new List<string>() { "VAR", "LTN", "ABZ" });
             Journey flight1 = new(new DateTime(2000, 1, 13, 6, 5, 0), new DateTime(2000, 1, 13, 7, 45, 0), "Wizz Air", new TimeSpan(3, 40, 0), path1.ToString(), 52);
 
             JourneyCollection journeys = new(new List<Journey>() { flight1 });
             SequentialJourneyCollectionBuilder collector = new();
-            List<SequentialJourneyCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfJourneys(new List<JourneyCollection>() { journeys });
+            List<SequentialJourneyCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfJourneys(new List<Path>() { fullPath }, journeys);
+            Assert.IsTrue(fullPathCombinationOfFlights.Count == 0);
+            
+            fullPathCombinationOfFlights = collector.GetFullPathCombinationOfJourneys(new List<Path>() { shortPath, fullPath }, journeys);
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 1);
             Assert.IsTrue(fullPathCombinationOfFlights[0].Count() == 1);
             Assert.IsTrue(fullPathCombinationOfFlights[0][0].ToString().Equals(flight1.ToString()));
@@ -99,8 +99,8 @@ namespace JourneyPlanner_Tests.UnitTests
         {
             Path allPath = new(new List<string>() { "VAR", "LTN" });
             SequentialJourneyCollectionBuilder collector = new();
-            List<SequentialJourneyCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfJourneys(new List<JourneyCollection>());
-            Assert.IsTrue(fullPathCombinationOfFlights.Count == 0);
+            Assert.IsTrue(collector.GetFullPathCombinationOfJourneys(new(), new()).Count == 0);
+            Assert.IsTrue(collector.GetFullPathCombinationOfJourneys(new List<Path>() { allPath }, new()).Count == 0);
         }
     }
 }

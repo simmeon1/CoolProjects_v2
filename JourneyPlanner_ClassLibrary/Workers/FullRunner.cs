@@ -99,24 +99,18 @@ namespace JourneyPlanner_ClassLibrary
             Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(paths);
 
             MultiJourneyCollector mjc = new(Components, Creator);
-            //JourneyCollection journeys = await mjc.GetJourneys(results, Parameters.DateFrom, Parameters.DateTo);
-            JourneyCollection journeys = 
-                FileIO.ReadAllText(@"C:\D\FlightConnectionsDotCom\Results\2021-11-11--22-17-16_ABZ - VAR - 2021-01-01 - 2021-01-05\2021-11-11--22-17-16_ABZ - VAR - 2021-01-01 - 2021-01-05_journeys.json").DeserializeObject<JourneyCollection>();
+            JourneyCollection journeys = await mjc.GetJourneys(results, Parameters.DateFrom, Parameters.DateTo);
+            //JourneyCollection journeys = 
+            //    FileIO.ReadAllText(@"C:\D\FlightConnectionsDotCom\Results\2021-11-11--22-17-16_ABZ - VAR - 2021-01-01 - 2021-01-05\2021-11-11--22-17-16_ABZ - VAR - 2021-01-01 - 2021-01-05_journeys.json").DeserializeObject<JourneyCollection>();
             FileIO.WriteAllText($"{runResultsPath}\\{runId}_journeys.json", journeys.SerializeObject(Formatting.Indented));
-            
-            List<List<JourneyCollection>> groupedJourneys = journeys.GetListOfCollectionsGroupedByDirectPaths(paths);
-            PrintPathsAndJourneysAndFinish(airportsList, groupedJourneys, runId, runResultsPath);
+            PrintPathsAndJourneysAndFinish(airportsList, journeys, runId, runResultsPath, paths);
             return true;
         }
 
-        private void PrintPathsAndJourneysAndFinish(List<Airport> airportsList, List<List<JourneyCollection>> fullJourneyCollections, string runId, string runResultsPath)
+        private void PrintPathsAndJourneysAndFinish(List<Airport> airportsList, JourneyCollection journeyCollection, string runId, string runResultsPath, List<Path> paths)
         {
             SequentialJourneyCollectionBuilder builder = new();
-            List<SequentialJourneyCollection> results = new();
-            foreach (List<JourneyCollection> fullJourneyCollection in fullJourneyCollections)
-            {
-                results.AddRange(builder.GetFullPathCombinationOfJourneys(fullJourneyCollection));
-            }
+            List<SequentialJourneyCollection> results = builder.GetFullPathCombinationOfJourneys(paths, journeyCollection);
 
             DataTableCreator dtCreator = new();
             Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results, Parameters.SkipUndoableJourneys, Parameters.SkipNotSameDayFinishJourneys, Parameters.NoLongerThan), $"{runResultsPath}\\{runId}_results.xlsx");

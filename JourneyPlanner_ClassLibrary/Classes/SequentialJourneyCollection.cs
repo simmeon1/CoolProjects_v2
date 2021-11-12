@@ -129,7 +129,7 @@ namespace JourneyPlanner_ClassLibrary
         
         public int GetCountOfBuses()
         {
-            return IsNotValid() ? 0 : JourneyCollection.GetCountOfBuses();
+            return IsNotValid() ? 0 : JourneyCollection.GetCountOfLocalLinks();
         }
 
         public TimeSpan GetLength()

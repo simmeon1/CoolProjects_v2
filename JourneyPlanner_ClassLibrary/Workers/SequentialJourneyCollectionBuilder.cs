@@ -9,13 +9,55 @@ namespace JourneyPlanner_ClassLibrary
     {
         private List<JourneyCollection> JourneyCollections { get; set; }
 
-        public List<SequentialJourneyCollection> GetFullPathCombinationOfJourneys(List<JourneyCollection> journeyCollections)
+        public List<SequentialJourneyCollection> GetFullPathCombinationOfJourneys(List<Path> fullPaths, JourneyCollection journeyCollection)
         {
-            JourneyCollections = journeyCollections;
-            List<SequentialJourneyCollection> fullPathCombinationsOfJourneys = new();
-            LinkedList<Journey> journey = new();
-            BuildUpCombinationOfJourneys(0, journey, fullPathCombinationsOfJourneys);
-            return fullPathCombinationsOfJourneys;
+            Dictionary<string, JourneyCollection> collectionsByDirectPathDict = GetDictOfCollectionsGroupedByDirectPath(fullPaths, journeyCollection);
+            List<List<JourneyCollection>> collectionsByDirectPathLists = GetListsOfCollectionsGroupedByDirectPath(fullPaths, collectionsByDirectPathDict);
+            return GetCombinationsOfSequentialJourneys(collectionsByDirectPathLists);
+        }
+
+        private static Dictionary<string, JourneyCollection> GetDictOfCollectionsGroupedByDirectPath(List<Path> fullPaths, JourneyCollection journeyCollection)
+        {
+            Dictionary<string, JourneyCollection> collectionsByDirectPath = new();
+            foreach (Path path in fullPaths)
+            {
+                List<DirectPath> directPaths = path.GetDirectPaths();
+                foreach (DirectPath directPath in directPaths)
+                {
+                    string directPathStr = directPath.ToString();
+                    if (!collectionsByDirectPath.ContainsKey(directPathStr))
+                    {
+                        collectionsByDirectPath.Add(directPathStr, journeyCollection.GetJourneysThatContainPath(directPathStr));
+                    }
+                }
+            }
+            return collectionsByDirectPath;
+        }
+
+        private static List<List<JourneyCollection>> GetListsOfCollectionsGroupedByDirectPath(List<Path> fullPaths, Dictionary<string, JourneyCollection> collectionsByDirectPath)
+        {
+            List<List<JourneyCollection>> journeyCollectionsGrouped = new();
+            foreach (Path path in fullPaths)
+            {
+                List<JourneyCollection> fullyConnectedPathJourneys = new();
+                List<DirectPath> directPaths = path.GetDirectPaths();
+                foreach (DirectPath directPath in directPaths)
+                {
+                    JourneyCollection col = collectionsByDirectPath[directPath.ToString()];
+                    if (col.GetCount() == 0)
+                    {
+                        fullyConnectedPathJourneys.Clear();
+                        break;
+                    }
+                    else
+                    {
+                        fullyConnectedPathJourneys.Add(col);
+                    }
+                }
+                if (fullyConnectedPathJourneys.Count > 0) journeyCollectionsGrouped.Add(fullyConnectedPathJourneys);
+            }
+
+            return journeyCollectionsGrouped;
         }
 
         private void BuildUpCombinationOfJourneys(int index, LinkedList<Journey> listOfJourneys, List<SequentialJourneyCollection> combos)
@@ -32,6 +74,18 @@ namespace JourneyPlanner_ClassLibrary
                     listOfJourneys.RemoveLast();
                 }
             }
+        }
+
+        private List<SequentialJourneyCollection> GetCombinationsOfSequentialJourneys(List<List<JourneyCollection>> journeyCollectionsGrouped)
+        {
+            List<SequentialJourneyCollection> fullPathCombinationsOfJourneys = new();
+            foreach (List<JourneyCollection> journeyCollections in journeyCollectionsGrouped)
+            {
+                JourneyCollections = journeyCollections;
+                LinkedList<Journey> journey = new();
+                BuildUpCombinationOfJourneys(0, journey, fullPathCombinationsOfJourneys);
+            }
+            return fullPathCombinationsOfJourneys;
         }
     }
 }
