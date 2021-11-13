@@ -121,17 +121,6 @@ namespace JourneyPlanner_Tests.UnitTests
             fileIOMock.Setup(x => x.ReadAllText(parameters.WorkerSetupFile)).Returns(new Dictionary<string, JourneyRetrieverData>().SerializeObject());
             fileIOMock.Setup(x => x.ReadAllText(parameters.ProgressFile)).Returns(new MultiJourneyCollectorResults().SerializeObject());
 
-            //Mock<IJourneyRetriever> chromeWorkerMock = new();
-            //List<PathAndJourneyCollection> data = new();
-            //data.Add(new PathAndJourneyCollection(new Path(new List<string>() { "VAR", "LTN" }), new JourneyCollection()));
-            //FullPathAndListOfPathsAndJourneyCollections fullPathAndFlights = new(new Path(new List<string>() { "VAR", "LTN" }), data);
-
-            //List<FullPathAndListOfPathsAndJourneyCollections> fullPaths = new() { fullPathAndFlights };
-            //Dictionary<string, JourneyCollection> workerFlights = new();
-            //workerFlights.Add("ABZ-LTN", new());
-            //GoogleFlightsWorkerResults workerResults = new(true, workerFlights, fullPaths);
-            //fileIOMock.Setup(x => x.ReadAllText(parameters.LocalGoogleFlightsWorkerResultsFile)).Returns(workerResults.SerializeObject());
-
             JourneyRetrieverComponents c = new(
                 new Mock<IJourneyRetrieverEventHandler>().Object,
                 null,
