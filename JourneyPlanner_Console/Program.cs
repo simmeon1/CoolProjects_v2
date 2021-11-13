@@ -61,10 +61,23 @@ namespace JourneyPlanner_Console
                 airportPopulator: new FlightConnectionsDotComWorker_AirportPopulator(worker),
                 multiJourneyCollector);
 
-            bool success = await runner.DoRun(parameters);
-            if ((success || parameters.Headless) && driver != null) driver.Quit();
-            Console.WriteLine("Run finished. Press any key to continue");
-            Console.ReadKey();
+            bool success = false;
+            try
+            {
+                await runner.DoRun(parameters);
+                success = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exeption appeared during run. Details:");
+                Console.WriteLine(ex.ToString());
+            }
+            finally
+            {
+                if ((success || parameters.Headless) && driver != null) driver.Quit();
+                Console.WriteLine("Run finished. Press any key to continue");
+                Console.ReadKey();
+            }
         }
     }
 }
