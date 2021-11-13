@@ -11,10 +11,10 @@ namespace JourneyPlanner_ClassLibrary
         public int MaxFlights { get; set; }
         public DateTime DateFrom { get; set; }
         public DateTime DateTo { get; set; }
-        public string LocalAirportListFile { get; set; }
-        public string LocalAirportDestinationsFile { get; set; }
-        public string LocalGoogleFlightsWorkerResultsFile { get; set; }
-        public string LocalCollectedPathJourneysFile { get; set; }
+        public string AirportListFile { get; set; }
+        public string AirportDestinationsFile { get; set; }
+        public string ProgressFile { get; set; }
+        public string WorkerSetupFile { get; set; }
         public bool SkipUndoableJourneys { get; set; }
         public bool SkipNotSameDayFinishJourneys { get; set; }
         public bool OnlyPrintPaths { get; set; }

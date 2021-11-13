@@ -23,8 +23,8 @@ namespace JourneyPlanner_Console
             Parameters parameters = System.IO.File.ReadAllText(parametersPath).DeserializeObject<Parameters>();
 
             ChromeDriver driver = null;
-            if (parameters.LocalAirportListFile.IsNullOrEmpty() ||
-                parameters.LocalAirportDestinationsFile.IsNullOrEmpty() ||
+            if (parameters.AirportListFile.IsNullOrEmpty() ||
+                parameters.AirportDestinationsFile.IsNullOrEmpty() ||
                 !parameters.OnlyPrintPaths
                 )
             {
