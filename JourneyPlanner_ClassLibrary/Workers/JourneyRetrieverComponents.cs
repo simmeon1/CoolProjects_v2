@@ -8,10 +8,19 @@ namespace JourneyPlanner_ClassLibrary
 {
     public class JourneyRetrieverComponents
     {
+        public IMultiJourneyCollector MultiJourneyCollector { get; set; }
         public IWebDriver Driver { get; set; }
         public ILogger Logger { get; set; }
         public IDelayer Delayer { get; set; }
         public int DefaultDelay { get; set; } = 500;
+        public JourneyRetrieverComponents(IMultiJourneyCollector multiJourneyCollector, IWebDriver driver, ILogger logger, IDelayer delayer, int defaultDelay)
+        {
+            Driver = driver;
+            Logger = logger;
+            Delayer = delayer;
+            DefaultDelay = defaultDelay;
+            MultiJourneyCollector = multiJourneyCollector;
+        }
 
         public void Log(string message)
         {

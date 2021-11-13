@@ -23,5 +23,15 @@ namespace JourneyPlanner_ClassLibrary
         {
             return $"{DirectPaths.Count} direct paths, {Translations.Count} translations.";
         }
+
+        public void RemovePath(string path)
+        {
+            DirectPaths = DirectPaths.Where(p => !p.ToString().Equals(path)).ToList();
+        }
+        
+        public int GetCountOfDirectPaths()
+        {
+            return DirectPaths.Count;
+        }
     }
 }

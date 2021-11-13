@@ -30,32 +30,23 @@ namespace JourneyPlanner_ClassLibrary
             C = c;
         }
 
-        public async Task<JourneyCollection> CollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo)
+        public async Task<JourneyCollection> CollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo, JourneyCollection existingJourneys)
         {
             LastTypedOrigin = "";
             StopsSet = false;
-            CollectedJourneys = new();
+            CollectedJourneys = existingJourneys;
             PathsToSearch = 0;
             PathsCollected = 0;
             JourneyRetrieverData = data;
 
-            try
-            {
-                NavigateToUrl();
-                await AgreeToConsent();
-                await SetToOneWayTrip();
+            NavigateToUrl();
+            await AgreeToConsent();
+            await SetToOneWayTrip();
 
-                foreach (DirectPath directPath in data.DirectPaths) PathsToSearch ++;
-                Log($"Starting search for {PathsToSearch} paths.");
+            foreach (DirectPath directPath in data.DirectPaths) PathsToSearch++;
+            Log($"Starting search for {PathsToSearch} paths.");
 
-                foreach (DirectPath directPath in data.DirectPaths) await GetPathJourneys(directPath, dateFrom, dateTo);
-            }
-            catch (Exception ex)
-            {
-                Log("An exception was thrown while collecting flights and the results have been returned early.");
-                Log($"Exception details: {ex}");
-                return CollectedJourneys;
-            }
+            foreach (DirectPath directPath in data.DirectPaths) await GetPathJourneys(directPath, dateFrom, dateTo);
             return CollectedJourneys;
         }
 
@@ -89,6 +80,7 @@ namespace JourneyPlanner_ClassLibrary
             }
             Log($"Getting flights for {pathName} from {dateFrom} to {dateTo}.");
             CollectedJourneys.AddRange(await GetFlightsForDates(dateFrom, listOfExtraDates));
+            C.MultiJourneyCollector.InformOfPathDataFullyCollected(directPath.ToString());
             PathsCollected++;
             Log($"Collected data for {pathName} ({Globals.GetPercentageAndCountString(PathsCollected, PathsToSearch)})");
         }

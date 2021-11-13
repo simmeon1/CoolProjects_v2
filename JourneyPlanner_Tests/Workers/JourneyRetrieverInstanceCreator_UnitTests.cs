@@ -19,9 +19,17 @@ namespace JourneyPlanner_Tests.UnitTests
                 .Where(p => interfaceType.IsAssignableFrom(p))
                 .Where(p => !p.Name.Equals(interfaceType.Name));
 
+            JourneyRetrieverComponents components = new(
+                null,
+                null,
+                null,
+                null,
+                500
+            );
+
             JourneyRetrieverInstanceCreator instanceCreator = new();
             List<IJourneyRetriever> instances = new();
-            foreach (Type type in types) instances.Add(instanceCreator.CreateInstance(type.FullName));
+            foreach (Type type in types) instances.Add(instanceCreator.CreateInstance(type.FullName, components));
             Assert.IsTrue(instances.Count == 1);
             Assert.IsTrue(instances.Any(i => i.GetType().Name.Equals(nameof(GoogleFlightsWorker))));
         }

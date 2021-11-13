@@ -15,8 +15,8 @@ namespace JourneyPlanner_Tests.UnitTests
         private const string megabus = "megabus";
         private const string scotrail = "scotrail";
         private const string defaultWorker = nameof(GoogleFlightsWorker);
-        private Path path1 = new(new List<string>() { "ABZ", "LTN", "SOF" });
-        private Path path2 = new(new List<string>() { "LTN", "SOF", "EDI" });
+        private readonly Path path1 = new(new List<string>() { "ABZ", "LTN", "SOF" });
+        private readonly Path path2 = new(new List<string>() { "LTN", "SOF", "EDI" });
 
         [TestMethod]
         public void DataGroupedAsExpected()
@@ -91,7 +91,6 @@ namespace JourneyPlanner_Tests.UnitTests
             Assert.IsTrue(results[scotrail].DirectPaths.Count == 1);
             Assert.IsTrue(results[scotrail].DirectPaths[0].ToString().Equals("ABZ-LTN"));
         }
-
 
         [TestMethod]
         public void DataGroupedAsExpected_NoExistingData()

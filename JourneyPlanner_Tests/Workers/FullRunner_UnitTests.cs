@@ -39,30 +39,36 @@ namespace JourneyPlanner_Tests.UnitTests
             destinations.Add("LTN", new HashSet<string>() { "VAR" });
             populatorMock.Setup(x => x.PopulateAirports(It.IsAny<List<Airport>>(), It.IsAny<IAirportFilterer>())).Returns(destinations);
 
-            JourneyRetrieverComponents components = new()
-            {
-                Logger = new Mock<ILogger>().Object,
-                Delayer = new Mock<IDelayer>().Object,
-                DefaultDelay = parameters.DefaultDelay
-            };
+            Mock<IMultiJourneyCollector> collector = new();
+            MultiJourneyCollectorResults collectorResults = new(new(), new());
+            collector.Setup(x =>
+                x.GetJourneys(It.IsAny<JourneyRetrieverComponents>(), It.IsAny<Dictionary<string, JourneyRetrieverData>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<MultiJourneyCollectorResults>()).Result)
+                .Returns(collectorResults);
+            JourneyRetrieverComponents c = new(
+                collector.Object,
+                null,
+                new Mock<ILogger>().Object,
+                new Mock<IDelayer>().Object,
+                500
+            );
 
             Mock<IJourneyRetriever> retriever = new();
-            retriever.Setup(x => x.CollectJourneys(It.IsAny<JourneyRetrieverData>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()).Result).Returns(new JourneyCollection());
+            retriever.Setup(x => x.CollectJourneys(It.IsAny<JourneyRetrieverData>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<JourneyCollection>()).Result).Returns(new JourneyCollection());
 
             Mock<IJourneyRetrieverInstanceCreator> creator = new();
-            creator.Setup(x => x.CreateInstance(It.IsAny<string>(), components)).Returns(retriever.Object);
+            creator.Setup(x => x.CreateInstance(It.IsAny<string>(), c)).Returns(retriever.Object);
 
             Mock<IFileIO> fileIOMock = new();
             Mock<IExcelPrinter> printerMock = new();
             FullRunner runner = new(
-                components,
+                c,
                 fileIOMock.Object,
                 new Mock<IDateTimeProvider>().Object
 ,
                 printerMock.Object,
                 collectorMock.Object,
-                populatorMock.Object,
-                creator.Object);
+                populatorMock.Object
+            );
             await runner.DoRun(parameters);
             const string directoryName = @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21";
             fileIOMock.Verify(x => x.DirectoryExists(directoryName), Times.Once());
@@ -80,8 +86,8 @@ namespace JourneyPlanner_Tests.UnitTests
                 It.IsAny<string>()
             ), Times.Once());
             fileIOMock.Verify(x => x.WriteAllText(
-                @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21_journeys.json",
-                new JourneyCollection().SerializeObject(Formatting.Indented)
+                @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21_journeyCollectorResults.json",
+                collectorResults.SerializeObject(Formatting.Indented)
             ), Times.Once());
             printerMock.Verify(x => x.PrintTablesToWorksheet(
                 It.IsAny<List<DataTable>>(),
@@ -89,66 +95,66 @@ namespace JourneyPlanner_Tests.UnitTests
             ), Times.Once());
         }
 
-//        [Ignore]
-//        [TestMethod]
-//        public async Task RunIsSuccesful_FilesProvided()
-//        {
-//            Parameters parameters = new();
-//            parameters.Origins = new() { "LTN" };
-//            parameters.Destinations = new() { "VAR" };
-//            parameters.MaxFlights = 1;
-//            parameters.DateFrom = new(2020, 5, 20);
-//            parameters.DateTo = new(2021, 6, 21);
-//            parameters.FileSavePath = "C:\\D";
-//            parameters.OnlyPrintPaths = false;
-//            parameters.UKAndBulgariaOnly = true;
-//            parameters.LocalAirportListFile = "LocalAirportListFile";
-//            parameters.LocalAirportDestinationsFile = "LocalAirportDestinationsFile";
-//            parameters.LocalGoogleFlightsWorkerResultsFile = "LocalChromeWorkerResultsFile";
-//            Mock<IFileIO> fileIOMock = new();
-//            List<Airport> airportList = new() { new Airport("LTN", "London", "United Kingdom", "Luton", ""), new Airport("VAR", "Varna", "Bulgaria", "Varna", "") };
-//            fileIOMock.Setup(x => x.ReadAllText(parameters.LocalAirportListFile)).Returns(airportList.SerializeObject());
+        //        [Ignore]
+        //        [TestMethod]
+        //        public async Task RunIsSuccesful_FilesProvided()
+        //        {
+        //            Parameters parameters = new();
+        //            parameters.Origins = new() { "LTN" };
+        //            parameters.Destinations = new() { "VAR" };
+        //            parameters.MaxFlights = 1;
+        //            parameters.DateFrom = new(2020, 5, 20);
+        //            parameters.DateTo = new(2021, 6, 21);
+        //            parameters.FileSavePath = "C:\\D";
+        //            parameters.OnlyPrintPaths = false;
+        //            parameters.UKAndBulgariaOnly = true;
+        //            parameters.LocalAirportListFile = "LocalAirportListFile";
+        //            parameters.LocalAirportDestinationsFile = "LocalAirportDestinationsFile";
+        //            parameters.LocalGoogleFlightsWorkerResultsFile = "LocalChromeWorkerResultsFile";
+        //            Mock<IFileIO> fileIOMock = new();
+        //            List<Airport> airportList = new() { new Airport("LTN", "London", "United Kingdom", "Luton", ""), new Airport("VAR", "Varna", "Bulgaria", "Varna", "") };
+        //            fileIOMock.Setup(x => x.ReadAllText(parameters.LocalAirportListFile)).Returns(airportList.SerializeObject());
 
-//            Dictionary<string, HashSet<string>> destinations = new();
-//            destinations.Add("LTN", new HashSet<string>() { "VAR" });
-//            fileIOMock.Setup(x => x.ReadAllText(parameters.LocalAirportDestinationsFile)).Returns(destinations.SerializeObject());
+        //            Dictionary<string, HashSet<string>> destinations = new();
+        //            destinations.Add("LTN", new HashSet<string>() { "VAR" });
+        //            fileIOMock.Setup(x => x.ReadAllText(parameters.LocalAirportDestinationsFile)).Returns(destinations.SerializeObject());
 
-//            Mock<IJourneyRetriever> chromeWorkerMock = new();
-//            List<PathAndJourneyCollection> data = new();
-//            data.Add(new PathAndJourneyCollection(new Path(new List<string>() { "VAR", "LTN" }), new JourneyCollection()));
-//            FullPathAndListOfPathsAndJourneyCollections fullPathAndFlights = new(new Path(new List<string>() { "VAR", "LTN" }), data);
+        //            Mock<IJourneyRetriever> chromeWorkerMock = new();
+        //            List<PathAndJourneyCollection> data = new();
+        //            data.Add(new PathAndJourneyCollection(new Path(new List<string>() { "VAR", "LTN" }), new JourneyCollection()));
+        //            FullPathAndListOfPathsAndJourneyCollections fullPathAndFlights = new(new Path(new List<string>() { "VAR", "LTN" }), data);
 
-//            List<FullPathAndListOfPathsAndJourneyCollections> fullPaths = new() { fullPathAndFlights };
-//            Dictionary<string, JourneyCollection> workerFlights = new();
-//            workerFlights.Add("ABZ-LTN", new());
-//            GoogleFlightsWorkerResults workerResults = new(true, workerFlights, fullPaths);
-//            fileIOMock.Setup(x => x.ReadAllText(parameters.LocalGoogleFlightsWorkerResultsFile)).Returns(workerResults.SerializeObject());
+        //            List<FullPathAndListOfPathsAndJourneyCollections> fullPaths = new() { fullPathAndFlights };
+        //            Dictionary<string, JourneyCollection> workerFlights = new();
+        //            workerFlights.Add("ABZ-LTN", new());
+        //            GoogleFlightsWorkerResults workerResults = new(true, workerFlights, fullPaths);
+        //            fileIOMock.Setup(x => x.ReadAllText(parameters.LocalGoogleFlightsWorkerResultsFile)).Returns(workerResults.SerializeObject());
 
-//            Mock<IExcelPrinter> printerMock = new();
-//            Mock<IFlightConnectionsDotComWorker_AirportCollector> collectorMock = new();
-//            Mock<IFlightConnectionsDotComWorker_AirportPopulator> populatorMock = new();
-//            FullRunner runner = new(
-//                new Mock<ILogger>().Object,
-//                new Mock<IDelayer>().Object,
-//                fileIOMock.Object,
-//                new Mock<IDateTimeProvider>().Object
-//,
-//                printerMock.Object,
-//                collectorMock.Object,
-//                populatorMock.Object,
-//                chromeWorkerMock.Object);
-//            await runner.DoRun(parameters);
-//            const string directoryName = @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21";
-//            fileIOMock.Verify(x => x.DirectoryExists(directoryName), Times.Once());
-//            fileIOMock.Verify(x => x.CreateDirectory(directoryName), Times.Once());
-//            fileIOMock.Verify(x => x.WriteAllText(
-//                @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21_latestPaths.json",
-//                It.IsAny<string>()
-//            ), Times.Once());
-//            printerMock.Verify(x => x.PrintTablesToWorksheet(
-//                It.IsAny<List<DataTable>>(),
-//                @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21_results.xlsx"
-//            ), Times.Once());
-//        }
+        //            Mock<IExcelPrinter> printerMock = new();
+        //            Mock<IFlightConnectionsDotComWorker_AirportCollector> collectorMock = new();
+        //            Mock<IFlightConnectionsDotComWorker_AirportPopulator> populatorMock = new();
+        //            FullRunner runner = new(
+        //                new Mock<ILogger>().Object,
+        //                new Mock<IDelayer>().Object,
+        //                fileIOMock.Object,
+        //                new Mock<IDateTimeProvider>().Object
+        //,
+        //                printerMock.Object,
+        //                collectorMock.Object,
+        //                populatorMock.Object,
+        //                chromeWorkerMock.Object);
+        //            await runner.DoRun(parameters);
+        //            const string directoryName = @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21";
+        //            fileIOMock.Verify(x => x.DirectoryExists(directoryName), Times.Once());
+        //            fileIOMock.Verify(x => x.CreateDirectory(directoryName), Times.Once());
+        //            fileIOMock.Verify(x => x.WriteAllText(
+        //                @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21_latestPaths.json",
+        //                It.IsAny<string>()
+        //            ), Times.Once());
+        //            printerMock.Verify(x => x.PrintTablesToWorksheet(
+        //                It.IsAny<List<DataTable>>(),
+        //                @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21_results.xlsx"
+        //            ), Times.Once());
+        //        }
     }
 }

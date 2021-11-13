@@ -42,14 +42,15 @@ namespace JourneyPlanner_Console
             RealWebDriverWait webDriverWait = new(driver);
             FlightConnectionsDotComWorker worker = new(logger, driver, webDriverWait);
             RealDelayer delayer = new();
+            IMultiJourneyCollector mjsCollector = new MultiJourneyCollector(new JourneyRetrieverInstanceCreator());
 
-            JourneyRetrieverComponents components = new()
-            {
-                Driver = driver,
-                Delayer = delayer,
-                Logger = logger,
-                DefaultDelay = parameters.DefaultDelay
-            };
+            JourneyRetrieverComponents components = new(
+                mjsCollector,
+                driver,
+                logger,
+                delayer,
+                parameters.DefaultDelay
+            );
 
             FullRunner runner = new(
                 components,
@@ -57,8 +58,7 @@ namespace JourneyPlanner_Console
                 dateTimeProvider: new RealDateTimeProvider(),
                 printer: new ExcelPrinter(),
                 airportCollector: new FlightConnectionsDotComWorker_AirportCollector(worker),
-                airportPopulator: new FlightConnectionsDotComWorker_AirportPopulator(worker),
-                new JourneyRetrieverInstanceCreator());
+                airportPopulator: new FlightConnectionsDotComWorker_AirportPopulator(worker));
 
             bool success = await runner.DoRun(parameters);
             if ((success || parameters.Headless) && driver != null) driver.Quit();

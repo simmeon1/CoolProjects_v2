@@ -20,6 +20,8 @@ namespace JourneyPlanner_Tests.UnitTests
             Assert.IsTrue(data.GetTranslation("ABZ").Equals("Aberdeen"));
             Assert.IsTrue(data.GetTranslation("EDI").Equals("EDI"));
             Assert.IsTrue(data.ToString().Equals("1 direct paths, 1 translations."));
+            data.RemovePath("ABZ-EDI");
+            Assert.IsTrue(data.GetCountOfDirectPaths() == 0);
         }
     }
 }

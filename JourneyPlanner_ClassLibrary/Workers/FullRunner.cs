@@ -13,7 +13,6 @@ namespace JourneyPlanner_ClassLibrary
     {
         public Parameters Parameters { get; set; }
         public JourneyRetrieverComponents Components { get; set; }
-        public IJourneyRetrieverInstanceCreator Creator { get; set; }
         public IFileIO FileIO { get; set; }
         public IExcelPrinter Printer { get; set; }
         public IFlightConnectionsDotComWorker_AirportCollector AirportCollector { get; set; }
@@ -26,8 +25,7 @@ namespace JourneyPlanner_ClassLibrary
             IDateTimeProvider dateTimeProvider,
             IExcelPrinter printer,
             IFlightConnectionsDotComWorker_AirportCollector airportCollector,
-            IFlightConnectionsDotComWorker_AirportPopulator airportPopulator,
-            IJourneyRetrieverInstanceCreator creator)
+            IFlightConnectionsDotComWorker_AirportPopulator airportPopulator)
         {
             FileIO = fileIO;
             Printer = printer;
@@ -35,7 +33,6 @@ namespace JourneyPlanner_ClassLibrary
             AirportPopulator = airportPopulator;
             DateTimeProvider = dateTimeProvider;
             Components = components;
-            Creator = creator;
         }
 
         public async Task<bool> DoRun(Parameters paramss)
@@ -98,19 +95,18 @@ namespace JourneyPlanner_ClassLibrary
             PathsToDirectPathGroupsConverter converter = new();
             Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(paths);
 
-            MultiJourneyCollector mjc = new(Components, Creator);
-            JourneyCollection journeys = await mjc.GetJourneys(results, Parameters.DateFrom, Parameters.DateTo);
+            MultiJourneyCollectorResults journeyCollectorResults = await Components.MultiJourneyCollector.GetJourneys(Components, results, Parameters.DateFrom, Parameters.DateTo);
             //JourneyCollection journeys = 
             //    FileIO.ReadAllText(@"C:\D\FlightConnectionsDotCom\Results\2021-11-11--22-17-16_ABZ - VAR - 2021-01-01 - 2021-01-05\2021-11-11--22-17-16_ABZ - VAR - 2021-01-01 - 2021-01-05_journeys.json").DeserializeObject<JourneyCollection>();
-            FileIO.WriteAllText($"{runResultsPath}\\{runId}_journeys.json", journeys.SerializeObject(Formatting.Indented));
-            PrintPathsAndJourneysAndFinish(airportsList, journeys, runId, runResultsPath, paths);
+            FileIO.WriteAllText($"{runResultsPath}\\{runId}_journeyCollectorResults.json", journeyCollectorResults.SerializeObject(Formatting.Indented));
+            PrintPathsAndJourneysAndFinish(airportsList, journeyCollectorResults, runId, runResultsPath, paths);
             return true;
         }
 
-        private void PrintPathsAndJourneysAndFinish(List<Airport> airportsList, JourneyCollection journeyCollection, string runId, string runResultsPath, List<Path> paths)
+        private void PrintPathsAndJourneysAndFinish(List<Airport> airportsList, MultiJourneyCollectorResults journeyCollectorResults, string runId, string runResultsPath, List<Path> paths)
         {
             SequentialJourneyCollectionBuilder builder = new();
-            List<SequentialJourneyCollection> results = builder.GetFullPathCombinationOfJourneys(paths, journeyCollection);
+            List<SequentialJourneyCollection> results = builder.GetFullPathCombinationOfJourneys(paths, journeyCollectorResults.JourneyCollection);
 
             DataTableCreator dtCreator = new();
             Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results, Parameters.SkipUndoableJourneys, Parameters.SkipNotSameDayFinishJourneys, Parameters.NoLongerThan), $"{runResultsPath}\\{runId}_results.xlsx");

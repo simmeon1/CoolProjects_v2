@@ -9,6 +9,6 @@ namespace JourneyPlanner_ClassLibrary
     /// </summary>
     public interface IJourneyRetriever
     {
-        Task<JourneyCollection> CollectJourneys(JourneyRetrieverData paths, DateTime dateFrom, DateTime dateTo);
+        Task<JourneyCollection> CollectJourneys(JourneyRetrieverData paths, DateTime dateFrom, DateTime dateTo, JourneyCollection collectedJourneys);
     }
 }
