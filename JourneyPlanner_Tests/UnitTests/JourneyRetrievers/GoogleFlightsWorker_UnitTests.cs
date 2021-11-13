@@ -123,8 +123,9 @@ namespace JourneyPlanner_Tests.UnitTests
             driverMock.Setup(x => x.FindElements(By.CssSelector("input"))).Returns(inputs);
 
             Mock<IMultiJourneyCollector> collector = new();
+            Mock<IJourneyRetrieverEventHandler> eventHandler = new();
             JourneyRetrieverComponents c = new(
-                collector.Object,
+                eventHandler.Object,
                 driverMock.Object,
                 logger.Object,
                 new Mock<IDelayer>().Object,
@@ -135,9 +136,9 @@ namespace JourneyPlanner_Tests.UnitTests
             JourneyCollection journeyCollection = new();
             journeyCollection = await chromeWorker.CollectJourneys(data, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11), journeyCollection);
 
-            collector.Verify(x => x.InformOfPathDataFullyCollected("ABZ-LTN"), Times.Once());
-            collector.Verify(x => x.InformOfPathDataFullyCollected("LTN-VAR"), Times.Once());
-            collector.Verify(x => x.InformOfPathDataFullyCollected("EDI-LTN"), Times.Once());
+            eventHandler.Verify(x => x.InformOfPathDataFullyCollected("ABZ-LTN"), Times.Once());
+            eventHandler.Verify(x => x.InformOfPathDataFullyCollected("LTN-VAR"), Times.Once());
+            eventHandler.Verify(x => x.InformOfPathDataFullyCollected("EDI-LTN"), Times.Once());
             Assert.IsTrue(journeyCollection.GetCount() == 7);
             Assert.IsTrue(journeyCollection[0].ToString().Equals(@"ABZ-LTN - 10/10/2000 08:00:00 - 10/10/2000 08:30:00 - Wizz Air - 00:30:00 - 10 - Flight"));
             Assert.IsTrue(journeyCollection[1].ToString().Equals(@"ABZ-LTN - 11/10/2000 09:30:00 - 11/10/2000 10:30:00 - Wizz Air - 01:00:00 - 15 - Flight"));

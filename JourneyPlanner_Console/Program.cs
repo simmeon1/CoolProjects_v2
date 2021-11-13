@@ -22,7 +22,6 @@ namespace JourneyPlanner_Console
             }
             Parameters parameters = System.IO.File.ReadAllText(parametersPath).DeserializeObject<Parameters>();
 
-            Logger_Console logger = new();
             ChromeDriver driver = null;
             if (parameters.LocalAirportListFile.IsNullOrEmpty() ||
                 parameters.LocalAirportDestinationsFile.IsNullOrEmpty() ||
@@ -39,13 +38,14 @@ namespace JourneyPlanner_Console
                 driver = new(chromeOptions);
             }
 
+            Logger_Console logger = new();
             RealWebDriverWait webDriverWait = new(driver);
             FlightConnectionsDotComWorker worker = new(logger, driver, webDriverWait);
             RealDelayer delayer = new();
-            IMultiJourneyCollector mjsCollector = new MultiJourneyCollector(new JourneyRetrieverInstanceCreator());
 
+            MultiJourneyCollector multiJourneyCollector = new(new JourneyRetrieverInstanceCreator());
             JourneyRetrieverComponents components = new(
-                mjsCollector,
+                multiJourneyCollector,
                 driver,
                 logger,
                 delayer,
@@ -58,7 +58,8 @@ namespace JourneyPlanner_Console
                 dateTimeProvider: new RealDateTimeProvider(),
                 printer: new ExcelPrinter(),
                 airportCollector: new FlightConnectionsDotComWorker_AirportCollector(worker),
-                airportPopulator: new FlightConnectionsDotComWorker_AirportPopulator(worker));
+                airportPopulator: new FlightConnectionsDotComWorker_AirportPopulator(worker),
+                multiJourneyCollector);
 
             bool success = await runner.DoRun(parameters);
             if ((success || parameters.Headless) && driver != null) driver.Quit();

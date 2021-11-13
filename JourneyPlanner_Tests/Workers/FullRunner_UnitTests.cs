@@ -45,7 +45,7 @@ namespace JourneyPlanner_Tests.UnitTests
                 x.GetJourneys(It.IsAny<JourneyRetrieverComponents>(), It.IsAny<Dictionary<string, JourneyRetrieverData>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<MultiJourneyCollectorResults>()).Result)
                 .Returns(collectorResults);
             JourneyRetrieverComponents c = new(
-                collector.Object,
+                new Mock<IJourneyRetrieverEventHandler>().Object,
                 null,
                 new Mock<ILogger>().Object,
                 new Mock<IDelayer>().Object,
@@ -67,7 +67,8 @@ namespace JourneyPlanner_Tests.UnitTests
 ,
                 printerMock.Object,
                 collectorMock.Object,
-                populatorMock.Object
+                populatorMock.Object,
+                collector.Object
             );
             await runner.DoRun(parameters);
             const string directoryName = @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21";

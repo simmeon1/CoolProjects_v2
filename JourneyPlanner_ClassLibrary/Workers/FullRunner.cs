@@ -18,6 +18,7 @@ namespace JourneyPlanner_ClassLibrary
         public IFlightConnectionsDotComWorker_AirportCollector AirportCollector { get; set; }
         public IFlightConnectionsDotComWorker_AirportPopulator AirportPopulator { get; set; }
         public IDateTimeProvider DateTimeProvider { get; set; }
+        public IMultiJourneyCollector MultiJourneyCollector { get; set; }
 
         public FullRunner(
             JourneyRetrieverComponents components,
@@ -25,7 +26,8 @@ namespace JourneyPlanner_ClassLibrary
             IDateTimeProvider dateTimeProvider,
             IExcelPrinter printer,
             IFlightConnectionsDotComWorker_AirportCollector airportCollector,
-            IFlightConnectionsDotComWorker_AirportPopulator airportPopulator)
+            IFlightConnectionsDotComWorker_AirportPopulator airportPopulator,
+            IMultiJourneyCollector multiJourneyCollector)
         {
             FileIO = fileIO;
             Printer = printer;
@@ -33,6 +35,7 @@ namespace JourneyPlanner_ClassLibrary
             AirportPopulator = airportPopulator;
             DateTimeProvider = dateTimeProvider;
             Components = components;
+            MultiJourneyCollector = multiJourneyCollector;
         }
 
         public async Task<bool> DoRun(Parameters paramss)
@@ -95,7 +98,7 @@ namespace JourneyPlanner_ClassLibrary
             PathsToDirectPathGroupsConverter converter = new();
             Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(paths);
 
-            MultiJourneyCollectorResults journeyCollectorResults = await Components.MultiJourneyCollector.GetJourneys(Components, results, Parameters.DateFrom, Parameters.DateTo);
+            MultiJourneyCollectorResults journeyCollectorResults = await MultiJourneyCollector.GetJourneys(Components, results, Parameters.DateFrom, Parameters.DateTo);
             //JourneyCollection journeys = 
             //    FileIO.ReadAllText(@"C:\D\FlightConnectionsDotCom\Results\2021-11-11--22-17-16_ABZ - VAR - 2021-01-01 - 2021-01-05\2021-11-11--22-17-16_ABZ - VAR - 2021-01-01 - 2021-01-05_journeys.json").DeserializeObject<JourneyCollection>();
             FileIO.WriteAllText($"{runResultsPath}\\{runId}_journeyCollectorResults.json", journeyCollectorResults.SerializeObject(Formatting.Indented));

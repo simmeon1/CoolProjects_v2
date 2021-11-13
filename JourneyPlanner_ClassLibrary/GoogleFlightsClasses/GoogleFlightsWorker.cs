@@ -80,7 +80,7 @@ namespace JourneyPlanner_ClassLibrary
             }
             Log($"Getting flights for {pathName} from {dateFrom} to {dateTo}.");
             CollectedJourneys.AddRange(await GetFlightsForDates(dateFrom, listOfExtraDates));
-            C.MultiJourneyCollector.InformOfPathDataFullyCollected(directPath.ToString());
+            C.JourneyRetrieverEventHandler.InformOfPathDataFullyCollected(directPath.ToString());
             PathsCollected++;
             Log($"Collected data for {pathName} ({Globals.GetPercentageAndCountString(PathsCollected, PathsToSearch)})");
         }

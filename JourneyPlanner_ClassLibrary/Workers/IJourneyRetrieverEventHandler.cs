@@ -4,9 +4,8 @@ using System.Threading.Tasks;
 
 namespace JourneyPlanner_ClassLibrary
 {
-    public interface IMultiJourneyCollector
+    public interface IJourneyRetrieverEventHandler
     {
         void InformOfPathDataFullyCollected(string path);
-        Task<MultiJourneyCollectorResults> GetJourneys(JourneyRetrieverComponents components, Dictionary<string, JourneyRetrieverData> results, DateTime dateFrom, DateTime dateTo, MultiJourneyCollectorResults existingResults = null);
     }
 }

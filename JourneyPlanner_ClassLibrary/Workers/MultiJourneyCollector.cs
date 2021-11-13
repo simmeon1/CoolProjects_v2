@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace JourneyPlanner_ClassLibrary
 {
-    public class MultiJourneyCollector: IMultiJourneyCollector
+    public class MultiJourneyCollector: IMultiJourneyCollector, IJourneyRetrieverEventHandler
     {
         private IJourneyRetrieverInstanceCreator InstanceCreator { get; set; }
         private string CurrentRetriever { get; set; }
