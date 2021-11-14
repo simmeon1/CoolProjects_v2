@@ -30,11 +30,8 @@ namespace JourneyPlanner_Console
             {
                 ChromeOptions chromeOptions = new();
                 chromeOptions.AddArgument("--log-level=3");
-                if (parameters.Headless)
-                {
-                    chromeOptions.AddArgument("headless");
-                    chromeOptions.AddArgument("window-size=1280,800");
-                }
+                chromeOptions.AddArgument("window-size=1280,800");
+                if (parameters.Headless) chromeOptions.AddArgument("headless");
                 driver = new(chromeOptions);
             }
 

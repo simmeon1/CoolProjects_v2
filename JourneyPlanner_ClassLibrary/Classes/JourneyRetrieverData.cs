@@ -8,6 +8,10 @@ namespace JourneyPlanner_ClassLibrary
     {
         public List<DirectPath> DirectPaths { get; set; }
         public Dictionary<string, string> Translations { get; set; }
+        public JourneyRetrieverData()
+        {
+        }
+        
         public JourneyRetrieverData(List<DirectPath> directPaths, Dictionary<string, string> translations = null)
         {
             DirectPaths = directPaths;

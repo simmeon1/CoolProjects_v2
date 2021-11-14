@@ -10,7 +10,8 @@ namespace JourneyPlanner_ClassLibrary
 {
     public class GoogleFlightsWorker : IJourneyRetriever
     {
-        public JourneyRetrieverComponents C { get; set; }
+        private JourneyRetrieverComponents C { get; set; }
+        private JourneyRetrieverData JourneyRetrieverData { get; set; }
         private int PathsToSearch { get; set; }
         private int PathsCollected { get; set; }
         private JourneyCollection CollectedJourneys { get; set; }
@@ -23,7 +24,6 @@ namespace JourneyPlanner_ClassLibrary
         private bool ControlsKnown { get; set; }
         private bool StopsSet { get; set; }
         private string LastTypedOrigin { get; set; }
-        private JourneyRetrieverData JourneyRetrieverData { get; set; }
 
         public GoogleFlightsWorker(JourneyRetrieverComponents c)
         {
@@ -32,14 +32,14 @@ namespace JourneyPlanner_ClassLibrary
 
         public async Task<JourneyCollection> CollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo, JourneyCollection existingJourneys)
         {
-            LastTypedOrigin = "";
-            StopsSet = false;
             CollectedJourneys = existingJourneys;
+            JourneyRetrieverData = data;
             PathsToSearch = 0;
             PathsCollected = 0;
-            JourneyRetrieverData = data;
+            LastTypedOrigin = "";
+            StopsSet = false;
 
-            NavigateToUrl();
+            C.NavigateToUrl("https://www.google.com/travel/flights");
             await AgreeToConsent();
             await SetToOneWayTrip();
 
@@ -65,7 +65,7 @@ namespace JourneyPlanner_ClassLibrary
             string origin = directPath.GetStart();
             string target = directPath.GetEnd();
 
-            Path pathName = new(new List<string> { origin, target });
+            string pathName = directPath.ToString();
             Log($"Collecting data for {pathName}.");
             Log($"Initial population of controls for {pathName}, date {dateFrom}.");
             await PopulateControls(origin, target, dateFrom);
@@ -191,12 +191,6 @@ namespace JourneyPlanner_ClassLibrary
         private async Task ClickHeader()
         {
             await C.ClickAndWait(await C.FindElementAndWait(By.CssSelector("header")));
-        }
-
-        private void NavigateToUrl()
-        {
-            INavigation navigation = C.Driver.Navigate();
-            if (navigation != null) navigation.GoToUrl("https://www.google.com/travel/flights");
         }
 
         private async Task AgreeToConsent()

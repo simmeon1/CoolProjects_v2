@@ -6,8 +6,12 @@ namespace JourneyPlanner_ClassLibrary
 {
     public class DirectPath
     {
-        private Path Path { get; set; }
+        public Path Path { get; set; }
 
+        public DirectPath()
+        {
+        }
+        
         public DirectPath(string start, string end)
         {
             Path = new Path(new List<string>() { start, end });

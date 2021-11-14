@@ -6,6 +6,10 @@ namespace JourneyPlanner_ClassLibrary
     public class Path
     {
         public List<string> Entries { get; set; }        
+        public Path()
+        {
+        }
+        
         public Path(List<string> path)
         {
             Entries = path;

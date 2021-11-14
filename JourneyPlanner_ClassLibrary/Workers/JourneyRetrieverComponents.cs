@@ -46,9 +46,22 @@ namespace JourneyPlanner_ClassLibrary
             return result;
         }
 
+        public void NavigateToUrl(string url)
+        {
+            INavigation navigation = Driver.Navigate();
+            if (navigation != null) navigation.GoToUrl(url);
+        }
+
         public async Task<IWebElement> FindElementAndWait(By by)
         {
             IWebElement result = Driver.FindElement(by);
+            await Delay(DefaultDelay);
+            return result;
+        }
+
+        public async Task<IWebElement> FindElementAndWait(IWebElement element, By by)
+        {
+            IWebElement result = element.FindElement(by);
             await Delay(DefaultDelay);
             return result;
         }
