@@ -10,5 +10,6 @@ namespace JourneyPlanner_ClassLibrary
     public interface IJourneyRetriever
     {
         Task<JourneyCollection> CollectJourneys(JourneyRetrieverData paths, DateTime dateFrom, DateTime dateTo, JourneyCollection collectedJourneys);
+        string GetRetrieverName();
     }
 }

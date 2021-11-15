@@ -9,6 +9,7 @@ namespace JourneyPlanner_ClassLibrary
         public List<string> Origins { get; set; }
         public List<string> Destinations { get; set; }
         public int MaxFlights { get; set; }
+        public int MaxLocalLinks { get; set; }
         public DateTime DateFrom { get; set; }
         public DateTime DateTo { get; set; }
         public string AirportListFile { get; set; }

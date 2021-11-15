@@ -73,27 +73,15 @@ namespace JourneyPlanner_ClassLibrary
         private async Task<JourneyCollection> GetFlightsForDates(DateTime date, List<DateTime> extraDates)
         {
             List<Journey> results = new();
+            HashSet<string> addedJourneys = new();
             while (true)
             {
-                while (true)
-                {
-                    try
-                    {
-                        await C.FindElementAndWait(By.CssSelector("[title=Continue]"));
-                        break;
-                    }
-                    catch (NoSuchElementException)
-                    {
-                        //try again
-                    }
-                }
+                await WaitUntilContinueButtonIsAvailable();
 
-                C.Delay(1000);
-
-                ReadOnlyCollection<IWebElement> journeyElements;
+                ReadOnlyCollection<IWebElement> journeyGroups;
                 try
                 {
-                    journeyElements = await C.FindElementsAndWait(By.CssSelector("app-journey-item"));
+                    journeyGroups = C.Driver.FindElements(By.CssSelector(".nx-leaving-section.ng-star-inserted"));
                 }
                 catch (NoSuchElementException)
                 {
@@ -101,43 +89,54 @@ namespace JourneyPlanner_ClassLibrary
                 }
 
                 bool allFlightsRetrieved = false;
-                foreach (IWebElement journeyElement in journeyElements)
+                foreach (IWebElement journeyGroup in journeyGroups)
                 {
-                    await C.ClickAndWait(journeyElement);
-                    IWebElement journeyInfoElement = await C.FindElementAndWait(By.Id("nx-journey-info"));
-                    string journeyInfo = journeyInfoElement.GetAttribute("innerText").Trim();
-                    string[] journeyPieces = journeyInfo.Split("\n", StringSplitOptions.RemoveEmptyEntries);
-                    DateTime departing = DateTime.Parse(journeyPieces[0]);
+                    string groupDateText = journeyGroup.FindElement(By.XPath("..")).FindElement(By.CssSelector("h5")).GetAttribute("innerText").Trim();
+                    DateTime departing = DateTime.Parse(groupDateText);
                     if (departing.CompareTo(extraDates[extraDates.Count - 1]) == 1)
                     {
                         allFlightsRetrieved = true;
                         break;
                     }
 
-                    string times = journeyPieces[3];
-                    Match departingTimeMatch = Regex.Match(times, @"^(\d\d):(\d\d)");
-                    string departingTime = departingTimeMatch.Groups[1].Value;
-                    departing = departing.AddHours(int.Parse(Regex.Match(times, @"^(\d\d):(\d\d)").Groups[1].Value));
-                    departing = departing.AddMinutes(int.Parse(Regex.Match(times, @"^(\d\d):(\d\d)").Groups[2].Value));
+                    string journeysText = journeyGroup.GetAttribute("innerText").Trim();
+                    string[] journeysTextLines = journeysText.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+                    List<string> journeysTextLinesList = new(journeysTextLines);
 
-                    string durationText = journeyPieces[1];
-                    durationText = Regex.Match(durationText, "(\\d+)\\D+(\\d+).*").Success
-                        ? Regex.Replace(durationText, "(\\d+).*?(\\d+).*", "$1:$2").Trim()
-                        : Regex.Match(durationText, "(\\d+).*hr").Success
-                        ? Regex.Replace(durationText, "(\\d+).*", "$1:00").Trim()
-                        : Regex.Replace(durationText, "(\\d+).*", "0:$1").Trim();
-                    TimeSpan duration = TimeSpan.Parse(durationText);
-                    DateTime arriving = departing + duration;
+                    const string timeRegex = @"^(\d\d):(\d\d)";
+                    while (journeysTextLinesList.Count > 0)
+                    {
+                        string departingTime = GetFirstMatchFromLinesOfTextWhileRemovingLines(journeysTextLinesList, timeRegex);
+                        if (departingTime == null) break;
 
-                    IWebElement costElement = await C.FindElementAndWait(journeyElement, By.CssSelector(".nx-price"));
-                    string costText = costElement.GetAttribute("innerText").Trim().Replace("£", "");
+                        DateTime updatedDeparting = departing.AddHours(int.Parse(Regex.Match(departingTime, timeRegex).Groups[1].Value));
+                        updatedDeparting = updatedDeparting.AddMinutes(int.Parse(Regex.Match(departingTime, timeRegex).Groups[2].Value));
 
-                    Journey journey = new(departing, arriving, "National Express", duration, $"{Origin}-{Destination}", Convert.ToInt32(double.Parse(costText)), JourneyType.Local);
-                    results.Add(journey);
+                        string durationText = GetFirstMatchFromLinesOfTextWhileRemovingLines(journeysTextLinesList, @"^\d+h \d+m");
+                        if (durationText == null) break;
+
+                        durationText = Regex.Match(durationText, "(\\d+)\\D+(\\d+).*").Success
+                                    ? Regex.Replace(durationText, "(\\d+).*?(\\d+).*", "$1:$2").Trim()
+                                    : Regex.Match(durationText, "(\\d+).*hr").Success
+                                    ? Regex.Replace(durationText, "(\\d+).*", "$1:00").Trim()
+                                    : Regex.Replace(durationText, "(\\d+).*", "0:$1").Trim();
+                        TimeSpan duration = TimeSpan.Parse(durationText);
+                        DateTime arriving = updatedDeparting + duration;
+
+                        string costText = GetFirstMatchFromLinesOfTextWhileRemovingLines(journeysTextLinesList, @"\d+\.\d\d");
+                        if (costText == null) break;
+
+                        int cost = Convert.ToInt32(double.Parse(costText));
+                        Journey journey = new(updatedDeparting, arriving, "National Express", duration, $"{Origin}-{Destination}", Convert.ToInt32(double.Parse(costText)), GetRetrieverName());
+                        if (!addedJourneys.Contains(journey.ToString()))
+                        {
+                            results.Add(journey);
+                            addedJourneys.Add(journey.ToString());
+                        }
+                    }
                 }
-                if (allFlightsRetrieved) return new JourneyCollection(results);
 
-                ReadOnlyCollection<IWebElement> expandButtons = await C.FindElementsAndWait(By.CssSelector(".nx-earlier-later-journey"));
+                ReadOnlyCollection<IWebElement> expandButtons = C.Driver.FindElements(By.CssSelector(".nx-earlier-later-journey"));
                 foreach (IWebElement expandButton in expandButtons)
                 {
                     string text = expandButton.GetAttribute("innerText");
@@ -147,7 +146,36 @@ namespace JourneyPlanner_ClassLibrary
                         break;
                     }
                 }
+                if (allFlightsRetrieved) return new JourneyCollection(results);
             }
+        }
+
+        private async Task WaitUntilContinueButtonIsAvailable()
+        {
+            while (true)
+            {
+                try
+                {
+                    await C.FindElementAndWait(By.CssSelector("[title=Continue]"));
+                    break;
+                }
+                catch (NoSuchElementException)
+                {
+                    //try again
+                }
+            }
+            await C.Delay(1000);
+        }
+
+        private string GetFirstMatchFromLinesOfTextWhileRemovingLines(List<string> journeysTextLinesList, string pattern)
+        {
+            while (journeysTextLinesList.Count > 0)
+            {
+                Match match = Regex.Match(journeysTextLinesList[0], pattern);
+                journeysTextLinesList.RemoveAt(0);
+                if (match.Success) return match.Value;
+            }
+            return null;
         }
 
         private async Task PopulateControls(string origin, string target, DateTime date)
@@ -236,8 +264,26 @@ namespace JourneyPlanner_ClassLibrary
                     break;
                 }
             }
+
+            IWebElement dropdownTimeCondition = C.Driver.FindElement(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(1) > nx-time-condition > select"));
+            await C.ClickAndWait(dropdownTimeCondition);
+            
+            IWebElement firstOptionTimeCondition = C.Driver.FindElement(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(1) > nx-time-condition > select > option:nth-child(1)"));
+            await C.ClickAndWait(firstOptionTimeCondition);
+            
+            IWebElement dropdownTime = C.Driver.FindElement(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(2) > nx-time > select"));
+            await C.ClickAndWait(dropdownTime);
+            
+            IWebElement firstOptionTime = C.Driver.FindElement(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(2) > nx-time > select > option:nth-child(1)"));
+            await C.ClickAndWait(firstOptionTime);
+
             IWebElement submit = await C.FindElementAndWait(By.Id("nx-find-journey-button"));
             await C.ClickAndWait(submit);
+        }
+
+        public string GetRetrieverName()
+        {
+            return nameof(NationalExpressWorker);
         }
     }
 }

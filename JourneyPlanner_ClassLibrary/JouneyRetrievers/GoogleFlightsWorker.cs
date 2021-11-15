@@ -307,5 +307,10 @@ namespace JourneyPlanner_ClassLibrary
                 return;
             }
         }
+
+        public string GetRetrieverName()
+        {
+            return nameof(GoogleFlightsWorker);
+        }
     }
 }

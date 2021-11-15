@@ -127,7 +127,7 @@ namespace JourneyPlanner_ClassLibrary
                 new DataColumn("Path", TypeString),
                 new DataColumn("Id", TypeInt32),
                 new DataColumn("Journey #", TypeInt32),
-                new DataColumn("Type", TypeString),
+                new DataColumn("Is Flight", TypeBool),
                 new DataColumn("Departing Time", TypeString),
                 new DataColumn("Arriving Time", TypeString),
                 new DataColumn("Departing City", TypeString),
@@ -136,7 +136,7 @@ namespace JourneyPlanner_ClassLibrary
                 new DataColumn("Arriving Country", TypeString),
                 new DataColumn("Duration", TypeString),
                 new DataColumn("Wait Time From Prev", TypeString),
-                new DataColumn("Airline", TypeString),
+                new DataColumn("Company", TypeString),
                 new DataColumn("Cost", TypeDouble)
             }.ToArray());
             return subTable;
@@ -152,7 +152,7 @@ namespace JourneyPlanner_ClassLibrary
                 row[index++] = journey.Path;
                 row[index++] = id;
                 row[index++] = i + 1;
-                row[index++] = journey.Type;
+                row[index++] = journey.IsFlight();
                 row[index++] = GetShortDateTime(journey.Departing);
                 row[index++] = GetShortDateTime(journey.Arriving);
                 row[index++] = airportDict[journey.GetDepartingAirport()].City;
@@ -161,7 +161,7 @@ namespace JourneyPlanner_ClassLibrary
                 row[index++] = airportDict[journey.GetArrivingAirport()].Country;
                 row[index++] = GetShortTimeSpan(journey.Duration);
                 row[index++] = GetShortTimeSpan(i == 0 ? new TimeSpan() : (journey.Departing - sequentialCollection[i - 1].Arriving));
-                row[index++] = journey.Airline;
+                row[index++] = journey.Company;
                 row[index++] = journey.Cost;
                 subTable.Rows.Add(row);
             }

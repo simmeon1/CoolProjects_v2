@@ -93,15 +93,10 @@ namespace JourneyPlanner_ClassLibrary
             Journey previousJourney = JourneyCollection[0];
             for (int i = 1; i < JourneyCollection.GetCount(); i++)
             {
-                if ((JourneyCollection[i].Departing - previousJourney.Arriving).TotalMinutes < GetFreeMinutesNeededBeforeDeparture(JourneyCollection[i].Type)) return false;
+                if ((JourneyCollection[i].Departing - previousJourney.Arriving).TotalMinutes < (JourneyCollection[i].IsFlight() ? 120 : 30)) return false;
                 previousJourney = JourneyCollection[i];
             }
             return true;
-        }
-
-        private static double GetFreeMinutesNeededBeforeDeparture(JourneyType type)
-        {
-            return type == JourneyType.Flight ? 120 : 30;
         }
 
         public int GetCost()

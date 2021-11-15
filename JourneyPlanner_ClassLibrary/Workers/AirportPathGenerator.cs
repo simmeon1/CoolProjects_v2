@@ -10,25 +10,23 @@ namespace JourneyPlanner_ClassLibrary
     public class AirportPathGenerator
     {
         private Dictionary<string, HashSet<string>> AirportsAndDestinations { get; set; }
-        private Dictionary<string, HashSet<string>> AirportLocalLinks { get; set; }
         private LinkedList<string> CurrentPath { get; set; }
         private int MaxFlights { get; set; }
+        private int MaxLocalLinks { get; set; }
         private List<Path> Paths { get; set; }
         private HashSet<string> LocalLinksStrings { get; set; }
 
         public AirportPathGenerator(Dictionary<string, HashSet<string>> airportsAndDestinations, Dictionary<string, HashSet<string>> airportLocalLinks = null)
         {
             AirportsAndDestinations = airportsAndDestinations;
-            AirportLocalLinks = airportLocalLinks ?? new();
+            AddLocalLinksToAirportDestinations(airportLocalLinks);
         }
 
-        public List<Path> GeneratePaths(List<string> origins, List<string> targets, int maxFlights, bool onlyIncludeShortestPaths, bool includeLocalLinks = false)
+        public List<Path> GeneratePaths(List<string> origins, List<string> targets, int maxFlights, int maxLocalLinks, bool onlyIncludeShortestPaths)
         {
             Paths = new List<Path>();
             MaxFlights = maxFlights;
-            LocalLinksStrings = new();
-
-            if (includeLocalLinks) AddLocalLinksToAirportDestinations();
+            MaxLocalLinks = maxLocalLinks;
 
             foreach (string origin in origins)
             {
@@ -44,20 +42,30 @@ namespace JourneyPlanner_ClassLibrary
 
         private int GetCountOfFlights(Path p)
         {
-            int allCount = p.Count() - 1;
+            return GetCountOfJourneys(p) - GetCountOfLocalLinks(p);
+        }
+
+        private static int GetCountOfJourneys(Path p)
+        {
+            return p.Count() - 1;
+        }
+
+        private int GetCountOfLocalLinks(Path p)
+        {
             int localLinksCount = 0;
             foreach (string link in LocalLinksStrings)
             {
                 if (p.ToString().Contains(link)) localLinksCount++;
             }
-            return allCount - localLinksCount;
+            return localLinksCount;
         }
 
-        private void AddLocalLinksToAirportDestinations()
+        private void AddLocalLinksToAirportDestinations(Dictionary<string, HashSet<string>> airportLocalLinks)
         {
-            foreach (KeyValuePair<string, HashSet<string>> pair in AirportLocalLinks)
+            LocalLinksStrings = new();
+            foreach (KeyValuePair<string, HashSet<string>> pair in airportLocalLinks)
             {
-                foreach (string item in AirportLocalLinks[pair.Key])
+                foreach (string item in airportLocalLinks[pair.Key])
                 {
                     AirportsAndDestinations[pair.Key].Add(item);
                     LocalLinksStrings.Add($"{pair.Key}-{item}");
@@ -93,8 +101,15 @@ namespace JourneyPlanner_ClassLibrary
         private void UpdateCurrentPathAndScanItIfNeeded(string origin, string target)
         {
             CurrentPath.AddLast(origin);
-            if (!CurrentPathContainsRepeatedAirport() && origin.Equals(target)) Paths.Add(new Path(new List<string>(CurrentPath)));
-            if (GetCountOfFlights(new Path(CurrentPath.ToList())) < MaxFlights) ScanCurrentPath(origin, target);
+            Path path = new(CurrentPath.ToList());
+            int flightCount = GetCountOfFlights(path);
+            int localLinkCount = GetCountOfLocalLinks(path);
+            bool maxCountsNotPassed = flightCount <= MaxFlights && localLinkCount <= MaxLocalLinks;
+            if (maxCountsNotPassed)
+            {
+                if (!CurrentPathContainsRepeatedAirport() && origin.Equals(target)) Paths.Add(new Path(new List<string>(CurrentPath)));
+                ScanCurrentPath(origin, target);
+            }
             CurrentPath.RemoveLast();
         }
 

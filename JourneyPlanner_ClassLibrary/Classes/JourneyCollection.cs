@@ -50,12 +50,12 @@ namespace JourneyPlanner_ClassLibrary
 
         public int GetCountOfFlights()
         {
-            return Journeys.Where(x => x.Type == JourneyType.Flight).Count();
+            return Journeys.Where(x => x.IsFlight()).Count();
         }
 
         public int GetCountOfLocalLinks()
         {
-            return Journeys.Where(x => x.Type == JourneyType.Local).Count();
+            return Journeys.Where(x => !x.IsFlight()).Count();
         }
 
         public Journey GetFirst()
@@ -70,12 +70,17 @@ namespace JourneyPlanner_ClassLibrary
 
         public override string ToString()
         {
-            return $"{Journeys.Count} flights";
+            return $"{Journeys.Count} journeys";
         }
 
         public JourneyCollection GetJourneysThatContainPath(string path)
         {
             return new(Journeys.Where(j => j.Path.Equals(path)).ToList());
+        }
+
+        internal void RemoveJourneysThatMatchPathAndRetriever(string retrieverName, string path)
+        {
+            Journeys = Journeys.Where(j => !j.RetrievedWithWorker.Equals(retrieverName) && !j.Path.ToString().Equals(path)).ToList();
         }
     }
 }
