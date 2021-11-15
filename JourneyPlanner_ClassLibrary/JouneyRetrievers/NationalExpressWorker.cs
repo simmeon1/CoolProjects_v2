@@ -36,8 +36,8 @@ namespace JourneyPlanner_ClassLibrary
 
             C.NavigateToUrl("https://book.nationalexpress.com/coach/#/choose-journey");
 
-            ReadOnlyCollection<IWebElement> cookieButtons = await C.FindElementsAndWait(By.CssSelector(".fa-close"));
-            if (cookieButtons.Count == 2) await C.ClickAndWait(cookieButtons[1]);
+            ReadOnlyCollection<IWebElement> cookieButtons = C.Driver.FindElements(By.CssSelector(".fa-close"));
+            if (cookieButtons.Count == 2) cookieButtons[1].Click();
 
             foreach (DirectPath directPath in data.DirectPaths) PathsToSearch++;
             C.Log($"Starting search for {PathsToSearch} paths.");
@@ -74,6 +74,8 @@ namespace JourneyPlanner_ClassLibrary
         {
             List<Journey> results = new();
             HashSet<string> addedJourneys = new();
+            bool allEarlierFlightsRetrieved = false;
+            bool allFlightsRetrieved = false;
             while (true)
             {
                 await WaitUntilContinueButtonIsAvailable();
@@ -88,7 +90,6 @@ namespace JourneyPlanner_ClassLibrary
                     return new JourneyCollection(results);
                 }
 
-                bool allFlightsRetrieved = false;
                 foreach (IWebElement journeyGroup in journeyGroups)
                 {
                     string groupDateText = journeyGroup.FindElement(By.XPath("..")).FindElement(By.CssSelector("h5")).GetAttribute("innerText").Trim();
@@ -97,6 +98,11 @@ namespace JourneyPlanner_ClassLibrary
                     {
                         allFlightsRetrieved = true;
                         break;
+                    }
+                    else if (!allEarlierFlightsRetrieved && departing.CompareTo(date) == -1)
+                    {
+                        allEarlierFlightsRetrieved = true;
+                        continue;
                     }
 
                     string journeysText = journeyGroup.GetAttribute("innerText").Trim();
@@ -135,35 +141,39 @@ namespace JourneyPlanner_ClassLibrary
                         }
                     }
                 }
-
-                ReadOnlyCollection<IWebElement> expandButtons = C.Driver.FindElements(By.CssSelector(".nx-earlier-later-journey"));
-                foreach (IWebElement expandButton in expandButtons)
-                {
-                    string text = expandButton.GetAttribute("innerText");
-                    if (text.ToLower().Contains("later"))
-                    {
-                        await C.ClickAndWait(expandButton);
-                        break;
-                    }
-                }
                 if (allFlightsRetrieved) return new JourneyCollection(results);
+
+                PressEarlierOrLaterCoachesButton(allEarlierFlightsRetrieved);
             }
         }
 
-        private async Task WaitUntilContinueButtonIsAvailable()
+        private void PressEarlierOrLaterCoachesButton(bool allEarlierFlightsRetrieved)
         {
             while (true)
             {
                 try
                 {
-                    await C.FindElementAndWait(By.CssSelector("[title=Continue]"));
-                    break;
+                    ReadOnlyCollection<IWebElement> expandButtons = C.Driver.FindElements(By.CssSelector(".nx-earlier-later-journey"));
+                    foreach (IWebElement expandButton in expandButtons)
+                    {
+                        string text = expandButton.GetAttribute("innerText");
+                        if ((text.ToLower().Contains("later") && allEarlierFlightsRetrieved) || (text.ToLower().Contains("earlier") && !allEarlierFlightsRetrieved))
+                        {
+                            expandButton.Click();
+                            return;
+                        }
+                    }
                 }
-                catch (NoSuchElementException)
+                catch (Exception)
                 {
                     //try again
                 }
             }
+        }
+
+        private async Task WaitUntilContinueButtonIsAvailable()
+        {
+            while (C.Driver.FindElement(By.Id("loadingResultPage")).Displayed) { }
             await C.Delay(1000);
         }
 
@@ -180,53 +190,71 @@ namespace JourneyPlanner_ClassLibrary
 
         private async Task PopulateControls(string origin, string target, DateTime date)
         {
-            if (OriginInput != null)
-            {
-                ReadOnlyCollection<IWebElement> showControlButtons = await C.FindElementsAndWait(By.CssSelector("strong"));
-                foreach (IWebElement showControlButton in showControlButtons)
-                {
-                    if (showControlButton.GetAttribute("innerText").Contains("Change Journey"))
-                    {
-                        await C.ClickAndWait(showControlButton);
-                        break;
-                    }
-                }
-            }
-            await GetControls();
-            await InputOrigin(origin);
-            await InputTarget(target);
+            if (OriginInput != null) await PressShowJourneyOptions();
+            GetControls();
+            await InputLocation(origin, 0);
+            await InputLocation(target, 1);
             await PopulateDateAndHitDone(date);
         }
 
-        private async Task InputOrigin(string origin)
+        private async Task PressShowJourneyOptions()
         {
-            await C.ClickAndWait(OriginInput);
-            OriginInput.Clear();
-            OriginInput.SendKeys(JourneyRetrieverData.GetTranslation(origin));
-            await C.Delay(1000);
-            ReadOnlyCollection<IWebElement> popups = await C.FindElementsAndWait(By.CssSelector("app-station-results"));
-            IWebElement firstOption = await C.FindElementAndWait(popups[0], By.CssSelector("li"));
-            await C.ClickAndWait(firstOption);
+            while (true)
+            {
+                try
+                {
+                    ReadOnlyCollection<IWebElement> showControlButtons = C.Driver.FindElements(By.CssSelector("strong"));
+                    foreach (IWebElement showControlButton in showControlButtons)
+                    {
+                        if (showControlButton.GetAttribute("innerText").Contains("Change Journey"))
+                        {
+                            await C.ClickAndWait(showControlButton);
+                            return;
+                        }
+                        else if (showControlButton.GetAttribute("innerText").Contains("Hide Journey"))
+                        {
+                            return;
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    //try again
+                }
+            }
         }
 
-        private async Task InputTarget(string target)
+        private async Task InputLocation(string origin, int popupIndex)
         {
-            await C.ClickAndWait(DestinationInput);
-            DestinationInput.Clear();
-            DestinationInput.SendKeys(JourneyRetrieverData.GetTranslation(target));
+            IWebElement input = popupIndex == 0 ? OriginInput : DestinationInput;
+            input.Click();
+            input.Clear();
+            input.SendKeys(JourneyRetrieverData.GetTranslation(origin));
             await C.Delay(1000);
-            ReadOnlyCollection<IWebElement> popups = await C.FindElementsAndWait(By.CssSelector("app-station-results"));
-            IWebElement firstOption = await C.FindElementAndWait(popups[1], By.CssSelector("li"));
-            await C.ClickAndWait(firstOption);
+
+            while (true)
+            {
+                try
+                {
+                    ReadOnlyCollection<IWebElement> popups = C.Driver.FindElements(By.CssSelector("app-station-results"));
+                    IWebElement firstOption = popups[popupIndex].FindElement(By.CssSelector("li"));
+                    firstOption.Click();
+                    break;
+                }
+                catch (Exception)
+                {
+                    //try again
+                }
+            }
         }
 
-        private async Task GetControls()
+        private void GetControls()
         {
-            ReadOnlyCollection<IWebElement> webElements = await C.FindElementsAndWait(By.Id("nx-from-station"));
-            OriginInput = webElements[1];
-            webElements = await C.FindElementsAndWait(By.Id("nx-to-station"));
-            DestinationInput = webElements[1];
-            DateInput = await C.FindElementAndWait(By.CssSelector(".nx-date-input"));
+            ReadOnlyCollection<IWebElement> fromElements = C.Driver.FindElements(By.Id("nx-from-station"));
+            OriginInput = fromElements[1];
+            ReadOnlyCollection<IWebElement> toElements = C.Driver.FindElements(By.Id("nx-to-station"));
+            DestinationInput = toElements[1];
+            DateInput = C.Driver.FindElement(By.CssSelector(".nx-date-input"));
         }
 
         private async Task PopulateDateAndHitDone(DateTime date)
@@ -236,10 +264,10 @@ namespace JourneyPlanner_ClassLibrary
             bool dateIsInputIsLaterThanTarget = dateInInput.CompareTo(date) == 1;
             await C.ClickAndWait(DateInput);
 
-            IWebElement calendar = await C.FindElementAndWait(By.CssSelector("mat-calendar"));
-            IWebElement monthElement = await C.FindElementAndWait(calendar, By.CssSelector("calendar-header"));
+            IWebElement calendar = C.Driver.FindElement(By.CssSelector("mat-calendar"));
+            IWebElement monthElement = calendar.FindElement(By.CssSelector("calendar-header"));
 
-            ReadOnlyCollection<IWebElement> monthButtons = await C.FindElementsAndWait(calendar, By.CssSelector("button"));
+            ReadOnlyCollection<IWebElement> monthButtons = calendar.FindElements(By.CssSelector("button"));
             IWebElement changeMonthButton;
 
             string monthAndYearText = monthElement.GetAttribute("innerText").Trim();
@@ -249,12 +277,12 @@ namespace JourneyPlanner_ClassLibrary
             {
                 changeMonthButton = dateIsInputIsLaterThanTarget ? monthButtons[0] : monthButtons[1];
                 await C.ClickAndWait(changeMonthButton);
-                monthElement = await C.FindElementAndWait(calendar, By.CssSelector("calendar-header"));
+                monthElement = calendar.FindElement(By.CssSelector("calendar-header"));
                 monthAndYearText = monthElement.GetAttribute("innerText").Trim();
                 monthText = Regex.Match(monthAndYearText, @"^(\w+)").Groups[1].Value;
             }
 
-            ReadOnlyCollection<IWebElement> dates = await C.FindElementsAndWait(calendar, By.CssSelector(".mat-calendar-body-cell"));
+            ReadOnlyCollection<IWebElement> dates = calendar.FindElements(By.CssSelector(".mat-calendar-body-cell"));
             foreach (IWebElement dateElement in dates)
             {
                 string day = dateElement.GetAttribute("innerText").Trim();
@@ -267,17 +295,17 @@ namespace JourneyPlanner_ClassLibrary
 
             IWebElement dropdownTimeCondition = C.Driver.FindElement(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(1) > nx-time-condition > select"));
             await C.ClickAndWait(dropdownTimeCondition);
-            
+
             IWebElement firstOptionTimeCondition = C.Driver.FindElement(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(1) > nx-time-condition > select > option:nth-child(1)"));
             await C.ClickAndWait(firstOptionTimeCondition);
-            
+
             IWebElement dropdownTime = C.Driver.FindElement(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(2) > nx-time > select"));
             await C.ClickAndWait(dropdownTime);
-            
+
             IWebElement firstOptionTime = C.Driver.FindElement(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(2) > nx-time > select > option:nth-child(1)"));
             await C.ClickAndWait(firstOptionTime);
 
-            IWebElement submit = await C.FindElementAndWait(By.Id("nx-find-journey-button"));
+            IWebElement submit = C.Driver.FindElement(By.Id("nx-find-journey-button"));
             await C.ClickAndWait(submit);
         }
 

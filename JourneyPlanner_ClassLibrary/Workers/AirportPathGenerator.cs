@@ -37,7 +37,7 @@ namespace JourneyPlanner_ClassLibrary
                 }
             }
             List<Path> result = !onlyIncludeShortestPaths ? Paths : GetShortestPathsExcludingLocalLinks();
-            return result.OrderBy(p => GetCountOfFlights(p)).ThenBy(p => p.Count()).ThenBy(p => p.ToString()).ToList();
+            return result.OrderBy(p => GetCountOfJourneys(p)).ThenBy(p => p.Count()).ThenBy(p => p.ToString()).ToList();
         }
 
         private int GetCountOfFlights(Path p)
@@ -86,14 +86,14 @@ namespace JourneyPlanner_ClassLibrary
             Dictionary<string, int> shortPathAndMinCounts = new();
             foreach (KeyValuePair<string, List<Path>> pair in shortPathAndFullPaths)
             {
-                int minCount = pair.Value.Min(x => GetCountOfFlights(x));
+                int minCount = pair.Value.Min(x => GetCountOfJourneys(x));
                 shortPathAndMinCounts.Add(pair.Key, minCount);
             }
 
             List<Path> newPaths = new();
             foreach (KeyValuePair<string, int> pair in shortPathAndMinCounts)
             {
-                newPaths.AddRange(shortPathAndFullPaths[pair.Key].Where(x => GetCountOfFlights(x) == pair.Value));
+                newPaths.AddRange(shortPathAndFullPaths[pair.Key].Where(x => GetCountOfJourneys(x) == pair.Value));
             }
             return newPaths;
         }
