@@ -36,7 +36,7 @@ namespace JourneyPlanner_Console
             }
 
             Logger_Console logger = new();
-            RealWebDriverWait webDriverWait = new(driver);
+            RealWebDriverWaitProvider webDriverWait = new(driver);
             FlightConnectionsDotComWorker worker = new(logger, driver, webDriverWait);
             RealDelayer delayer = new();
 
@@ -46,7 +46,8 @@ namespace JourneyPlanner_Console
                 driver,
                 logger,
                 delayer,
-                parameters.DefaultDelay
+                parameters.DefaultDelay,
+                webDriverWait
             );
 
             FullRunner runner = new(

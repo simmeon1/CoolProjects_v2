@@ -14,7 +14,7 @@ namespace JourneyPlanner_Tests.UnitTests
     {
         Mock<IWebDriver> driverMock;
         Mock<ILogger> logger;
-        Mock<IWebDriverWait> webDriverWait;
+        Mock<IWebDriverWaitProvider> webDriverWait;
         FlightConnectionsDotComWorker worker;
         private Airport airport1;
         private Airport airport2;

@@ -13,13 +13,15 @@ namespace JourneyPlanner_ClassLibrary
         public ILogger Logger { get; set; }
         public IDelayer Delayer { get; set; }
         public int DefaultDelay { get; set; } = 500;
-        public JourneyRetrieverComponents(IJourneyRetrieverEventHandler journeyRetrieverEventHandler, IWebDriver driver, ILogger logger, IDelayer delayer, int defaultDelay)
+        public IWebDriverWaitProvider WebDriverWaitProvider { get; set; }
+        public JourneyRetrieverComponents(IJourneyRetrieverEventHandler journeyRetrieverEventHandler, IWebDriver driver, ILogger logger, IDelayer delayer, int defaultDelay, IWebDriverWaitProvider webDriverWaitProvider)
         {
             Driver = driver;
             Logger = logger;
             Delayer = delayer;
             DefaultDelay = defaultDelay;
             JourneyRetrieverEventHandler = journeyRetrieverEventHandler;
+            WebDriverWaitProvider = webDriverWaitProvider;
         }
 
         public void Log(string message)

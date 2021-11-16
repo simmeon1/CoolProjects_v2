@@ -14,7 +14,7 @@ namespace JourneyPlanner_Tests.UnitTests
     {
         Mock<IWebDriver> driverMock;
         Mock<ILogger> logger;
-        Mock<IWebDriverWait> webDriverWait;
+        Mock<IWebDriverWaitProvider> webDriverWait;
         FlightConnectionsDotComWorker worker;
         private Airport airport1;
         private Airport airport2;
@@ -73,7 +73,7 @@ namespace JourneyPlanner_Tests.UnitTests
             driverMock.Setup(x => x.FindElements(By.TagName("li"))).Returns(new ReadOnlyCollection<IWebElement>(airportListEntries));
             Mock<IAlert> alert = new();
             if (waitUntilThrowsException) alert.Setup(x => x.Accept()).Throws(new WebDriverTimeoutException());
-            webDriverWait.Setup(x => x.Until(It.IsAny<Func<IWebDriver, IAlert>>())).Returns(alert.Object);
+            webDriverWait.Setup(x => x.WaitUntilAlertIsPresent()).Returns(alert.Object);
 
             Mock<IWebElement> searchButton = new();
             searchButton.Setup(x => x.Text).Returns(agreeButtonContainsFakeText ? "Fake" : "AGREE");

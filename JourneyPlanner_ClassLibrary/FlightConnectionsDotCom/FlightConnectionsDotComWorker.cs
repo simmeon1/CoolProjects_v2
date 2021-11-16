@@ -10,9 +10,9 @@ namespace JourneyPlanner_ClassLibrary
     {
         public IWebDriver Driver { get; set; }
         public ILogger Logger { get; set; }
-        public IWebDriverWait WebDriverWait { get; set; }
+        public IWebDriverWaitProvider WebDriverWait { get; set; }
 
-        public FlightConnectionsDotComWorker(ILogger logger, IWebDriver driver, IWebDriverWait webDriverWait)
+        public FlightConnectionsDotComWorker(ILogger logger, IWebDriver driver, IWebDriverWaitProvider webDriverWait)
         {
             Driver = driver;
             Logger = logger;
@@ -26,7 +26,7 @@ namespace JourneyPlanner_ClassLibrary
 
             try
             {
-                IAlert result = WebDriverWait.Until(ExpectedConditions.AlertIsPresent());
+                IAlert result = WebDriverWait.WaitUntilAlertIsPresent();
                 result.Accept();
             }
             catch (WebDriverTimeoutException)

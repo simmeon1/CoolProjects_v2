@@ -129,7 +129,8 @@ namespace JourneyPlanner_Tests.UnitTests
                 driverMock.Object,
                 logger.Object,
                 new Mock<IDelayer>().Object,
-                500
+                500,
+                null
             );
             GoogleFlightsWorker chromeWorker = new(c);
             JourneyRetrieverData data = new(paths, null);

@@ -6,19 +6,25 @@ using System.Diagnostics;
 
 namespace JourneyPlanner_ClassLibrary
 {
-    public class RealWebDriverWait : IWebDriverWait
+    public class RealWebDriverWaitProvider : IWebDriverWaitProvider
     {
         private IWebDriver Driver { get; set; }
 
-        public RealWebDriverWait(IWebDriver driver)
+        public RealWebDriverWaitProvider(IWebDriver driver)
         {
             Driver = driver;
         }
 
-        public IAlert Until(Func<IWebDriver, IAlert> func)
+        public IAlert WaitUntilAlertIsPresent()
         {
             WebDriverWait wait = new(Driver, TimeSpan.FromMilliseconds(100));
             return wait.Until(ExpectedConditions.AlertIsPresent());
+        }
+
+        public TResult Until<TResult>(Func<IWebDriver, TResult> condition, int seconds = 10)
+        {
+            WebDriverWait wait = new(Driver, TimeSpan.FromSeconds(10));
+            return wait.Until(condition);
         }
     }
 }

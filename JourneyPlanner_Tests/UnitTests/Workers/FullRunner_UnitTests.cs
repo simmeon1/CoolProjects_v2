@@ -47,7 +47,8 @@ namespace JourneyPlanner_Tests.UnitTests
                 null,
                 new Mock<ILogger>().Object,
                 new Mock<IDelayer>().Object,
-                500
+                500,
+                null
             );
 
             Mock<IJourneyRetriever> retriever = new();
@@ -126,7 +127,8 @@ namespace JourneyPlanner_Tests.UnitTests
                 null,
                 new Mock<ILogger>().Object,
                 new Mock<IDelayer>().Object,
-                500
+                500,
+                null
             );
 
             Mock<IExcelPrinter> printerMock = new();

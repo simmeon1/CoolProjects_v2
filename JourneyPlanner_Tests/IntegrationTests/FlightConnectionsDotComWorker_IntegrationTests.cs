@@ -24,7 +24,7 @@ namespace JourneyPlanner_Tests.IntegrationTests
             chromeOptions.AddArgument("window-size=1280,800");
             chromeDriver = new(chromeOptions);
             logger = new();
-            worker = new(logger, chromeDriver, new RealWebDriverWait(chromeDriver));
+            worker = new(logger, chromeDriver, new RealWebDriverWaitProvider(chromeDriver));
         }
 
         [TestMethod]
