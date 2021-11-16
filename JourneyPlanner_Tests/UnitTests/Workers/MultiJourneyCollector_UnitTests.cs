@@ -31,13 +31,13 @@ namespace JourneyPlanner_Tests.UnitTests
             results.Progress[worker].Add("LTN-ABZ", false);
 
             Mock<IJourneyRetriever> journeyRetrieverMock = new();
-            journeyRetrieverMock.Setup(x => x.CollectJourneys(It.IsAny<JourneyRetrieverData>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<JourneyCollection>()).Result).Returns(journeys);
+            journeyRetrieverMock.Setup(x => x.CollectJourneys(It.IsAny<JourneyRetrieverData>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<JourneyCollection>())).Returns(journeys);
 
             Mock<IJourneyRetrieverInstanceCreator> instanceCreatorMock = new();
             instanceCreatorMock.Setup(x => x.CreateInstance(It.IsAny<string>(), It.IsAny<JourneyRetrieverComponents>())).Returns(journeyRetrieverMock.Object);
 
             MultiJourneyCollector c = new(instanceCreatorMock.Object);
-            JourneyRetrieverComponents components = new(new Mock<IJourneyRetrieverEventHandler>().Object, null, new Mock<ILogger>().Object, null, 500, null);
+            JourneyRetrieverComponents components = new(new Mock<IJourneyRetrieverEventHandler>().Object, null, new Mock<ILogger>().Object, null);
             await AssertThatTheOneJourneyIsReturned(c, components, retrieversAndData, results);
 
             instanceCreatorMock.Verify(x => x.CreateInstance($"JourneyPlanner_ClassLibrary.{worker}", components), Times.Once());
@@ -55,7 +55,7 @@ namespace JourneyPlanner_Tests.UnitTests
             retrieversAndData.Add("test", new(new List<DirectPath>() { new DirectPath("LTN", "ABZ") }, new()));
 
             Mock<IJourneyRetriever> journeyRetrieverMock = new();
-            journeyRetrieverMock.SetupSequence(x => x.CollectJourneys(It.IsAny<JourneyRetrieverData>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<JourneyCollection>()).Result)
+            journeyRetrieverMock.SetupSequence(x => x.CollectJourneys(It.IsAny<JourneyRetrieverData>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<JourneyCollection>()))
                 .Returns(journeys)
                 .Throws(new Exception());
 
@@ -63,7 +63,7 @@ namespace JourneyPlanner_Tests.UnitTests
             instanceCreatorMock.Setup(x => x.CreateInstance(It.IsAny<string>(), It.IsAny<JourneyRetrieverComponents>())).Returns(journeyRetrieverMock.Object);
 
             MultiJourneyCollector c = new(instanceCreatorMock.Object);
-            JourneyRetrieverComponents components = new(new Mock<IJourneyRetrieverEventHandler>().Object, null, new Mock<ILogger>().Object, null, 500, null);
+            JourneyRetrieverComponents components = new(new Mock<IJourneyRetrieverEventHandler>().Object, null, new Mock<ILogger>().Object, null);
 
             await AssertThatTheOneJourneyIsReturned(c, components, retrieversAndData);
             instanceCreatorMock.Verify(x => x.CreateInstance($"JourneyPlanner_ClassLibrary.{worker}", components), Times.Once());
@@ -81,7 +81,7 @@ namespace JourneyPlanner_Tests.UnitTests
             results.Progress[worker].Add("ABZ-LTN", true);
 
             MultiJourneyCollector c = new(null);
-            JourneyRetrieverComponents components = new(new Mock<IJourneyRetrieverEventHandler>().Object, null, new Mock<ILogger>().Object, null, 500, null);
+            JourneyRetrieverComponents components = new(new Mock<IJourneyRetrieverEventHandler>().Object, null, new Mock<ILogger>().Object, null);
             await AssertThatTheOneJourneyIsReturned(c, components, retrieversAndData, results);
         }
 
@@ -95,7 +95,7 @@ namespace JourneyPlanner_Tests.UnitTests
 
         private static async Task AssertThatTheOneJourneyIsReturned(MultiJourneyCollector c, JourneyRetrieverComponents components, Dictionary<string, JourneyRetrieverData> retrieversAndData, MultiJourneyCollectorResults results = null)
         {
-            MultiJourneyCollectorResults collectorResults = await c.GetJourneys(components, retrieversAndData, new(), new(), results);
+            MultiJourneyCollectorResults collectorResults = c.GetJourneys(components, retrieversAndData, new(), new(), results);
             JourneyCollection journeyCollection = collectorResults.JourneyCollection;
             Assert.IsTrue(journeyCollection.GetCount() == 1);
             Assert.IsTrue(journeyCollection[0].Cost == 20);

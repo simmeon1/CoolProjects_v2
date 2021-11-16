@@ -1,8 +1,7 @@
 ﻿using Common_ClassLibrary;
 using OpenQA.Selenium;
-using System;
+using SeleniumExtras.WaitHelpers;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 
 namespace JourneyPlanner_ClassLibrary
 {
@@ -11,15 +10,11 @@ namespace JourneyPlanner_ClassLibrary
         public IJourneyRetrieverEventHandler JourneyRetrieverEventHandler { get; set; }
         public IWebDriver Driver { get; set; }
         public ILogger Logger { get; set; }
-        public IDelayer Delayer { get; set; }
-        public int DefaultDelay { get; set; } = 500;
         public IWebDriverWaitProvider WebDriverWaitProvider { get; set; }
-        public JourneyRetrieverComponents(IJourneyRetrieverEventHandler journeyRetrieverEventHandler, IWebDriver driver, ILogger logger, IDelayer delayer, int defaultDelay, IWebDriverWaitProvider webDriverWaitProvider)
+        public JourneyRetrieverComponents(IJourneyRetrieverEventHandler journeyRetrieverEventHandler, IWebDriver driver, ILogger logger, IWebDriverWaitProvider webDriverWaitProvider)
         {
             Driver = driver;
             Logger = logger;
-            Delayer = delayer;
-            DefaultDelay = defaultDelay;
             JourneyRetrieverEventHandler = journeyRetrieverEventHandler;
             WebDriverWaitProvider = webDriverWaitProvider;
         }
@@ -29,49 +24,48 @@ namespace JourneyPlanner_ClassLibrary
             Logger.Log(message);
         }
 
-        public async Task Delay(int milliseconds)
-        {
-            await Delayer.Delay(milliseconds);
-        }
-
-        public async Task<ReadOnlyCollection<IWebElement>> FindElementsAndWait(IWebElement element, By by)
-        {
-            ReadOnlyCollection<IWebElement> result = element.FindElements(by);
-            await Delay(DefaultDelay);
-            return result;
-        }
-
-        public async Task<ReadOnlyCollection<IWebElement>> FindElementsAndWait(By by)
-        {
-            ReadOnlyCollection<IWebElement> result = Driver.FindElements(by);
-            await Delay(DefaultDelay);
-            return result;
-        }
-
         public void NavigateToUrl(string url)
         {
             INavigation navigation = Driver.Navigate();
             if (navigation != null) navigation.GoToUrl(url);
         }
 
-        public async Task<IWebElement> FindElementAndWait(By by)
+        public IWebElement FindElementWithAttribute(By by, string attribute = "innerText", string text = "", bool clickElement = true, ISearchContext container = null)
         {
-            IWebElement result = Driver.FindElement(by);
-            await Delay(DefaultDelay);
-            return result;
+            IWebElement button = WebDriverWaitProvider.Until(d =>
+            {
+                if (container == null) container = d;
+                while (true)
+                {
+                    try
+                    {
+                        ReadOnlyCollection<IWebElement> webElements = container.FindElements(by);
+                        foreach (IWebElement webElement in webElements)
+                        {
+                            string attr = webElement.GetAttribute(attribute);
+                            if (attr == null) attr = "";
+                            if (attr.Trim().Contains(text))
+                            {
+                                if (clickElement) WebDriverWaitProvider.Until(ExpectedConditions.ElementToBeClickable(webElement));
+                                return webElement;
+                            }
+                        }
+                        return null;
+                    }
+                    catch (StaleElementReferenceException)
+                    {
+                        //try again
+                    }
+                }
+            });
+            if (clickElement) button.Click();
+            return button;
         }
 
-        public async Task<IWebElement> FindElementAndWait(IWebElement element, By by)
+        public void ClickElementWhenClickable(IWebElement element)
         {
-            IWebElement result = element.FindElement(by);
-            await Delay(DefaultDelay);
-            return result;
-        }
-
-        public async Task ClickAndWait(IWebElement element)
-        {
+            WebDriverWaitProvider.Until(ExpectedConditions.ElementToBeClickable(element));
             element.Click();
-            await Delay(DefaultDelay);
         }
     }
 }

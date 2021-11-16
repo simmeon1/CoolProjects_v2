@@ -23,7 +23,7 @@ namespace JourneyPlanner_ClassLibrary
 
         public TResult Until<TResult>(Func<IWebDriver, TResult> condition, int seconds = 10)
         {
-            WebDriverWait wait = new(Driver, TimeSpan.FromSeconds(10));
+            WebDriverWait wait = new(Driver, TimeSpan.FromSeconds(seconds));
             return wait.Until(condition);
         }
     }

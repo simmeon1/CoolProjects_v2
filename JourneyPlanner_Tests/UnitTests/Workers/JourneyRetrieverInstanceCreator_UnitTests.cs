@@ -23,8 +23,6 @@ namespace JourneyPlanner_Tests.UnitTests
                 null,
                 null,
                 null,
-                null,
-                500,
                 null
             );
 

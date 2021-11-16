@@ -16,7 +16,7 @@ namespace JourneyPlanner_ClassLibrary
             InstanceCreator = instanceCreator;
         }
 
-        public async Task<MultiJourneyCollectorResults> GetJourneys(
+        public MultiJourneyCollectorResults GetJourneys(
             JourneyRetrieverComponents components,
             Dictionary<string, JourneyRetrieverData> retrieversAndData,
             DateTime dateFrom,
@@ -42,7 +42,7 @@ namespace JourneyPlanner_ClassLibrary
                 IJourneyRetriever retriever = InstanceCreator.CreateInstance(fullClassName, components);
                 try
                 {
-                    journeys = await retriever.CollectJourneys(retrieverData, dateFrom, dateTo, journeys);
+                    journeys = retriever.CollectJourneys(retrieverData, dateFrom, dateTo, journeys);
                 }
                 catch (Exception ex)
                 {

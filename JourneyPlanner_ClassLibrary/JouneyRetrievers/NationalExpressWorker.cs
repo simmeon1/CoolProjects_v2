@@ -26,7 +26,7 @@ namespace JourneyPlanner_ClassLibrary
             C = c;
         }
 
-        public async Task<JourneyCollection> CollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo, JourneyCollection existingJourneys)
+        public JourneyCollection CollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo, JourneyCollection existingJourneys)
         {
             CollectedJourneys = existingJourneys;
             JourneyRetrieverData = data;
@@ -37,7 +37,7 @@ namespace JourneyPlanner_ClassLibrary
 
             bool cookieButtonsExist = C.WebDriverWaitProvider.Until(d => d.FindElements(By.CssSelector(".fa-close")).Count == 2);
             ReadOnlyCollection<IWebElement> cookieButtons = C.Driver.FindElements(By.CssSelector(".fa-close"));
-            cookieButtons[1].Click();
+            C.ClickElementWhenClickable(cookieButtons[1]);
 
             foreach (DirectPath directPath in data.DirectPaths) PathsToSearch++;
             C.Log($"Starting search for {PathsToSearch} paths.");
@@ -153,7 +153,7 @@ namespace JourneyPlanner_ClassLibrary
 
                 ReadOnlyCollection<IWebElement> earlierLaterCoachesButtons = C.Driver.FindElements(By.CssSelector(".nx-earlier-later-journey"));
                 IWebElement buttonToClick = allEarlierFlightsRetrieved ? earlierLaterCoachesButtons[1] : earlierLaterCoachesButtons[0];
-                buttonToClick.Click();
+                C.ClickElementWhenClickable(buttonToClick);
             }
         }
 
@@ -179,14 +179,14 @@ namespace JourneyPlanner_ClassLibrary
         private void ClickChangeJourneyButton()
         {
             IWebElement changeJourneyButton = C.Driver.FindElement(By.Id("editMyJourney"));
-            changeJourneyButton.Click();
+            C.ClickElementWhenClickable(changeJourneyButton);
         }
 
         private void InputLocation(string origin, int popupIndex)
         {
             By selector = By.CssSelector(popupIndex == 0 ? "#nx-from-station input" : "#nx-to-station input");
             IWebElement input = C.WebDriverWaitProvider.Until(ExpectedConditions.ElementToBeClickable(selector));
-            input.Click();
+            C.ClickElementWhenClickable(input);
             input.Clear();
             input.SendKeys(JourneyRetrieverData.GetTranslation(origin));
             C.WebDriverWaitProvider.Until(d => d.FindElements(By.CssSelector("app-station-results")).Count == popupIndex + 1);
@@ -203,7 +203,7 @@ namespace JourneyPlanner_ClassLibrary
                     IWebElement dropdown = locationDropdowns[popupIndex];
                     if (!dropdown.Displayed) break;
                     IWebElement firstResult = C.WebDriverWaitProvider.Until(d => dropdown.FindElement(By.CssSelector("li")));
-                    firstResult.Click();
+                    C.ClickElementWhenClickable(firstResult);
                     if (!dropdown.Displayed) break;
                 }
                 catch (Exception ex)
@@ -219,7 +219,7 @@ namespace JourneyPlanner_ClassLibrary
             string dateInInputText = dateInput.GetAttribute("innerText");
             DateTime dateInInput = DateTime.ParseExact(dateInInputText, "dd/MM/yyyy", CultureInfo.CurrentCulture);
             bool dateIsInputIsLaterThanTarget = dateInInput.CompareTo(date) == 1;
-            dateInput.Click();
+            C.ClickElementWhenClickable(dateInput);
 
             IWebElement calendar = C.Driver.FindElement(By.CssSelector("mat-calendar"));
             IWebElement monthElement = calendar.FindElement(By.CssSelector("calendar-header"));
@@ -233,7 +233,7 @@ namespace JourneyPlanner_ClassLibrary
             while (!monthText.Equals(date.ToString("MMMM")))
             {
                 changeMonthButton = dateIsInputIsLaterThanTarget ? monthButtons[0] : monthButtons[1];
-                changeMonthButton.Click();
+                C.ClickElementWhenClickable(changeMonthButton);
                 monthElement = calendar.FindElement(By.CssSelector("calendar-header"));
                 monthAndYearText = monthElement.GetAttribute("innerText").Trim();
                 monthText = Regex.Match(monthAndYearText, @"^(\w+)").Groups[1].Value;
@@ -245,30 +245,34 @@ namespace JourneyPlanner_ClassLibrary
                 string day = dateElement.GetAttribute("innerText").Trim();
                 if (int.Parse(day) == date.Day)
                 {
-                    dateElement.Click();
+                    C.ClickElementWhenClickable(dateElement);
                     break;
                 }
             }
 
+            PickCalendarTimes();
+            ClickFindJourney();
+        }
+
+        private void PickCalendarTimes()
+        {
             IWebElement dropdownTimeCondition = C.Driver.FindElement(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(1) > nx-time-condition > select"));
-            dropdownTimeCondition.Click();
+            C.ClickElementWhenClickable(dropdownTimeCondition);
 
             IWebElement firstOptionTimeCondition = C.Driver.FindElement(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(1) > nx-time-condition > select > option:nth-child(1)"));
-            firstOptionTimeCondition.Click();
+            C.ClickElementWhenClickable(firstOptionTimeCondition);
 
             IWebElement dropdownTime = C.Driver.FindElement(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(2) > nx-time > select"));
-            dropdownTime.Click();
+            C.ClickElementWhenClickable(dropdownTime);
 
             IWebElement firstOptionTime = C.Driver.FindElement(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(2) > nx-time > select > option:nth-child(1)"));
-            firstOptionTime.Click();
-
-            ClickFindJourney();
+            C.ClickElementWhenClickable(firstOptionTime);
         }
 
         private void ClickFindJourney()
         {
             IWebElement submit = C.WebDriverWaitProvider.Until(ExpectedConditions.ElementToBeClickable(By.Id("nx-find-journey-button")));
-            submit.Click();
+            C.ClickElementWhenClickable(submit);
         }
 
         public string GetRetrieverName()

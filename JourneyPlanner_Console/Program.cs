@@ -38,15 +38,12 @@ namespace JourneyPlanner_Console
             Logger_Console logger = new();
             RealWebDriverWaitProvider webDriverWait = new(driver);
             FlightConnectionsDotComWorker worker = new(logger, driver, webDriverWait);
-            RealDelayer delayer = new();
 
             MultiJourneyCollector multiJourneyCollector = new(new JourneyRetrieverInstanceCreator());
             JourneyRetrieverComponents components = new(
                 multiJourneyCollector,
                 driver,
                 logger,
-                delayer,
-                parameters.DefaultDelay,
                 webDriverWait
             );
 
@@ -62,7 +59,7 @@ namespace JourneyPlanner_Console
             bool success = false;
             try
             {
-                await runner.DoRun(parameters);
+                runner.DoRun(parameters);
                 success = true;
             }
             catch (Exception ex)

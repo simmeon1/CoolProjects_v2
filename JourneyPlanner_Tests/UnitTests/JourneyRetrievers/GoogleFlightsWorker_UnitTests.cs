@@ -23,7 +23,7 @@ namespace JourneyPlanner_Tests.UnitTests
         }
 
         [TestMethod]
-        public async Task OpenFlights_ExpectedResultsWithStandartProcess()
+        public void OpenFlights_ExpectedResultsWithStandartProcess()
         {
             InitialiseMockObjects();
             DirectPath path1 = new("ABZ", "LTN");
@@ -128,14 +128,12 @@ namespace JourneyPlanner_Tests.UnitTests
                 eventHandler.Object,
                 driverMock.Object,
                 logger.Object,
-                new Mock<IDelayer>().Object,
-                500,
                 null
             );
             GoogleFlightsWorker chromeWorker = new(c);
             JourneyRetrieverData data = new(paths, null);
             JourneyCollection journeyCollection = new();
-            journeyCollection = await chromeWorker.CollectJourneys(data, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11), journeyCollection);
+            journeyCollection = chromeWorker.CollectJourneys(data, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11), journeyCollection);
 
             eventHandler.Verify(x => x.InformOfPathDataFullyCollected("ABZ-LTN"), Times.Once());
             eventHandler.Verify(x => x.InformOfPathDataFullyCollected("LTN-VAR"), Times.Once());
@@ -149,35 +147,5 @@ namespace JourneyPlanner_Tests.UnitTests
             Assert.IsTrue(journeyCollection[5].ToString().Equals(@"EDI-LTN - 10/10/2000 13:45:00 - 10/10/2000 14:45:00 - easyJet - 01:00:00 - 30 - Flight"));
             Assert.IsTrue(journeyCollection[6].ToString().Equals(@"EDI-LTN - 11/10/2000 20:00:00 - 11/10/2000 21:00:00 - easyJet - 01:00:00 - 40 - Flight"));
         }
-
-        //[TestMethod]
-        //public async Task ReturnsCurrentlyCollectedFlightsDueToExceptions()
-        //{
-        //    InitialiseMockObjects();
-        //    List<DirectPath> paths = new() { new DirectPath("ABZ", "LTN") };
-        //    Mock<IMultiJourneyCollector> collector = new();
-        //    JourneyRetrieverComponents c = new(
-        //        collector.Object,
-        //        driverMock.Object,
-        //        logger.Object,
-        //        new Mock<IDelayer>().Object,
-        //        500
-        //    );
-        //    GoogleFlightsWorker chromeWorker = new(c);
-        //    JourneyRetrieverData data = new(paths, null);
-        //    JourneyCollection flights = new();
-        //    flights = await chromeWorker.CollectJourneys(data, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11), flights);
-        //    logger.Verify(x => x.Log("An exception was thrown while collecting flights and the results have been returned early."), Times.Once());
-        //    Assert.IsTrue(flights.GetCount() == 0);
-        //}
-
-        //[TestMethod]
-        //public async Task test()
-        //{
-        //    MultiJourneyCollector x = new(null, new JourneyRetrieverInstanceCreator());
-        //    Dictionary<string, JourneyRetrieverData> retrieversAndData = new();
-        //    retrieversAndData.Add(nameof(GoogleFlightsWorker), new JourneyRetrieverData(new()));
-        //    await x.GetJourneys(retrieversAndData, new DateTime(), new DateTime());
-        //}
     }
 }
