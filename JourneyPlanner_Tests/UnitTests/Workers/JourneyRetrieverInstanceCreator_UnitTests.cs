@@ -24,7 +24,8 @@ namespace JourneyPlanner_Tests.UnitTests
                 null,
                 null,
                 null,
-                500
+                500,
+                null
             );
 
             JourneyRetrieverInstanceCreator instanceCreator = new();
