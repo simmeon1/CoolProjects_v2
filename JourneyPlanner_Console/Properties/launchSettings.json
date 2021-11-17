@@ -2,7 +2,7 @@
   "profiles": {
     "JourneyPlanner_Console": {
       "commandName": "Project",
-      "commandLineArgs": "parametersPath-C:\\D\\FlightConnectionsDotCom\\parameters-useLocalData.json"
+      "commandLineArgs": "parametersPath-C:\\D\\JourneyPlanner\\parameters-useLocalData.json"
     }
   }
 }

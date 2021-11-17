@@ -186,7 +186,7 @@ namespace JourneyPlanner_ClassLibrary
 
         private void PopulateControls(string origin, string target, DateTime date)
         {
-            if (CollectedJourneys.GetCount() > 0) ClickChangeJourneyButton();
+            if (PathsCollected > 0) ClickChangeJourneyButton();
             InputLocation(origin, 0);
             InputLocation(target, 1);
             PopulateDateAndHitDone(date);
