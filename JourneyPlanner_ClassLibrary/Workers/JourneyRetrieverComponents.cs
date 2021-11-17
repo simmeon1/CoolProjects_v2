@@ -46,11 +46,7 @@ namespace JourneyPlanner_ClassLibrary
                         {
                             string attr = webElement.GetAttribute(attribute);
                             if (attr == null) attr = "";
-                            if (attr.Trim().Contains(text))
-                            {
-                                if (clickElement) WebDriverWaitProvider.Until(ExpectedConditions.ElementToBeClickable(webElement));
-                                return webElement;
-                            }
+                            if (attr.Trim().ToLower().Contains(text.ToLower())) return webElement;
                         }
                         return null;
                     }
@@ -60,7 +56,7 @@ namespace JourneyPlanner_ClassLibrary
                     }
                 }
             });
-            if (clickElement) button.Click();
+            if (clickElement) ClickElementWhenClickable(button);
             return button;
         }
 

@@ -206,29 +206,7 @@ namespace JourneyPlanner_ClassLibrary
             input.Clear();
             string translatedLocation = JourneyRetrieverData.GetTranslation(location);
             input.SendKeys(translatedLocation);
-            C.WebDriverWaitProvider.Until(d => d.FindElements(By.CssSelector("app-station-results")).Count == popupIndex + 1);
-            AttemptToClickFirstOptionOfVisibleDropdown(translatedLocation, popupIndex);
-        }
-
-        private void AttemptToClickFirstOptionOfVisibleDropdown(string translatedLocation, int popupIndex)
-        {
-            while (true)
-            {
-                try
-                {
-                    ReadOnlyCollection<IWebElement> locationDropdowns = C.Driver.FindElements(By.CssSelector("app-station-results"));
-                    IWebElement dropdown = locationDropdowns[popupIndex];
-                    if (!dropdown.Displayed) break;
-                    IWebElement firstResult = C.WebDriverWaitProvider.Until(d => dropdown.FindElement(By.CssSelector("li")));
-                    if (!firstResult.GetAttribute("innerText").ToLower().Contains(translatedLocation.ToLower())) throw new Exception("Wait more.");
-                    C.ClickElementWhenClickable(firstResult);
-                    if (!dropdown.Displayed) break;
-                }
-                catch (Exception ex)
-                {
-                    //try again
-                }
-            }
+            C.FindElementWithAttribute(By.CssSelector("li"), text: translatedLocation);
         }
 
         private void PopulateDateAndHitDone(DateTime date)
