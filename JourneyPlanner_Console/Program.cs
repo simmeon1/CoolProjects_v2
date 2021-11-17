@@ -38,13 +38,15 @@ namespace JourneyPlanner_Console
             Logger_Console logger = new();
             RealWebDriverWaitProvider webDriverWait = new(driver);
             FlightConnectionsDotComWorker worker = new(logger, driver, webDriverWait);
+            RealHttpClient httpClient = new();
 
             MultiJourneyCollector multiJourneyCollector = new(new JourneyRetrieverInstanceCreator());
             JourneyRetrieverComponents components = new(
                 multiJourneyCollector,
                 driver,
                 logger,
-                webDriverWait
+                webDriverWait,
+                httpClient
             );
 
             FullRunner runner = new(
@@ -59,7 +61,7 @@ namespace JourneyPlanner_Console
             bool success = false;
             try
             {
-                runner.DoRun(parameters);
+                await runner.DoRun(parameters);
                 success = true;
             }
             catch (Exception ex)

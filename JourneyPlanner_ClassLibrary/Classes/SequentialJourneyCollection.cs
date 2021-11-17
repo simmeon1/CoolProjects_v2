@@ -99,9 +99,9 @@ namespace JourneyPlanner_ClassLibrary
             return true;
         }
 
-        public int GetCost()
+        public double GetCost()
         {
-            int cost = 0;
+            double cost = 0;
             if (IsNotValid()) return cost;
             for (int i = 0; i < JourneyCollection.GetCount(); i++) cost += JourneyCollection[i].Cost;
             return cost;

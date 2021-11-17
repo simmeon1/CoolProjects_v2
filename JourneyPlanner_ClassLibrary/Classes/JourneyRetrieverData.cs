@@ -37,5 +37,14 @@ namespace JourneyPlanner_ClassLibrary
         {
             return DirectPaths.Count;
         }
+
+        public string GetKeyFromTranslation(string translation)
+        {
+            foreach (KeyValuePair<string, string> pair in Translations)
+            {
+                if (pair.Value.Equals(translation)) return pair.Key;
+            }
+            return translation;
+        }
     }
 }

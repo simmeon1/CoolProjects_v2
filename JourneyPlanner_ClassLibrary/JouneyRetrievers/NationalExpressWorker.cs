@@ -26,24 +26,41 @@ namespace JourneyPlanner_ClassLibrary
             C = c;
         }
 
-        public JourneyCollection CollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo, JourneyCollection existingJourneys)
+        public Task<JourneyCollection> CollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo, JourneyCollection existingJourneys)
+        {
+            Initialise(data, existingJourneys);
+            SetUpSearch();
+            WriteInitialLog(data);
+            LoopThroughPathsAndCollectJourneys(data, dateFrom, dateTo);
+            return Task.FromResult(CollectedJourneys);
+        }
+
+        private void WriteInitialLog(JourneyRetrieverData data)
+        {
+            foreach (DirectPath directPath in data.DirectPaths) PathsToSearch++;
+            C.Log($"Starting search for {PathsToSearch} paths.");
+        }
+
+        private void Initialise(JourneyRetrieverData data, JourneyCollection existingJourneys)
         {
             CollectedJourneys = existingJourneys;
             JourneyRetrieverData = data;
             PathsToSearch = 0;
             PathsCollected = 0;
+        }
 
+        private void SetUpSearch()
+        {
             C.NavigateToUrl("https://book.nationalexpress.com/coach/#/choose-journey");
 
             bool cookieButtonsExist = C.WebDriverWaitProvider.Until(d => d.FindElements(By.CssSelector(".fa-close")).Count == 2);
             ReadOnlyCollection<IWebElement> cookieButtons = C.Driver.FindElements(By.CssSelector(".fa-close"));
             C.ClickElementWhenClickable(cookieButtons[1]);
+        }
 
-            foreach (DirectPath directPath in data.DirectPaths) PathsToSearch++;
-            C.Log($"Starting search for {PathsToSearch} paths.");
-
+        private void LoopThroughPathsAndCollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo)
+        {
             foreach (DirectPath directPath in data.DirectPaths) GetPathJourneys(directPath, dateFrom, dateTo);
-            return CollectedJourneys;
         }
 
         private void GetPathJourneys(DirectPath directPath, DateTime dateFrom, DateTime dateTo)
@@ -89,7 +106,6 @@ namespace JourneyPlanner_ClassLibrary
                         return new JourneyCollection(results.OrderBy(j => j.ToString()).ToList());
                     }
 
-                    ClickChangeJourneyButton();
                     ClickFindJourney();
                     retryCounter++;
                     continue;
@@ -141,7 +157,7 @@ namespace JourneyPlanner_ClassLibrary
                         if (costText == null) break;
 
                         int cost = Convert.ToInt32(double.Parse(costText));
-                        Journey journey = new(updatedDeparting, arriving, "National Express", duration, $"{Origin}-{Destination}", Convert.ToInt32(double.Parse(costText)), GetRetrieverName());
+                        Journey journey = new(updatedDeparting, arriving, "National Express", duration, $"{Origin}-{Destination}", double.Parse(costText), GetRetrieverName());
                         if (!addedJourneys.Contains(journey.ToString()))
                         {
                             results.Add(journey);
@@ -182,18 +198,19 @@ namespace JourneyPlanner_ClassLibrary
             C.ClickElementWhenClickable(changeJourneyButton);
         }
 
-        private void InputLocation(string origin, int popupIndex)
+        private void InputLocation(string location, int popupIndex)
         {
             By selector = By.CssSelector(popupIndex == 0 ? "#nx-from-station input" : "#nx-to-station input");
             IWebElement input = C.WebDriverWaitProvider.Until(ExpectedConditions.ElementToBeClickable(selector));
             C.ClickElementWhenClickable(input);
             input.Clear();
-            input.SendKeys(JourneyRetrieverData.GetTranslation(origin));
+            string translatedLocation = JourneyRetrieverData.GetTranslation(location);
+            input.SendKeys(translatedLocation);
             C.WebDriverWaitProvider.Until(d => d.FindElements(By.CssSelector("app-station-results")).Count == popupIndex + 1);
-            AttemptToClickFirstOptionOfVisibleDropdown(popupIndex);
+            AttemptToClickFirstOptionOfVisibleDropdown(translatedLocation, popupIndex);
         }
 
-        private void AttemptToClickFirstOptionOfVisibleDropdown(int popupIndex)
+        private void AttemptToClickFirstOptionOfVisibleDropdown(string translatedLocation, int popupIndex)
         {
             while (true)
             {
@@ -203,6 +220,7 @@ namespace JourneyPlanner_ClassLibrary
                     IWebElement dropdown = locationDropdowns[popupIndex];
                     if (!dropdown.Displayed) break;
                     IWebElement firstResult = C.WebDriverWaitProvider.Until(d => dropdown.FindElement(By.CssSelector("li")));
+                    if (!firstResult.GetAttribute("innerText").ToLower().Contains(translatedLocation.ToLower())) throw new Exception("Wait more.");
                     C.ClickElementWhenClickable(firstResult);
                     if (!dropdown.Displayed) break;
                 }

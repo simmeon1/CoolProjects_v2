@@ -15,7 +15,7 @@ namespace JourneyPlanner_Tests.UnitTests
     public class FullRunner_UnitTests
     {
         [TestMethod]
-        public async Task RunIsSuccesful_NoFilesProvided()
+        public async Task RunIsSuccesful_NoFilesProvidedAsync()
         {
             Parameters parameters = new();
             parameters.Origins = new() { "LTN" };
@@ -40,17 +40,18 @@ namespace JourneyPlanner_Tests.UnitTests
 
             Mock<IMultiJourneyCollector> collector = new();
             collector.Setup(x =>
-                x.GetJourneys(It.IsAny<JourneyRetrieverComponents>(), It.IsAny<Dictionary<string, JourneyRetrieverData>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<MultiJourneyCollectorResults>()))
+                x.GetJourneys(It.IsAny<JourneyRetrieverComponents>(), It.IsAny<Dictionary<string, JourneyRetrieverData>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<MultiJourneyCollectorResults>()).Result)
                 .Returns(new MultiJourneyCollectorResults(new(), new()));
             JourneyRetrieverComponents c = new(
                 new Mock<IJourneyRetrieverEventHandler>().Object,
                 null,
                 new Mock<ILogger>().Object,
+                null,
                 null
             );
 
             Mock<IJourneyRetriever> retriever = new();
-            retriever.Setup(x => x.CollectJourneys(It.IsAny<JourneyRetrieverData>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<JourneyCollection>())).Returns(new JourneyCollection());
+            retriever.Setup(x => x.CollectJourneys(It.IsAny<JourneyRetrieverData>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<JourneyCollection>()).Result).Returns(new JourneyCollection());
 
             Mock<IJourneyRetrieverInstanceCreator> creator = new();
             creator.Setup(x => x.CreateInstance(It.IsAny<string>(), c)).Returns(retriever.Object);
@@ -67,7 +68,7 @@ namespace JourneyPlanner_Tests.UnitTests
                 populatorMock.Object,
                 collector.Object
             );
-            runner.DoRun(parameters);
+            await runner.DoRun(parameters);
             const string directoryName = @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21";
             fileIOMock.Verify(x => x.DirectoryExists(directoryName), Times.Once());
             fileIOMock.Verify(x => x.CreateDirectory(directoryName), Times.Once());
@@ -94,7 +95,7 @@ namespace JourneyPlanner_Tests.UnitTests
         }
 
         [TestMethod]
-        public async Task RunIsSuccesful_FilesProvided()
+        public async Task RunIsSuccesful_FilesProvidedAsync()
         {
             Parameters parameters = new();
             parameters.Origins = new() { "LTN" };
@@ -124,6 +125,7 @@ namespace JourneyPlanner_Tests.UnitTests
                 new Mock<IJourneyRetrieverEventHandler>().Object,
                 null,
                 new Mock<ILogger>().Object,
+                null,
                 null
             );
 
@@ -133,7 +135,7 @@ namespace JourneyPlanner_Tests.UnitTests
 
             Mock<IMultiJourneyCollector> journeyCollectorMock = new();
             journeyCollectorMock.Setup(x =>
-                x.GetJourneys(It.IsAny<JourneyRetrieverComponents>(), It.IsAny<Dictionary<string, JourneyRetrieverData>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<MultiJourneyCollectorResults>()))
+                x.GetJourneys(It.IsAny<JourneyRetrieverComponents>(), It.IsAny<Dictionary<string, JourneyRetrieverData>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<MultiJourneyCollectorResults>()).Result)
                 .Returns(new MultiJourneyCollectorResults(new(), new()));
 
             FullRunner runner = new(
@@ -145,7 +147,7 @@ namespace JourneyPlanner_Tests.UnitTests
                 airportCollectorMock.Object,
                 airportPopulatorMock.Object,
                 journeyCollectorMock.Object);
-            runner.DoRun(parameters);
+            await runner.DoRun(parameters);
             const string directoryName = @"C:\D\0001-01-01--00-00-00_LTN - VAR - 2020-05-20 - 2021-06-21";
             fileIOMock.Verify(x => x.DirectoryExists(directoryName), Times.Once());
             fileIOMock.Verify(x => x.CreateDirectory(directoryName), Times.Once());

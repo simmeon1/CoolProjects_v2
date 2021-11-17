@@ -6,6 +6,6 @@ namespace JourneyPlanner_ClassLibrary
 {
     public interface IMultiJourneyCollector
     {
-        MultiJourneyCollectorResults GetJourneys(JourneyRetrieverComponents components, Dictionary<string, JourneyRetrieverData> results, DateTime dateFrom, DateTime dateTo, MultiJourneyCollectorResults existingResults = null);
+        Task<MultiJourneyCollectorResults> GetJourneys(JourneyRetrieverComponents components, Dictionary<string, JourneyRetrieverData> results, DateTime dateFrom, DateTime dateTo, MultiJourneyCollectorResults existingResults = null);
     }
 }

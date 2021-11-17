@@ -11,9 +11,9 @@ namespace JourneyPlanner_ClassLibrary
         public string Company { get; set; }
         public TimeSpan Duration { get; set; }
         public string Path { get; set; }
-        public int Cost { get; set; }
+        public double Cost { get; set; }
         public string RetrievedWithWorker { get; set; }
-        public Journey(DateTime departing, DateTime arriving, string company, TimeSpan duration, string path, int cost, string retrievedWithWorker = GoogleFlightsWorkerName)
+        public Journey(DateTime departing, DateTime arriving, string company, TimeSpan duration, string path, double cost, string retrievedWithWorker = GoogleFlightsWorkerName)
         {
             Departing = departing;
             Arriving = arriving;

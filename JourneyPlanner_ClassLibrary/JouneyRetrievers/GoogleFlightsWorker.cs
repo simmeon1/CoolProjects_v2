@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace JourneyPlanner_ClassLibrary
 {
@@ -28,7 +29,22 @@ namespace JourneyPlanner_ClassLibrary
             C = c;
         }
 
-        public JourneyCollection CollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo, JourneyCollection existingJourneys)
+        public Task<JourneyCollection> CollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo, JourneyCollection existingJourneys)
+        {
+            Initialise(data, existingJourneys);
+            SetUpSearch();
+            WriteInitialLog(data);
+            LoopThroughPathsAndCollectJourneys(data, dateFrom, dateTo);
+            return Task.FromResult(CollectedJourneys);
+        }
+
+        private void WriteInitialLog(JourneyRetrieverData data)
+        {
+            foreach (DirectPath directPath in data.DirectPaths) PathsToSearch++;
+            Log($"Starting search for {PathsToSearch} paths.");
+        }
+
+        private void Initialise(JourneyRetrieverData data, JourneyCollection existingJourneys)
         {
             CollectedJourneys = existingJourneys;
             JourneyRetrieverData = data;
@@ -36,21 +52,29 @@ namespace JourneyPlanner_ClassLibrary
             PathsCollected = 0;
             LastTypedOrigin = "";
             StopsSet = false;
+        }
 
+        private void SetUpSearch()
+        {
             C.NavigateToUrl("https://www.google.com/travel/flights");
-
+            try
+            {
+                C.FindElementWithAttribute(By.CssSelector("button"), text: "I agree");
+            }
+            catch (Exception)
+            {
+                //Doesn't show
+            }
             SetToOneWayTrip();
+        }
 
-            foreach (DirectPath directPath in data.DirectPaths) PathsToSearch++;
-            Log($"Starting search for {PathsToSearch} paths.");
-
+        private void LoopThroughPathsAndCollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo)
+        {
             foreach (DirectPath directPath in data.DirectPaths) GetPathJourneys(directPath, dateFrom, dateTo);
-            return CollectedJourneys;
         }
 
         private void SetToOneWayTrip()
         {
-            C.FindElementWithAttribute(By.CssSelector("button"), text: "I agree");
             C.FindElementWithAttribute(By.CssSelector("span"), text: "Round trip");
             C.FindElementWithAttribute(By.CssSelector("li"), text: "One way");
         }
@@ -174,7 +198,7 @@ namespace JourneyPlanner_ClassLibrary
             Match pathMatch = Regex.Match(flightText[5].Trim(), @"(\w+)\W+(\w+)");
             string pathText = $"{pathMatch.Groups[1].Value}-{pathMatch.Groups[2].Value}";
             string costText = Regex.Replace(flightText[flightText.Length - 1], "\\D", "").Trim();
-            int.TryParse(costText, out int cost);
+            double.TryParse(costText, out double cost);
             Journey item = new(
                                     DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {departingText}"),
                                     DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {arrivingText}").AddDays(arrivesNextDay ? 1 : 0),

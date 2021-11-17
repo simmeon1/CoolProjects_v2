@@ -80,7 +80,13 @@ namespace JourneyPlanner_ClassLibrary
 
         internal void RemoveJourneysThatMatchPathAndRetriever(string retrieverName, string path)
         {
-            Journeys = Journeys.Where(j => !j.RetrievedWithWorker.Equals(retrieverName) && !j.Path.ToString().Equals(path)).ToList();
+            List<Journey> newList = new();
+            foreach (Journey journey in Journeys)
+            {
+                if (journey.RetrievedWithWorker.Equals(retrieverName) && journey.Path.ToString().Equals(path)) continue;
+                newList.Add(journey);
+            }
+            Journeys = newList;
         }
     }
 }

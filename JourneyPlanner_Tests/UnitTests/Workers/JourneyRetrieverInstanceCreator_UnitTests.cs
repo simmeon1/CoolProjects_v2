@@ -23,6 +23,7 @@ namespace JourneyPlanner_Tests.UnitTests
                 null,
                 null,
                 null,
+                null,
                 null
             );
 
@@ -32,6 +33,7 @@ namespace JourneyPlanner_Tests.UnitTests
             Assert.IsTrue(instances.Count == 2);
             Assert.IsTrue(instances.Any(i => i.GetType().Name.Equals(nameof(GoogleFlightsWorker))));
             Assert.IsTrue(instances.Any(i => i.GetType().Name.Equals(nameof(NationalExpressWorker))));
+            Assert.IsTrue(instances.Any(i => i.GetType().Name.Equals(nameof(MegaBusWorker))));
         }
     }
 }

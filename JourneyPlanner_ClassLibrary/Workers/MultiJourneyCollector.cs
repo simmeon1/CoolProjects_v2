@@ -16,7 +16,7 @@ namespace JourneyPlanner_ClassLibrary
             InstanceCreator = instanceCreator;
         }
 
-        public MultiJourneyCollectorResults GetJourneys(
+        public async Task<MultiJourneyCollectorResults> GetJourneys(
             JourneyRetrieverComponents components,
             Dictionary<string, JourneyRetrieverData> retrieversAndData,
             DateTime dateFrom,
@@ -42,7 +42,7 @@ namespace JourneyPlanner_ClassLibrary
                 IJourneyRetriever retriever = InstanceCreator.CreateInstance(fullClassName, components);
                 try
                 {
-                    journeys = retriever.CollectJourneys(retrieverData, dateFrom, dateTo, journeys);
+                    journeys = await retriever.CollectJourneys(retrieverData, dateFrom, dateTo, journeys);
                 }
                 catch (Exception ex)
                 {
@@ -54,7 +54,7 @@ namespace JourneyPlanner_ClassLibrary
             return new MultiJourneyCollectorResults(Progress, journeys);
         }
 
-        private void UpdateJourneysAndDictWithDataFromExistingProgress(JourneyCollection journeys, Dictionary<string, Dictionary<string, bool>> newProgress, Dictionary<string, Dictionary<string, bool>> existingProgress)
+        private static void UpdateJourneysAndDictWithDataFromExistingProgress(JourneyCollection journeys, Dictionary<string, Dictionary<string, bool>> newProgress, Dictionary<string, Dictionary<string, bool>> existingProgress)
         {
             RemoveJourneysMarkedAsNotRetrieved(journeys, existingProgress);
             foreach (KeyValuePair<string, Dictionary<string, bool>> workersAndPathData in newProgress)
@@ -71,7 +71,7 @@ namespace JourneyPlanner_ClassLibrary
             }
         }
 
-        private void RemoveJourneysMarkedAsNotRetrieved(JourneyCollection journeys, Dictionary<string, Dictionary<string, bool>> existingProgress)
+        private static void RemoveJourneysMarkedAsNotRetrieved(JourneyCollection journeys, Dictionary<string, Dictionary<string, bool>> existingProgress)
         {
             foreach (KeyValuePair<string, Dictionary<string, bool>> data in existingProgress)
             {

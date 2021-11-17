@@ -38,7 +38,7 @@ namespace JourneyPlanner_ClassLibrary
             MultiJourneyCollector = multiJourneyCollector;
         }
 
-        public void DoRun(Parameters paramss)
+        public async Task DoRun(Parameters paramss)
         {
             Parameters = paramss;
 
@@ -114,7 +114,7 @@ namespace JourneyPlanner_ClassLibrary
                 existingResults = FileIO.ReadAllText(Parameters.ProgressFile).DeserializeObject<MultiJourneyCollectorResults>();
             }
 
-            MultiJourneyCollectorResults journeyCollectorResults = MultiJourneyCollector.GetJourneys(Components, workersAndData, Parameters.DateFrom, Parameters.DateTo, existingResults);
+            MultiJourneyCollectorResults journeyCollectorResults = await MultiJourneyCollector.GetJourneys(Components, workersAndData, Parameters.DateFrom, Parameters.DateTo, existingResults);
             FileIO.WriteAllText($"{runResultsPath}\\{runId}_journeyCollectorResults.json", journeyCollectorResults.SerializeObject(Formatting.Indented));
             PrintPathsAndJourneysAndFinish(airportsList, journeyCollectorResults, runId, runResultsPath, paths);
             return;

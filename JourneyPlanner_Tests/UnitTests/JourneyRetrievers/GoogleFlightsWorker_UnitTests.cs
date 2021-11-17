@@ -23,7 +23,7 @@ namespace JourneyPlanner_Tests.UnitTests
         }
 
         [TestMethod]
-        public void OpenFlights_ExpectedResultsWithStandartProcess()
+        public async Task OpenFlights_ExpectedResultsWithStandartProcessAsync()
         {
             InitialiseMockObjects();
             DirectPath path1 = new("ABZ", "LTN");
@@ -128,12 +128,13 @@ namespace JourneyPlanner_Tests.UnitTests
                 eventHandler.Object,
                 driverMock.Object,
                 logger.Object,
+                null,
                 null
             );
             GoogleFlightsWorker chromeWorker = new(c);
             JourneyRetrieverData data = new(paths, null);
             JourneyCollection journeyCollection = new();
-            journeyCollection = chromeWorker.CollectJourneys(data, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11), journeyCollection);
+            journeyCollection = await chromeWorker.CollectJourneys(data, new DateTime(2000, 10, 10), new DateTime(2000, 10, 11), journeyCollection);
 
             eventHandler.Verify(x => x.InformOfPathDataFullyCollected("ABZ-LTN"), Times.Once());
             eventHandler.Verify(x => x.InformOfPathDataFullyCollected("LTN-VAR"), Times.Once());

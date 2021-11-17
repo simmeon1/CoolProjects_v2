@@ -11,12 +11,14 @@ namespace JourneyPlanner_ClassLibrary
         public IWebDriver Driver { get; set; }
         public ILogger Logger { get; set; }
         public IWebDriverWaitProvider WebDriverWaitProvider { get; set; }
-        public JourneyRetrieverComponents(IJourneyRetrieverEventHandler journeyRetrieverEventHandler, IWebDriver driver, ILogger logger, IWebDriverWaitProvider webDriverWaitProvider)
+        public IHttpClient HttpClient { get; set; }
+        public JourneyRetrieverComponents(IJourneyRetrieverEventHandler journeyRetrieverEventHandler, IWebDriver driver, ILogger logger, IWebDriverWaitProvider webDriverWaitProvider, IHttpClient httpClient)
         {
             Driver = driver;
             Logger = logger;
             JourneyRetrieverEventHandler = journeyRetrieverEventHandler;
             WebDriverWaitProvider = webDriverWaitProvider;
+            HttpClient = httpClient;
         }
 
         public void Log(string message)
@@ -64,8 +66,19 @@ namespace JourneyPlanner_ClassLibrary
 
         public void ClickElementWhenClickable(IWebElement element)
         {
-            WebDriverWaitProvider.Until(ExpectedConditions.ElementToBeClickable(element));
-            element.Click();
+            while (true)
+            {
+                try
+                {
+                    WebDriverWaitProvider.Until(ExpectedConditions.ElementToBeClickable(element));
+                    element.Click();
+                    return;
+                }
+                catch (ElementClickInterceptedException)
+                {
+                    //try again
+                }
+            }
         }
     }
 }
