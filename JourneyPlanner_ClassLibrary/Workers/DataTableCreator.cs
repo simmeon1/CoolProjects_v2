@@ -21,7 +21,7 @@ namespace JourneyPlanner_ClassLibrary
             TypeBool = Type.GetType("System.Boolean");
         }
 
-        public List<DataTable> GetTables(List<Airport> airportList, List<SequentialJourneyCollection> sequentialCollections, bool skipUndoableJourneys, bool skipNotSameDayFinishJourneys, int noLongerThan)
+        public List<DataTable> GetTables(List<Airport> airportList, List<SequentialJourneyCollection> sequentialCollections, bool skipUndoableJourneys, bool skipNotSameDayFinishJourneys)
         {
             Dictionary<string, Airport> airportDict = new();
             foreach (Airport airport in airportList)
@@ -29,15 +29,10 @@ namespace JourneyPlanner_ClassLibrary
                 if (!airportDict.ContainsKey(airport.Code)) airportDict.Add(airport.Code, airport);
             }
 
-            List<SequentialJourneyCollection> reducedList = sequentialCollections
-                                                                    .Where(c => !skipUndoableJourneys || c.SequenceIsDoable())
-                                                                    .Where(c => !skipNotSameDayFinishJourneys || c.StartsAndEndsOnSameDay())
-                                                                    .Where(c => c.GetLength().TotalHours <= noLongerThan).ToList();
+            double avgLength = sequentialCollections.Count == 0 ? 0 : sequentialCollections.Average(x => x.GetLength().TotalMinutes);
+            double avgCost = sequentialCollections.Count == 0 ? 0 : sequentialCollections.Average(x => x.GetCost());
 
-            double avgLength = reducedList.Count == 0 ? 0 : reducedList.Average(x => x.GetLength().TotalMinutes);
-            double avgCost = reducedList.Count == 0 ? 0 : reducedList.Average(x => x.GetCost());
-
-            List<SequentialJourneyCollection> reducedAndOrderedList = reducedList
+            List<SequentialJourneyCollection> reducedAndOrderedList = sequentialCollections
                                                                     .OrderByDescending(c => c.SequenceIsDoable())
                                                                     .ThenByDescending(c => c.StartsAndEndsOnSameDay())
                                                                     .ThenBy(c => c.GetCountOfFlights())

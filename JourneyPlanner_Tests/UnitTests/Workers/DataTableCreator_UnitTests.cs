@@ -56,7 +56,7 @@ namespace JourneyPlanner_Tests.UnitTests
         [TestMethod]
         public void CorrectTables_AllColumns()
         {
-            List<DataTable> tables = creator.GetTables(airportList, flights, false, false, 100);
+            List<DataTable> tables = creator.GetTables(airportList, flights, false, false);
             DataTable mainTable = tables[0];
             DataTable subTable = tables[1];
             int index = 0;
@@ -117,7 +117,7 @@ namespace JourneyPlanner_Tests.UnitTests
         [TestMethod]
         public void CorrectTables_SomeColumns()
         {
-            List<DataTable> tables = creator.GetTables(airportList, flights, true, true, 100);
+            List<DataTable> tables = creator.GetTables(airportList, flights, true, true);
             DataTable mainTable = tables[0];
             DataTable subTable = tables[1];
             int index = 0;
@@ -140,9 +140,9 @@ namespace JourneyPlanner_Tests.UnitTests
         [TestMethod]
         public void CorrectTables_FlightTooLong()
         {
-            Assert.IsTrue(creator.GetTables(airportList, flights, true, true, 5)[0].Rows.Count == 0);
-            Assert.IsTrue(creator.GetTables(airportList, flights, true, true, 6)[0].Rows.Count == 1);
-            Assert.IsTrue(creator.GetTables(airportList, flights, true, true, 7)[0].Rows.Count == 1);
+            Assert.IsTrue(creator.GetTables(airportList, flights, true, true)[0].Rows.Count == 0);
+            Assert.IsTrue(creator.GetTables(airportList, flights, true, true)[0].Rows.Count == 1);
+            Assert.IsTrue(creator.GetTables(airportList, flights, true, true)[0].Rows.Count == 1);
         }
 
         [TestMethod]
@@ -162,7 +162,7 @@ namespace JourneyPlanner_Tests.UnitTests
             DataTableCreator creator = new();
             SequentialJourneyCollection correctSeq = new(new JourneyCollection(new List<Journey>() { flight1 }));
             List<SequentialJourneyCollection> flights = new() { correctSeq };
-            List<DataTable> tables = creator.GetTables(airportList, flights, true, true, 100);
+            List<DataTable> tables = creator.GetTables(airportList, flights, true, true);
             DataTable mainTable = tables[0];
             Assert.IsTrue((int)mainTable.Rows[0].ItemArray[7] == 1);
         }

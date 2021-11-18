@@ -1,5 +1,6 @@
 ﻿using Common_ClassLibrary;
 using OpenQA.Selenium;
+using SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,12 +16,6 @@ namespace JourneyPlanner_ClassLibrary
         private int PathsToSearch { get; set; }
         private int PathsCollected { get; set; }
         private JourneyCollection CollectedJourneys { get; set; }
-        private IWebElement OriginInput1 { get; set; }
-        private IWebElement OriginInput2 { get; set; }
-        private IWebElement DestinationInput1 { get; set; }
-        private IWebElement DestinationInput2 { get; set; }
-        private IWebElement DateInput1 { get; set; }
-        private IWebElement DateInput2 { get; set; }
         private bool StopsSet { get; set; }
         private string LastTypedOrigin { get; set; }
 
@@ -59,7 +54,7 @@ namespace JourneyPlanner_ClassLibrary
             C.NavigateToUrl("https://www.google.com/travel/flights");
             try
             {
-                C.FindElementWithAttribute(By.CssSelector("button"), text: "I agree");
+                C.FindElementByAttributeAndClickIt(By.CssSelector("button"), text: "I agree");
             }
             catch (Exception)
             {
@@ -75,8 +70,8 @@ namespace JourneyPlanner_ClassLibrary
 
         private void SetToOneWayTrip()
         {
-            C.FindElementWithAttribute(By.CssSelector("span"), text: "Round trip");
-            C.FindElementWithAttribute(By.CssSelector("li"), text: "One way");
+            C.FindElementByAttributeAndClickIt(By.CssSelector("span"), text: "Round trip");
+            C.FindElementByAttributeAndClickIt(By.CssSelector("li"), text: "One way");
         }
 
         private void Log(string m)
@@ -115,7 +110,6 @@ namespace JourneyPlanner_ClassLibrary
             GetFlightsForDate(date, results);
             foreach (DateTime extraDate in extraDates)
             {
-                GetControls();
                 PopulateDateAndHitDone(extraDate);
                 GetFlightsForDate(extraDate, results);
             }
@@ -128,40 +122,32 @@ namespace JourneyPlanner_ClassLibrary
             ReadOnlyCollection<IWebElement> flights;
             List<IWebElement> allFlights;
 
-            WaitForProgressBarToBeGone();
-
             while (true)
             {
                 try
                 {
-                    flightLists = C.Driver.FindElements(By.CssSelector("[role=list]"));
+                    flightLists = C.FindElementsNew(By.CssSelector("[role=list]"));
                 }
                 catch (NoSuchElementException)
                 {
                     return;
                 }
 
-                try
+                allFlights = new();
+                bool showMoreFlightsButtonClicked = false;
+                foreach (IWebElement flightList in flightLists)
                 {
-                    allFlights = new();
-                    bool showMoreFlightsButtonClicked = false;
-                    foreach (IWebElement flightList in flightLists)
+                    By selector = By.CssSelector("[role=listitem]");
+                    flights = C.FindElementsNew(selector, container: flightList);
+                    allFlights.AddRange(flights);
+                    if (flights[flights.Count - 1].GetAttribute("innerText").Contains("more flights"))
                     {
-                        flights = flightList.FindElements(By.CssSelector("[role=listitem]"));
-                        allFlights.AddRange(flights);
-                        if (flights[flights.Count - 1].GetAttribute("innerText").Contains("more flights"))
-                        {
-                            flights[flights.Count - 1].Click();
-                            showMoreFlightsButtonClicked = true;
-                            break;
-                        }
+                        C.FindElementByAttributeAndClickIt(selector, container: flightList, indexOfElement: flights.Count - 1);
+                        showMoreFlightsButtonClicked = true;
+                        break;
                     }
-                    if (!showMoreFlightsButtonClicked) break;
                 }
-                catch (StaleElementReferenceException)
-                {
-                    //Repeat
-                }
+                if (!showMoreFlightsButtonClicked) break;
             }
 
             foreach (IWebElement flight in allFlights)
@@ -212,82 +198,68 @@ namespace JourneyPlanner_ClassLibrary
 
         private void WaitForProgressBarToBeGone()
         {
-            IWebElement loadingBar = C.FindElementWithAttribute(By.CssSelector("[role=progressbar]"), clickElement: false);
-
+            IWebElement loadingBar = C.FindElementByAttribute(By.CssSelector("[data-buffervalue='1']"));
             try
             {
-                C.WebDriverWaitProvider.Until(d => !loadingBar.GetAttribute("aria-hidden").Equals("true"), 1);
-                C.WebDriverWaitProvider.Until(d => loadingBar.GetAttribute("aria-hidden").Equals("true"));
+                C.WebDriverWaitProvider.Until(d => loadingBar.GetAttribute("aria-hidden") == null, 1);
+                C.WebDriverWaitProvider.Until(d => loadingBar.GetAttribute("aria-hidden") != null);
             }
             catch (Exception)
             {
-                //all loaded
+                //loaded
             }
         }
 
         private void SetStopsToNone()
         {
-            C.FindElementWithAttribute(By.CssSelector("button"), text: "Stops");
-            C.FindElementWithAttribute(By.CssSelector("label"), text: "Non-stop only");
-            C.FindElementWithAttribute(By.CssSelector("header"));
+            C.FindElementByAttributeAndClickIt(By.CssSelector("button"), text: "Stops");
+            C.FindElementByAttributeAndClickIt(By.CssSelector("label"), text: "Non-stop only");
+            C.FindElementByAttributeAndClickIt(By.CssSelector("header"));
             StopsSet = true;
+            WaitForProgressBarToBeGone();
         }
 
         private void PopulateControls(string origin, string target, DateTime date)
         {
-            GetControls();
             if (!LastTypedOrigin.Equals(target))
             {
-                InputTarget(target);
-                InputOrigin(origin);
+                InputLocation(target, true);
+                InputLocation(origin, false);
             }
             else
             {
-                InputOrigin(origin);
-                InputTarget(target);
+                InputLocation(origin, false);
+                InputLocation(target, true);
             }
             LastTypedOrigin = origin;
             PopulateDateAndHitDone(date);
         }
 
-        private void InputOrigin(string origin)
+        private void InputLocation(string origin, bool isTarget)
         {
-            C.ClickElementWhenClickable(OriginInput1);
-            C.ClickElementWhenClickable(OriginInput2);
-            OriginInput2.Clear();
-            OriginInput2.SendKeys(JourneyRetrieverData.GetTranslation(origin));
-            OriginInput2.SendKeys(Keys.Return);
-        }
-
-        private void InputTarget(string target)
-        {
-            C.ClickElementWhenClickable(DestinationInput1);
-            C.ClickElementWhenClickable(DestinationInput2);
-            DestinationInput2.Clear();
-            DestinationInput2.SendKeys(JourneyRetrieverData.GetTranslation(target));
-            DestinationInput2.SendKeys(Keys.Return);
-        }
-
-        private void GetControls()
-        {
-            ReadOnlyCollection<IWebElement> inputs = C.Driver.FindElements(By.CssSelector("input"));
-            OriginInput1 = inputs[0];
-            OriginInput2 = inputs[1];
-            DestinationInput1 = inputs[2];
-            DestinationInput2 = inputs[3];
-            DateInput1 = inputs[4];
-            DateInput2 = inputs[6];
+            C.FindElementByAttributeAndClickIt(By.CssSelector("input"), indexOfElement: isTarget ? 2 : 0);
+            C.FindElementByAttributeAndSendKeysToIt(By.CssSelector("input"), indexOfElement: 3, keys: new() { JourneyRetrieverData.GetTranslation(origin), Keys.Return });
         }
 
         private void PopulateDateAndHitDone(DateTime date)
         {
             const string format = "ddd, MMM dd";
-            C.ClickElementWhenClickable(DateInput1);
-            C.ClickElementWhenClickable(DateInput2);
-            foreach (char ch in format) DateInput2.SendKeys(Keys.Backspace);
-            DateInput2.SendKeys(date.ToString(format));
-            DateInput2.SendKeys(Keys.Return);
-            C.FindElementWithAttribute(By.CssSelector("button"), attribute: "aria-label", text: "Done. Search for");
+
+            By selector = By.CssSelector("[aria-label='Departure date']");
+            IWebElement resetButton = C.FindElementByAttribute(By.CssSelector("button"), text: "Reset");
+            while (!resetButton.Displayed)
+            {
+                C.FindElementByAttributeAndClickIt(selector);
+                resetButton = C.FindElementByAttribute(By.CssSelector("button"), text: "Reset");
+            }
+
+            List<string> keysToSend = new();
+            foreach (char ch in format) keysToSend.Add(Keys.Backspace);
+            keysToSend.Add(date.ToString(format));
+            keysToSend.Add(Keys.Return);
+            C.FindElementByAttributeAndSendKeysToIt(selector, indexOfElement: 1, keys: keysToSend, doClearFirst: false);
+            C.FindElementByAttributeAndClickIt(By.CssSelector("button"), attribute: "aria-label", text: "Done. Search for");
+            WaitForProgressBarToBeGone();
         }
 
         public string GetRetrieverName()

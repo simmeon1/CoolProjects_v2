@@ -29,7 +29,7 @@ namespace JourneyPlanner_Tests.UnitTests
 
             SequentialJourneyCollectionBuilder collector = new();
             List<SequentialJourneyCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfJourneys(
-                new List<Path>() { allPath }, new(new List<Journey>() { flight1, flight2, flight3, flight4, flight5, flight6, flight7 }));
+                new List<Path>() { allPath }, new(new List<Journey>() { flight1, flight2, flight3, flight4, flight5, flight6, flight7 }), false, false, 24);
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 12);
             Assert.IsTrue(fullPathCombinationOfFlights[0][0].ToString().Equals(flight1.ToString()));
             Assert.IsTrue(fullPathCombinationOfFlights[1][0].ToString().Equals(flight1.ToString()));
@@ -85,10 +85,10 @@ namespace JourneyPlanner_Tests.UnitTests
 
             JourneyCollection journeys = new(new List<Journey>() { flight1 });
             SequentialJourneyCollectionBuilder collector = new();
-            List<SequentialJourneyCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfJourneys(new List<Path>() { fullPath }, journeys);
+            List<SequentialJourneyCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfJourneys(new List<Path>() { fullPath }, journeys, false, false, 24);
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 0);
             
-            fullPathCombinationOfFlights = collector.GetFullPathCombinationOfJourneys(new List<Path>() { shortPath, fullPath }, journeys);
+            fullPathCombinationOfFlights = collector.GetFullPathCombinationOfJourneys(new List<Path>() { shortPath, fullPath }, journeys, false, false, 24);
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 1);
             Assert.IsTrue(fullPathCombinationOfFlights[0].Count() == 1);
             Assert.IsTrue(fullPathCombinationOfFlights[0][0].ToString().Equals(flight1.ToString()));
@@ -99,8 +99,8 @@ namespace JourneyPlanner_Tests.UnitTests
         {
             Path allPath = new(new List<string>() { "VAR", "LTN" });
             SequentialJourneyCollectionBuilder collector = new();
-            Assert.IsTrue(collector.GetFullPathCombinationOfJourneys(new(), new()).Count == 0);
-            Assert.IsTrue(collector.GetFullPathCombinationOfJourneys(new List<Path>() { allPath }, new()).Count == 0);
+            Assert.IsTrue(collector.GetFullPathCombinationOfJourneys(new(), new(), false, false, 24).Count == 0);
+            Assert.IsTrue(collector.GetFullPathCombinationOfJourneys(new List<Path>() { allPath }, new(), false, false, 24).Count == 0);
         }
     }
 }

@@ -7,10 +7,15 @@ namespace JourneyPlanner_ClassLibrary
 {
     public class SequentialJourneyCollectionBuilder
     {
-        private List<JourneyCollection> JourneyCollections { get; set; }
-
-        public List<SequentialJourneyCollection> GetFullPathCombinationOfJourneys(List<Path> fullPaths, JourneyCollection journeyCollection)
+        public bool SkipUndoableJourneys { get; set; }
+        public bool SkipNotSameDayFinishJourneys { get; set; }
+        public int NoLongerThan { get; set; }
+        public List<SequentialJourneyCollection> GetFullPathCombinationOfJourneys(List<Path> fullPaths, JourneyCollection journeyCollection, bool skipUndoableJourneys, bool skipNotSameDayFinishJourneys, int noLongerThan)
         {
+            SkipUndoableJourneys = skipUndoableJourneys;
+            SkipNotSameDayFinishJourneys = skipNotSameDayFinishJourneys;
+            NoLongerThan = noLongerThan;
+
             Dictionary<string, JourneyCollection> collectionsByDirectPathDict = GetDictOfCollectionsGroupedByDirectPath(fullPaths, journeyCollection);
             List<List<JourneyCollection>> collectionsByDirectPathLists = GetListsOfCollectionsGroupedByDirectPath(fullPaths, collectionsByDirectPathDict);
             return GetCombinationsOfSequentialJourneys(collectionsByDirectPathLists);
@@ -60,32 +65,37 @@ namespace JourneyPlanner_ClassLibrary
             return journeyCollectionsGrouped;
         }
 
-        private void BuildUpCombinationOfJourneys(int index, LinkedList<Journey> listOfJourneys, List<SequentialJourneyCollection> combos)
-        {
-            int count = JourneyCollections.Count;
-            for (int i = index; i < count; i++)
-            {
-                JourneyCollection journeys = JourneyCollections[i];
-                for (int j = 0; j < journeys.GetCount(); j++)
-                {
-                    listOfJourneys.AddLast(journeys[j]);
-                    if (index < count - 1) BuildUpCombinationOfJourneys(i + 1, listOfJourneys, combos);
-                    else if (listOfJourneys.Count == count) combos.Add(new SequentialJourneyCollection(new(listOfJourneys.ToList())));
-                    listOfJourneys.RemoveLast();
-                }
-            }
-        }
-
         private List<SequentialJourneyCollection> GetCombinationsOfSequentialJourneys(List<List<JourneyCollection>> journeyCollectionsGrouped)
         {
-            List<SequentialJourneyCollection> fullPathCombinationsOfJourneys = new();
-            foreach (List<JourneyCollection> journeyCollections in journeyCollectionsGrouped)
+            Stack<Journey> currentStack = new();
+            Stack<SequentialJourneyCollection> results = new();
+
+            for (int i = 0; i < journeyCollectionsGrouped.Count; i++)
             {
-                JourneyCollections = journeyCollections;
-                LinkedList<Journey> journey = new();
-                BuildUpCombinationOfJourneys(0, journey, fullPathCombinationsOfJourneys);
+                List<JourneyCollection> journeyCollections = journeyCollectionsGrouped[i];
+                BuildUpCombinationOfJourneys(0, journeyCollections, currentStack, results);
             }
-            return fullPathCombinationsOfJourneys;
+            return results.ToList();
+        }
+
+        private void BuildUpCombinationOfJourneys(int index, List<JourneyCollection> journeyCollections, Stack<Journey> currentStack, Stack<SequentialJourneyCollection> results)
+        {
+            JourneyCollection col = journeyCollections[index];
+            for (int i = 0; i < col.GetCount(); i++)
+            {
+                currentStack.Push(col[i]);
+                SequentialJourneyCollection seq = new(new(currentStack.Reverse().ToList()));
+                if (
+                    (!SkipUndoableJourneys || seq.SequenceIsDoable()) &&
+                    (!SkipNotSameDayFinishJourneys || seq.StartsAndEndsOnSameDay()) &&
+                    (seq.GetLength().TotalHours <= NoLongerThan)
+                )
+                {
+                    if (seq.Count() == journeyCollections.Count) results.Push(seq);
+                    else BuildUpCombinationOfJourneys(index + 1, journeyCollections, currentStack, results);
+                }
+                currentStack.Pop();
+            }
         }
     }
 }

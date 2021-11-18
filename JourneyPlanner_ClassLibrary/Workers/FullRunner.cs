@@ -123,10 +123,10 @@ namespace JourneyPlanner_ClassLibrary
         private void PrintPathsAndJourneysAndFinish(List<Airport> airportsList, MultiJourneyCollectorResults journeyCollectorResults, string runId, string runResultsPath, List<Path> paths)
         {
             SequentialJourneyCollectionBuilder builder = new();
-            List<SequentialJourneyCollection> results = builder.GetFullPathCombinationOfJourneys(paths, journeyCollectorResults.JourneyCollection);
+            List<SequentialJourneyCollection> results = builder.GetFullPathCombinationOfJourneys(paths, journeyCollectorResults.JourneyCollection, Parameters.SkipUndoableJourneys, Parameters.SkipNotSameDayFinishJourneys, Parameters.NoLongerThan);
 
             DataTableCreator dtCreator = new();
-            Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results, Parameters.SkipUndoableJourneys, Parameters.SkipNotSameDayFinishJourneys, Parameters.NoLongerThan), $"{runResultsPath}\\{runId}_results.xlsx");
+            Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results, Parameters.SkipUndoableJourneys, Parameters.SkipNotSameDayFinishJourneys), $"{runResultsPath}\\{runId}_results.xlsx");
             Components.Logger.Log($"Saved files to {runResultsPath}");
             SaveLogAndQuitDriver(runId, runResultsPath);
         }
