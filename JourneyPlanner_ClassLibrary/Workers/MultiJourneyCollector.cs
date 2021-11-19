@@ -1,57 +1,96 @@
-﻿using System;
+﻿using Common_ClassLibrary;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace JourneyPlanner_ClassLibrary
 {
-    public class MultiJourneyCollector : IMultiJourneyCollector, IJourneyRetrieverEventHandler
+    public class MultiJourneyCollector : IMultiJourneyCollector
     {
         private IJourneyRetrieverInstanceCreator InstanceCreator { get; set; }
-        private string CurrentRetriever { get; set; }
-        private Dictionary<string, Dictionary<string, bool>> Progress { get; set; }
-
         public MultiJourneyCollector(IJourneyRetrieverInstanceCreator instanceCreator)
         {
             InstanceCreator = instanceCreator;
         }
 
         public async Task<MultiJourneyCollectorResults> GetJourneys(
-            JourneyRetrieverComponents components,
+            JourneyRetrieverComponents c,
             Dictionary<string, JourneyRetrieverData> retrieversAndData,
             DateTime dateFrom,
             DateTime dateTo,
             MultiJourneyCollectorResults existingResults = null)
         {
-            JourneyCollection journeys = existingResults == null ? new() : existingResults.JourneyCollection;
-            Dictionary<string, Dictionary<string, bool>> dictionary = GetProgressDict(retrieversAndData);
-            if (existingResults != null) UpdateJourneysAndDictWithDataFromExistingProgress(journeys, dictionary, existingResults.Progress);
-            Progress = dictionary;
+            JourneyCollection allJourneys = existingResults == null ? new() : existingResults.JourneyCollection;
+            Dictionary<string, Dictionary<string, bool>> progress = GetProgressDict(retrieversAndData);
+            if (existingResults != null) UpdateJourneysAndDictWithDataFromExistingProgress(allJourneys, progress, existingResults.Progress);
 
-            CurrentRetriever = "";
+            int totalPathsCollected = 0;
+            int totalPathsToSearch = 0;
+            List<DateTime> allDates = GetAllDates(dateFrom, dateTo);
+
+            foreach (KeyValuePair<string, Dictionary<string, bool>> workerAndPathCompletion in progress)
+            {
+                foreach (KeyValuePair<string, bool> pathAndCompletion in workerAndPathCompletion.Value)
+                {
+                    if (!pathAndCompletion.Value) totalPathsToSearch++;
+                }
+            }
+
+            c.Log($"Beginning search for {totalPathsToSearch} paths from {dateFrom.ToShortDateString()} to {dateTo.ToShortDateString()}");
             foreach (KeyValuePair<string, JourneyRetrieverData> data in retrieversAndData)
             {
                 string retrieverName = data.Key;
                 JourneyRetrieverData retrieverData = data.Value;
 
-                CurrentRetriever = retrieverName;
-                RemoveAlreadyCompletedPathsForRetriever(retrieverData);
+                RemoveAlreadyCompletedPathsForRetriever(retrieverData, retrieverName, progress);
                 if (retrieverData.GetCountOfDirectPaths() == 0) continue;
 
                 string fullClassName = $"{Assembly.GetExecutingAssembly().GetName().Name}.{retrieverName}";
-                IJourneyRetriever retriever = InstanceCreator.CreateInstance(fullClassName, components);
+                IJourneyRetriever retriever = InstanceCreator.CreateInstance(fullClassName, c);
                 try
                 {
-                    journeys = await retriever.CollectJourneys(retrieverData, dateFrom, dateTo, journeys);
+                    retriever.Initialise(retrieverData);
+                    int pathsCollected = 0;
+                    int pathsToSearch = retrieverData.DirectPaths.Count;
+                    c.Log($"Beginning search for {pathsToSearch} paths using {retrieverName}.");
+                    foreach (DirectPath directPath in retrieverData.DirectPaths)
+                    {
+                        string origin = directPath.GetStart();
+                        string destination = directPath.GetEnd();
+                        string pathName = directPath.ToString();
+                        c.Log($"Getting journeys for {pathName}.");
+                        JourneyCollection journeys = await retriever.GetJourneysForDates(origin, destination, allDates);
+                        allJourneys.AddRange(journeys);
+                        progress[retrieverName][pathName] = true;
+                        pathsCollected++;
+                        totalPathsCollected++;
+                        c.Log($"Collected data for {pathName} ({journeys.GetCount()} journeys) ({Globals.GetPercentageAndCountString(pathsCollected, pathsToSearch)}), total ({Globals.GetPercentageAndCountString(totalPathsCollected, totalPathsToSearch)})");
+                    }
+                    c.Log($"Journey retrieval finished.");
                 }
                 catch (Exception ex)
                 {
-                    components.Logger.Log("An exception was thrown while collecting flights and the results have been returned early.");
-                    components.Logger.Log($"Exception details: {ex}");
-                    return new MultiJourneyCollectorResults(Progress, journeys);
+                    c.Logger.Log("An exception was thrown while collecting flights and the results have been returned early.");
+                    c.Logger.Log($"Exception details: {ex}");
+                    return new MultiJourneyCollectorResults(progress, allJourneys);
                 }
             }
-            return new MultiJourneyCollectorResults(Progress, journeys);
+            return new MultiJourneyCollectorResults(progress, allJourneys);
+        }
+
+        private static List<DateTime> GetAllDates(DateTime dateFrom, DateTime dateTo)
+        {
+            List<DateTime> listOfExtraDates = new() { };
+            DateTime tempDate = dateFrom.AddDays(1);
+            while (DateTime.Compare(tempDate, dateTo) <= 0)
+            {
+                listOfExtraDates.Add(tempDate);
+                tempDate = tempDate.AddDays(1);
+            }
+            List<DateTime> allDates = new() { dateFrom };
+            allDates.AddRange(listOfExtraDates);
+            return allDates;
         }
 
         private static void UpdateJourneysAndDictWithDataFromExistingProgress(JourneyCollection journeys, Dictionary<string, Dictionary<string, bool>> newProgress, Dictionary<string, Dictionary<string, bool>> existingProgress)
@@ -83,9 +122,9 @@ namespace JourneyPlanner_ClassLibrary
             }
         }
 
-        private void RemoveAlreadyCompletedPathsForRetriever(JourneyRetrieverData retrieverData)
+        private static void RemoveAlreadyCompletedPathsForRetriever(JourneyRetrieverData retrieverData, string retrieverName, Dictionary<string, Dictionary<string, bool>> progress)
         {
-            foreach (KeyValuePair<string, bool> alreadyCompletedPaths in Progress[CurrentRetriever])
+            foreach (KeyValuePair<string, bool> alreadyCompletedPaths in progress[retrieverName])
             {
                 if (alreadyCompletedPaths.Value) retrieverData.RemovePath(alreadyCompletedPaths.Key);
             }
@@ -104,11 +143,6 @@ namespace JourneyPlanner_ClassLibrary
                 }
             }
             return progress;
-        }
-
-        public void InformOfPathDataFullyCollected(string path)
-        {
-            Progress[CurrentRetriever][path] = true;
         }
     }
 }

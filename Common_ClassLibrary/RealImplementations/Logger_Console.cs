@@ -13,7 +13,7 @@ namespace Common_ClassLibrary
 
         public string GetContent()
         {
-            return string.Join("\n", LogDetails.ToArray());
+            return string.Join(Environment.NewLine, LogDetails.ToArray());
         }
 
         public void Log(string message)

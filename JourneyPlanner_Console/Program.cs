@@ -42,7 +42,6 @@ namespace JourneyPlanner_Console
 
             MultiJourneyCollector multiJourneyCollector = new(new JourneyRetrieverInstanceCreator());
             JourneyRetrieverComponents components = new(
-                multiJourneyCollector,
                 driver,
                 logger,
                 webDriverWait,

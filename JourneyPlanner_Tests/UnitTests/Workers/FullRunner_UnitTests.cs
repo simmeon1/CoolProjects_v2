@@ -43,7 +43,6 @@ namespace JourneyPlanner_Tests.UnitTests
                 x.GetJourneys(It.IsAny<JourneyRetrieverComponents>(), It.IsAny<Dictionary<string, JourneyRetrieverData>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<MultiJourneyCollectorResults>()).Result)
                 .Returns(new MultiJourneyCollectorResults(new(), new()));
             JourneyRetrieverComponents c = new(
-                new Mock<IJourneyRetrieverEventHandler>().Object,
                 null,
                 new Mock<ILogger>().Object,
                 null,
@@ -122,7 +121,6 @@ namespace JourneyPlanner_Tests.UnitTests
             fileIOMock.Setup(x => x.ReadAllText(parameters.ProgressFile)).Returns(new MultiJourneyCollectorResults().SerializeObject());
 
             JourneyRetrieverComponents c = new(
-                new Mock<IJourneyRetrieverEventHandler>().Object,
                 null,
                 new Mock<ILogger>().Object,
                 null,

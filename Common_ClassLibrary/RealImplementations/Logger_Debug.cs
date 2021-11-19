@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Common_ClassLibrary
@@ -13,7 +14,7 @@ namespace Common_ClassLibrary
 
         public string GetContent()
         {
-            return string.Join("\n", LogDetails.ToArray());
+            return string.Join(Environment.NewLine, LogDetails.ToArray());
         }
 
         public void Log(string message)

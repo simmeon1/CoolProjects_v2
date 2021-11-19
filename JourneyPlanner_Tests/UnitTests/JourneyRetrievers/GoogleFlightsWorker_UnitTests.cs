@@ -123,9 +123,7 @@ namespace JourneyPlanner_Tests.UnitTests
             driverMock.Setup(x => x.FindElements(By.CssSelector("input"))).Returns(inputs);
 
             Mock<IMultiJourneyCollector> collector = new();
-            Mock<IJourneyRetrieverEventHandler> eventHandler = new();
             JourneyRetrieverComponents c = new(
-                eventHandler.Object,
                 driverMock.Object,
                 logger.Object,
                 null,

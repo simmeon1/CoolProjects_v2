@@ -9,16 +9,14 @@ namespace JourneyPlanner_ClassLibrary
 {
     public class JourneyRetrieverComponents
     {
-        public IJourneyRetrieverEventHandler JourneyRetrieverEventHandler { get; set; }
         public IWebDriver Driver { get; set; }
         public ILogger Logger { get; set; }
         public IWebDriverWaitProvider WebDriverWaitProvider { get; set; }
         public IHttpClient HttpClient { get; set; }
-        public JourneyRetrieverComponents(IJourneyRetrieverEventHandler journeyRetrieverEventHandler, IWebDriver driver, ILogger logger, IWebDriverWaitProvider webDriverWaitProvider, IHttpClient httpClient)
+        public JourneyRetrieverComponents(IWebDriver driver, ILogger logger, IWebDriverWaitProvider webDriverWaitProvider, IHttpClient httpClient)
         {
             Driver = driver;
             Logger = logger;
-            JourneyRetrieverEventHandler = journeyRetrieverEventHandler;
             WebDriverWaitProvider = webDriverWaitProvider;
             HttpClient = httpClient;
         }

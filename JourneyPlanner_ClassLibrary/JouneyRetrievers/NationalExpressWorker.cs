@@ -1,6 +1,4 @@
-﻿using Common_ClassLibrary;
-using OpenQA.Selenium;
-using SeleniumExtras.WaitHelpers;
+﻿using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,39 +12,19 @@ namespace JourneyPlanner_ClassLibrary
     public class NationalExpressWorker : IJourneyRetriever
     {
         private JourneyRetrieverComponents C { get; set; }
-        private JourneyCollection CollectedJourneys { get; set; }
         private JourneyRetrieverData JourneyRetrieverData { get; set; }
-        private int PathsToSearch { get; set; }
-        private int PathsCollected { get; set; }
-        private string Origin { get; set; }
-        private string Destination { get; set; }
+        private bool InitialPopulationDone { get; set; }
 
         public NationalExpressWorker(JourneyRetrieverComponents c)
         {
             C = c;
         }
 
-        public Task<JourneyCollection> CollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo, JourneyCollection existingJourneys)
+        public void Initialise(JourneyRetrieverData data)
         {
-            Initialise(data, existingJourneys);
-            SetUpSearch();
-            WriteInitialLog(data);
-            LoopThroughPathsAndCollectJourneys(data, dateFrom, dateTo);
-            return Task.FromResult(CollectedJourneys);
-        }
-
-        private void WriteInitialLog(JourneyRetrieverData data)
-        {
-            foreach (DirectPath directPath in data.DirectPaths) PathsToSearch++;
-            C.Log($"Starting search for {PathsToSearch} paths.");
-        }
-
-        private void Initialise(JourneyRetrieverData data, JourneyCollection existingJourneys)
-        {
-            CollectedJourneys = existingJourneys;
             JourneyRetrieverData = data;
-            PathsToSearch = 0;
-            PathsCollected = 0;
+            SetUpSearch();
+            InitialPopulationDone = false;
         }
 
         private void SetUpSearch()
@@ -55,37 +33,9 @@ namespace JourneyPlanner_ClassLibrary
             C.FindElementByAttributeAndClickIt(By.CssSelector(".fa-close"), indexOfElement: 1);
         }
 
-        private void LoopThroughPathsAndCollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo)
+        public Task<JourneyCollection> GetJourneysForDates(string origin, string destination, List<DateTime> allDates)
         {
-            foreach (DirectPath directPath in data.DirectPaths) GetPathJourneys(directPath, dateFrom, dateTo);
-        }
-
-        private void GetPathJourneys(DirectPath directPath, DateTime dateFrom, DateTime dateTo)
-        {
-            Origin = directPath.GetStart();
-            Destination = directPath.GetEnd();
-
-            string pathName = directPath.ToString();
-            C.Log($"Collecting data for {pathName}.");
-            C.Log($"Initial population of controls for {pathName}, date {dateFrom}.");
-            PopulateControls(Origin, Destination, dateFrom);
-
-            List<DateTime> listOfExtraDates = new() { };
-            DateTime tempDate = dateFrom.AddDays(1);
-            while (DateTime.Compare(tempDate, dateTo) <= 0)
-            {
-                listOfExtraDates.Add(tempDate);
-                tempDate = tempDate.AddDays(1);
-            }
-            C.Log($"Getting journeys for {pathName} from {dateFrom} to {dateTo}.");
-            CollectedJourneys.AddRange(GetFlightsForDates(dateFrom, listOfExtraDates));
-            C.JourneyRetrieverEventHandler.InformOfPathDataFullyCollected(directPath.ToString());
-            PathsCollected++;
-            C.Log($"Collected data for {pathName} ({Globals.GetPercentageAndCountString(PathsCollected, PathsToSearch)})");
-        }
-
-        private JourneyCollection GetFlightsForDates(DateTime date, List<DateTime> extraDates)
-        {
+            PopulateControls(origin, destination, allDates[0]);
             List<Journey> results = new();
             HashSet<string> addedJourneys = new();
             bool allEarlierFlightsRetrieved = false;
@@ -100,8 +50,8 @@ namespace JourneyPlanner_ClassLibrary
                 {
                     if (retryCounter >= 3)
                     {
-                        C.Log($"Couldn't retrieve journeys for path {Origin}-{Destination}.");
-                        return new JourneyCollection(results.OrderBy(j => j.ToString()).ToList());
+                        C.Log($"Couldn't retrieve journeys for path {origin}-{destination}.");
+                        return Task.FromResult(new JourneyCollection(results.OrderBy(j => j.ToString()).ToList()));
                     }
 
                     ClickFindJourney();
@@ -116,14 +66,14 @@ namespace JourneyPlanner_ClassLibrary
                     IWebElement groupDateElement = C.FindElementByAttribute(By.XPath(".."), container: journeyGroup);
                     string groupDateText = C.FindElementByAttribute(By.CssSelector("h5"), container: groupDateElement).GetAttribute("innerText").Trim();
                     DateTime departing = DateTime.Parse(groupDateText);
-                    DateTime lastDate = extraDates.Count == 0 ? date : extraDates[extraDates.Count - 1];
+                    DateTime lastDate = allDates[allDates.Count - 1];
                     int dateComparison = departing.CompareTo(lastDate);
                     if (allEarlierFlightsRetrieved && dateComparison == 1)
                     {
                         allFlightsRetrieved = true;
                         break;
                     }
-                    else if (!allEarlierFlightsRetrieved && departing.CompareTo(date) == -1)
+                    else if (!allEarlierFlightsRetrieved && departing.CompareTo(allDates[0]) == -1)
                     {
                         allEarlierFlightsRetrieved = true;
                         continue;
@@ -157,7 +107,7 @@ namespace JourneyPlanner_ClassLibrary
                         if (costText == null) break;
 
                         int cost = Convert.ToInt32(double.Parse(costText));
-                        Journey journey = new(updatedDeparting, arriving, "National Express", duration, $"{Origin}-{Destination}", double.Parse(costText), GetRetrieverName());
+                        Journey journey = new(updatedDeparting, arriving, "National Express", duration, $"{origin}-{destination}", double.Parse(costText), nameof(NationalExpressWorker));
                         if (!addedJourneys.Contains(journey.ToString()))
                         {
                             results.Add(journey);
@@ -165,7 +115,7 @@ namespace JourneyPlanner_ClassLibrary
                         }
                     }
                 }
-                if (allFlightsRetrieved) return new JourneyCollection(results.OrderBy(j => j.ToString()).ToList());
+                if (allFlightsRetrieved) return Task.FromResult(new JourneyCollection(results.OrderBy(j => j.ToString()).ToList()));
                 C.FindElementByAttributeAndClickIt(By.CssSelector(".nx-earlier-later-journey"), indexOfElement: allEarlierFlightsRetrieved ? 1 : 0);
             }
         }
@@ -186,11 +136,12 @@ namespace JourneyPlanner_ClassLibrary
             return null;
         }
 
-        private void PopulateControls(string origin, string target, DateTime date)
+        public void PopulateControls(string origin, string destination, DateTime date)
         {
-            if (PathsCollected > 0) ClickChangeJourneyButton();
+            if (InitialPopulationDone) ClickChangeJourneyButton();
             InputLocation(origin, 0);
-            InputLocation(target, 1);
+            InputLocation(destination, 1);
+            InitialPopulationDone = true;
             PopulateDateAndHitDone(date);
         }
 
@@ -247,11 +198,6 @@ namespace JourneyPlanner_ClassLibrary
         private void ClickFindJourney()
         {
             C.FindElementByAttributeAndClickIt(By.Id("nx-find-journey-button"));
-        }
-
-        public string GetRetrieverName()
-        {
-            return nameof(NationalExpressWorker);
         }
     }
 }

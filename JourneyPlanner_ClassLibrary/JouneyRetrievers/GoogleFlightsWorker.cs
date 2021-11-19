@@ -1,6 +1,4 @@
-﻿using Common_ClassLibrary;
-using OpenQA.Selenium;
-using SeleniumExtras.WaitHelpers;
+﻿using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,9 +11,6 @@ namespace JourneyPlanner_ClassLibrary
     {
         private JourneyRetrieverComponents C { get; set; }
         private JourneyRetrieverData JourneyRetrieverData { get; set; }
-        private int PathsToSearch { get; set; }
-        private int PathsCollected { get; set; }
-        private JourneyCollection CollectedJourneys { get; set; }
         private bool StopsSet { get; set; }
         private string LastTypedOrigin { get; set; }
 
@@ -24,29 +19,12 @@ namespace JourneyPlanner_ClassLibrary
             C = c;
         }
 
-        public Task<JourneyCollection> CollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo, JourneyCollection existingJourneys)
+        public void Initialise(JourneyRetrieverData data)
         {
-            Initialise(data, existingJourneys);
-            SetUpSearch();
-            WriteInitialLog(data);
-            LoopThroughPathsAndCollectJourneys(data, dateFrom, dateTo);
-            return Task.FromResult(CollectedJourneys);
-        }
-
-        private void WriteInitialLog(JourneyRetrieverData data)
-        {
-            foreach (DirectPath directPath in data.DirectPaths) PathsToSearch++;
-            Log($"Starting search for {PathsToSearch} paths.");
-        }
-
-        private void Initialise(JourneyRetrieverData data, JourneyCollection existingJourneys)
-        {
-            CollectedJourneys = existingJourneys;
             JourneyRetrieverData = data;
-            PathsToSearch = 0;
-            PathsCollected = 0;
             LastTypedOrigin = "";
             StopsSet = false;
+            SetUpSearch();
         }
 
         private void SetUpSearch()
@@ -63,57 +41,22 @@ namespace JourneyPlanner_ClassLibrary
             SetToOneWayTrip();
         }
 
-        private void LoopThroughPathsAndCollectJourneys(JourneyRetrieverData data, DateTime dateFrom, DateTime dateTo)
-        {
-            foreach (DirectPath directPath in data.DirectPaths) GetPathJourneys(directPath, dateFrom, dateTo);
-        }
-
         private void SetToOneWayTrip()
         {
             C.FindElementByAttributeAndClickIt(By.CssSelector("span"), text: "Round trip");
             C.FindElementByAttributeAndClickIt(By.CssSelector("li"), text: "One way");
         }
 
-        private void Log(string m)
-        {
-            C.Log(m);
-        }
-
-        private void GetPathJourneys(DirectPath directPath, DateTime dateFrom, DateTime dateTo)
-        {
-            string origin = directPath.GetStart();
-            string target = directPath.GetEnd();
-
-            string pathName = directPath.ToString();
-            Log($"Collecting data for {pathName}.");
-            Log($"Initial population of controls for {pathName}, date {dateFrom}.");
-            PopulateControls(origin, target, dateFrom);
-            if (!StopsSet) SetStopsToNone();
-
-            List<DateTime> listOfExtraDates = new() { };
-            DateTime tempDate = dateFrom.AddDays(1);
-            while (DateTime.Compare(tempDate, dateTo) <= 0)
-            {
-                listOfExtraDates.Add(tempDate);
-                tempDate = tempDate.AddDays(1);
-            }
-            Log($"Getting flights for {pathName} from {dateFrom} to {dateTo}.");
-            CollectedJourneys.AddRange(GetFlightsForDates(dateFrom, listOfExtraDates));
-            C.JourneyRetrieverEventHandler.InformOfPathDataFullyCollected(directPath.ToString());
-            PathsCollected++;
-            Log($"Collected data for {pathName} ({Globals.GetPercentageAndCountString(PathsCollected, PathsToSearch)})");
-        }
-
-        private JourneyCollection GetFlightsForDates(DateTime date, List<DateTime> extraDates)
+        public Task<JourneyCollection> GetJourneysForDates(string origin, string destination, List<DateTime> allDates)
         {
             List<Journey> results = new();
-            GetFlightsForDate(date, results);
-            foreach (DateTime extraDate in extraDates)
+            for (int i = 0; i < allDates.Count; i++)
             {
-                PopulateDateAndHitDone(extraDate);
-                GetFlightsForDate(extraDate, results);
+                DateTime date = allDates[i];
+                PopulateControlsAndSearch(origin, destination, date, i != 0);
+                GetFlightsForDate(date, results);
             }
-            return new JourneyCollection(results);
+            return Task.FromResult(new JourneyCollection(results));
         }
 
         private void GetFlightsForDate(DateTime date, List<Journey> results)
@@ -191,7 +134,8 @@ namespace JourneyPlanner_ClassLibrary
                                     airlineText,
                                     TimeSpan.Parse(durationText),
                                     pathText,
-                                    cost
+                                    cost,
+                                    nameof(GoogleFlightsWorker)
                                 );
             return item;
         }
@@ -219,20 +163,24 @@ namespace JourneyPlanner_ClassLibrary
             WaitForProgressBarToBeGone();
         }
 
-        private void PopulateControls(string origin, string target, DateTime date)
+        public void PopulateControlsAndSearch(string origin, string destination, DateTime dateFrom, bool skipLocationInput)
         {
-            if (!LastTypedOrigin.Equals(target))
+            if (!skipLocationInput)
             {
-                InputLocation(target, true);
-                InputLocation(origin, false);
+                if (!LastTypedOrigin.Equals(destination))
+                {
+                    InputLocation(destination, true);
+                    InputLocation(origin, false);
+                }
+                else
+                {
+                    InputLocation(origin, false);
+                    InputLocation(destination, true);
+                }
+                LastTypedOrigin = origin;
             }
-            else
-            {
-                InputLocation(origin, false);
-                InputLocation(target, true);
-            }
-            LastTypedOrigin = origin;
-            PopulateDateAndHitDone(date);
+            PopulateDateAndHitDone(dateFrom);
+            if (!StopsSet) SetStopsToNone();
         }
 
         private void InputLocation(string origin, bool isTarget)
@@ -260,11 +208,6 @@ namespace JourneyPlanner_ClassLibrary
             C.FindElementByAttributeAndSendKeysToIt(selector, indexOfElement: 1, keys: keysToSend, doClearFirst: false);
             C.FindElementByAttributeAndClickIt(By.CssSelector("button"), attribute: "aria-label", text: "Done. Search for");
             WaitForProgressBarToBeGone();
-        }
-
-        public string GetRetrieverName()
-        {
-            return nameof(GoogleFlightsWorker);
         }
     }
 }
