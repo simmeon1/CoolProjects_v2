@@ -29,7 +29,7 @@ namespace JourneyPlanner_Tests.UnitTests
             JourneyRetrieverInstanceCreator instanceCreator = new();
             List<IJourneyRetriever> instances = new();
             foreach (Type type in types) instances.Add(instanceCreator.CreateInstance(type.FullName, components));
-            Assert.IsTrue(instances.Count == 2);
+            Assert.IsTrue(instances.Count == 3);
             Assert.IsTrue(instances.Any(i => i.GetType().Name.Equals(nameof(GoogleFlightsWorker))));
             Assert.IsTrue(instances.Any(i => i.GetType().Name.Equals(nameof(NationalExpressWorker))));
             Assert.IsTrue(instances.Any(i => i.GetType().Name.Equals(nameof(MegaBusWorker))));

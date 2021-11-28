@@ -11,10 +11,10 @@ namespace JourneyPlanner_Tests.UnitTests
     public class SequentialFlightCollection_UnitTests
     {
         private readonly Journey flight1 = new(new DateTime(2000, 11, 11, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(1, 10, 10), "ABZ-EDI", 25);
-        private readonly Journey bus1 = new(new DateTime(2000, 11, 11, 07, 00, 00), new DateTime(2000, 11, 11, 13, 00, 00), "easyJet", new TimeSpan(4, 0, 0), "ABZ-EDI", 15);
+        private readonly Journey bus1 = new(new DateTime(2000, 11, 11, 07, 00, 00), new DateTime(2000, 11, 11, 13, 00, 00), "easyJet", new TimeSpan(4, 0, 0), "ABZ-EDI", 15, "busWorker");
         private readonly Journey flight2 = new(new DateTime(2000, 11, 11, 14, 0, 0), new DateTime(2000, 11, 11, 18, 0, 0), "wizz", new TimeSpan(2, 0, 0), "EDI-VAR", 50);
         private readonly Journey flight3 = new(new DateTime(2000, 11, 11, 21, 30, 0), new DateTime(2000, 11, 11, 23, 0, 0), "wizz", new TimeSpan(1, 30, 0), "VAR-BOJ", 10);
-        private readonly Journey bus3 = new(new DateTime(2000, 11, 11, 18, 40, 00), new DateTime(2000, 11, 11, 21, 00, 00), "easyJet", new TimeSpan(4, 0, 0), "VAR-BOJ", 15);
+        private readonly Journey bus3 = new(new DateTime(2000, 11, 11, 18, 40, 00), new DateTime(2000, 11, 11, 21, 00, 00), "easyJet", new TimeSpan(4, 0, 0), "VAR-BOJ", 15, "busWorker");
         private readonly Journey flight4 = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizz", new TimeSpan(3, 30, 0), "BOJ-LTN", 40);
         private readonly Journey flight4Copy = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizzd", new TimeSpan(3, 30, 0), "BOJ-LTN", 40);
 

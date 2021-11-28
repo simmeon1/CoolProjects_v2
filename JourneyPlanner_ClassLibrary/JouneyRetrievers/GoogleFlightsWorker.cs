@@ -163,7 +163,7 @@ namespace JourneyPlanner_ClassLibrary
             WaitForProgressBarToBeGone();
         }
 
-        public void PopulateControlsAndSearch(string origin, string destination, DateTime dateFrom, bool skipLocationInput)
+        private void PopulateControlsAndSearch(string origin, string destination, DateTime dateFrom, bool skipLocationInput)
         {
             if (!skipLocationInput)
             {

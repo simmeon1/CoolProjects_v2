@@ -33,7 +33,7 @@ namespace JourneyPlanner_Tests.UnitTests
         [TestMethod]
         public void ToStringIsCorrect()
         {
-            Assert.IsTrue(collection.ToString().Equals("2 flights"));
+            Assert.IsTrue(collection.ToString().Equals("2 journeys"));
         }
 
         [TestMethod]

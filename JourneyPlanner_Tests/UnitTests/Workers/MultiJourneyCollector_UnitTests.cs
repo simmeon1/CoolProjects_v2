@@ -25,27 +25,18 @@ namespace JourneyPlanner_Tests.UnitTests
         {
             Dictionary<string, JourneyRetrieverData> retrieversAndData = GetRetrieversAndData();
 
-            MultiJourneyCollectorResults results = new();
-            results.JourneyCollection = journeys;
-            results.Progress.Add(worker, new());
-            results.Progress[worker].Add("LTN-ABZ", false);
-
             Mock<IJourneyRetriever> journeyRetrieverMock = new();
-            journeyRetrieverMock.Setup(x => x.CollectJourneys(It.IsAny<JourneyRetrieverData>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<JourneyCollection>()).Result).Returns(journeys);
+            journeyRetrieverMock.Setup(x => x.GetJourneysForDates(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<DateTime>>()).Result).Returns(journeys);
 
             Mock<IJourneyRetrieverInstanceCreator> instanceCreatorMock = new();
             instanceCreatorMock.Setup(x => x.CreateInstance(It.IsAny<string>(), It.IsAny<JourneyRetrieverComponents>())).Returns(journeyRetrieverMock.Object);
 
             MultiJourneyCollector c = new(instanceCreatorMock.Object);
             JourneyRetrieverComponents components = new(null, new Mock<ILogger>().Object, null, null);
-            await AssertThatTheOneJourneyIsReturned(c, components, retrieversAndData, results);
+            await AssertThatTheOneJourneyIsReturned(c, components, retrieversAndData);
 
             instanceCreatorMock.Verify(x => x.CreateInstance($"JourneyPlanner_ClassLibrary.{worker}", components), Times.Once());
-            journeyRetrieverMock.Verify(x => x.CollectJourneys(It.IsAny<JourneyRetrieverData>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<JourneyCollection>()), Times.Once());
-
-            Assert.IsTrue(!results.Progress[worker]["LTN-ABZ"]);
-            c.InformOfPathDataFullyCollected("LTN-ABZ");
-            Assert.IsTrue(results.Progress[worker]["LTN-ABZ"]);
+            journeyRetrieverMock.Verify((x => x.GetJourneysForDates(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<DateTime>>()).Result), Times.Once());
         }
 
         [TestMethod]
@@ -55,7 +46,7 @@ namespace JourneyPlanner_Tests.UnitTests
             retrieversAndData.Add("test", new(new List<DirectPath>() { new DirectPath("LTN", "ABZ") }, new()));
 
             Mock<IJourneyRetriever> journeyRetrieverMock = new();
-            journeyRetrieverMock.SetupSequence(x => x.CollectJourneys(It.IsAny<JourneyRetrieverData>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<JourneyCollection>()).Result)
+            journeyRetrieverMock.SetupSequence(x => x.GetJourneysForDates(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<DateTime>>()).Result)
                 .Returns(journeys)
                 .Throws(new Exception());
 
@@ -67,7 +58,7 @@ namespace JourneyPlanner_Tests.UnitTests
 
             await AssertThatTheOneJourneyIsReturned(c, components, retrieversAndData);
             instanceCreatorMock.Verify(x => x.CreateInstance($"JourneyPlanner_ClassLibrary.{worker}", components), Times.Once());
-            journeyRetrieverMock.Verify(x => x.CollectJourneys(It.IsAny<JourneyRetrieverData>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<JourneyCollection>()), Times.Exactly(2));
+            journeyRetrieverMock.Verify((x => x.GetJourneysForDates(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<DateTime>>()).Result), Times.Exactly(2));
         }
 
         [TestMethod]

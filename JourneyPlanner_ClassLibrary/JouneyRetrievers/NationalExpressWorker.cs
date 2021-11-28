@@ -136,7 +136,7 @@ namespace JourneyPlanner_ClassLibrary
             return null;
         }
 
-        public void PopulateControls(string origin, string destination, DateTime date)
+        private void PopulateControls(string origin, string destination, DateTime date)
         {
             if (InitialPopulationDone) ClickChangeJourneyButton();
             InputLocation(origin, 0);

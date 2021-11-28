@@ -84,7 +84,7 @@ namespace JourneyPlanner_Tests.UnitTests
             Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(flight1Path));
             Assert.IsTrue((int)subTable.Rows[0].ItemArray[subIndex++] == 1);
             Assert.IsTrue((int)subTable.Rows[0].ItemArray[subIndex++] == 1);
-            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals("Flight"));
+            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(true));
             Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(DataTableCreator.GetShortDateTime(flight1Departing)));
             Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(DataTableCreator.GetShortDateTime(flight1Arriving)));
             Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(airport1.City));
@@ -101,7 +101,7 @@ namespace JourneyPlanner_Tests.UnitTests
             Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(flight2Path));
             Assert.IsTrue((int)subTable.Rows[1].ItemArray[subIndex++] == 1);
             Assert.IsTrue((int)subTable.Rows[1].ItemArray[subIndex++] == 2);
-            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals("Flight"));
+            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(true));
             Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(DataTableCreator.GetShortDateTime(flight2Departing)));
             Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(DataTableCreator.GetShortDateTime(flight2Arriving)));
             Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(airport2.City));
@@ -135,14 +135,6 @@ namespace JourneyPlanner_Tests.UnitTests
             Assert.IsTrue((double)mainTable.Rows[0].ItemArray[index++] == 75);
             Assert.IsTrue((double)mainTable.Rows[0].ItemArray[index++] == 0);
             Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(false));
-        }
-
-        [TestMethod]
-        public void CorrectTables_FlightTooLong()
-        {
-            Assert.IsTrue(creator.GetTables(airportList, flights, true, true)[0].Rows.Count == 0);
-            Assert.IsTrue(creator.GetTables(airportList, flights, true, true)[0].Rows.Count == 1);
-            Assert.IsTrue(creator.GetTables(airportList, flights, true, true)[0].Rows.Count == 1);
         }
 
         [TestMethod]

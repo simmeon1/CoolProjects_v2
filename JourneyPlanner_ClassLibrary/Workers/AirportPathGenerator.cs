@@ -19,7 +19,7 @@ namespace JourneyPlanner_ClassLibrary
         public AirportPathGenerator(Dictionary<string, HashSet<string>> airportsAndDestinations, Dictionary<string, HashSet<string>> airportLocalLinks = null)
         {
             AirportsAndDestinations = airportsAndDestinations;
-            AddLocalLinksToAirportDestinations(airportLocalLinks);
+            AddLocalLinksToAirportDestinations(airportLocalLinks ?? new());
         }
 
         public List<Path> GeneratePaths(List<string> origins, List<string> targets, int maxFlights, int maxLocalLinks, bool onlyIncludeShortestPaths)

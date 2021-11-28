@@ -170,20 +170,14 @@ namespace JourneyPlanner_Tests.UnitTests
             Assert.IsTrue(paths[1].ToString().Equals("ABZ-LTN-LHR-VAR"));
 
             paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 2, 1, true);
-            Assert.IsTrue(paths.Count == 2);
+            Assert.IsTrue(paths.Count == 1);
             Assert.IsTrue(paths[0].ToString().Equals("ABZ-LTN-VAR"));
-            Assert.IsTrue(paths[1].ToString().Equals("ABZ-LTN-LHR-VAR"));
             
             paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 3, 1, false);
             Assert.IsTrue(paths.Count == 3);
             Assert.IsTrue(paths[0].ToString().Equals("ABZ-LTN-VAR"));
             Assert.IsTrue(paths[1].ToString().Equals("ABZ-LTN-LHR-VAR"));
             Assert.IsTrue(paths[2].ToString().Equals("ABZ-LTN-LHR-SOF-VAR"));
-            
-            paths = GetAberdeenToVarnaPathGeneratorWithLocalLinks().GeneratePaths(new List<string>() { codeABZ }, new List<string>() { codeVAR }, 3, 1, true);
-            Assert.IsTrue(paths.Count == 2);
-            Assert.IsTrue(paths[0].ToString().Equals("ABZ-LTN-VAR"));
-            Assert.IsTrue(paths[1].ToString().Equals("ABZ-LTN-LHR-VAR"));
         }
 
         private static AirportPathGenerator GetAberdeenToVarnaPathGeneratorWithLocalLinks()

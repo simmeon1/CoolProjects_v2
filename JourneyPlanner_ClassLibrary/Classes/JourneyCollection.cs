@@ -45,7 +45,8 @@ namespace JourneyPlanner_ClassLibrary
 
         public void AddRange(JourneyCollection journeys)
         {
-            for (int i = 0; i < journeys.GetCount(); i++) Add(journeys[i]);
+            int count = journeys.GetCount();
+            for (int i = 0; i < count; i++) Add(journeys[i]);
         }
 
         public int GetCountOfFlights()

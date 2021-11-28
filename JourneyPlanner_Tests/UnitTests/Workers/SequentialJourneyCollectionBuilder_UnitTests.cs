@@ -30,6 +30,7 @@ namespace JourneyPlanner_Tests.UnitTests
             SequentialJourneyCollectionBuilder collector = new();
             List<SequentialJourneyCollection> fullPathCombinationOfFlights = collector.GetFullPathCombinationOfJourneys(
                 new List<Path>() { allPath }, new(new List<Journey>() { flight1, flight2, flight3, flight4, flight5, flight6, flight7 }), false, false, 24);
+            fullPathCombinationOfFlights.Reverse();
             Assert.IsTrue(fullPathCombinationOfFlights.Count == 12);
             Assert.IsTrue(fullPathCombinationOfFlights[0][0].ToString().Equals(flight1.ToString()));
             Assert.IsTrue(fullPathCombinationOfFlights[1][0].ToString().Equals(flight1.ToString()));
