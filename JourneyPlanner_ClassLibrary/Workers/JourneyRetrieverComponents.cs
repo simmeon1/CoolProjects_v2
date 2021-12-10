@@ -12,15 +12,17 @@ namespace JourneyPlanner_ClassLibrary
         public IWebDriver Driver { get; set; }
         public ILogger Logger { get; set; }
         public IDelayer Delayer { get; set; }
+        public IJavaScriptExecutor JavaScriptExecutor { get; set; }
         public IWebDriverWaitProvider WebDriverWaitProvider { get; set; }
         public IHttpClient HttpClient { get; set; }
-        public JourneyRetrieverComponents(IWebDriver driver, ILogger logger, IWebDriverWaitProvider webDriverWaitProvider, IDelayer delayer, IHttpClient httpClient)
+        public JourneyRetrieverComponents(IWebDriver driver, ILogger logger, IWebDriverWaitProvider webDriverWaitProvider, IDelayer delayer, IHttpClient httpClient, IJavaScriptExecutor javaScriptExecutor)
         {
             Driver = driver;
             Logger = logger;
             WebDriverWaitProvider = webDriverWaitProvider;
             HttpClient = httpClient;
             Delayer = delayer;
+            JavaScriptExecutor = javaScriptExecutor;
         }
 
         public void Log(string message)

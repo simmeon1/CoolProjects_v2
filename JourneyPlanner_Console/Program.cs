@@ -45,9 +45,9 @@ namespace JourneyPlanner_Console
                 driver,
                 logger,
                 webDriverWait,
-                new RealDelayer()
-,
-                httpClient);
+                new RealDelayer(),
+                httpClient,
+                driver);
 
             FullRunner runner = new(
                 components,
