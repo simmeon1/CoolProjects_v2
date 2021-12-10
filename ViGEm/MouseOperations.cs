@@ -45,7 +45,7 @@ public class MouseOperations
     public static MousePoint GetCursorPosition()
     {
         MousePoint currentMousePoint;
-        var gotPoint = GetCursorPos(out currentMousePoint);
+        bool gotPoint = GetCursorPos(out currentMousePoint);
         if (!gotPoint) { currentMousePoint = new MousePoint(0, 0); }
         return currentMousePoint;
     }
@@ -65,7 +65,7 @@ public class MouseOperations
 
     public static Color GetColorAt(Point location)
     {
-        Bitmap screenPixel = new Bitmap(1, 1, PixelFormat.Format32bppArgb);
+        Bitmap screenPixel = new(1, 1, PixelFormat.Format32bppArgb);
         using (Graphics gdest = Graphics.FromImage(screenPixel))
         {
             using (Graphics gsrc = Graphics.FromHwnd(IntPtr.Zero))

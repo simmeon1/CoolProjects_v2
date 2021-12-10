@@ -7,5 +7,6 @@ namespace JourneyPlanner_ClassLibrary
     {
         TResult Until<TResult>(Func<IWebDriver, TResult> condition, int seconds = 10);
         IAlert WaitUntilAlertIsPresent();
+        Func<IWebDriver, IWebElement> ElementIsClickable(IWebElement element);
     }
 }

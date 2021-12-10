@@ -33,9 +33,9 @@ namespace JourneyPlanner_ClassLibrary
             C.FindElementByAttributeAndClickIt(By.CssSelector(".fa-close"), indexOfElement: 1);
         }
 
-        public Task<JourneyCollection> GetJourneysForDates(string origin, string destination, List<DateTime> allDates)
+        public async Task<JourneyCollection> GetJourneysForDates(string origin, string destination, List<DateTime> allDates)
         {
-            PopulateControls(origin, destination, allDates[0]);
+            await PopulateControls(origin, destination, allDates[0]);
             List<Journey> results = new();
             HashSet<string> addedJourneys = new();
             bool allEarlierFlightsRetrieved = false;
@@ -51,10 +51,10 @@ namespace JourneyPlanner_ClassLibrary
                     if (retryCounter >= 3)
                     {
                         C.Log($"Couldn't retrieve journeys for path {origin}-{destination}.");
-                        return Task.FromResult(new JourneyCollection(results.OrderBy(j => j.ToString()).ToList()));
+                        return new JourneyCollection(results.OrderBy(j => j.ToString()).ToList());
                     }
 
-                    ClickFindJourney();
+                    await ClickFindJourney();
                     retryCounter++;
                     continue;
                 }
@@ -115,7 +115,7 @@ namespace JourneyPlanner_ClassLibrary
                         }
                     }
                 }
-                if (allFlightsRetrieved) return Task.FromResult(new JourneyCollection(results.OrderBy(j => j.ToString()).ToList()));
+                if (allFlightsRetrieved) return new JourneyCollection(results.OrderBy(j => j.ToString()).ToList());
                 C.FindElementByAttributeAndClickIt(By.CssSelector(".nx-earlier-later-journey"), indexOfElement: allEarlierFlightsRetrieved ? 1 : 0);
             }
         }
@@ -136,13 +136,13 @@ namespace JourneyPlanner_ClassLibrary
             return null;
         }
 
-        private void PopulateControls(string origin, string destination, DateTime date)
+        private async Task PopulateControls(string origin, string destination, DateTime date)
         {
             if (InitialPopulationDone) ClickChangeJourneyButton();
             InputLocation(origin, 0);
             InputLocation(destination, 1);
             InitialPopulationDone = true;
-            PopulateDateAndHitDone(date);
+            await PopulateDateAndHitDone(date);
         }
 
         private void ClickChangeJourneyButton()
@@ -159,7 +159,7 @@ namespace JourneyPlanner_ClassLibrary
             C.FindElementByAttributeAndClickIt(By.CssSelector("li"), text: translatedLocation);
         }
 
-        private void PopulateDateAndHitDone(DateTime date)
+        private async Task PopulateDateAndHitDone(DateTime date)
         {
             By selector = By.CssSelector(".nx-date-input");
             IWebElement dateInput = C.FindElementByAttribute(selector);
@@ -184,7 +184,7 @@ namespace JourneyPlanner_ClassLibrary
 
             C.FindElementByAttributeAndClickIt(By.CssSelector(".mat-calendar-body-cell"), container: calendar, text: date.Day.ToString());
             PickCalendarTimes();
-            ClickFindJourney();
+            await ClickFindJourney();
         }
 
         private void PickCalendarTimes()
@@ -195,8 +195,9 @@ namespace JourneyPlanner_ClassLibrary
             C.FindElementByAttributeAndClickIt(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(2) > nx-time > select > option:nth-child(1)"));
         }
 
-        private void ClickFindJourney()
+        private async Task ClickFindJourney()
         {
+            await C.Delayer.Delay(500);
             C.FindElementByAttributeAndClickIt(By.Id("nx-find-journey-button"));
         }
     }

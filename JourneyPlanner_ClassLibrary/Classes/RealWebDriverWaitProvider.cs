@@ -26,5 +26,10 @@ namespace JourneyPlanner_ClassLibrary
             WebDriverWait wait = new(Driver, TimeSpan.FromSeconds(seconds));
             return wait.Until(condition);
         }
+
+        public Func<IWebDriver, IWebElement> ElementIsClickable(IWebElement element)
+        {
+            return ExpectedConditions.ElementToBeClickable(element);
+        }
     }
 }

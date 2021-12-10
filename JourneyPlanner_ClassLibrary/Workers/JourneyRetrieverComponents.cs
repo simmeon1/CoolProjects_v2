@@ -11,14 +11,16 @@ namespace JourneyPlanner_ClassLibrary
     {
         public IWebDriver Driver { get; set; }
         public ILogger Logger { get; set; }
+        public IDelayer Delayer { get; set; }
         public IWebDriverWaitProvider WebDriverWaitProvider { get; set; }
         public IHttpClient HttpClient { get; set; }
-        public JourneyRetrieverComponents(IWebDriver driver, ILogger logger, IWebDriverWaitProvider webDriverWaitProvider, IHttpClient httpClient)
+        public JourneyRetrieverComponents(IWebDriver driver, ILogger logger, IWebDriverWaitProvider webDriverWaitProvider, IDelayer delayer, IHttpClient httpClient)
         {
             Driver = driver;
             Logger = logger;
             WebDriverWaitProvider = webDriverWaitProvider;
             HttpClient = httpClient;
+            Delayer = delayer;
         }
 
         public void Log(string message)
@@ -54,11 +56,14 @@ namespace JourneyPlanner_ClassLibrary
                         }
                         return null;
                     }
+                    catch (WebDriverTimeoutException ex)
+                    {
+                        throw;
+                    }
                     catch (Exception ex)
                     {
-                        Log("Error with finding element by attribute. Details:");
+                        Log("Error with finding element by attribute and clicking. Details:");
                         Log(ex.ToString());
-                        if (ex.GetType().Equals(typeof(WebDriverTimeoutException))) throw;
                     }
                 }
             });
@@ -72,15 +77,18 @@ namespace JourneyPlanner_ClassLibrary
                 try
                 {
                     IWebElement element = FindElementByAttribute(by, attribute, text, container, indexOfElement);
-                    WebDriverWaitProvider.Until(ExpectedConditions.ElementToBeClickable(element));
+                    WebDriverWaitProvider.Until(WebDriverWaitProvider.ElementIsClickable(element));
                     element.Click();
                     return element;
+                }
+                catch (WebDriverTimeoutException ex)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
                     Log("Error with finding element by attribute and clicking. Details:");
                     Log(ex.ToString());
-                    if (ex.GetType().Equals(typeof(WebDriverTimeoutException))) throw;
                 }
             }
         }
@@ -100,11 +108,14 @@ namespace JourneyPlanner_ClassLibrary
                     }
                     return element;
                 }
+                catch (WebDriverTimeoutException ex)
+                {
+                    throw;
+                }
                 catch (Exception ex)
                 {
-                    Log("Error with finding element by attribute and sending keys. Details:");
+                    Log("Error with finding element by attribute and clicking. Details:");
                     Log(ex.ToString());
-                    if (ex.GetType().Equals(typeof(WebDriverTimeoutException))) throw;
                 }
             }
         }
@@ -131,11 +142,14 @@ namespace JourneyPlanner_ClassLibrary
                         }
                         return new ReadOnlyCollection<IWebElement>(results);
                     }
+                    catch (WebDriverTimeoutException ex)
+                    {
+                        throw;
+                    }
                     catch (Exception ex)
                     {
-                        Log("Error with finding elements. Details:");
+                        Log("Error with finding element by attribute and clicking. Details:");
                         Log(ex.ToString());
-                        if (ex.GetType().Equals(typeof(WebDriverTimeoutException))) throw;
                     }
                 }
             });
