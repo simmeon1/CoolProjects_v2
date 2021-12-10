@@ -35,7 +35,7 @@ namespace JourneyPlanner_ClassLibrary
 
         public async Task<JourneyCollection> GetJourneysForDates(string origin, string destination, List<DateTime> allDates)
         {
-            await PopulateControls(origin, destination, allDates[0]);
+            PopulateControls(origin, destination, allDates[0]);
             List<Journey> results = new();
             HashSet<string> addedJourneys = new();
             bool allEarlierFlightsRetrieved = false;
@@ -43,8 +43,13 @@ namespace JourneyPlanner_ClassLibrary
             int retryCounter = 0;
             while (true)
             {
-                IWebElement loadingPage = C.FindElementByAttribute(By.Id("loadingResultPage"));
-                C.WebDriverWaitProvider.Until(d => loadingPage.Displayed == false);
+                while (true)
+                {
+                    IWebElement loadingPage = C.FindElementByAttribute(By.CssSelector(".hidden"));
+                    if (!C.Driver.Url.Contains("session-expired")) break;
+                    C.FindElementByAttributeAndClickIt(By.CssSelector(".nx-error-button"));
+                }
+
                 ReadOnlyCollection<IWebElement> journeyGroups = GetJourneyGroups();
                 if (journeyGroups.Count == 0)
                 {
@@ -54,7 +59,7 @@ namespace JourneyPlanner_ClassLibrary
                         return new JourneyCollection(results.OrderBy(j => j.ToString()).ToList());
                     }
 
-                    await ClickFindJourney();
+                    ClickFindJourney();
                     retryCounter++;
                     continue;
                 }
@@ -122,7 +127,15 @@ namespace JourneyPlanner_ClassLibrary
 
         private ReadOnlyCollection<IWebElement> GetJourneyGroups()
         {
-            return C.FindElementsNew(By.CssSelector(".nx-leaving-section.ng-star-inserted"));
+            try
+            {
+                C.WebDriverWaitProvider.Until(d => C.FindElementsNew(By.CssSelector(".nx-leaving-section.ng-star-inserted")).Count > 0);
+                return C.FindElementsNew(By.CssSelector(".nx-leaving-section.ng-star-inserted"));
+            }
+            catch (Exception)
+            {
+                return new ReadOnlyCollection<IWebElement>(new List<IWebElement>());
+            }
         }
 
         private static string GetFirstMatchFromLinesOfTextWhileRemovingLines(List<string> journeysTextLinesList, string pattern)
@@ -136,13 +149,13 @@ namespace JourneyPlanner_ClassLibrary
             return null;
         }
 
-        private async Task PopulateControls(string origin, string destination, DateTime date)
+        private void PopulateControls(string origin, string destination, DateTime date)
         {
             if (InitialPopulationDone) ClickChangeJourneyButton();
             InputLocation(origin, 0);
             InputLocation(destination, 1);
             InitialPopulationDone = true;
-            await PopulateDateAndHitDone(date);
+            PopulateDateAndHitDone(date);
         }
 
         private void ClickChangeJourneyButton()
@@ -159,7 +172,7 @@ namespace JourneyPlanner_ClassLibrary
             C.FindElementByAttributeAndClickIt(By.CssSelector("li"), text: translatedLocation);
         }
 
-        private async Task PopulateDateAndHitDone(DateTime date)
+        private void PopulateDateAndHitDone(DateTime date)
         {
             By selector = By.CssSelector(".nx-date-input");
             IWebElement dateInput = C.FindElementByAttribute(selector);
@@ -184,7 +197,7 @@ namespace JourneyPlanner_ClassLibrary
 
             C.FindElementByAttributeAndClickIt(By.CssSelector(".mat-calendar-body-cell"), container: calendar, text: date.Day.ToString());
             PickCalendarTimes();
-            await ClickFindJourney();
+            ClickFindJourney();
         }
 
         private void PickCalendarTimes()
@@ -195,9 +208,8 @@ namespace JourneyPlanner_ClassLibrary
             C.FindElementByAttributeAndClickIt(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(2) > nx-time > select > option:nth-child(1)"));
         }
 
-        private async Task ClickFindJourney()
+        private void ClickFindJourney()
         {
-            await C.Delayer.Delay(500);
             C.FindElementByAttributeAndClickIt(By.Id("nx-find-journey-button"));
         }
     }
