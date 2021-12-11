@@ -33,7 +33,7 @@ namespace JourneyPlanner_ClassLibrary
         {
             List<Journey> journeys = new();
             DateTime firstDate = allDates[0];
-            DateTime dateToUse = new(firstDate.Year, firstDate.Month, firstDate.Day, 0,0,0);
+            DateTime dateToUse = new(firstDate.Year, firstDate.Month, firstDate.Day, 0, 0, 0);
             DateTime lastDate = allDates[allDates.Count - 1];
             DateTime lastDateAndLastSecond = new(lastDate.Year, lastDate.Month, lastDate.Day, 23, 59, 59);
             bool pathComplete = false;
@@ -42,11 +42,15 @@ namespace JourneyPlanner_ClassLibrary
                 string js = @"var callback = arguments[arguments.length - 1];
 fetch('https://book.nationalexpress.com/nxrest/journey/search/OUT', {
   'headers': {
-                    'accept': 'application/json, text/plain, */*',
+    'accept': 'application/json, text/plain, */*',
+    'accept-language': 'en-US,en;q=0.9',
     'content-type': 'application/json',
     'sec-ch-ua': '\' Not A;Brand\';v=\'99\', \'Chromium\';v=\'96\', \'Google Chrome\';v=\'96\'',
     'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '\'Windows\''
+    'sec-ch-ua-platform': '\'Windows\'',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin'
   },
   'referrer': 'https://book.nationalexpress.com/coach/',
   'referrerPolicy': 'strict-origin-when-cross-origin',
@@ -60,9 +64,25 @@ fetch('https://book.nationalexpress.com/nxrest/journey/search/OUT', {
                 js = js.Replace("targetTranslation", JourneyRetrieverData.GetTranslation(destination)); //63057
                 js = js.Replace("dateForTravel", dateToUse.ToString("dd/MM/yyyy"));
                 js = js.Replace("timeToUse", dateToUse.ToString("HH:mm"));
-                Dictionary<string, object> result = (Dictionary<string, object>)C.JavaScriptExecutor.ExecuteAsyncScript(js);
 
-                ReadOnlyCollection<object> journeysInResponse = (ReadOnlyCollection<object>)result["journeyCommand"];
+                //await C.Delayer.Delay(1000);
+                object result;
+                while (true)
+                {
+                    try
+                    {
+                        await C.Delayer.Delay(new Random().Next(10000, 20000));
+                        result = C.JavaScriptExecutor.ExecuteAsyncScript(js);
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                        C.Log("Robot");
+                    }
+                }
+
+                Dictionary<string, object> resultParsed = (Dictionary<string, object>)result;
+                ReadOnlyCollection<object> journeysInResponse = (ReadOnlyCollection<object>)resultParsed["journeyCommand"];
                 foreach (Dictionary<string, object> journeyInResponse in journeysInResponse)
                 {
                     DateTime departure = DateTime.Parse(journeyInResponse["departureDateTime"].ToString());
