@@ -53,7 +53,7 @@ namespace JourneyPlanner_ClassLibrary
                             if (attr == null) attr = "";
                             if (attr.Trim().ToLower().Contains(text.ToLower()))
                             {
-                                if (indexOfElement < 0 || i == indexOfElement) return webElement;
+                                if (indexOfElement == -1 || i == indexOfElement) return webElement;
                             }
                         }
                         return null;
@@ -64,7 +64,7 @@ namespace JourneyPlanner_ClassLibrary
                     }
                     catch (Exception ex)
                     {
-                        Log("Error with finding element by attribute and clicking. Details:");
+                        Log("Error with finding element by attribute. Details:");
                         Log(ex.ToString());
                     }
                 }
@@ -72,7 +72,7 @@ namespace JourneyPlanner_ClassLibrary
             return element;
         }
 
-        public IWebElement FindElementByAttributeAndClickIt(By by, string attribute = "innerText", string text = "", ISearchContext container = null, int indexOfElement = -1)
+        public IWebElement FindElementByAttributeAndClickIt(By by, string attribute = "innerText", string text = "", ISearchContext container = null, int indexOfElement = -1, bool clickElement = true)
         {
             while (true)
             {
@@ -80,7 +80,7 @@ namespace JourneyPlanner_ClassLibrary
                 {
                     IWebElement element = FindElementByAttribute(by, attribute, text, container, indexOfElement);
                     WebDriverWaitProvider.Until(WebDriverWaitProvider.ElementIsClickable(element));
-                    element.Click();
+                    if (clickElement) element.Click();
                     return element;
                 }
                 catch (WebDriverTimeoutException ex)
@@ -116,7 +116,7 @@ namespace JourneyPlanner_ClassLibrary
                 }
                 catch (Exception ex)
                 {
-                    Log("Error with finding element by attribute and clicking. Details:");
+                    Log("Error with finding element and sending keys. Details:");
                     Log(ex.ToString());
                 }
             }
@@ -150,7 +150,7 @@ namespace JourneyPlanner_ClassLibrary
                     }
                     catch (Exception ex)
                     {
-                        Log("Error with finding element by attribute and clicking. Details:");
+                        Log("Error with finding multiple elements. Details:");
                         Log(ex.ToString());
                     }
                 }
