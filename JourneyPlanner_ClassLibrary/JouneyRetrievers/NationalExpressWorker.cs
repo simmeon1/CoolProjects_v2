@@ -13,7 +13,6 @@ namespace JourneyPlanner_ClassLibrary
     {
         private JourneyRetrieverComponents C { get; set; }
         private JourneyRetrieverData JourneyRetrieverData { get; set; }
-        private bool InitialPopulationDone { get; set; }
 
         public NationalExpressWorker(JourneyRetrieverComponents c)
         {
@@ -24,7 +23,6 @@ namespace JourneyPlanner_ClassLibrary
         {
             JourneyRetrieverData = data;
             SetUpSearch();
-            InitialPopulationDone = false;
         }
 
         private void SetUpSearch()
@@ -53,7 +51,7 @@ namespace JourneyPlanner_ClassLibrary
                 ReadOnlyCollection<IWebElement> journeyGroups = GetJourneyGroups();
                 if (journeyGroups.Count == 0)
                 {
-                    if (retryCounter >= 3)
+                    if (retryCounter >= 1)
                     {
                         C.Log($"Couldn't retrieve journeys for path {origin}-{destination}.");
                         return new JourneyCollection(results.OrderBy(j => j.ToString()).ToList());
@@ -129,7 +127,7 @@ namespace JourneyPlanner_ClassLibrary
         {
             try
             {
-                C.WebDriverWaitProvider.Until(d => C.FindElementsNew(By.CssSelector(".nx-leaving-section.ng-star-inserted")).Count > 0);
+                C.WebDriverWaitProvider.Until(d => C.FindElementsNew(By.CssSelector(".nx-leaving-section.ng-star-inserted")).Count > 0, 2);
                 return C.FindElementsNew(By.CssSelector(".nx-leaving-section.ng-star-inserted"));
             }
             catch (Exception)
@@ -151,10 +149,9 @@ namespace JourneyPlanner_ClassLibrary
 
         private async Task PopulateControlsAndSearch(string origin, string destination, DateTime date)
         {
-            if (InitialPopulationDone) ClickChangeJourneyButton();
+            if (C.FindElementByAttribute(By.Id("nx-expandable-journey-search")).GetAttribute("hidden") != null) ClickChangeJourneyButton();
             await InputLocation(origin, 0);
             await InputLocation(destination, 1);
-            InitialPopulationDone = true;
             PopulateDateAndSearch(date);
         }
 

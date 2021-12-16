@@ -29,11 +29,26 @@ namespace JourneyPlanner_ClassLibrary
         {
             Logger.Log(message);
         }
+        
+        public void Delay(int milliseconds)
+        {
+            Delayer.Delay(milliseconds);
+        }
 
         public void NavigateToUrl(string url)
         {
             INavigation navigation = Driver.Navigate();
             if (navigation != null) navigation.GoToUrl(url);
+        }
+        
+        public bool ElementsContainsClass(IWebElement element, string targetCls)
+        {
+            string[] elementClasses = element.GetAttribute("class").Split(" ", StringSplitOptions.RemoveEmptyEntries);
+            foreach (string cls in elementClasses)
+            {
+                if (cls != null && cls.Equals(targetCls)) return true;
+            }
+            return false;
         }
 
         public IWebElement FindElementByAttribute(By by, string attribute = "innerText", string text = "", ISearchContext container = null, int indexOfElement = -1)
