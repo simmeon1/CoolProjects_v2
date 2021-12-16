@@ -35,7 +35,7 @@ namespace JourneyPlanner_ClassLibrary
 
         public async Task<JourneyCollection> GetJourneysForDates(string origin, string destination, List<DateTime> allDates)
         {
-            await PopulateControls(origin, destination, allDates[0]);
+            await PopulateControlsAndSearch(origin, destination, allDates[0]);
             List<Journey> results = new();
             HashSet<string> addedJourneys = new();
             bool allEarlierFlightsRetrieved = false;
@@ -149,13 +149,13 @@ namespace JourneyPlanner_ClassLibrary
             return null;
         }
 
-        private async Task PopulateControls(string origin, string destination, DateTime date)
+        private async Task PopulateControlsAndSearch(string origin, string destination, DateTime date)
         {
             if (InitialPopulationDone) ClickChangeJourneyButton();
             await InputLocation(origin, 0);
             await InputLocation(destination, 1);
             InitialPopulationDone = true;
-            PopulateDateAndHitDone(date);
+            PopulateDateAndSearch(date);
         }
 
         private void ClickChangeJourneyButton()
@@ -170,14 +170,15 @@ namespace JourneyPlanner_ClassLibrary
             C.FindElementByAttributeAndClickIt(selector);
             
             C.FindElementByAttributeAndSendKeysToIt(selector, keys: new() { translatedLocation });
-            await C.Delayer.Delay(500);
+            await C.Delayer.Delay(1000);
+            WaitUntilOneStopIsShownForPopup(popupIndex);
             while (!PopupsHidden(popupIndex))
             {
                 try
                 {
                     IWebElement firstLi = C.FindElementByAttribute(By.CssSelector("li"), text: translatedLocation);
                     firstLi.Click();
-                    await C.Delayer.Delay(500);
+                    await C.Delayer.Delay(1000);
                 }
                 catch (Exception ex)
                 {
@@ -186,14 +187,14 @@ namespace JourneyPlanner_ClassLibrary
             }
         }
 
-        private void WaitUntilInfoMessageShowsMessage(int popupIndex, string message)
+        private void WaitUntilOneStopIsShownForPopup(int popupIndex)
         {
             while (true)
             {
                 try
                 {
                     IWebElement infoMessage = C.FindElementsNew(By.CssSelector(".nx-info"))[popupIndex];
-                    if (infoMessage.GetAttribute("innerText").Contains(message)) break;
+                    if (infoMessage.GetAttribute("innerText").Contains("1 stops matching your search")) return;
                 }
                 catch (Exception)
                 {
@@ -210,7 +211,7 @@ namespace JourneyPlanner_ClassLibrary
             return isHidden == null ? false : true;
         }
 
-        private void PopulateDateAndHitDone(DateTime date)
+        private void PopulateDateAndSearch(DateTime date)
         {
             By selector = By.CssSelector(".nx-date-input");
             IWebElement dateInput = C.FindElementByAttribute(selector);
