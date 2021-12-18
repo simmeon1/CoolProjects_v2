@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium;
+﻿using Common_ClassLibrary;
+using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -28,138 +29,69 @@ namespace JourneyPlanner_ClassLibrary
         private void SetUpSearch()
         {
             C.NavigateToUrl("https://book.nationalexpress.com/coach/#/choose-journey");
-            C.FindElementByAttributeAndClickIt(By.CssSelector(".fa-close"), indexOfElement: 1);
         }
 
         public async Task<JourneyCollection> GetJourneysForDates(string origin, string destination, List<DateTime> allDates)
         {
-            await PopulateControlsAndSearch(origin, destination, allDates[0]);
-            List<Journey> results = new();
-            HashSet<string> addedJourneys = new();
-            bool allEarlierFlightsRetrieved = false;
-            bool allFlightsRetrieved = false;
-            int retryCounter = 0;
+            await PopulateControls(origin, destination, allDates[0]);
+
+            List<Journey> journeys = new();
+            DateTime firstDate = allDates[0];
+            DateTime dateToUse = new(firstDate.Year, firstDate.Month, firstDate.Day, 0, 0, 0);
+            DateTime lastDate = allDates[allDates.Count - 1];
+            DateTime lastDateAndLastSecond = new(lastDate.Year, lastDate.Month, lastDate.Day, 23, 59, 59);
+            bool pathComplete = false;
+
             while (true)
             {
-                while (true)
+                object result = SendRequest(dateToUse);
+                Dictionary<string, object> resultParsed = (Dictionary<string, object>)result;
+                ReadOnlyCollection<object> journeysInResponse = (ReadOnlyCollection<object>)resultParsed["journeyCommand"];
+                if (journeysInResponse == null) break;
+                foreach (Dictionary<string, object> journeyInResponse in journeysInResponse)
                 {
-                    IWebElement loadingPage = C.FindElementByAttribute(By.CssSelector(".hidden"));
-                    if (!C.Driver.Url.Contains("session-expired")) break;
-                    C.FindElementByAttributeAndClickIt(By.CssSelector(".nx-error-button"));
-                }
-
-                await C.Delay(500);
-
-                ReadOnlyCollection<IWebElement> journeyGroups = GetJourneyGroups();
-                if (journeyGroups.Count == 0)
-                {
-                    if (retryCounter >= 1)
+                    DateTime departure = DateTime.Parse(journeyInResponse["departureDateTime"].ToString());
+                    if (departure.CompareTo(lastDateAndLastSecond) == 1)
                     {
-                        C.Log($"Couldn't retrieve journeys for path {origin}-{destination}.");
-                        return new JourneyCollection(results.OrderBy(j => j.ToString()).ToList());
-                    }
-
-                    ClickFindJourney();
-                    retryCounter++;
-                    continue;
-                }
-                retryCounter = 0;
-
-                journeyGroups = GetJourneyGroups();
-                foreach (IWebElement journeyGroup in journeyGroups)
-                {
-                    IWebElement groupDateElement = C.FindElementByAttribute(By.XPath(".."), container: journeyGroup);
-                    string groupDateText = C.FindElementByAttribute(By.CssSelector("h5"), container: groupDateElement).GetAttribute("innerText").Trim();
-                    DateTime departing = DateTime.Parse(groupDateText);
-                    DateTime lastDate = allDates[allDates.Count - 1];
-                    int dateComparison = departing.CompareTo(lastDate);
-                    if (allEarlierFlightsRetrieved && dateComparison == 1)
-                    {
-                        allFlightsRetrieved = true;
+                        pathComplete = true;
                         break;
                     }
-                    else if (!allEarlierFlightsRetrieved && departing.CompareTo(allDates[0]) == -1)
-                    {
-                        allEarlierFlightsRetrieved = true;
-                        continue;
-                    }
+                    else dateToUse = departure.AddMinutes(1);
 
-                    string journeysText = journeyGroup.GetAttribute("innerText").Trim();
-                    string[] journeysTextLines = journeysText.Split("\n", StringSplitOptions.RemoveEmptyEntries);
-                    List<string> journeysTextLinesList = new(journeysTextLines);
-
-                    const string timeRegex = @"^(\d\d):(\d\d)";
-                    while (journeysTextLinesList.Count > 0)
-                    {
-                        string departingTime = GetFirstMatchFromLinesOfTextWhileRemovingLines(journeysTextLinesList, timeRegex);
-                        if (departingTime == null) break;
-
-                        DateTime updatedDeparting = departing.AddHours(int.Parse(Regex.Match(departingTime, timeRegex).Groups[1].Value));
-                        updatedDeparting = updatedDeparting.AddMinutes(int.Parse(Regex.Match(departingTime, timeRegex).Groups[2].Value));
-
-                        string durationText = GetFirstMatchFromLinesOfTextWhileRemovingLines(journeysTextLinesList, @"^\d+h \d+m");
-                        if (durationText == null) break;
-
-                        durationText = Regex.Match(durationText, "(\\d+)\\D+(\\d+).*").Success
-                                    ? Regex.Replace(durationText, "(\\d+).*?(\\d+).*", "$1:$2").Trim()
-                                    : Regex.Match(durationText, "(\\d+).*hr").Success
-                                    ? Regex.Replace(durationText, "(\\d+).*", "$1:00").Trim()
-                                    : Regex.Replace(durationText, "(\\d+).*", "0:$1").Trim();
-                        TimeSpan duration = TimeSpan.Parse(durationText);
-                        DateTime arriving = updatedDeparting + duration;
-
-                        string costText = GetFirstMatchFromLinesOfTextWhileRemovingLines(journeysTextLinesList, @"\d+\.\d\d");
-                        if (costText == null) break;
-
-                        int cost = Convert.ToInt32(double.Parse(costText));
-                        Journey journey = new(updatedDeparting, arriving, "National Express", duration, $"{origin}-{destination}", double.Parse(costText), nameof(NationalExpressWorker));
-                        if (!addedJourneys.Contains(journey.ToString()))
-                        {
-                            results.Add(journey);
-                            addedJourneys.Add(journey.ToString());
-                        }
-                    }
+                    DateTime arrival = DateTime.Parse(journeyInResponse["arrivalDateTime"].ToString());
+                    TimeSpan span = arrival - departure;
+                    Dictionary<string, object> costData = (Dictionary<string, object>)journeyInResponse["fare"];
+                    double cost = double.Parse(costData["grossAmountInPennies"].ToString()) / 100;
+                    string path = $"{origin}-{destination}";
+                    Journey journey = new(departure, arrival, "National Express", span, path, cost, nameof(NationalExpressWorker));
+                    journeys.Add(journey);
                 }
-                if (allFlightsRetrieved || journeyGroups.Count == 0) return new JourneyCollection(results.OrderBy(j => j.ToString()).ToList());
-                C.FindElementByAttributeAndClickIt(By.CssSelector(".nx-earlier-later-journey"), indexOfElement: allEarlierFlightsRetrieved ? 1 : 0);
+                if (pathComplete) break;
             }
+            return new(journeys.OrderBy(j => j.ToString()).ToList());
         }
 
-        private ReadOnlyCollection<IWebElement> GetJourneyGroups()
+        private object SendRequest(DateTime dateToUse)
         {
-            try
-            {
-                C.WebDriverWaitProvider.Until(d => C.FindElementsNew(By.CssSelector(".nx-leaving-section.ng-star-inserted")).Count > 0, 2);
-                return C.FindElementsNew(By.CssSelector(".nx-leaving-section.ng-star-inserted"));
-            }
-            catch (Exception)
-            {
-                return new ReadOnlyCollection<IWebElement>(new List<IWebElement>());
-            }
+            //document.querySelector('#nx-expandable-journey-search > app-journey-planner').__ngContext__[30].searchTerms
+            string appJourneyPlannerJs = @"document.querySelector('#nx-expandable-journey-search > app-journey-planner').__ngContext__[30]";
+            C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + ".searchTerms.date = " + appJourneyPlannerJs + ".calendarHelper.getSearchTermsDate();");
+            Dictionary<string, object> searchTerms = (Dictionary<string, object>)C.JavaScriptExecutor.ExecuteScript($@"return {appJourneyPlannerJs}.searchTerms");
+            C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + $".searchTerms.date.leaving.time.selected = '{dateToUse.ToString("HH:mm")}';");
+            C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + ".searchTermsManagementService.setSearchterms(" + appJourneyPlannerJs + ".searchTerms);" +
+                appJourneyPlannerJs + ".searchTermsHelperService.getTotalCoachCards() > 0 && " + appJourneyPlannerJs + ".broadcastService.emit('gaCoachcard', {type: 'coachcardSearch'});");
+            string jsToGetResponse = "var callback = arguments[arguments.length - 1];" +
+                appJourneyPlannerJs + @".journeyService.newJourneySearch('OUT').subscribe({next(response) {callback(response);}});";
+            object result = C.JavaScriptExecutor.ExecuteAsyncScript(jsToGetResponse);
+            return result;
         }
 
-        private static string GetFirstMatchFromLinesOfTextWhileRemovingLines(List<string> journeysTextLinesList, string pattern)
+        private async Task PopulateControls(string origin, string destination, DateTime date)
         {
-            while (journeysTextLinesList.Count > 0)
-            {
-                Match match = Regex.Match(journeysTextLinesList[0], pattern);
-                journeysTextLinesList.RemoveAt(0);
-                if (match.Success) return match.Value;
-            }
-            return null;
-        }
-
-        private async Task PopulateControlsAndSearch(string origin, string destination, DateTime date)
-        {
-            if (C.FindElementByAttribute(By.Id("nx-expandable-journey-search")).GetAttribute("hidden") != null) ClickChangeJourneyButton();
+            if (C.FindElementByAttribute(By.Id("nx-expandable-journey-search")).GetAttribute("hidden") != null) C.FindElementByAttributeAndClickIt(By.Id("editMyJourney"));
             await InputLocation(origin, 0);
             await InputLocation(destination, 1);
-            PopulateDateAndSearch(date);
-        }
-
-        private void ClickChangeJourneyButton()
-        {
-            C.FindElementByAttributeAndClickIt(By.Id("editMyJourney"));
+            PopulateDate(date);
         }
 
         private async Task InputLocation(string location, int popupIndex)
@@ -167,7 +99,7 @@ namespace JourneyPlanner_ClassLibrary
             By selector = By.CssSelector(popupIndex == 0 ? "#nx-from-station input" : "#nx-to-station input");
             string translatedLocation = JourneyRetrieverData.GetTranslation(location);
             C.FindElementByAttributeAndClickIt(selector);
-            
+
             C.FindElementByAttributeAndSendKeysToIt(selector, keys: new() { translatedLocation });
             await C.Delayer.Delay(1000);
             WaitUntilOneStopIsShownForPopup(popupIndex);
@@ -186,6 +118,14 @@ namespace JourneyPlanner_ClassLibrary
             }
         }
 
+        private bool PopupsHidden(int popupIndex)
+        {
+            ReadOnlyCollection<IWebElement> popups = C.FindElementsNew(By.CssSelector("app-station-popup"));
+            IWebElement popupToQuery = popups[popupIndex];
+            string isHidden = popupToQuery.GetAttribute("hidden");
+            return isHidden == null ? false : true;
+        }
+
         private void WaitUntilOneStopIsShownForPopup(int popupIndex)
         {
             while (true)
@@ -202,15 +142,7 @@ namespace JourneyPlanner_ClassLibrary
             }
         }
 
-        private bool PopupsHidden(int popupIndex)
-        {
-            ReadOnlyCollection<IWebElement> popups = C.FindElementsNew(By.CssSelector("app-station-popup"));
-            IWebElement popupToQuery = popups[popupIndex];
-            string isHidden = popupToQuery.GetAttribute("hidden");
-            return isHidden == null ? false : true;
-        }
-
-        private void PopulateDateAndSearch(DateTime date)
+        private void PopulateDate(DateTime date)
         {
             By selector = By.CssSelector(".nx-date-input");
             IWebElement dateInput = C.FindElementByAttribute(selector);
@@ -235,7 +167,6 @@ namespace JourneyPlanner_ClassLibrary
 
             C.FindElementByAttributeAndClickIt(By.CssSelector(".mat-calendar-body-cell"), container: calendar, text: date.Day.ToString());
             PickCalendarTimes();
-            ClickFindJourney();
         }
 
         private void PickCalendarTimes()
@@ -244,11 +175,6 @@ namespace JourneyPlanner_ClassLibrary
             C.FindElementByAttributeAndClickIt(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(1) > nx-time-condition > select > option:nth-child(1)"));
             C.FindElementByAttributeAndClickIt(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(2) > nx-time > select"));
             C.FindElementByAttributeAndClickIt(By.CssSelector("#nx-datetime-picker > nx-time-picker > div > div.nx-display-flex > div:nth-child(2) > nx-time > select > option:nth-child(1)"));
-        }
-
-        private void ClickFindJourney()
-        {
-            C.FindElementByAttributeAndClickIt(By.Id("nx-find-journey-button"));
         }
     }
 }
