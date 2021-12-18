@@ -29,6 +29,14 @@ namespace JourneyPlanner_ClassLibrary
         private void SetUpSearch()
         {
             C.NavigateToUrl("https://book.nationalexpress.com/coach/#/choose-journey");
+            try
+            {
+                C.FindElementByAttributeAndClickIt(By.CssSelector("em.fa-close"), indexOfElement: 1);
+            }
+            catch (Exception)
+            {
+                //Doesn't show
+            }
         }
 
         public async Task<JourneyCollection> GetJourneysForDates(string origin, string destination, List<DateTime> allDates)
@@ -64,7 +72,7 @@ namespace JourneyPlanner_ClassLibrary
                     double cost = double.Parse(costData["grossAmountInPennies"].ToString()) / 100;
                     string path = $"{origin}-{destination}";
                     Journey journey = new(departure, arrival, "National Express", span, path, cost, nameof(NationalExpressWorker));
-                    journeys.Add(journey);
+                    if (!journeys.Any(j => j.ToString().Equals(journey.ToString()))) journeys.Add(journey);
                 }
                 if (pathComplete) break;
             }
@@ -77,6 +85,13 @@ namespace JourneyPlanner_ClassLibrary
             string appJourneyPlannerJs = @"document.querySelector('#nx-expandable-journey-search > app-journey-planner').__ngContext__[30]";
             C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + ".searchTerms.date = " + appJourneyPlannerJs + ".calendarHelper.getSearchTermsDate();");
             Dictionary<string, object> searchTerms = (Dictionary<string, object>)C.JavaScriptExecutor.ExecuteScript($@"return {appJourneyPlannerJs}.searchTerms");
+            C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + ".searchTerms.date.leaving.date.set('year', arguments[0])", dateToUse.Year);
+            C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + ".searchTerms.date.leaving.date.set('month', arguments[0])", dateToUse.Month - 1);
+            C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + ".searchTerms.date.leaving.date.set('date', arguments[0])", dateToUse.Day);
+            C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + ".searchTerms.date.leaving.date.set('hour', arguments[0])", dateToUse.Hour);
+            C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + ".searchTerms.date.leaving.date.set('minute', arguments[0])", dateToUse.Minute);
+            C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + ".searchTerms.date.leaving.date.set('second', arguments[0])", dateToUse.Second);
+            C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + ".searchTerms.date.leaving.date.set('millisecond', arguments[0])", dateToUse.Millisecond);
             C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + $".searchTerms.date.leaving.time.selected = '{dateToUse.ToString("HH:mm")}';");
             C.JavaScriptExecutor.ExecuteScript(appJourneyPlannerJs + ".searchTermsManagementService.setSearchterms(" + appJourneyPlannerJs + ".searchTerms);" +
                 appJourneyPlannerJs + ".searchTermsHelperService.getTotalCoachCards() > 0 && " + appJourneyPlannerJs + ".broadcastService.emit('gaCoachcard', {type: 'coachcardSearch'});");
@@ -88,6 +103,7 @@ namespace JourneyPlanner_ClassLibrary
 
         private async Task PopulateControls(string origin, string destination, DateTime date)
         {
+            await C.Delay(500);
             if (C.FindElementByAttribute(By.Id("nx-expandable-journey-search")).GetAttribute("hidden") != null) C.FindElementByAttributeAndClickIt(By.Id("editMyJourney"));
             await InputLocation(origin, 0);
             await InputLocation(destination, 1);
