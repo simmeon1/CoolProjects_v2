@@ -4,6 +4,7 @@ using SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace JourneyPlanner_ClassLibrary
 {
@@ -30,9 +31,9 @@ namespace JourneyPlanner_ClassLibrary
             Logger.Log(message);
         }
         
-        public void Delay(int milliseconds)
+        public async Task Delay(int milliseconds)
         {
-            Delayer.Delay(milliseconds);
+            await Delayer.Delay(milliseconds);
         }
 
         public void NavigateToUrl(string url)
@@ -51,7 +52,7 @@ namespace JourneyPlanner_ClassLibrary
             return false;
         }
 
-        public IWebElement FindElementByAttribute(By by, string attribute = "innerText", string text = "", ISearchContext container = null, int indexOfElement = -1)
+        public IWebElement FindElementByAttribute(By by, string attribute = "innerText", string text = "", ISearchContext container = null, int indexOfElement = -1, int seconds = 10)
         {
             IWebElement element = WebDriverWaitProvider.Until(d =>
             {
@@ -83,17 +84,17 @@ namespace JourneyPlanner_ClassLibrary
                         Log(ex.ToString());
                     }
                 }
-            });
+            }, seconds);
             return element;
         }
 
-        public IWebElement FindElementByAttributeAndClickIt(By by, string attribute = "innerText", string text = "", ISearchContext container = null, int indexOfElement = -1, bool clickElement = true)
+        public IWebElement FindElementByAttributeAndClickIt(By by, string attribute = "innerText", string text = "", ISearchContext container = null, int indexOfElement = -1, bool clickElement = true, int seconds = 10)
         {
             while (true)
             {
                 try
                 {
-                    IWebElement element = FindElementByAttribute(by, attribute, text, container, indexOfElement);
+                    IWebElement element = FindElementByAttribute(by, attribute, text, container, indexOfElement, seconds);
                     WebDriverWaitProvider.Until(WebDriverWaitProvider.ElementIsClickable(element));
                     if (clickElement) element.Click();
                     return element;
@@ -110,14 +111,14 @@ namespace JourneyPlanner_ClassLibrary
             }
         }
 
-        public IWebElement FindElementByAttributeAndSendKeysToIt(By by, string attribute = "innerText", string text = "", ISearchContext container = null, int indexOfElement = -1, List<string> keys = null, bool doClearFirst = true)
+        public IWebElement FindElementByAttributeAndSendKeysToIt(By by, string attribute = "innerText", string text = "", ISearchContext container = null, int indexOfElement = -1, List<string> keys = null, bool doClearFirst = true, int seconds = 10)
         {
             if (keys == null) keys = new();
             while (true)
             {
                 try
                 {
-                    IWebElement element = FindElementByAttribute(by, attribute, text, container, indexOfElement);
+                    IWebElement element = FindElementByAttribute(by, attribute, text, container, indexOfElement, seconds);
                     if (doClearFirst) element.Clear();
                     foreach (string key in keys)
                     {
@@ -137,7 +138,7 @@ namespace JourneyPlanner_ClassLibrary
             }
         }
 
-        public ReadOnlyCollection<IWebElement> FindElementsNew(By by, string attribute = "innerText", string text = "", ISearchContext container = null)
+        public ReadOnlyCollection<IWebElement> FindElementsNew(By by, string attribute = "innerText", string text = "", ISearchContext container = null, int seconds = 10)
         {
             ReadOnlyCollection<IWebElement> elements = WebDriverWaitProvider.Until(d =>
             {
@@ -169,7 +170,7 @@ namespace JourneyPlanner_ClassLibrary
                         Log(ex.ToString());
                     }
                 }
-            });
+            }, seconds);
             return elements;
         }
     }

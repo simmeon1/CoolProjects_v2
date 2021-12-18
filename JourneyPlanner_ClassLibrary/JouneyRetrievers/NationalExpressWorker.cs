@@ -48,6 +48,8 @@ namespace JourneyPlanner_ClassLibrary
                     C.FindElementByAttributeAndClickIt(By.CssSelector(".nx-error-button"));
                 }
 
+                await C.Delay(500);
+
                 ReadOnlyCollection<IWebElement> journeyGroups = GetJourneyGroups();
                 if (journeyGroups.Count == 0)
                 {
@@ -118,7 +120,7 @@ namespace JourneyPlanner_ClassLibrary
                         }
                     }
                 }
-                if (allFlightsRetrieved) return new JourneyCollection(results.OrderBy(j => j.ToString()).ToList());
+                if (allFlightsRetrieved || journeyGroups.Count == 0) return new JourneyCollection(results.OrderBy(j => j.ToString()).ToList());
                 C.FindElementByAttributeAndClickIt(By.CssSelector(".nx-earlier-later-journey"), indexOfElement: allEarlierFlightsRetrieved ? 1 : 0);
             }
         }
