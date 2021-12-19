@@ -9,20 +9,19 @@ namespace JourneyPlanner_ClassLibrary
 {
     public class PathsToDirectPathGroupsConverter
     {
-        public Dictionary<string, JourneyRetrieverData> GetGroups(List<Path> paths, Dictionary<string, JourneyRetrieverData> existingData = null)
+        public Dictionary<string, JourneyRetrieverData> GetGroups(List<Path> paths, Dictionary<string, JourneyRetrieverData> existingData, Dictionary<string, HashSet<string>> airportsAndDestinations)
         {
             List<DirectPath> directPaths = new();
             foreach (Path path in paths) directPaths.AddRange(path.GetDirectPaths());
             List<DirectPath> cleanDirectPaths = RemoveDuplicatesAndOrderDirectPaths(directPaths);
-            existingData ??= new();
 
             Dictionary<DirectPath, bool> directPathsThatHaveADefinedWorker = InitialiseDictWithDirectPathsWithPredefinedWorkers(cleanDirectPaths);
-            Dictionary<string, JourneyRetrieverData> newData = new();
+            Dictionary<string, JourneyRetrieverData> data = new();
             foreach (KeyValuePair<string, JourneyRetrieverData> existingDataPair in existingData)
             {
-                AddDataFromPairToToNewData(existingDataPair, newData, cleanDirectPaths, directPathsThatHaveADefinedWorker);
+                AddDataFromPairToToNewData(existingDataPair, data, cleanDirectPaths, directPathsThatHaveADefinedWorker);
             }
-            return AddGoogleFlightsToNewDataIfPathsForItRemain(newData, directPathsThatHaveADefinedWorker);
+            return AddGoogleFlightJourneys(data, directPathsThatHaveADefinedWorker, airportsAndDestinations);
         }
 
         private static Dictionary<DirectPath, bool> InitialiseDictWithDirectPathsWithPredefinedWorkers(List<DirectPath> cleanDirectPaths)
@@ -68,18 +67,21 @@ namespace JourneyPlanner_ClassLibrary
             newData[worker] = new(pathsForPair, translationsForPair);
         }
 
-        private static Dictionary<string, JourneyRetrieverData> AddGoogleFlightsToNewDataIfPathsForItRemain(Dictionary<string, JourneyRetrieverData> newData, Dictionary<DirectPath, bool> directPathsThatHaveADefinedWorker)
+        private static Dictionary<string, JourneyRetrieverData> AddGoogleFlightJourneys(Dictionary<string, JourneyRetrieverData> data, Dictionary<DirectPath, bool> directPathsThatHaveADefinedWorker, Dictionary<string, HashSet<string>> airportsAndDestinations)
         {
             List<DirectPath> remainingDirectPaths = new();
             foreach (KeyValuePair<DirectPath, bool> pair in directPathsThatHaveADefinedWorker)
             {
-                if (!pair.Value) remainingDirectPaths.Add(pair.Key);
+                DirectPath path = pair.Key;
+                string start = path.GetStart();
+                string end = path.GetEnd();
+                if (airportsAndDestinations.ContainsKey(start) && airportsAndDestinations[start].Contains(end)) remainingDirectPaths.Add(pair.Key);
             }
 
             List<DirectPath> cleanDirectPaths = RemoveDuplicatesAndOrderDirectPaths(remainingDirectPaths);
-            if (cleanDirectPaths.Count == 0) return newData;
-            newData.Add(nameof(GoogleFlightsWorker), new(cleanDirectPaths, new()));
-            return newData;
+            if (cleanDirectPaths.Count == 0) return data;
+            data.Add(nameof(GoogleFlightsWorker), new(cleanDirectPaths, new()));
+            return data;
         }
     }
 }

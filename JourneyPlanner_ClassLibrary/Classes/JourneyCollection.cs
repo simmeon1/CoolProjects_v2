@@ -79,7 +79,7 @@ namespace JourneyPlanner_ClassLibrary
             return new(Journeys.Where(j => j.Path.Equals(path)).ToList());
         }
 
-        internal void RemoveJourneysThatMatchPathAndRetriever(string retrieverName, string path)
+        public void RemoveJourneysThatMatchPathAndRetriever(string retrieverName, string path)
         {
             List<Journey> newList = new();
             foreach (Journey journey in Journeys)

@@ -76,7 +76,7 @@ namespace JourneyPlanner_ClassLibrary
             }
 
             AirportListFilterer airportListFilterer = new(airportsList);
-            Dictionary<string, HashSet<string>> filteredAirports = airportListFilterer.FilterAirports(airportsAndDestinations, filterer);
+            Dictionary<string, HashSet<string>> filteredAirportsAndDestinations = airportListFilterer.FilterAirports(airportsAndDestinations, filterer);
 
             Dictionary<string, JourneyRetrieverData> existingData = new();
             if (!Parameters.WorkerSetupFile.IsNullOrEmpty())
@@ -87,7 +87,7 @@ namespace JourneyPlanner_ClassLibrary
             JourneyRetrieverDataToLocalLinksConverter localLinksConverter = new();
             Dictionary<string, HashSet<string>> localLinks = localLinksConverter.DoConversion(existingData);
 
-            AirportPathGenerator generator = new(filteredAirports, localLinks);
+            AirportPathGenerator generator = new(filteredAirportsAndDestinations, localLinks);
             List<Path> paths = generator.GeneratePaths(Parameters.Origins, Parameters.Destinations, Parameters.MaxFlights, Parameters.MaxLocalLinks, Parameters.OnlyIncludeShortestPaths);
             List<List<string>> pathsDetailed = new();
             foreach (Path path in paths)
@@ -106,7 +106,7 @@ namespace JourneyPlanner_ClassLibrary
 
             PathsToDirectPathGroupsConverter converter = new();
 
-            Dictionary<string, JourneyRetrieverData> workersAndData = converter.GetGroups(paths, existingData);
+            Dictionary<string, JourneyRetrieverData> workersAndData = converter.GetGroups(paths, existingData, filteredAirportsAndDestinations);
 
             MultiJourneyCollectorResults existingResults = null;
             if (!Parameters.ProgressFile.IsNullOrEmpty())

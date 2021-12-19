@@ -11,6 +11,9 @@ namespace JourneyPlanner_Tests.UnitTests
         [TestMethod]
         public void GroupConstructsCorrectly()
         {
+            //For serializing
+            JourneyRetrieverData test = new();
+
             List<DirectPath> paths = new() { new DirectPath("ABZ", "EDI") };
             Dictionary<string, string> transaltions = new();
             transaltions.Add("ABZ", "Aberdeen");
@@ -22,6 +25,10 @@ namespace JourneyPlanner_Tests.UnitTests
             Assert.IsTrue(data.ToString().Equals("1 direct paths, 1 translations."));
             data.RemovePath("ABZ-EDI");
             Assert.IsTrue(data.GetCountOfDirectPaths() == 0);
+            Assert.IsTrue(data.GetKeyFromTranslation("Aberdeen").Equals("ABZ"));
+            Assert.IsTrue(data.GetKeyFromTranslation("Edinburgh").Equals("Edinburgh"));
+
+            
         }
     }
 }

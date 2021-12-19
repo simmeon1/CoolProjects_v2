@@ -12,6 +12,9 @@ namespace JourneyPlanner_Tests.UnitTests
         [TestMethod]
         public void BuildsOK()
         {
+            //For serializing
+            DirectPath test = new();
+
             DirectPath directPath = new("ABZ", "EDI");
             Assert.IsTrue(directPath.GetStart().Equals("ABZ"));
             Assert.IsTrue(directPath.GetEnd().Equals("EDI"));

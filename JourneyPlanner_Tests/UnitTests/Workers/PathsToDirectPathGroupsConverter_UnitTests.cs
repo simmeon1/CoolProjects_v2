@@ -17,6 +17,14 @@ namespace JourneyPlanner_Tests.UnitTests
         private const string defaultWorker = nameof(GoogleFlightsWorker);
         private readonly Path path1 = new(new List<string>() { "ABZ", "LTN", "SOF" });
         private readonly Path path2 = new(new List<string>() { "LTN", "SOF", "EDI" });
+        private readonly Dictionary<string, HashSet<string>> airportsAndDestinations = new();
+
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            airportsAndDestinations.Add("ABZ", new HashSet<string>() { "LTN" });
+        }
 
         [TestMethod]
         public void DataGroupedAsExpected()
@@ -28,7 +36,7 @@ namespace JourneyPlanner_Tests.UnitTests
             existingData.Add(megabus, data);
 
             PathsToDirectPathGroupsConverter converter = new();
-            Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(new List<Path>() { path1, path2 }, existingData);
+            Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(new List<Path>() { path1, path2 }, existingData, airportsAndDestinations);
 
             Assert.IsTrue(results.Count == 2);
             Assert.IsTrue(results.ContainsKey(megabus));
@@ -36,39 +44,9 @@ namespace JourneyPlanner_Tests.UnitTests
             Assert.IsTrue(results[megabus].DirectPaths.Count == 1);
             Assert.IsTrue(results[megabus].DirectPaths[0].ToString().Equals("ABZ-LTN"));
             Assert.IsTrue(results[megabus].Translations.Equals(translations));
-            Assert.IsTrue(results[defaultWorker].DirectPaths.Count == 2);
-            Assert.IsTrue(results[defaultWorker].DirectPaths[0].ToString().Equals("LTN-SOF"));
-            Assert.IsTrue(results[defaultWorker].DirectPaths[1].ToString().Equals("SOF-EDI"));
+            Assert.IsTrue(results[defaultWorker].DirectPaths.Count == 1);
+            Assert.IsTrue(results[defaultWorker].DirectPaths[0].ToString().Equals("ABZ-LTN"));
             Assert.IsTrue(results[defaultWorker].Translations.Count == 0);
-        }
-
-        [TestMethod]
-        public void DataGroupedAsExpected_NoGoogleFlights()
-        {
-            Dictionary<string, JourneyRetrieverData> existingData = new();
-
-            Dictionary<string, string> translations1 = new();
-            translations1.Add("ABZ", "Aberdeen");
-            JourneyRetrieverData data1 = new(new List<DirectPath>() { new DirectPath("ABZ", "LTN") }, translations1);
-            existingData.Add(megabus, data1);
-            
-            Dictionary<string, string> translations2 = null;
-            JourneyRetrieverData data2 = new(new List<DirectPath>() { new DirectPath("LTN", "SOF"), new DirectPath("SOF", "EDI") }, translations2);
-            existingData.Add(scotrail, data2);
-
-            PathsToDirectPathGroupsConverter converter = new();
-            Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(new List<Path>() { path1, path2 }, existingData);
-
-            Assert.IsTrue(results.Count == 2);
-            Assert.IsTrue(results.ContainsKey(megabus));
-            Assert.IsTrue(results.ContainsKey(scotrail));
-            Assert.IsTrue(results[megabus].DirectPaths.Count == 1);
-            Assert.IsTrue(results[megabus].DirectPaths[0].ToString().Equals("ABZ-LTN"));
-            Assert.IsTrue(results[megabus].Translations.Equals(translations1));
-            Assert.IsTrue(results[scotrail].DirectPaths.Count == 2);
-            Assert.IsTrue(results[scotrail].DirectPaths[0].ToString().Equals("LTN-SOF"));
-            Assert.IsTrue(results[scotrail].DirectPaths[1].ToString().Equals("SOF-EDI"));
-            Assert.IsTrue(results[scotrail].Translations.Count == 0);
         }
 
         [TestMethod]
@@ -80,7 +58,7 @@ namespace JourneyPlanner_Tests.UnitTests
             existingData.Add(scotrail, data1);
 
             PathsToDirectPathGroupsConverter converter = new();
-            Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(new List<Path>() { path1 }, existingData);
+            Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(new List<Path>() { path1 }, existingData, airportsAndDestinations);
 
             Assert.IsTrue(results.Count == 3);
             Assert.IsTrue(results.ContainsKey(defaultWorker));
@@ -90,21 +68,30 @@ namespace JourneyPlanner_Tests.UnitTests
             Assert.IsTrue(results[megabus].DirectPaths[0].ToString().Equals("ABZ-LTN"));
             Assert.IsTrue(results[scotrail].DirectPaths.Count == 1);
             Assert.IsTrue(results[scotrail].DirectPaths[0].ToString().Equals("ABZ-LTN"));
+            Assert.IsTrue(results[defaultWorker].DirectPaths.Count == 1);
+            Assert.IsTrue(results[defaultWorker].DirectPaths[0].ToString().Equals("ABZ-LTN"));
         }
 
         [TestMethod]
         public void DataGroupedAsExpected_NoExistingData()
         {
             PathsToDirectPathGroupsConverter converter = new();
-            Dictionary<string, JourneyRetrieverData> results =  converter.GetGroups(new List<Path>() { path1, path2 });
+            Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(new List<Path>() { path1, path2 }, new Dictionary<string, JourneyRetrieverData>(), airportsAndDestinations);
 
             Assert.IsTrue(results.Count == 1);
             Assert.IsTrue(results.ContainsKey(defaultWorker));
-            Assert.IsTrue(results[defaultWorker].DirectPaths.Count == 3);
+            Assert.IsTrue(results[defaultWorker].DirectPaths.Count == 1);
             Assert.IsTrue(results[defaultWorker].DirectPaths[0].ToString().Equals("ABZ-LTN"));
-            Assert.IsTrue(results[defaultWorker].DirectPaths[1].ToString().Equals("LTN-SOF"));
-            Assert.IsTrue(results[defaultWorker].DirectPaths[2].ToString().Equals("SOF-EDI"));
             Assert.IsTrue(results[defaultWorker].Translations.Count == 0);
+        }
+
+
+        [TestMethod]
+        public void DataGroupedAsExpected_NoGoogleFlights()
+        {
+            PathsToDirectPathGroupsConverter converter = new();
+            Dictionary<string, JourneyRetrieverData> results = converter.GetGroups(new List<Path>() { path1, path2 }, new Dictionary<string, JourneyRetrieverData>(), new Dictionary<string, HashSet<string>>());
+            Assert.IsTrue(results.Count == 0);
         }
     }
 }
