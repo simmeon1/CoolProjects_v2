@@ -93,7 +93,7 @@ namespace JourneyPlanner_ClassLibrary
             Journey previousJourney = JourneyCollection[0];
             for (int i = 1; i < JourneyCollection.GetCount(); i++)
             {
-                if ((JourneyCollection[i].Departing - previousJourney.Arriving).TotalMinutes < (JourneyCollection[i].IsFlight() ? 120 : 30)) return false;
+                if ((JourneyCollection[i].Departing - previousJourney.Arriving).TotalMinutes < (JourneyCollection[i].IsFlight() ? 60 : 30)) return false;
                 previousJourney = JourneyCollection[i];
             }
             return true;
