@@ -50,9 +50,19 @@ namespace JourneyPlanner_ClassLibrary
             DateTime lastDateAndLastSecond = new(lastDate.Year, lastDate.Month, lastDate.Day, 23, 59, 59);
             bool pathComplete = false;
 
+            object result;
             while (true)
             {
-                object result = SendRequest(dateToUse);
+                try
+                {
+                    result = SendRequest(dateToUse);
+                }
+                catch (WebDriverTimeoutException ex)
+                {
+                    //Try again
+                    result = SendRequest(dateToUse);
+                }
+
                 Dictionary<string, object> resultParsed = (Dictionary<string, object>)result;
                 ReadOnlyCollection<object> journeysInResponse = (ReadOnlyCollection<object>)resultParsed["journeyCommand"];
                 if (journeysInResponse == null) break;
