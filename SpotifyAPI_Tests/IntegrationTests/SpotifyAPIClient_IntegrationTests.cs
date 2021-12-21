@@ -2,6 +2,7 @@ using Common_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SpotifyAPI_ClassLibrary;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -69,6 +70,16 @@ namespace SpotifyAPI_Tests.IntegrationTests
             List<string> spotifyIds = songs.Select(s => s.SpotifyId).ToList();
             await Client.AddAudioFeaturesToSongs(songs);
             File.WriteAllText(@"C:\Users\simme\source\repos\json files from laptop\TopTenUKandUSSingles.json", songs.SerializeObject(Newtonsoft.Json.Formatting.Indented));
+        }
+        
+        [TestMethod]
+        public async Task TestAsync3()
+        {
+            List<SongCLS> songs = File.ReadAllText(@"C:\Users\simme\source\repos\json files from laptop\TopTenUKandUSSingles.json").DeserializeObject<List<SongCLS>>();
+            DataTableCreator dtCreator = new();
+            List<DataTable> tables = dtCreator.GetTables(songs);
+            ExcelPrinter printer = new();
+            printer.PrintTablesToWorksheet(tables, "songData.xlsx");
         }
     }
 }
