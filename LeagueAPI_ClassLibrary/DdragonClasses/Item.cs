@@ -16,7 +16,7 @@ namespace LeagueAPI_ClassLibrary
 
         public string GetTagsString()
         {
-            return Tags.ConcatenateListOfStringsToCommaString();
+            return Tags.ConcatenateListOfStringsToCommaAndSpaceString();
         }
 
         public string GetCleanDescription()

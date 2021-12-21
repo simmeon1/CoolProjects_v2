@@ -54,6 +54,60 @@ namespace SpotifyAPI_ClassLibrary
             foreach (HttpRequestMessage request in requests) await SendRequest(request);
         }
 
+        public bool ConfirmTokenAgainstCurrentToken(ISpotifyToken tokenToConfirm)
+        {
+            return TokenWorker.TokensHaveTheSameData(tokenToConfirm, Token);
+        }
+
+        public async Task<List<Playlist>> GetPlaylists()
+        {
+            HttpRequestMessage requestMessage = await GetRequestMessageWithJsonContentAndAuthorization(HttpMethod.Get, "https://api.spotify.com/v1/me/playlists", "");
+            string responseText = await SendRequest(requestMessage);
+            return GetPlaylistsFromJson(responseText);
+        }
+
+        public async Task AddAudioFeaturesToSongs(List<SongCLS> songs)
+        {
+            List<string> responses = new();
+
+            const string baseUri = "https://api.spotify.com/v1/audio-features?ids=";
+            List<string> idsForRquest = new();
+            for (int i = 0; i < songs.Count; i++)
+            {
+                idsForRquest.Add(songs[i].SpotifyId);
+                if (idsForRquest.Count != 100) continue;
+                await GetAudioFeaturesForSongs(responses, baseUri + idsForRquest.ConcatenateListOfStringsToCommaString());
+                idsForRquest.Clear();
+            }
+            if (idsForRquest.Count > 0) await GetAudioFeaturesForSongs(responses, baseUri + idsForRquest.ConcatenateListOfStringsToCommaString());
+
+            foreach (string response in responses)
+            {
+                JObject jo = JObject.Parse(response);
+                foreach (JToken songData in jo["audio_features"])
+                {
+                    if (songData.ToString().IsNullOrEmpty()) continue;
+                    string songId = songData["id"].ToString();
+                    SongCLS songInList = songs.FirstOrDefault(s => s.SpotifyId.Equals(songId));
+                    songInList.Acousticness = (double)songData["acousticness"];
+                    songInList.Danceability = (double)songData["danceability"];
+                    songInList.Energy = (double)songData["energy"];
+                    songInList.Instrumentalness = (double)songData["instrumentalness"];
+                    songInList.Liveness = (double)songData["liveness"];
+                    songInList.Loudness = (double)songData["loudness"];
+                    songInList.Speechiness = (double)songData["speechiness"];
+                    songInList.Tempo = (double)songData["tempo"];
+                    songInList.Valence = (double)songData["valence"];
+                }
+            }
+        }
+
+        private async Task GetAudioFeaturesForSongs(List<string> responses, string uri)
+        {
+            HttpRequestMessage requestMessage = await GetRequestMessageWithJsonContentAndAuthorization(HttpMethod.Get, uri, "");
+            responses.Add(await SendRequest(requestMessage));
+        }
+
         private async Task AddRequestToAddSongs(string playlistId, string template, List<HttpRequestMessage> requests, List<string> uris)
         {
             requests.Add(await GetRequestMessageWithJsonContentAndAuthorization(
@@ -86,17 +140,6 @@ namespace SpotifyAPI_ClassLibrary
             return TokenWorker.CreateTokenObject(accessToken, expiresIn, scope, tokenType, dateTimeJustBeforeRequest);
         }
 
-        public bool ConfirmTokenAgainstCurrentToken(ISpotifyToken tokenToConfirm)
-        {
-            return TokenWorker.TokensHaveTheSameData(tokenToConfirm, Token);
-        }
-
-        public async Task<List<Playlist>> GetPlaylists()
-        {
-            HttpRequestMessage requestMessage = await GetRequestMessageWithJsonContentAndAuthorization(HttpMethod.Get, "https://api.spotify.com/v1/me/playlists", "");
-            string responseText = await SendRequest(requestMessage);
-            return GetPlaylistsFromJson(responseText);
-        }
 
         private async Task<HttpRequestMessage> GetRequestMessageWithJsonContentAndAuthorization(HttpMethod method, string requestUri, string content)
         {

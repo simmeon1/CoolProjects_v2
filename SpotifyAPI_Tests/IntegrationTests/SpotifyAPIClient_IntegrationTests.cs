@@ -29,6 +29,7 @@ namespace SpotifyAPI_Tests.IntegrationTests
             Assert.IsTrue(result.Count > 0);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task TestAsync()
         {
@@ -56,6 +57,18 @@ namespace SpotifyAPI_Tests.IntegrationTests
             //songsLimited.AddRange(songs10to19);
             //songsLimited.AddRange(songs20to21);
             //songsLimited = songsLimited.OrderByDescending(x => x.YouTubeViews).ToList();
+        }
+
+        [Ignore]
+        [TestMethod]
+        public async Task TestAsync2()
+        {
+            List<SongCLS> songs = File.ReadAllText(@"C:\Users\simme\source\repos\json files from laptop\TopTenUKandUSSingles.json").DeserializeObject<List<SongCLS>>();
+            songs = songs.Distinct(new SongCLS()).OrderByDescending(x => x.YouTubeViews).ToList();
+            songs.RemoveAll(x => string.IsNullOrEmpty(x.SpotifyId));
+            List<string> spotifyIds = songs.Select(s => s.SpotifyId).ToList();
+            await Client.AddAudioFeaturesToSongs(songs);
+            File.WriteAllText(@"C:\Users\simme\source\repos\json files from laptop\TopTenUKandUSSingles.json", songs.SerializeObject(Newtonsoft.Json.Formatting.Indented));
         }
     }
 }

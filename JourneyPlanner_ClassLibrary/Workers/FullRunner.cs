@@ -42,7 +42,7 @@ namespace JourneyPlanner_ClassLibrary
         {
             Parameters = paramss;
 
-            string runSummary = $"{Parameters.Origins.ConcatenateListOfStringsToCommaString()} - {Parameters.Destinations.ConcatenateListOfStringsToCommaString()}";
+            string runSummary = $"{Parameters.Origins.ConcatenateListOfStringsToCommaAndSpaceString()} - {Parameters.Destinations.ConcatenateListOfStringsToCommaAndSpaceString()}";
             runSummary += " - " + Parameters.DateFrom.ToString("yyyy-MM-dd");
             runSummary += " - " + Parameters.DateTo.ToString("yyyy-MM-dd");
             string runId = Globals.GetDateTimeFileNameFriendlyConcatenatedWithString(DateTimeProvider.Now(), runSummary);

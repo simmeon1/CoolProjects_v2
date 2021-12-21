@@ -14,7 +14,7 @@ namespace LeagueAPI_ClassLibrary
         public int Difficulty { get; set; }
         public string GetTagsString()
         {
-            return Tags.ConcatenateListOfStringsToCommaString();
+            return Tags.ConcatenateListOfStringsToCommaAndSpaceString();
         }
     }
 }

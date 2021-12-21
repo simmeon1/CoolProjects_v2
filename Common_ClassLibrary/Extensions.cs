@@ -27,9 +27,14 @@ namespace Common_ClassLibrary
             return string.IsNullOrEmpty(str);
         }
 
-        public static string ConcatenateListOfStringsToCommaString(this List<string> list)
+        public static string ConcatenateListOfStringsToCommaAndSpaceString(this List<string> list)
         {
             return ConcatenateListOfStrings(list, ", ");
+        }
+        
+        public static string ConcatenateListOfStringsToCommaString(this List<string> list)
+        {
+            return ConcatenateListOfStrings(list, ",");
         }
         
         public static string ConcatenateListOfStringsToDashString(this IEnumerable<string> list)
