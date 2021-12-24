@@ -29,7 +29,7 @@ namespace JourneyPlanner_ClassLibrary
 
         private void SetUpSearch()
         {
-            C.NavigateToUrl("https://www.google.com/travel/flights");
+            C.NavigateToUrl("https://www.google.com/travel/flights?curr=GBP");
             try
             {
                 C.FindElementByAttributeAndClickIt(By.CssSelector("button"), text: "I agree");
