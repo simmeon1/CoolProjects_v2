@@ -126,7 +126,7 @@ namespace JourneyPlanner_ClassLibrary
             List<SequentialJourneyCollection> results = builder.GetFullPathCombinationOfJourneys(paths, journeyCollectorResults.JourneyCollection, Parameters.SkipUndoableJourneys, Parameters.SkipNotSameDayFinishJourneys, Parameters.NoLongerThan);
 
             DataTableCreator dtCreator = new();
-            Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results, Parameters.SkipUndoableJourneys, Parameters.SkipNotSameDayFinishJourneys), $"{runResultsPath}\\{runId}_results.xlsx");
+            Printer.PrintTablesToWorksheet(dtCreator.GetTables(airportsList, results, Parameters.SkipUndoableJourneys, Parameters.SkipNotSameDayFinishJourneys, Parameters.IncludeCheckedInBaggage), $"{runResultsPath}\\{runId}_results.xlsx");
             Components.Logger.Log($"Saved files to {runResultsPath}");
             SaveLogAndQuitDriver(runId, runResultsPath);
         }

@@ -21,7 +21,7 @@ namespace JourneyPlanner_ClassLibrary
             TypeBool = Type.GetType("System.Boolean");
         }
 
-        public List<DataTable> GetTables(List<Airport> airportList, List<SequentialJourneyCollection> sequentialCollections, bool skipUndoableJourneys, bool skipNotSameDayFinishJourneys)
+        public List<DataTable> GetTables(List<Airport> airportList, List<SequentialJourneyCollection> sequentialCollections, bool skipUndoableJourneys, bool skipNotSameDayFinishJourneys, bool includeCheckedInBaggage)
         {
             Dictionary<string, Airport> airportDict = new();
             foreach (Airport airport in airportList)
@@ -30,7 +30,7 @@ namespace JourneyPlanner_ClassLibrary
             }
 
             double avgLength = sequentialCollections.Count == 0 ? 0 : sequentialCollections.Average(x => x.GetLength().TotalMinutes);
-            double avgCost = sequentialCollections.Count == 0 ? 0 : sequentialCollections.Average(x => x.GetCost());
+            double avgCost = sequentialCollections.Count == 0 ? 0 : sequentialCollections.Average(x => GetFinalCost(x, includeCheckedInBaggage));
 
             List<SequentialJourneyCollection> reducedAndOrderedList = sequentialCollections
                                                                     .OrderByDescending(c => c.SequenceIsDoable())
@@ -38,9 +38,9 @@ namespace JourneyPlanner_ClassLibrary
                                                                     .ThenBy(c => c.GetCountOfFlights())
                                                                     .ThenBy(c => GetCountryChanges(airportDict, c))
                                                                     .ThenBy(c => c.HasJourneyWithZeroCost())
-                                                                    .ThenByDescending(c => GetBargainPercentage(c, avgLength, avgCost))
+                                                                    .ThenByDescending(c => GetBargainPercentage(c, avgLength, avgCost, includeCheckedInBaggage))
                                                                     .ThenBy(c => c.GetLength())
-                                                                    .ThenBy(c => c.GetCost())
+                                                                    .ThenBy(c => GetFinalCost(c, includeCheckedInBaggage))
                                                                     .ThenBy(c => c.GetStartTime())
                                                                     .ToList();
 
@@ -48,6 +48,7 @@ namespace JourneyPlanner_ClassLibrary
             DataTable mainTable = new("Summary");
             DataColumn doableColumn = new("Doable", TypeBool);
             DataColumn sameDayFinishColumn = new("Same Day Finish", TypeBool);
+            string costColumnName = "Cost " + (includeCheckedInBaggage ? "with" : "without") + " checked baggage";
             mainTable.Columns.AddRange(new List<DataColumn> {
                 new("Path", TypeString),
                 new("Id", TypeInt32),
@@ -59,7 +60,7 @@ namespace JourneyPlanner_ClassLibrary
                 new("End", TypeString),
                 new("Length", TypeString),
                 new("Country Changes", TypeInt32),
-                new("Cost", TypeDouble),
+                new(costColumnName, TypeDouble),
                 new("Bargain %", TypeDouble),
                 new("Has Journey With 0 Cost", TypeBool)
             }.ToArray());
@@ -84,8 +85,8 @@ namespace JourneyPlanner_ClassLibrary
                 row[index++] = GetShortDateTime(seqCollection.GetEndTime());
                 row[index++] = GetShortTimeSpan(seqCollection.GetLength());
                 row[index++] = GetCountryChanges(airportDict, seqCollection);
-                row[index++] = seqCollection.GetCost();
-                row[index++] = GetBargainPercentage(seqCollection, avgLength, avgCost);
+                row[index++] = GetFinalCost(seqCollection, includeCheckedInBaggage);
+                row[index++] = GetBargainPercentage(seqCollection, avgLength, avgCost, includeCheckedInBaggage);
                 row[index++] = seqCollection.HasJourneyWithZeroCost();
                 mainTable.Rows.Add(row);
                 AddRowsToSubTable(seqCollection, id, subTable, airportDict);
@@ -95,9 +96,27 @@ namespace JourneyPlanner_ClassLibrary
             return tables;
         }
 
-        private static double GetBargainPercentage(SequentialJourneyCollection seqCollection, double avgLength, double avgCost)
+        private static double GetFinalCost(SequentialJourneyCollection col, bool includeCheckedInBaggage)
         {
-            return Math.Round((100 - ((seqCollection.GetLength().TotalMinutes / avgLength) * 100)) + (100 - ((seqCollection.GetCost() / avgCost) * 100)), 2);
+            if (!includeCheckedInBaggage) return col.GetCost();
+
+            double cost = 0;
+            List<string> freeAirlines = new() { "TAROM", "Loganair" };
+            for (int i = 0; i < col.Count(); i++)
+            {
+                Journey journey = col[i];
+                cost += journey.Cost;
+                if (journey.IsFlight() && !freeAirlines.Any(a => a.ToLower().Trim().Contains(journey.Company.ToLower().Trim())))
+                {
+                    cost += 30;
+                }
+            }
+            return cost;
+        }
+
+        private static double GetBargainPercentage(SequentialJourneyCollection seqCollection, double avgLength, double avgCost, bool includeCheckedInBaggage)
+        {
+            return Math.Round((100 - ((seqCollection.GetLength().TotalMinutes / avgLength) * 100)) + (100 - ((GetFinalCost(seqCollection, includeCheckedInBaggage) / avgCost) * 100)), 2);
         }
 
         private static int GetCountryChanges(Dictionary<string, Airport> airportDict, SequentialJourneyCollection c)

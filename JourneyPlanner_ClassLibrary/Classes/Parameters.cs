@@ -12,6 +12,7 @@ namespace JourneyPlanner_ClassLibrary
         public int MaxLocalLinks { get; set; }
         public DateTime DateFrom { get; set; }
         public DateTime DateTo { get; set; }
+        public bool IncludeCheckedInBaggage { get; set; }
         public string AirportListFile { get; set; }
         public string AirportDestinationsFile { get; set; }
         public string ProgressFile { get; set; }
