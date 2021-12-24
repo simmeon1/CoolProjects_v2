@@ -73,11 +73,11 @@ namespace SpotifyAPI_Tests.IntegrationTests
         }
         
         [TestMethod]
-        public async Task TestAsync3()
+        public void TestAsync3()
         {
             List<SongCLS> songs = File.ReadAllText(@"C:\Users\simme\source\repos\json files from laptop\TopTenUKandUSSingles.json").DeserializeObject<List<SongCLS>>();
             DataTableCreator dtCreator = new();
-            List<DataTable> tables = dtCreator.GetTables(songs);
+            List<DataTable> tables = dtCreator.GetTables(songs, false);
             ExcelPrinter printer = new();
             printer.PrintTablesToWorksheet(tables, "songData.xlsx");
         }

@@ -23,7 +23,7 @@ namespace SpotifyAPI_ClassLibrary
             TypeBool = Type.GetType("System.Boolean");
         }
 
-        public List<DataTable> GetTables(List<SongCLS> songs)
+        public List<DataTable> GetTables(List<SongCLS> songs, bool judgePopularityAgainstAllSongs = false)
         {
             List<DataTable> tables = new();
             DataTable mainTable = new("Summary");
@@ -32,35 +32,39 @@ namespace SpotifyAPI_ClassLibrary
             mainTable.Columns.AddRange(new List<DataColumn> {
                 new("Artist/Song", TypeString),
                 new("Year", TypeInt32),
-                new("YouTubeId", TypeString),
-                new("YouTubeName", TypeString),
-                new("YouTubeViews", TypeLong),
                 new("SpotifyId", TypeString),
                 new("SpotifyArtist", TypeString),
                 new("SpotifySong", TypeString),
                 new("SpotifyAlbum", TypeString),
-                new("Acousticness", TypeDouble),
-                new("Acousticness/Popularity", TypeDouble),
+                new("YouTubeId", TypeString),
+                new("YouTubeName", TypeString),
+                new("YouTubeViews", TypeLong),
+                new("Popularity", TypeDouble),
                 new("Danceability", TypeDouble),
-                new("Danceability/Popularity", TypeDouble),
                 new("Energy", TypeDouble),
-                new("Energy/Popularity", TypeDouble),
-                new("Instrumentalness", TypeDouble),
-                new("Instrumentalness/Popularity", TypeDouble),
-                new("Liveness", TypeDouble),
-                new("Liveness/Popularity", TypeDouble),
-                new("Loudness", TypeDouble),
-                new("Loudness/Popularity", TypeDouble),
-                new("Speechiness", TypeDouble),
-                new("Speechiness/Popularity", TypeDouble),
-                new("Tempo", TypeDouble),
-                new("Tempo/Popularity", TypeDouble),
-                new("Valence", TypeDouble),
-                new("Valence/Popularity", TypeDouble),
-                new("ClubFactor", TypeDouble),
+                //new("Acousticness", TypeDouble),
+                //new("Acousticness/Popularity", TypeDouble),
+                //new("Danceability/Popularity", TypeDouble),
+                //new("Energy/Popularity", TypeDouble),
+                //new("Instrumentalness", TypeDouble),
+                //new("Instrumentalness/Popularity", TypeDouble),
+                //new("Liveness", TypeDouble),
+                //new("Liveness/Popularity", TypeDouble),
+                //new("Loudness", TypeDouble),
+                //new("Loudness/Popularity", TypeDouble),
+                //new("Speechiness", TypeDouble),
+                //new("Speechiness/Popularity", TypeDouble),
+                //new("Tempo", TypeDouble),
+                //new("Tempo/Popularity", TypeDouble),
+                //new("Valence", TypeDouble),
+                //new("Valence/Popularity", TypeDouble),
+                new("Danceability+Energy", TypeDouble),
+                new("Danceability+Energy+Popularity", TypeDouble),
             }.ToArray());
 
-            double averageViews = songs.Average(s => s.YouTubeViews);
+            Dictionary<int, List<long>> yearsAndTotalViews = GetYearsAndTotalViews(songs);
+            Dictionary<int, long> yearsAndMaxViews = GetYearsAndNumberOfViews(songs, yearsAndTotalViews);
+
             double avgAcousticness = songs.Average(s => s.Acousticness);
             double avgDanceability = songs.Average(s => s.Danceability);
             double avgEnergy = songs.Average(s => s.Energy);
@@ -75,35 +79,38 @@ namespace SpotifyAPI_ClassLibrary
             {
                 int index = 0;
                 SongCLS song = songs[i];
+                double songPopularity = GetPopularityFromZeroToOneForSongYear(song, yearsAndMaxViews);
                 DataRow row = mainTable.NewRow();
                 row[index++] = $"{song.Artist} - {song.Song}";
                 row[index++] = song.Year;
-                row[index++] = song.YouTubeId;
-                row[index++] = song.YouTubeName;
-                row[index++] = song.YouTubeViews;
                 row[index++] = song.SpotifyId;
                 row[index++] = song.SpotifyArtist;
                 row[index++] = song.SpotifySong;
                 row[index++] = song.SpotifyAlbum;
-                row[index++] = song.Acousticness;
-                row[index++] = GetPopularityPlusFeatureConfidence(song, averageViews, song.Acousticness, avgAcousticness);
+                row[index++] = song.YouTubeId;
+                row[index++] = song.YouTubeName;
+                row[index++] = song.YouTubeViews;
+                row[index++] = songPopularity;
                 row[index++] = song.Danceability;
-                row[index++] = GetPopularityPlusFeatureConfidence(song, averageViews, song.Danceability, avgDanceability);
                 row[index++] = song.Energy;
-                row[index++] = GetPopularityPlusFeatureConfidence(song, averageViews, song.Energy, avgEnergy);
-                row[index++] = song.Instrumentalness;
-                row[index++] = GetPopularityPlusFeatureConfidence(song, averageViews, song.Instrumentalness, avgInstrumentalness);
-                row[index++] = song.Liveness;
-                row[index++] = GetPopularityPlusFeatureConfidence(song, averageViews, song.Liveness, avgLiveness);
-                row[index++] = song.Loudness;
-                row[index++] = GetPopularityPlusFeatureConfidence(song, averageViews, song.Loudness, avgLoudness);
-                row[index++] = song.Speechiness;
-                row[index++] = GetPopularityPlusFeatureConfidence(song, averageViews, song.Speechiness, avgSpeechiness);
-                row[index++] = song.Tempo;
-                row[index++] = GetPopularityPlusFeatureConfidence(song, averageViews, song.Tempo, avgTempo);
-                row[index++] = song.Valence;
-                row[index++] = GetPopularityPlusFeatureConfidence(song, averageViews, song.Valence, avgValence);
-                row[index++] = GetClubFactor(song, averageViews, avgDanceability, avgEnergy);
+                //row[index++] = song.Acousticness;
+                //row[index++] = songPopularity + song.Acousticness;
+                //row[index++] = songPopularity + song.Danceability;
+                //row[index++] = songPopularity + song.Energy;
+                //row[index++] = song.Instrumentalness;
+                //row[index++] = songPopularity + song.Instrumentalness;
+                //row[index++] = song.Liveness;
+                //row[index++] = songPopularity + song.Liveness;
+                //row[index++] = song.Loudness;
+                //row[index++] = songPopularity + song.Loudness;
+                //row[index++] = song.Speechiness;
+                //row[index++] = songPopularity + song.Speechiness;
+                //row[index++] = song.Tempo;
+                //row[index++] = songPopularity + song.Tempo;
+                //row[index++] = song.Valence;
+                //row[index++] = songPopularity + song.Valence;
+                row[index++] = song.Danceability + song.Energy;
+                row[index++] = song.Danceability + song.Energy + songPopularity;
 
                 mainTable.Rows.Add(row);
             }
@@ -111,14 +118,57 @@ namespace SpotifyAPI_ClassLibrary
             return tables;
         }
 
-        private static double GetPopularityPlusFeatureConfidence(SongCLS song, double avgViews, double feature, double avgFeature)
+        private static Dictionary<int, long> GetYearsAndNumberOfViews(List<SongCLS> songs, Dictionary<int, List<long>> yearsAndTotalViews)
         {
-            return Math.Round((100 - ((avgViews / song.YouTubeViews) * 100)) + (100 - ((avgFeature / feature) * 100)), 2);
+            Dictionary<int, long> yearsAndNumberOfViews = new();
+            long maxViews = songs.Max(s => s.YouTubeViews);
+            yearsAndNumberOfViews.Add(0, maxViews);
+
+            foreach (KeyValuePair<int, List<long>> yearAndTotalViews in yearsAndTotalViews)
+            {
+                yearsAndNumberOfViews.Add(yearAndTotalViews.Key, yearAndTotalViews.Value.Max(v => v));
+            }
+            return yearsAndNumberOfViews;
+        }
+
+        private static Dictionary<int, List<long>> GetYearsAndTotalViews(List<SongCLS> songs)
+        {
+            Dictionary<int, List<long>> yearsAndTotalViews = new();
+            foreach (SongCLS song in songs)
+            {
+                int songYear = song.Year;
+                if (yearsAndTotalViews.ContainsKey(songYear)) yearsAndTotalViews[songYear].Add(song.YouTubeViews);
+                else yearsAndTotalViews.Add(songYear, new List<long>() { song.YouTubeViews });
+            }
+
+            return yearsAndTotalViews;
+        }
+
+        private static double GetPopularityFromZeroToOneForSongDecade(SongCLS song, Dictionary<int, long> yearsAndMaxViews)
+        {
+            string songDecade = song.Year.ToString().Substring(0, 3);
+            long decadeMaxViews = 0;
+            foreach (KeyValuePair<int, long> yearAndMaxViews in yearsAndMaxViews)
+            {
+                if (yearAndMaxViews.Key.ToString().StartsWith(songDecade) && yearAndMaxViews.Value > decadeMaxViews)
+                {
+                    decadeMaxViews = yearAndMaxViews.Value;
+                }
+            }
+            return Math.Round(((double)song.YouTubeViews / decadeMaxViews), 3);
         }
         
-        private static double GetClubFactor(SongCLS song, double avgViews, double avgDance, double avgEnergy)
+        private static double GetPopularityFromZeroToOneForSongYear(SongCLS song, Dictionary<int, long> yearsAndMaxViews)
         {
-            return Math.Round((100 - ((avgViews / song.YouTubeViews) * 100)) + (100 - ((avgDance / song.Danceability) * 100)) + (100 - ((avgEnergy / song.Energy) * 100)), 2);
+            long yearMaxViews = 0;
+            foreach (KeyValuePair<int, long> yearAndMaxViews in yearsAndMaxViews)
+            {
+                if (yearAndMaxViews.Key == song.Year && yearAndMaxViews.Value > yearMaxViews)
+                {
+                    yearMaxViews = yearAndMaxViews.Value;
+                }
+            }
+            return Math.Round(((double)song.YouTubeViews / yearMaxViews), 3);
         }
     }
 }
