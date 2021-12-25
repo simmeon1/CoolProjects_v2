@@ -61,7 +61,14 @@ namespace JourneyPlanner_ClassLibrary
                         string pathName = directPath.ToString();
                         c.Log($"Getting journeys for {pathName}.");
                         JourneyCollection journeys = await retriever.GetJourneysForDates(origin, destination, allDates);
-                        allJourneys.AddRange(journeys);
+                        for (int i = 0; i < journeys.GetCount(); i++)
+                        {
+                            Journey journey = journeys[i];
+                            if (!allJourneys.AlreadyContainsJourney(journey))
+                            {
+                                allJourneys.Add(journey);
+                            }
+                        }
                         progress[retrieverName][pathName] = true;
                         pathsCollected++;
                         totalPathsCollected++;

@@ -89,5 +89,10 @@ namespace JourneyPlanner_ClassLibrary
             }
             Journeys = newList;
         }
+        
+        public bool AlreadyContainsJourney(Journey journey)
+        {
+            return Journeys.Any(s => s.ToString().Equals(journey.ToString()));
+        }
     }
 }
