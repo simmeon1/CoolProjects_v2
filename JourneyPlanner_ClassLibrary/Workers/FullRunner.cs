@@ -87,6 +87,7 @@ namespace JourneyPlanner_ClassLibrary
             JourneyRetrieverDataToLocalLinksConverter localLinksConverter = new();
             Dictionary<string, HashSet<string>> localLinks = localLinksConverter.DoConversion(existingData);
 
+            Components.Logger.Log($"Generating paths...");
             AirportPathGenerator generator = new(filteredAirportsAndDestinations, localLinks);
             List<Path> paths = generator.GeneratePaths(Parameters.Origins, Parameters.Destinations, Parameters.MaxFlights, Parameters.MaxLocalLinks, Parameters.OnlyIncludeShortestPaths);
             List<List<string>> pathsDetailed = new();

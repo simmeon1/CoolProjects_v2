@@ -12,6 +12,7 @@ namespace JourneyPlanner_ClassLibrary
         private Type TypeInt32 { get; set; }
         private Type TypeDouble { get; set; }
         private Type TypeBool { get; set; }
+        private Type TypeDateTime { get; set; }
         private List<string> AirlinesWithFreeCheckedInBaggage;
 
         public DataTableCreator()
@@ -20,6 +21,7 @@ namespace JourneyPlanner_ClassLibrary
             TypeInt32 = Type.GetType("System.Int32");
             TypeDouble = Type.GetType("System.Double");
             TypeBool = Type.GetType("System.Boolean");
+            TypeDateTime = Type.GetType("System.DateTime");
             AirlinesWithFreeCheckedInBaggage = new() { "TAROM", "Loganair" };
         }
 
@@ -58,8 +60,8 @@ namespace JourneyPlanner_ClassLibrary
                 new("Count of Buses", TypeInt32),
                 doableColumn,
                 sameDayFinishColumn,
-                new("Start", TypeString),
-                new("End", TypeString),
+                new("Start", TypeDateTime),
+                new("End", TypeDateTime),
                 new("Length", TypeString),
                 new("Country Changes", TypeInt32),
                 new(costColumnName, TypeDouble),
@@ -153,8 +155,8 @@ namespace JourneyPlanner_ClassLibrary
                 new DataColumn("Id", TypeInt32),
                 new DataColumn("Journey #", TypeInt32),
                 new DataColumn("Is Flight", TypeBool),
-                new DataColumn("Departing Time", TypeString),
-                new DataColumn("Arriving Time", TypeString),
+                new DataColumn("Departing Time", TypeDateTime),
+                new DataColumn("Arriving Time", TypeDateTime),
                 new DataColumn("Departing City", TypeString),
                 new DataColumn("Arriving City", TypeString),
                 new DataColumn("Departing Country", TypeString),
@@ -194,7 +196,7 @@ namespace JourneyPlanner_ClassLibrary
 
         public static string GetShortDateTime(DateTime? dt)
         {
-            return dt.Value.ToString("dd/MM") + " " + dt.Value.ToString("t");
+            return dt.Value.ToString("dd/MM/yyyy HH:mm:ss");
         }
 
         public static string GetShortTimeSpan(TimeSpan? ts)
