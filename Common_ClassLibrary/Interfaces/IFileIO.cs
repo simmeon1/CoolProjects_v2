@@ -9,5 +9,6 @@ namespace Common_ClassLibrary
         void WriteAllText(string path, string contents);
         bool DirectoryExists(string path);
         DirectoryInfo CreateDirectory(string path);
+        void AppendAllText(string path, string contents);
     }
 }

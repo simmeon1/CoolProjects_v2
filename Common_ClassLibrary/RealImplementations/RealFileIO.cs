@@ -24,5 +24,10 @@ namespace Common_ClassLibrary
         {
             File.WriteAllText(path, contents);
         }
+        
+        public void AppendAllText(string path, string contents)
+        {
+            File.AppendAllText(path, contents);
+        }
     }
 }
