@@ -26,18 +26,50 @@ namespace LeagueAPI_ClassLibrary
         /// <returns>1 if targets are greater than game version, 0 if equal, -1 if lesser.</returns>
         public static int CompareTargetVersionAgainstGameVersion(List<string> rangeOfTargetVersions, string gameVersion)
         {
-            int gameVersionInt = GetVersion(gameVersion);
-            List<string> rangeOfTargetVersionsOrdered = rangeOfTargetVersions.OrderBy(v => GetVersion(v)).ToList();
-            int minVersionInt = GetVersion(rangeOfTargetVersionsOrdered.First());
-            int maxVersionInt = GetVersion(rangeOfTargetVersionsOrdered.Last());
-            if (gameVersionInt >= minVersionInt && gameVersionInt <= maxVersionInt) return 0;
-            else if (gameVersionInt > maxVersionInt) return -1;
-            return 1;
+            string minVersion = rangeOfTargetVersions.First();
+            string maxVersion = rangeOfTargetVersions.Last();
+            if (CompareVersions(minVersion, maxVersion) == 1)
+            {
+                string temp = maxVersion;
+                maxVersion = minVersion;
+                minVersion = temp;
+            }
+
+            if (CompareVersions(gameVersion, maxVersion) == 1) return -1;
+            else if (CompareVersions(gameVersion, minVersion) == -1) return 1;
+            return 0;
         }
 
-        private static int GetVersion(string gameVersion)
+        private static string GetSeason(string v)
         {
-            return int.Parse(Regex.Replace(gameVersion, @"\D", "").Substring(0, 4));
+            return Regex.Replace(v, @"^(\w+)\.(\w+).*", "$1").ToString();
+        }
+        
+        private static string GetPatch(string v)
+        {
+            return Regex.Replace(v, @"^(\w+)\.(\w+).*", "$2").ToString();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <returns>1 if v1 is later than v2, 0 if equal, -1 if earlier.</returns>
+        private static int CompareVersions(string v1, string v2)
+        {
+            int v1Season = int.Parse(GetSeason(v1));
+            int v2Season = int.Parse(GetSeason(v2));
+            
+            if (v1Season > v2Season) return 1;
+            if (v1Season < v2Season) return -1;
+            
+            int v1Patch = int.Parse(GetPatch(v1));
+            int v2Patch = int.Parse(GetPatch(v2));
+
+            if (v1Patch > v2Patch) return 1;
+            if (v1Patch < v2Patch) return -1;
+            return 0;
         }
 
         public async Task<List<LeagueMatch>> GetMatches(string startPuuid, int queueId, List<string> rangeOfTargetVersions, int maxCount, List<LeagueMatch> alreadyScannedMatches = null)

@@ -29,5 +29,20 @@ namespace Common_ClassLibrary
         {
             File.AppendAllText(path, contents);
         }
+
+        public void DeleteFile(string path)
+        {
+            File.Delete(path);
+        }
+        
+        public void DeleteFolder(string path)
+        {
+            Directory.Delete(path, true);
+        }
+        
+        public void Copy(string path, string destFileName, bool overwrite)
+        {
+            File.Copy(path, destFileName, overwrite);
+        }
     }
 }

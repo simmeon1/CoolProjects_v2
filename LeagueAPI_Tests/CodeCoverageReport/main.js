@@ -224,17 +224,16 @@ var assemblies = [
   {
     "name": "Common_ClassLibrary",
     "classes": [
-      { "name": "Common_ClassLibrary.ExcelPrinter", "rp": "Common_ClassLibrary_ExcelPrinter.html", "cl": 0, "ucl": 13, "cal": 13, "tl": 25, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
-      { "name": "Common_ClassLibrary.Extensions", "rp": "Common_ClassLibrary_Extensions.html", "cl": 25, "ucl": 3, "cal": 28, "tl": 52, "ct": "LineCoverage", "mc": "-", "cb": 6, "tb": 6, "lch": [], "bch": [], "hc": [] },
+      { "name": "Common_ClassLibrary.ExcelPrinter", "rp": "Common_ClassLibrary_ExcelPrinter.html", "cl": 0, "ucl": 20, "cal": 20, "tl": 32, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
+      { "name": "Common_ClassLibrary.Extensions", "rp": "Common_ClassLibrary_Extensions.html", "cl": 25, "ucl": 6, "cal": 31, "tl": 57, "ct": "LineCoverage", "mc": "-", "cb": 6, "tb": 6, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.Globals", "rp": "Common_ClassLibrary_Globals.html", "cl": 6, "ucl": 8, "cal": 14, "tl": 28, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 4, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.Logger_Console", "rp": "Common_ClassLibrary_Logger_Console.html", "cl": 8, "ucl": 3, "cal": 11, "tl": 25, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
-      { "name": "Common_ClassLibrary.Logger_Debug", "rp": "Common_ClassLibrary_Logger_Debug.html", "cl": 11, "ucl": 0, "cal": 11, "tl": 25, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
+      { "name": "Common_ClassLibrary.Logger_Debug", "rp": "Common_ClassLibrary_Logger_Debug.html", "cl": 11, "ucl": 0, "cal": 11, "tl": 26, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.RealDateTimeProvider", "rp": "Common_ClassLibrary_RealDateTimeProvider.html", "cl": 0, "ucl": 3, "cal": 3, "tl": 12, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.RealDelayer", "rp": "Common_ClassLibrary_RealDelayer.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 12, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.RealFileIO", "rp": "Common_ClassLibrary_RealFileIO.html", "cl": 0, "ucl": 12, "cal": 12, "tl": 28, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.RealGuidProvider", "rp": "Common_ClassLibrary_RealGuidProvider.html", "cl": 0, "ucl": 3, "cal": 3, "tl": 14, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.RealHttpClient", "rp": "Common_ClassLibrary_RealHttpClient.html", "cl": 0, "ucl": 8, "cal": 8, "tl": 20, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
-      { "name": "MouseOperations", "rp": "Common_ClassLibrary_MouseOperations.html", "cl": 0, "ucl": 25, "cal": 25, "tl": 73, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 2, "lch": [], "bch": [], "hc": [] },
     ]},
   {
     "name": "LeagueAPI_ClassLibrary",

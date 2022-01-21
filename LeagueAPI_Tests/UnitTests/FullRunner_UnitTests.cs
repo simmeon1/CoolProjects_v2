@@ -15,7 +15,15 @@ namespace LeagueAPI_Tests.UnitTests
         public async Task FullRunner_ExpectedFileNames()
         {
             Parameters paramms = GetParams();
-            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, includeWinRatesForMinutes: paramms.IncludeWinRatesForMinutes);
+            List<string> result = await SetupFullRunner().DoFullRun(
+                paramms.OutputDirectory,
+                paramms.QueueId,
+                paramms.AccountPuuid,
+                paramms.RangeOfTargetVersions,
+                10,
+                includeWinRatesForMinutes: paramms.IncludeWinRatesForMinutes,
+                null,
+                false);
             DefaultAssert(result);
         }
         
@@ -23,7 +31,15 @@ namespace LeagueAPI_Tests.UnitTests
         public async Task FullRunner_ExpectedFileNames_MatchesProvided()
         {
             Parameters paramms = GetParams();
-            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, includeWinRatesForMinutes: paramms.IncludeWinRatesForMinutes, paramms.ExistingMatchesFile);
+            List<string> result = await SetupFullRunner().DoFullRun(
+                paramms.OutputDirectory,
+                paramms.QueueId,
+                paramms.AccountPuuid,
+                paramms.RangeOfTargetVersions,
+                10,
+                includeWinRatesForMinutes: paramms.IncludeWinRatesForMinutes,
+                paramms.ExistingMatchesFile,
+                false);
             DefaultAssert(result);
         }
 
@@ -41,7 +57,7 @@ namespace LeagueAPI_Tests.UnitTests
         public async Task FullRunner_ExpectedFileNames_NoWinRatesIncluded()
         {
             Parameters paramms = GetParams();
-            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10);
+            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, null, null, false);
             Assert.IsTrue(result.Count == 4);
             Assert.IsTrue(result[0].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\Matches_2020-02-02--00-00-00_someGuid.json"));
             Assert.IsTrue(result[1].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\ItemSet_All_2020-02-02--00-00-00_someGuid.json"));
@@ -54,7 +70,7 @@ namespace LeagueAPI_Tests.UnitTests
         {
 
             Parameters paramms = GetParams();
-            List<string> result = await SetupFullRunner(throwExceptionOnMatchCollection: true).DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10);
+            List<string> result = await SetupFullRunner(throwExceptionOnMatchCollection: true).DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, null, null, false);
             Assert.IsTrue(result.Count == 1);
             Assert.IsTrue(result[0].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\Log_2020-02-02--00-00-00_someGuid.txt"));
         }
@@ -98,7 +114,7 @@ namespace LeagueAPI_Tests.UnitTests
             guidProvider.Setup(x => x.NewGuid()).Returns("someGuid");
 
             Mock<IExcelPrinter> excelPrinter = new();
-            FullRunner runner = new(collector.Object, repo.Object, fileIO.Object, dateTimeProvider.Object, guidProvider.Object, excelPrinter.Object, logger);
+            FullRunner runner = new(collector.Object, repo.Object, fileIO.Object, dateTimeProvider.Object, guidProvider.Object, excelPrinter.Object, logger, new Mock<IDdragonRepositoryUpdater>().Object);
             return runner;
         }
     }

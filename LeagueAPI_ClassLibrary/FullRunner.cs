@@ -13,6 +13,7 @@ namespace LeagueAPI_ClassLibrary
     {
         private IMatchCollector MatchCollector { get; set; }
         private IDDragonRepository Repository { get; set; }
+        private IDdragonRepositoryUpdater RepoUpdater { get; set; }
         private IFileIO FileIO { get; set; }
         private IDateTimeProvider DateTimeProvider { get; set; }
         private IGuidProvider GuidProvider { get; set; }
@@ -23,7 +24,15 @@ namespace LeagueAPI_ClassLibrary
         private string StatsFilePath { get; set; }
         private string LogFilePath { get; set; }
 
-        public FullRunner(IMatchCollector matchCollector, IDDragonRepository repository, IFileIO fileIO, IDateTimeProvider dateTimeProvider, IGuidProvider guidProvider, IExcelPrinter excelPrinter, ILogger logger)
+        public FullRunner(
+            IMatchCollector matchCollector,
+            IDDragonRepository repository,
+            IFileIO fileIO,
+            IDateTimeProvider dateTimeProvider,
+            IGuidProvider guidProvider,
+            IExcelPrinter excelPrinter,
+            ILogger logger,
+            IDdragonRepositoryUpdater repoUpdater)
         {
             MatchCollector = matchCollector;
             Repository = repository;
@@ -32,33 +41,42 @@ namespace LeagueAPI_ClassLibrary
             GuidProvider = guidProvider;
             ExcelPrinter = excelPrinter;
             Logger = logger;
+            RepoUpdater = repoUpdater;
         }
 
-        public async Task<List<string>> DoFullRun(string outputDirectory, int queueId, string startPuuid, List<string> targetVersions, int maxCount, List<int> includeWinRatesForMinutes = null, string existingMatchesFile = null)
+        public async Task<List<string>> DoFullRun(string outputDirectory, int queueId, string startPuuid, List<string> targetVersions, int maxCount, List<int> includeWinRatesForMinutes, string existingMatchesFile, bool getLatestVersion)
         {
-            InitialiseFileNames(outputDirectory);
             List<string> createdFiles = new();
-
             try
             {
-                List<LeagueMatch> alreadyScannedMatches = null;
-                bool matchesProvided = !existingMatchesFile.IsNullOrEmpty();
-                if (matchesProvided)
-                {
-                    Logger.Log("Reading already scanned matches...");
-                    alreadyScannedMatches = FileIO.ReadAllText(existingMatchesFile).DeserializeObject<List<LeagueMatch>>();
-                }
+                InitialiseFileNames(outputDirectory);
+                List<LeagueMatch> alreadyScannedMatches = ReadExistingMatches(existingMatchesFile);
+
+                targetVersions = await RepoUpdater.GetParsedListOfVersions(targetVersions);
+                Task updateTask = Task.CompletedTask;
+                if (getLatestVersion) updateTask = RepoUpdater.GetLatestDdragonFiles();
 
                 List<LeagueMatch> matches = await MatchCollector.GetMatches(startPuuid, queueId, targetVersions, maxCount, alreadyScannedMatches);
-                if (!matchesProvided) FileIO.WriteAllText(MatchesFilePath, matches.SerializeObject());
-                createdFiles.Add(MatchesFilePath);
-                return GetCreatedFilesAfterMatchAnalysis(createdFiles, matches, includeWinRatesForMinutes);
+                await updateTask;
+                return SaveFiles(createdFiles, matches, includeWinRatesForMinutes);
             }
             catch (Exception ex)
             {
                 Logger.Log(ex.ToString());
                 return CreateLogFileAndReturnListOfCreatedFiles(createdFiles);
             }
+        }
+
+        private List<LeagueMatch> ReadExistingMatches(string existingMatchesFile)
+        {
+            List<LeagueMatch> alreadyScannedMatches = null;
+            bool matchesProvided = !existingMatchesFile.IsNullOrEmpty();
+            if (matchesProvided)
+            {
+                Logger.Log("Reading already scanned matches...");
+                alreadyScannedMatches = FileIO.ReadAllText(existingMatchesFile).DeserializeObject<List<LeagueMatch>>();
+            }
+            return alreadyScannedMatches;
         }
 
         private void InitialiseFileNames(string outputDirectory)
@@ -73,8 +91,11 @@ namespace LeagueAPI_ClassLibrary
             LogFilePath = Path.Combine(path, $"Log_{idString}.txt");
         }
 
-        private List<string> GetCreatedFilesAfterMatchAnalysis(List<string> createdFiles, List<LeagueMatch> matches, List<int> includeWinRatesForMinutes)
+        private List<string> SaveFiles(List<string> createdFiles, List<LeagueMatch> matches, List<int> includeWinRatesForMinutes)
         {
+            FileIO.WriteAllText(MatchesFilePath, matches.SerializeObject());
+            createdFiles.Add(MatchesFilePath);
+
             if (includeWinRatesForMinutes == null) includeWinRatesForMinutes = new();
             DataCollector collector = new();
 

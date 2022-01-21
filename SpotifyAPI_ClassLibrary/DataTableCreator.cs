@@ -62,8 +62,8 @@ namespace SpotifyAPI_ClassLibrary
                 new("Danceability+Energy+Popularity", TypeDouble),
             }.ToArray());
 
-            Dictionary<int, List<long>> yearsAndTotalViews = GetYearsAndTotalViews(songs);
-            Dictionary<int, long> yearsAndMaxViews = GetYearsAndNumberOfViews(songs, yearsAndTotalViews);
+            Dictionary<int, List<SongCLS>> yearsAndOrderedSongs = GetYearsAndSongsOrderedByViews(songs);
+            //Dictionary<int, long> yearsAndMaxViews = GetYearsAndMaxViews(songs, yearsAndSongs);
 
             double avgAcousticness = songs.Average(s => s.Acousticness);
             double avgDanceability = songs.Average(s => s.Danceability);
@@ -79,7 +79,7 @@ namespace SpotifyAPI_ClassLibrary
             {
                 int index = 0;
                 SongCLS song = songs[i];
-                double songPopularity = GetPopularityFromZeroToOneForSongYear(song, yearsAndMaxViews);
+                double songPopularity = GetPopularityFromZeroToOneForSongDecade(song, yearsAndOrderedSongs);
                 DataRow row = mainTable.NewRow();
                 row[index++] = $"{song.Artist} - {song.Song}";
                 row[index++] = song.Year;
@@ -118,57 +118,73 @@ namespace SpotifyAPI_ClassLibrary
             return tables;
         }
 
-        private static Dictionary<int, long> GetYearsAndNumberOfViews(List<SongCLS> songs, Dictionary<int, List<long>> yearsAndTotalViews)
+        private static Dictionary<int, long> GetYearsAndMaxViews(List<SongCLS> songs, Dictionary<int, List<SongCLS>> yearsAndSongs)
         {
             Dictionary<int, long> yearsAndNumberOfViews = new();
             long maxViews = songs.Max(s => s.YouTubeViews);
             yearsAndNumberOfViews.Add(0, maxViews);
 
-            foreach (KeyValuePair<int, List<long>> yearAndTotalViews in yearsAndTotalViews)
+            foreach (KeyValuePair<int, List<SongCLS>> yearAndSongs in yearsAndSongs)
             {
-                yearsAndNumberOfViews.Add(yearAndTotalViews.Key, yearAndTotalViews.Value.Max(v => v));
+                yearsAndNumberOfViews.Add(yearAndSongs.Key, yearAndSongs.Value.Max(s => s.YouTubeViews));
             }
             return yearsAndNumberOfViews;
         }
 
-        private static Dictionary<int, List<long>> GetYearsAndTotalViews(List<SongCLS> songs)
+        private static Dictionary<int, List<SongCLS>> GetYearsAndSongsOrderedByViews(List<SongCLS> songs)
         {
-            Dictionary<int, List<long>> yearsAndTotalViews = new();
+            Dictionary<int, List<SongCLS>> yearsAndSongs = new();
             foreach (SongCLS song in songs)
             {
                 int songYear = song.Year;
-                if (yearsAndTotalViews.ContainsKey(songYear)) yearsAndTotalViews[songYear].Add(song.YouTubeViews);
-                else yearsAndTotalViews.Add(songYear, new List<long>() { song.YouTubeViews });
+                if (yearsAndSongs.ContainsKey(songYear)) yearsAndSongs[songYear].Add(song);
+                else yearsAndSongs.Add(songYear, new List<SongCLS>() { song });
             }
 
-            return yearsAndTotalViews;
+            Dictionary<int, List<SongCLS>>.KeyCollection keys = yearsAndSongs.Keys;
+            foreach (int key in keys)
+            {
+                List<SongCLS> songss = yearsAndSongs[key];
+                yearsAndSongs[key] = songss.OrderByDescending(s => s.YouTubeViews).ToList();
+            }
+
+            return yearsAndSongs;
         }
 
-        private static double GetPopularityFromZeroToOneForSongDecade(SongCLS song, Dictionary<int, long> yearsAndMaxViews)
+        private static double GetPopularityFromZeroToOneForSongDecade(SongCLS song, Dictionary<int, List<SongCLS>> yearsAndOrderedSongs)
         {
+            Dictionary<string, List<SongCLS>> decadesAndOrderedSongs = new();
+
+            foreach (KeyValuePair<int, List<SongCLS>> yearAndOrderedSongs in yearsAndOrderedSongs)
+            {
+                int year = yearAndOrderedSongs.Key;
+                if (year == 0) continue;
+
+                string decade = year.ToString().Substring(0, 3);
+                if (decadesAndOrderedSongs.ContainsKey(decade)) decadesAndOrderedSongs[decade].AddRange(yearAndOrderedSongs.Value);
+                else decadesAndOrderedSongs.Add(decade, new List<SongCLS>(yearAndOrderedSongs.Value));
+            }
+
+            Dictionary<string, List<SongCLS>>.KeyCollection keys = decadesAndOrderedSongs.Keys;
+            foreach (string key in keys)
+            {
+                List<SongCLS> songs = decadesAndOrderedSongs[key];
+                decadesAndOrderedSongs[key] = songs.OrderByDescending(s => s.YouTubeViews).ToList();
+            }
+
             string songDecade = song.Year.ToString().Substring(0, 3);
-            long decadeMaxViews = 0;
-            foreach (KeyValuePair<int, long> yearAndMaxViews in yearsAndMaxViews)
-            {
-                if (yearAndMaxViews.Key.ToString().StartsWith(songDecade) && yearAndMaxViews.Value > decadeMaxViews)
-                {
-                    decadeMaxViews = yearAndMaxViews.Value;
-                }
-            }
-            return Math.Round(((double)song.YouTubeViews / decadeMaxViews), 3);
+            List<SongCLS> decadeSongs = decadesAndOrderedSongs[songDecade];
+            int decadeSongCount = decadeSongs.Count;
+            int songIndex = decadeSongs.IndexOf(song);
+            return Math.Round((double)(decadeSongCount - songIndex) / decadeSongCount, 3);
         }
-        
-        private static double GetPopularityFromZeroToOneForSongYear(SongCLS song, Dictionary<int, long> yearsAndMaxViews)
+
+        private static double GetPopularityFromZeroToOneForSongYear(SongCLS song, Dictionary<int, List<SongCLS>> yearsAndOrderedSongs)
         {
-            long yearMaxViews = 0;
-            foreach (KeyValuePair<int, long> yearAndMaxViews in yearsAndMaxViews)
-            {
-                if (yearAndMaxViews.Key == song.Year && yearAndMaxViews.Value > yearMaxViews)
-                {
-                    yearMaxViews = yearAndMaxViews.Value;
-                }
-            }
-            return Math.Round(((double)song.YouTubeViews / yearMaxViews), 3);
+            List<SongCLS> yearSongs = yearsAndOrderedSongs[song.Year];
+            int yearSongCount = yearSongs.Count;
+            int songIndex = yearSongs.IndexOf(song);
+            return Math.Round((double)(yearSongCount - songIndex) / yearSongCount, 3);
         }
     }
 }
