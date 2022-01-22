@@ -11,18 +11,26 @@ namespace LeagueAPI_ClassLibrary
 {
     public class DdragonRepository : IDDragonRepository
     {
+        private IFileIO FileIO { get; set; }
+        private string RepoPath { get; set; }
         private JObject ChampionJson { get; set; }
         private JObject ItemJson { get; set; }
         private JArray RuneJson { get; set; }
         private JObject StatPerkJson { get; set; }
         private JObject SpellJson { get; set; }
-        public DdragonRepository(IFileIO fileIO, string ddragonJsonFilesDirectoryPath)
+        public DdragonRepository(IFileIO fileIO, string repoPath)
         {
-            ChampionJson = JObject.Parse(fileIO.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "champion.json")));
-            ItemJson = JObject.Parse(fileIO.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "item.json")));
-            RuneJson = JArray.Parse(fileIO.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "runesReforged.json")));
-            StatPerkJson = JObject.Parse(fileIO.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "statPerks.json")));
-            SpellJson = JObject.Parse(fileIO.ReadAllText(Path.Combine(ddragonJsonFilesDirectoryPath, "summoner.json")));
+            FileIO = fileIO;
+            RepoPath = repoPath;
+        }
+
+        public void RefreshData()
+        {
+            ChampionJson = JObject.Parse(FileIO.ReadAllText(Path.Combine(RepoPath, "champion.json")));
+            ItemJson = JObject.Parse(FileIO.ReadAllText(Path.Combine(RepoPath, "item.json")));
+            RuneJson = JArray.Parse(FileIO.ReadAllText(Path.Combine(RepoPath, "runesReforged.json")));
+            StatPerkJson = JObject.Parse(FileIO.ReadAllText(Path.Combine(RepoPath, "statPerks.json")));
+            SpellJson = JObject.Parse(FileIO.ReadAllText(Path.Combine(RepoPath, "summoner.json")));
         }
 
         public Champion GetChampion(int id)

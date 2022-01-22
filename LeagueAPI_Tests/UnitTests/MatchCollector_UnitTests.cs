@@ -14,15 +14,15 @@ namespace LeagueAPI_Tests.UnitTests
         public void CompareTargetVersionAgainstGameVersion_DoesCorrectComparisons()
         {
             MatchCollector collector = new(new Mock<ILeagueAPIClient>().Object, new Logger_Debug());
-            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.14" }, "11.14.56") == 0);
-            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.14.56" }, "11.14") == 0);
-            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.15" }, "11.14.56") == 1);
-            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.13" }, "11.14.56") == -1);
             Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.14" }, "11.14") == 0);
-            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.132", "11.150" }, "11.14") == 0);
-            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.132", "11.150" }, "11.16") == -1);
-            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.132", "11.150" }, "11.12") == 1);
-            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.132", "11.150" }, "11.13") == 0);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.15" }, "11.14") == 1);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.13" }, "11.14") == -1);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "12.1" }, "11.1") == 1);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.1" }, "12.1") == -1);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.3", "11.1" }, "11.2") == 0);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.1", "11.3" }, "11.2") == 0);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.1", "11.3" }, "12.2") == -1);
+            Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.1", "11.3" }, "10.2") == 1);
         }
 
         [TestMethod]

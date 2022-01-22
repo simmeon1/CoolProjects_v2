@@ -58,6 +58,7 @@ namespace LeagueAPI_ClassLibrary
 
                 List<LeagueMatch> matches = await MatchCollector.GetMatches(startPuuid, queueId, targetVersions, maxCount, alreadyScannedMatches);
                 await updateTask;
+                Repository.RefreshData();
                 return SaveFiles(createdFiles, matches, includeWinRatesForMinutes);
             }
             catch (Exception ex)

@@ -57,7 +57,7 @@ namespace LeagueAPI_Tests.UnitTests
         public async Task FullRunner_ExpectedFileNames_NoWinRatesIncluded()
         {
             Parameters paramms = GetParams();
-            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, null, null, false);
+            List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, null, null, true);
             Assert.IsTrue(result.Count == 4);
             Assert.IsTrue(result[0].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\Matches_2020-02-02--00-00-00_someGuid.json"));
             Assert.IsTrue(result[1].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\ItemSet_All_2020-02-02--00-00-00_someGuid.json"));
@@ -70,7 +70,7 @@ namespace LeagueAPI_Tests.UnitTests
         {
 
             Parameters paramms = GetParams();
-            List<string> result = await SetupFullRunner(throwExceptionOnMatchCollection: true).DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, null, null, false);
+            List<string> result = await SetupFullRunner(throwExceptionOnMatchCollection: true).DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, null, null, paramms.GetLatestDdragonData);
             Assert.IsTrue(result.Count == 1);
             Assert.IsTrue(result[0].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\Log_2020-02-02--00-00-00_someGuid.txt"));
         }

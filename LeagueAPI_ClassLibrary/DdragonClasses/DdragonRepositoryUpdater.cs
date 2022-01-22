@@ -17,15 +17,18 @@ namespace LeagueAPI_ClassLibrary
         private IWebClient WebClient { get; set; }
         private IFileIO FileIO { get; set; }
         private ILogger Logger { get; set; }
+        private IArchiveExtractor ArchiveExtractor { get; set; }
+
         private string BaseName { get; set; }
         private string RepoPath { get; set; }
-        public DdragonRepositoryUpdater(IHttpClient httpClient, IWebClient webClient, IFileIO fileIO, ILogger logger, string repoPath)
+        public DdragonRepositoryUpdater(IHttpClient httpClient, IWebClient webClient, IFileIO fileIO, ILogger logger, IArchiveExtractor archiveExtractor, string repoPath)
         {
             HttpClient = httpClient;
             WebClient = webClient;
             FileIO = fileIO;
             Logger = logger;
             RepoPath = repoPath;
+            ArchiveExtractor = archiveExtractor;
         }
 
         public async Task GetLatestDdragonFiles()
@@ -62,7 +65,7 @@ namespace LeagueAPI_ClassLibrary
             string baseNameWithTar = GetBaseNameWithTar();
             string downloadLink = $"https://ddragon.leagueoflegends.com/cdn/{baseNameWithTar}";
             Logger.Log($"Downloading {downloadLink}...");
-            await WebClient.DownloadFileTaskAsync(downloadLink, $"{baseNameWithTar}");
+            await WebClient.DownloadFileTaskAsync(downloadLink, baseNameWithTar);
             Logger.Log($"Downloaded {downloadLink}.");
         }
 
@@ -97,15 +100,7 @@ namespace LeagueAPI_ClassLibrary
             string baseNameWithTar = GetBaseNameWithTar();
             string baseNameWithFolder = GetBaseNameWithTargetFolder();
             Logger.Log($"Extracting {baseNameWithTar} to {baseNameWithFolder}...");
-            Stream inStream = File.OpenRead($"{baseNameWithTar}");
-            Stream gzipStream = new GZipInputStream(inStream);
-
-            TarArchive tarArchive = TarArchive.CreateInputTarArchive(gzipStream);
-            tarArchive.ExtractContents($"{baseNameWithFolder}", true);
-            tarArchive.Close();
-
-            gzipStream.Close();
-            inStream.Close();
+            ArchiveExtractor.ExtractTar(baseNameWithTar, baseNameWithFolder);
             Logger.Log($"Extracted {baseNameWithTar} to {baseNameWithFolder}.");
         }
 

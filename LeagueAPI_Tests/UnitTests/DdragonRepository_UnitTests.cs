@@ -24,6 +24,7 @@ namespace LeagueAPI_Tests.UnitTests
                 .Returns(@"{'5008': 'someText'}")
                 .Returns(@"{'data':{'SummonerBarrier':{'name':'name','key': '21','description':'desc','cooldown':[180]}}}");
             Repo = new(fileIOMock.Object, "");
+            Repo.RefreshData();
         }
         
         [TestMethod]

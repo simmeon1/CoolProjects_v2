@@ -224,6 +224,7 @@ var assemblies = [
   {
     "name": "Common_ClassLibrary",
     "classes": [
+      { "name": "Common_ClassLibrary.ArchiveExtractor", "rp": "Common_ClassLibrary_ArchiveExtractor.html", "cl": 0, "ucl": 9, "cal": 9, "tl": 22, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 4, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.ExcelPrinter", "rp": "Common_ClassLibrary_ExcelPrinter.html", "cl": 0, "ucl": 20, "cal": 20, "tl": 32, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 6, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.Extensions", "rp": "Common_ClassLibrary_Extensions.html", "cl": 25, "ucl": 6, "cal": 31, "tl": 57, "ct": "LineCoverage", "mc": "-", "cb": 6, "tb": 6, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.Globals", "rp": "Common_ClassLibrary_Globals.html", "cl": 6, "ucl": 8, "cal": 14, "tl": 28, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 4, "lch": [], "bch": [], "hc": [] },
@@ -231,9 +232,10 @@ var assemblies = [
       { "name": "Common_ClassLibrary.Logger_Debug", "rp": "Common_ClassLibrary_Logger_Debug.html", "cl": 11, "ucl": 0, "cal": 11, "tl": 26, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.RealDateTimeProvider", "rp": "Common_ClassLibrary_RealDateTimeProvider.html", "cl": 0, "ucl": 3, "cal": 3, "tl": 12, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.RealDelayer", "rp": "Common_ClassLibrary_RealDelayer.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 12, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
-      { "name": "Common_ClassLibrary.RealFileIO", "rp": "Common_ClassLibrary_RealFileIO.html", "cl": 0, "ucl": 12, "cal": 12, "tl": 28, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
+      { "name": "Common_ClassLibrary.RealFileIO", "rp": "Common_ClassLibrary_RealFileIO.html", "cl": 0, "ucl": 24, "cal": 24, "tl": 48, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.RealGuidProvider", "rp": "Common_ClassLibrary_RealGuidProvider.html", "cl": 0, "ucl": 3, "cal": 3, "tl": 14, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "Common_ClassLibrary.RealHttpClient", "rp": "Common_ClassLibrary_RealHttpClient.html", "cl": 0, "ucl": 8, "cal": 8, "tl": 20, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
+      { "name": "Common_ClassLibrary.RealWebClient", "rp": "Common_ClassLibrary_RealWebClient.html", "cl": 0, "ucl": 8, "cal": 8, "tl": 21, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
     ]},
   {
     "name": "LeagueAPI_ClassLibrary",
@@ -243,14 +245,15 @@ var assemblies = [
       { "name": "LeagueAPI_ClassLibrary.DataCollector", "rp": "LeagueAPI_ClassLibrary_DataCollector.html", "cl": 48, "ucl": 0, "cal": 48, "tl": 61, "ct": "LineCoverage", "mc": "-", "cb": 10, "tb": 10, "lch": [], "bch": [], "hc": [] },
       { "name": "LeagueAPI_ClassLibrary.DataCollectorResults", "rp": "LeagueAPI_ClassLibrary_DataCollectorResults.html", "cl": 35, "ucl": 0, "cal": 35, "tl": 56, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "LeagueAPI_ClassLibrary.DataTableCreator", "rp": "LeagueAPI_ClassLibrary_DataTableCreator.html", "cl": 198, "ucl": 0, "cal": 198, "tl": 240, "ct": "LineCoverage", "mc": "-", "cb": 40, "tb": 40, "lch": [], "bch": [], "hc": [] },
-      { "name": "LeagueAPI_ClassLibrary.DdragonRepository", "rp": "LeagueAPI_ClassLibrary_DdragonRepository.html", "cl": 85, "ucl": 0, "cal": 85, "tl": 114, "ct": "LineCoverage", "mc": "-", "cb": 26, "tb": 26, "lch": [], "bch": [], "hc": [] },
-      { "name": "LeagueAPI_ClassLibrary.FullRunner", "rp": "LeagueAPI_ClassLibrary_FullRunner.html", "cl": 97, "ucl": 0, "cal": 97, "tl": 132, "ct": "LineCoverage", "mc": "-", "cb": 16, "tb": 16, "lch": [], "bch": [], "hc": [] },
+      { "name": "LeagueAPI_ClassLibrary.DdragonRepository", "rp": "LeagueAPI_ClassLibrary_DdragonRepository.html", "cl": 91, "ucl": 0, "cal": 91, "tl": 122, "ct": "LineCoverage", "mc": "-", "cb": 26, "tb": 26, "lch": [], "bch": [], "hc": [] },
+      { "name": "LeagueAPI_ClassLibrary.DdragonRepositoryUpdater", "rp": "LeagueAPI_ClassLibrary_DdragonRepositoryUpdater.html", "cl": 92, "ucl": 0, "cal": 92, "tl": 131, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
+      { "name": "LeagueAPI_ClassLibrary.FullRunner", "rp": "LeagueAPI_ClassLibrary_FullRunner.html", "cl": 116, "ucl": 0, "cal": 116, "tl": 154, "ct": "LineCoverage", "mc": "-", "cb": 16, "tb": 16, "lch": [], "bch": [], "hc": [] },
       { "name": "LeagueAPI_ClassLibrary.Item", "rp": "LeagueAPI_ClassLibrary_Item.html", "cl": 27, "ucl": 0, "cal": 27, "tl": 52, "ct": "LineCoverage", "mc": "-", "cb": 2, "tb": 2, "lch": [], "bch": [], "hc": [] },
       { "name": "LeagueAPI_ClassLibrary.ItemSetExporter", "rp": "LeagueAPI_ClassLibrary_ItemSetExporter.html", "cl": 81, "ucl": 0, "cal": 81, "tl": 105, "ct": "LineCoverage", "mc": "-", "cb": 26, "tb": 26, "lch": [], "bch": [], "hc": [] },
       { "name": "LeagueAPI_ClassLibrary.LeagueAPIClient", "rp": "LeagueAPI_ClassLibrary_LeagueAPIClient.html", "cl": 125, "ucl": 0, "cal": 125, "tl": 163, "ct": "LineCoverage", "mc": "-", "cb": 26, "tb": 26, "lch": [], "bch": [], "hc": [] },
       { "name": "LeagueAPI_ClassLibrary.LeagueMatch", "rp": "LeagueAPI_ClassLibrary_LeagueMatch.html", "cl": 9, "ucl": 0, "cal": 9, "tl": 19, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
-      { "name": "LeagueAPI_ClassLibrary.MatchCollector", "rp": "LeagueAPI_ClassLibrary_MatchCollector.html", "cl": 71, "ucl": 0, "cal": 71, "tl": 108, "ct": "LineCoverage", "mc": "-", "cb": 40, "tb": 40, "lch": [], "bch": [], "hc": [] },
-      { "name": "LeagueAPI_ClassLibrary.Parameters", "rp": "LeagueAPI_ClassLibrary_Parameters.html", "cl": 10, "ucl": 0, "cal": 10, "tl": 18, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
+      { "name": "LeagueAPI_ClassLibrary.MatchCollector", "rp": "LeagueAPI_ClassLibrary_MatchCollector.html", "cl": 89, "ucl": 0, "cal": 89, "tl": 140, "ct": "LineCoverage", "mc": "-", "cb": 48, "tb": 48, "lch": [], "bch": [], "hc": [] },
+      { "name": "LeagueAPI_ClassLibrary.Parameters", "rp": "LeagueAPI_ClassLibrary_Parameters.html", "cl": 11, "ucl": 0, "cal": 11, "tl": 19, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "LeagueAPI_ClassLibrary.Participant", "rp": "LeagueAPI_ClassLibrary_Participant.html", "cl": 23, "ucl": 0, "cal": 23, "tl": 29, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "LeagueAPI_ClassLibrary.Rune", "rp": "LeagueAPI_ClassLibrary_Rune.html", "cl": 7, "ucl": 0, "cal": 7, "tl": 16, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
       { "name": "LeagueAPI_ClassLibrary.Spell", "rp": "LeagueAPI_ClassLibrary_Spell.html", "cl": 3, "ucl": 0, "cal": 3, "tl": 11, "ct": "LineCoverage", "mc": "-", "cb": 0, "tb": 0, "lch": [], "bch": [], "hc": [] },
@@ -266,7 +269,7 @@ var riskHotspotMetrics = [
 
 var riskHotspots = [
   {
-    "assembly": "LeagueAPI_ClassLibrary", "class": "LeagueAPI_ClassLibrary.MatchCollector", "reportPath": "LeagueAPI_ClassLibrary_MatchCollector.html", "methodName": "GetMatches()", "methodShortName": "GetMatches()", "fileIndex": 0, "line": 44,
+    "assembly": "LeagueAPI_ClassLibrary", "class": "LeagueAPI_ClassLibrary.MatchCollector", "reportPath": "LeagueAPI_ClassLibrary_MatchCollector.html", "methodName": "GetMatches()", "methodShortName": "GetMatches()", "fileIndex": 0, "line": 76,
     "metrics": [
       { "value": 34, "exceeded": true },
     ]},

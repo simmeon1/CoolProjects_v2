@@ -9,5 +9,6 @@ namespace LeagueAPI_ClassLibrary
         Rune GetRune(int id);
         string GetStatPerk(int id);
         Spell GetSpell(int id);
+        void RefreshData();
     }
 }

@@ -29,7 +29,8 @@ namespace LeagueAPI_Console
             LeagueAPIClient client = new(http, parameters.Token, delayer, logger);
             MatchCollector collector = new(client, logger);
             DdragonRepository repo = new(fileIO, parameters.DdragonJsonFilesDirectoryPath);
-            DdragonRepositoryUpdater repoUpdater = new(http, webClient, fileIO, logger, parameters.DdragonJsonFilesDirectoryPath);
+            ArchiveExtractor extractor = new();
+            DdragonRepositoryUpdater repoUpdater = new(http, webClient, fileIO, logger, extractor, parameters.DdragonJsonFilesDirectoryPath);
             RealDateTimeProvider dateTimeProvider = new();
             RealGuidProvider guidProvider = new();
             ExcelPrinter printer = new();

@@ -31,7 +31,8 @@ namespace LeagueAPI_Tests.IntegrationTests
             MatchCollector collector = new(client, logger);
             RealFileIO fileIO = new RealFileIO();
             DdragonRepository repo = new(fileIO, TestData.DdragonJsonFilesDirectoryPath);
-            DdragonRepositoryUpdater repoUpdater = new(http, webClient, fileIO, logger, TestData.DdragonJsonFilesDirectoryPath);
+            ArchiveExtractor extractor = new();
+            DdragonRepositoryUpdater repoUpdater = new(http, webClient, fileIO, logger, extractor, TestData.DdragonJsonFilesDirectoryPath);
             RealDateTimeProvider dateTimeProvider = new();
             RealGuidProvider guidProvider = new();
             ExcelPrinter printer = new();
