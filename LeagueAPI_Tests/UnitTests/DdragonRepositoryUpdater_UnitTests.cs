@@ -13,14 +13,8 @@ namespace LeagueAPI_Tests.UnitTests
     [TestClass]
     public class DdragonRepositoryUpdater_UnitTests
     {
-        [TestInitialize]
-        public void TestInitialize()
-        {
-
-        }
-
         [TestMethod]
-        public async Task GetLatestDragonFIlesWorksAsExpected()
+        public async Task FunctionsWorksAsExpected()
         {
             string folderName = "dragontail-12.2-extracted";
             string archiveName = "dragontail-12.2.tgz";
