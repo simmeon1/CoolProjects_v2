@@ -53,7 +53,7 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(obj.Description.Equals("rarityMythic<asd>ornnBonus"));
             Assert.IsTrue(obj.GetCleanDescription().Equals("rarityMythicornnBonus"));
             Assert.IsTrue(obj.Plaintext.Equals("plaintext"));
-            Assert.IsTrue(obj.IsFinished.Equals(true));
+            Assert.IsTrue(obj.IsFinished().Equals(true));
             Assert.IsTrue(obj.Gold.Equals(300));
             Assert.IsTrue(obj.IsMoreThan2000G().Equals(false));
             Assert.IsTrue(obj.IsMythic().Equals(true));

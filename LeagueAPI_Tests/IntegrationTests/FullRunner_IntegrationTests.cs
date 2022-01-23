@@ -29,7 +29,7 @@ namespace LeagueAPI_Tests.IntegrationTests
             RealWebClient webClient = new();
             LeagueAPIClient client = new(http, TestData.Token, delayer, logger);
             MatchCollector collector = new(client, logger);
-            RealFileIO fileIO = new RealFileIO();
+            RealFileIO fileIO = new();
             DdragonRepository repo = new(fileIO, TestData.DdragonJsonFilesDirectoryPath);
             ArchiveExtractor extractor = new();
             DdragonRepositoryUpdater repoUpdater = new(http, webClient, fileIO, logger, extractor, TestData.DdragonJsonFilesDirectoryPath);

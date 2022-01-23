@@ -7,12 +7,18 @@ namespace LeagueAPI_ClassLibrary
 {
     public class Item
     {
+        public int Id { get; set; }
         public string Name { get; set; } = "";
         public string Plaintext { get; set; } = "";
         public string Description { get; set; } = "";
         public int Gold { get; set; }
         public List<string> Tags { get; set; } = new();
-        public bool IsFinished { get; set; }
+        public List<string> BuildsInto { get; set; } = new();
+
+        public bool IsFinished()
+        {
+            return BuildsInto.Count == 0;
+        }
 
         public string GetTagsString()
         {
@@ -47,6 +53,17 @@ namespace LeagueAPI_ClassLibrary
         public bool IsDoran()
         {
             return Name.Contains("Doran");
+        }
+        
+        public bool IsTearOfTheGoddess()
+        {
+            return Name.Contains("Tear of the Goddess");
+        }
+
+        public string GetSecondFormNameForTearItem()
+        {
+            Match match = Regex.Match(Description, "360 mana.*<raritylegendary>(.*?)</raritylegendary>", RegexOptions.IgnoreCase);
+            return match.Success ? match.Groups[1].Value.ToString() : "";
         }
     }
 }

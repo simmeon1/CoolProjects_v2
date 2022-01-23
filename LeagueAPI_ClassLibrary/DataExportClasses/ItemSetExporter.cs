@@ -1,4 +1,5 @@
 ﻿using Common_ClassLibrary;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -62,14 +63,13 @@ namespace LeagueAPI_ClassLibrary
 
         public string GetItemSet(Dictionary<int, WinLossData> itemData, string itemSetName)
         {
-            List<object> guardianJsonArray = new();
-            List<object> bootsJsonArray = new();
-            List<object> doranJsonArray = new();
-            List<object> mythics50PlusJsonArray = new();
-            List<object> mythics50MinusJsonArray = new();
-            List<object> legendaries50PlusJsonArray = new();
-            List<object> legendaries50MinusJsonArray = new();
+            List<ItemEntry> guardianJsonArray = new();
+            List<ItemEntry> bootsJsonArray = new();
+            List<ItemEntry> doranJsonArray = new();
+            List<ItemEntry> mythicsJsonArray = new();
+            List<ItemEntry> legendariesJsonArray = new();
 
+            Item tear = null;
             List<KeyValuePair<int, WinLossData>> sortedList = itemData.OrderByDescending(x => x.Value.GetWinRate()).ToList();
             foreach (KeyValuePair<int, WinLossData> entry in sortedList)
             {
@@ -77,29 +77,85 @@ namespace LeagueAPI_ClassLibrary
                 double winRate = entry.Value.GetWinRate();
                 Item item = Repository.GetItem(id);
                 if (item == null) continue;
-                if (item.IsGuardian()) AddItemToList(id, guardianJsonArray);
-                else if (item.IsBoots()) AddItemToList(id, bootsJsonArray);
-                else if (item.IsDoran()) AddItemToList(id, doranJsonArray);
-                else if (item.IsMythic() && winRate >= 50) AddItemToList(id, mythics50PlusJsonArray);
-                else if (item.IsMythic()) AddItemToList(id, mythics50MinusJsonArray);
-                else if (item.IsFinished && item.IsMoreThan2000G() && winRate >= 50) AddItemToList(id, legendaries50PlusJsonArray);
-                else if (item.IsFinished && item.IsMoreThan2000G()) AddItemToList(id, legendaries50MinusJsonArray);
+
+                ItemEntry itemEntry = new(id, winRate);
+
+                if (item.IsTearOfTheGoddess()) tear = item;
+                if (item.IsGuardian()) guardianJsonArray.Add(itemEntry);
+                else if (item.IsBoots()) bootsJsonArray.Add(itemEntry);
+                else if (item.IsDoran()) doranJsonArray.Add(itemEntry);
+                else if (item.IsMythic()) mythicsJsonArray.Add(itemEntry);
+                else if (item.IsFinished() && item.IsMoreThan2000G()) legendariesJsonArray.Add(itemEntry);
             }
+
+            List<ItemEntry> legendariesAmendedJsonArray = new();
+            Dictionary<int, Item> secondFormIdAndFirstForm = new();
+            if (tear != null)
+            {
+                foreach (string firstFormId in tear.BuildsInto)
+                {
+                    int firstFormIdInt = int.Parse(firstFormId);
+                    Item firstFormItem = Repository.GetItem(firstFormIdInt);
+                    string secondFormItemName = firstFormItem.GetSecondFormNameForTearItem();
+                    if (secondFormItemName.IsNullOrEmpty()) continue;
+
+                    Item secondFormItem = Repository.GetItem(secondFormItemName);
+                    int secondFormIdInt = secondFormItem.Id;
+
+                    secondFormIdAndFirstForm.Add(secondFormIdInt, firstFormItem);
+                }
+
+                foreach (ItemEntry item in legendariesJsonArray)
+                {
+                    if (!tear.BuildsInto.Contains(item.Id.ToString()))
+                    {
+                        legendariesAmendedJsonArray.Add(item);
+                        if (secondFormIdAndFirstForm.ContainsKey(item.Id))
+                        {
+                            Item firstForm = secondFormIdAndFirstForm[item.Id];
+                            legendariesAmendedJsonArray.Add(new ItemEntry(firstForm.Id, itemData[item.Id].GetWinRate()));
+                        }
+                    }
+                }
+            }
+
             return BaseJson
                 .Replace(jsonTitle, itemSetName)
-                .Replace(guardianJson, guardianJsonArray.SerializeObject())
-                .Replace(bootsJson, bootsJsonArray.SerializeObject())
-                .Replace(doranJson, doranJsonArray.SerializeObject())
-                .Replace(mythics50PlusJson, mythics50PlusJsonArray.SerializeObject())
-                .Replace(mythics50MinusJson, mythics50MinusJsonArray.SerializeObject())
-                .Replace(legendaries50PlusJson, legendaries50PlusJsonArray.SerializeObject())
-                .Replace(legendaries50MinusJson, legendaries50MinusJsonArray.SerializeObject())
+                .Replace(guardianJson, GetSerializedList(guardianJsonArray, (x => true)))
+                .Replace(bootsJson, GetSerializedList(bootsJsonArray, (x => true)))
+                .Replace(doranJson, GetSerializedList(doranJsonArray, (x => true)))
+                .Replace(mythics50PlusJson, GetSerializedList(mythicsJsonArray, (x => x.WinRateIsEqualOrAbove50())))
+                .Replace(mythics50MinusJson, GetSerializedList(mythicsJsonArray, (x => !x.WinRateIsEqualOrAbove50())))
+                .Replace(legendaries50PlusJson, GetSerializedList(legendariesAmendedJsonArray, (x => x.WinRateIsEqualOrAbove50())))
+                .Replace(legendaries50MinusJson, GetSerializedList(legendariesAmendedJsonArray, (x => !x.WinRateIsEqualOrAbove50())))
                 .Replace("'", "\"");
         }
 
-        private static void AddItemToList(int id, List<object> list)
+        private static string GetSerializedList(List<ItemEntry> items, Func<ItemEntry, bool> winRateFunc)
         {
-            list.Add(new { id = id.ToString(), count = 1 });
+            return items.Where(x => winRateFunc.Invoke(x)).Select(x => x.GetSerialized()).ToList().SerializeObject();
+        }
+
+        private class ItemEntry
+        {
+            public int Id { get; set; }
+            public double WinRate { get; set; }
+
+            public ItemEntry(int id, double winRate)
+            {
+                Id = id;
+                WinRate = winRate;
+            }
+
+            public bool WinRateIsEqualOrAbove50()
+            {
+                return WinRate >= 50;
+            }
+
+            public object GetSerialized()
+            {
+                return new { id = Id.ToString(), count = 1 };
+            }
         }
     }
 }

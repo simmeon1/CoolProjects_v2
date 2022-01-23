@@ -10,5 +10,6 @@ namespace LeagueAPI_ClassLibrary
         string GetStatPerk(int id);
         Spell GetSpell(int id);
         void RefreshData();
+        Item GetItem(string itemName);
     }
 }

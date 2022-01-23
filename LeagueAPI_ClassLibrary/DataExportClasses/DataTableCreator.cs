@@ -97,7 +97,7 @@ namespace LeagueAPI_ClassLibrary
                 mythicIndex = ReturnColumnIndexCounterAndIncrementIt();
                 row[mythicIndex] = item.IsMythic();
                 isFinishedIndex = ReturnColumnIndexCounterAndIncrementIt();
-                row[isFinishedIndex] = item.IsFinished;
+                row[isFinishedIndex] = item.IsFinished();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = item.GetTagsString();
                 row[ReturnColumnIndexCounterAndIncrementIt()] = item.Plaintext;
                 row[ReturnColumnIndexCounterAndIncrementIt()] = item.GetCleanDescription();

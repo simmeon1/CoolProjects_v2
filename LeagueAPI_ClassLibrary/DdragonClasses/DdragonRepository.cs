@@ -55,22 +55,40 @@ namespace LeagueAPI_ClassLibrary
         {
             foreach (JProperty itemEntry in ItemJson["data"])
             {
-                if (int.Parse(itemEntry.Name) != id) continue;
-                Item item = new()
-                {
-                    Name = itemEntry.Value["name"].ToString(),
-                    Plaintext = itemEntry.Value["plaintext"].ToString(),
-                    Description = itemEntry.Value["description"].ToString(),
-                    Gold = int.Parse(itemEntry.Value["gold"]["total"].ToString())
-                };
-                JArray buildsInto = (JArray)itemEntry.Value["into"];
-                item.IsFinished = buildsInto == null;
-                List<string> tags = new();
-                foreach (JToken tag in itemEntry.Value["tags"]) tags.Add(tag.ToString());
-                item.Tags = tags;
-                return item;
+                if (int.Parse(itemEntry.Name) == id) return GetItemFromEntry(itemEntry);
             }
             return null;
+        }
+
+        private static Item GetItemFromEntry(JProperty itemEntry)
+        {
+            Item item = new()
+            {
+                Id = int.Parse(itemEntry.Name),
+                Name = itemEntry.Value["name"].ToString(),
+                Plaintext = itemEntry.Value["plaintext"].ToString(),
+                Description = itemEntry.Value["description"].ToString(),
+                Gold = int.Parse(itemEntry.Value["gold"]["total"].ToString())
+            };
+
+            GetBuildsIntoData(itemEntry, item);
+            GetTagsData(itemEntry, item);
+            return item;
+        }
+
+        private static void GetTagsData(JProperty itemEntry, Item item)
+        {
+            List<string> tags = new();
+            foreach (JToken tag in itemEntry.Value["tags"]) tags.Add(tag.ToString());
+            item.Tags = tags;
+        }
+
+        private static void GetBuildsIntoData(JProperty itemEntry, Item item)
+        {
+            List<string> buildsInto = new();
+            JArray buildsIntoJAray = (JArray)itemEntry.Value["into"];
+            if (buildsIntoJAray != null) foreach (JToken entry in buildsIntoJAray) buildsInto.Add(entry.ToString());
+            item.BuildsInto = buildsInto;
         }
 
         public Rune GetRune(int id)
@@ -115,6 +133,16 @@ namespace LeagueAPI_ClassLibrary
                     Description = entry.Value["description"].ToString()
                 };
                 return spell;
+            }
+            return null;
+        }
+
+        public Item GetItem(string itemName)
+        {
+            foreach (JProperty itemEntry in ItemJson["data"])
+            {
+                string name = itemEntry.Value["name"].ToString();
+                if (name.Equals(itemName)) return GetItemFromEntry(itemEntry);
             }
             return null;
         }
