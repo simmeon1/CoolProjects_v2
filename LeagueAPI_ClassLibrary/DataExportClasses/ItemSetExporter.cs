@@ -88,36 +88,7 @@ namespace LeagueAPI_ClassLibrary
                 else if (item.IsFinished() && item.IsMoreThan2000G()) legendariesJsonArray.Add(itemEntry);
             }
 
-            List<ItemEntry> legendariesAmendedJsonArray = new();
-            Dictionary<int, Item> secondFormIdAndFirstForm = new();
-            if (tear != null)
-            {
-                foreach (string firstFormId in tear.BuildsInto)
-                {
-                    int firstFormIdInt = int.Parse(firstFormId);
-                    Item firstFormItem = Repository.GetItem(firstFormIdInt);
-                    string secondFormItemName = firstFormItem.GetSecondFormNameForTearItem();
-                    if (secondFormItemName.IsNullOrEmpty()) continue;
-
-                    Item secondFormItem = Repository.GetItem(secondFormItemName);
-                    int secondFormIdInt = secondFormItem.Id;
-
-                    secondFormIdAndFirstForm.Add(secondFormIdInt, firstFormItem);
-                }
-
-                foreach (ItemEntry item in legendariesJsonArray)
-                {
-                    if (!tear.BuildsInto.Contains(item.Id.ToString()))
-                    {
-                        legendariesAmendedJsonArray.Add(item);
-                        if (secondFormIdAndFirstForm.ContainsKey(item.Id))
-                        {
-                            Item firstForm = secondFormIdAndFirstForm[item.Id];
-                            legendariesAmendedJsonArray.Add(new ItemEntry(firstForm.Id, itemData[item.Id].GetWinRate()));
-                        }
-                    }
-                }
-            }
+            List<ItemEntry> legendariesAmendedJsonArray = GetLegendariesWithAmendedTearItemPositioning(itemData, legendariesJsonArray, tear);
 
             return BaseJson
                 .Replace(jsonTitle, itemSetName)
@@ -129,6 +100,46 @@ namespace LeagueAPI_ClassLibrary
                 .Replace(legendaries50PlusJson, GetSerializedList(legendariesAmendedJsonArray, (x => x.WinRateIsEqualOrAbove50())))
                 .Replace(legendaries50MinusJson, GetSerializedList(legendariesAmendedJsonArray, (x => !x.WinRateIsEqualOrAbove50())))
                 .Replace("'", "\"");
+        }
+
+        private List<ItemEntry> GetLegendariesWithAmendedTearItemPositioning(Dictionary<int, WinLossData> itemData, List<ItemEntry> legendariesJsonArray, Item tear)
+        {
+            if (tear == null) return legendariesJsonArray;
+
+            List<ItemEntry> legendariesAmendedJsonArray = new();
+            Dictionary<int, Item> secondFormIdAndFirstForm = GetSecondFormIdsAndFirstFormsOfTearItems(tear);
+
+            foreach (ItemEntry item in legendariesJsonArray)
+            {
+                if (!tear.BuildsInto.Contains(item.Id.ToString()))
+                {
+                    legendariesAmendedJsonArray.Add(item);
+                    if (secondFormIdAndFirstForm.ContainsKey(item.Id))
+                    {
+                        Item firstForm = secondFormIdAndFirstForm[item.Id];
+                        legendariesAmendedJsonArray.Add(new ItemEntry(firstForm.Id, itemData[item.Id].GetWinRate()));
+                    }
+                }
+            }
+            return legendariesAmendedJsonArray;
+        }
+
+        private Dictionary<int, Item> GetSecondFormIdsAndFirstFormsOfTearItems(Item tear)
+        {
+            Dictionary<int, Item> secondFormIdAndFirstForm = new();
+            foreach (string firstFormId in tear.BuildsInto)
+            {
+                int firstFormIdInt = int.Parse(firstFormId);
+                Item firstFormItem = Repository.GetItem(firstFormIdInt);
+                string secondFormItemName = firstFormItem.GetSecondFormNameForTearItem();
+                if (secondFormItemName.IsNullOrEmpty()) continue;
+
+                Item secondFormItem = Repository.GetItem(secondFormItemName);
+                int secondFormIdInt = secondFormItem.Id;
+
+                secondFormIdAndFirstForm.Add(secondFormIdInt, firstFormItem);
+            }
+            return secondFormIdAndFirstForm;
         }
 
         private static string GetSerializedList(List<ItemEntry> items, Func<ItemEntry, bool> winRateFunc)
