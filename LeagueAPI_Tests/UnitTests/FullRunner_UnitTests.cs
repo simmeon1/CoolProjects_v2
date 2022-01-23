@@ -46,11 +46,11 @@ namespace LeagueAPI_Tests.UnitTests
         private static void DefaultAssert(List<string> result)
         {
             Assert.IsTrue(result.Count == 5);
-            Assert.IsTrue(result[0].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\Matches_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[1].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\ItemSet_All_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[2].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\ItemSet_Sub20_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[3].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\Stats_2020-02-02--00-00-00_someGuid.xlsx"));
-            Assert.IsTrue(result[4].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\Log_2020-02-02--00-00-00_someGuid.txt"));
+            Assert.IsTrue(result[0].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Matches_450_2020-02-02--00-00-00_someGuid.json"));
+            Assert.IsTrue(result[1].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\ItemSet_All_450_2020-02-02--00-00-00_someGuid.json"));
+            Assert.IsTrue(result[2].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\ItemSet_Sub20_450_2020-02-02--00-00-00_someGuid.json"));
+            Assert.IsTrue(result[3].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Stats_450_2020-02-02--00-00-00_someGuid.xlsx"));
+            Assert.IsTrue(result[4].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Log_450_2020-02-02--00-00-00_someGuid.txt"));
         }
 
         [TestMethod]
@@ -59,10 +59,10 @@ namespace LeagueAPI_Tests.UnitTests
             Parameters paramms = GetParams();
             List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, null, null, true);
             Assert.IsTrue(result.Count == 4);
-            Assert.IsTrue(result[0].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\Matches_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[1].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\ItemSet_All_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[2].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\Stats_2020-02-02--00-00-00_someGuid.xlsx"));
-            Assert.IsTrue(result[3].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\Log_2020-02-02--00-00-00_someGuid.txt"));
+            Assert.IsTrue(result[0].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Matches_450_2020-02-02--00-00-00_someGuid.json"));
+            Assert.IsTrue(result[1].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\ItemSet_All_450_2020-02-02--00-00-00_someGuid.json"));
+            Assert.IsTrue(result[2].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Stats_450_2020-02-02--00-00-00_someGuid.xlsx"));
+            Assert.IsTrue(result[3].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Log_450_2020-02-02--00-00-00_someGuid.txt"));
         }
 
         [TestMethod]
@@ -72,7 +72,7 @@ namespace LeagueAPI_Tests.UnitTests
             Parameters paramms = GetParams();
             List<string> result = await SetupFullRunner(throwExceptionOnMatchCollection: true).DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, null, null, paramms.GetLatestDdragonData);
             Assert.IsTrue(result.Count == 1);
-            Assert.IsTrue(result[0].Equals($"C:\\Results_2020-02-02--00-00-00_someGuid\\Log_2020-02-02--00-00-00_someGuid.txt"));
+            Assert.IsTrue(result[0].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Log_450_2020-02-02--00-00-00_someGuid.txt"));
         }
 
         private static Parameters GetParams()
@@ -84,7 +84,7 @@ namespace LeagueAPI_Tests.UnitTests
                 DdragonJsonFilesDirectoryPath = "ss",
                 MaxCount = 1,
                 OutputDirectory = "C:\\",
-                QueueId = 1,
+                QueueId = 450,
                 RangeOfTargetVersions = new List<string> { "ss" },
                 Token = "ss",
                 IncludeWinRatesForMinutes = new List<int>() { 20 },

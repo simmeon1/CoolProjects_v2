@@ -49,7 +49,7 @@ namespace LeagueAPI_ClassLibrary
             List<string> createdFiles = new();
             try
             {
-                InitialiseFileNames(outputDirectory);
+                InitialiseFileNames(outputDirectory, queueId.ToString());
                 List<LeagueMatch> alreadyScannedMatches = ReadExistingMatches(existingMatchesFile);
 
                 targetVersions = await RepoUpdater.GetParsedListOfVersions(targetVersions);
@@ -80,9 +80,9 @@ namespace LeagueAPI_ClassLibrary
             return alreadyScannedMatches;
         }
 
-        private void InitialiseFileNames(string outputDirectory)
+        private void InitialiseFileNames(string outputDirectory, string queueId)
         {
-            string idString = Globals.GetDateTimeFileNameFriendlyConcatenatedWithString(DateTimeProvider.Now(), GuidProvider.NewGuid());
+            string idString = $"{queueId}_{Globals.GetDateTimeFileNameFriendlyConcatenatedWithString(DateTimeProvider.Now(), GuidProvider.NewGuid())}";
             string resultsFolder = $"Results_{idString}";
             string path = Path.Combine(outputDirectory, resultsFolder);
             if (!FileIO.DirectoryExists(path)) FileIO.CreateDirectory(path);
