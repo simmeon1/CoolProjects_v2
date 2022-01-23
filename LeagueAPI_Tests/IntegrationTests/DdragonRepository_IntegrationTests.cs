@@ -68,7 +68,7 @@ namespace LeagueAPI_Tests.IntegrationTests
             Assert.IsTrue(item.GetCleanDescription().Equals("50% Base Mana Regen"));
             Assert.IsTrue(item.Gold == 250);
             Assert.IsTrue(item.IsMythic() == false);
-            Assert.IsTrue(item.GetIsFinished() == false);
+            Assert.IsTrue(item.IsFinished() == false);
             Assert.IsTrue(item.GetTagsString().Equals("ManaRegen"));
         }
         
@@ -78,7 +78,7 @@ namespace LeagueAPI_Tests.IntegrationTests
             Item item = Repository.GetItem(3078);
             Assert.IsTrue(item.Name.Equals("Trinity Force"));
             Assert.IsTrue(item.IsMythic() == true);
-            Assert.IsTrue(item.GetIsFinished() == true);
+            Assert.IsTrue(item.IsFinished() == true);
         }
         
         [TestMethod]

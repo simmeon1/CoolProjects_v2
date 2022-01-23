@@ -19,7 +19,7 @@ namespace LeagueAPI_Tests.UnitTests
             fileIOMock.SetupSequence(x => x.ReadAllText(It.IsAny<string>()))
                 .Returns(@"{'data':{'Aatrox':{'key': '266', 'name':'Aatrox','info':{'difficulty':4},'tags':['Fighter','Tank']}}}")
                 .Returns(@"{'data':{'1001':{'name':'Boots','description':'rarityMythic<asd>ornnBonus','plaintext':'plaintext','gold':{'total':300},
-                            'tags':['Boots', 'b']},'3158':{'name':'s','description':'ornnBonus','plaintext':'s','gold':{'total':300},'tags':['Boots']}}}")
+                            'tags':['Boots', 'b']},'3158':{'name':'s','description':'360 mana.*<raritylegendary>tearItem</raritylegendary>','plaintext':'s','gold':{'total':300},'tags':['Boots'], 'into':['Boots2', 'Boots3']}}}")
                 .Returns(@"[{'name':'Domination','slots':[{'runes':[{'id':8112,'name':'name','longDesc':'long<asd>desc'}]}]}]")
                 .Returns(@"{'5008': 'someText'}")
                 .Returns(@"{'data':{'SummonerBarrier':{'name':'name','key': '21','description':'desc','cooldown':[180]}}}");
@@ -58,6 +58,27 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(obj.IsMoreThan2000G().Equals(false));
             Assert.IsTrue(obj.IsMythic().Equals(true));
             Assert.IsTrue(obj.GetTagsString().Equals("Boots, b"));
+            Assert.IsTrue(obj.BuildsInto.Count == 0);
+            Assert.IsTrue(obj.GetSecondFormNameForTearItem().Equals(""));
+
+            Item obj2 = Repo.GetItem(obj.Name);
+            Assert.IsTrue(obj2.Id == obj.Id);
+            
+            Item obj3 = Repo.GetItem("blah");
+            Assert.IsTrue(obj3 == null);
+
+            Item obj4 = Repo.GetItem(3158);
+            Assert.IsTrue(obj4.BuildsInto.Count == 2);
+            Assert.IsTrue(obj4.BuildsInto[0].Equals("Boots2"));
+            Assert.IsTrue(obj4.BuildsInto[1].Equals("Boots3"));
+            Assert.IsTrue(!obj4.IsFinished());
+            Assert.IsTrue(obj4.GetSecondFormNameForTearItem().Equals("tearItem"));
+
+            obj4.BuildsInto = null;
+            Assert.IsTrue(obj4.IsFinished());
+            
+            obj4.BuildsInto = new();
+            Assert.IsTrue(obj4.IsFinished());
         }
         
         [TestMethod]

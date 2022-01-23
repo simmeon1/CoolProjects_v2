@@ -1,0 +1,4 @@
+Getting latest version...
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at LeagueAPI_ClassLibrary.DdragonRepositoryUpdater.GetParsedListOfVersions(List`1 unparsedVersions) in C:\Users\simme\source\repos\CoolProjects_v2\LeagueAPI_ClassLibrary\DdragonClasses\DdragonRepositoryUpdater.cs:line 121
+   at LeagueAPI_ClassLibrary.FullRunner.DoFullRun(String outputDirectory, Int32 queueId, String startPuuid, List`1 targetVersions, Int32 maxCount, List`1 includeWinRatesForMinutes, String existingMatchesFile, Boolean getLatestVersion) in C:\Users\simme\source\repos\CoolProjects_v2\LeagueAPI_ClassLibrary\FullRunner.cs:line 55

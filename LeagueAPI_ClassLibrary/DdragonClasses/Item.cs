@@ -17,7 +17,7 @@ namespace LeagueAPI_ClassLibrary
 
         public bool IsFinished()
         {
-            return BuildsInto.Count == 0;
+            return BuildsInto == null || BuildsInto.Count == 0;
         }
 
         public string GetTagsString()

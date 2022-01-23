@@ -72,7 +72,7 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(table.Rows[0].ItemArray[10].Equals(250));
             Assert.IsTrue(table.Rows[0].ItemArray[11].Equals(false));
             Assert.IsTrue(table.Rows[0].ItemArray[12].Equals(false));
-            Assert.IsTrue(table.Rows[0].ItemArray[13].Equals(false));
+            Assert.IsTrue(table.Rows[0].ItemArray[13].Equals(true));
             Assert.IsTrue(table.Rows[0].ItemArray[14].Equals(""));
             Assert.IsTrue(table.Rows[0].ItemArray[15].Equals("plainText"));
             Assert.IsTrue(table.Rows[0].ItemArray[16].Equals("desc"));
