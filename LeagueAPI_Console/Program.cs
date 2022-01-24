@@ -30,11 +30,11 @@ namespace LeagueAPI_Console
             MatchCollector collector = new(client, logger);
             DdragonRepository repo = new(fileIO, parameters.DdragonJsonFilesDirectoryPath);
             ArchiveExtractor extractor = new();
-            DdragonRepositoryUpdater repoUpdater = new(http, webClient, fileIO, logger, extractor, parameters.DdragonJsonFilesDirectoryPath);
+            DdragonRepositoryUpdater repoUpdater = new(client, webClient, fileIO, logger, extractor, parameters.DdragonJsonFilesDirectoryPath);
             RealDateTimeProvider dateTimeProvider = new();
             RealGuidProvider guidProvider = new();
             ExcelPrinter printer = new();
-            FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger, repoUpdater);
+            FullRunner runner = new(client, collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger, repoUpdater);
             List<string> files = await runner.DoFullRun(
                 parameters.OutputDirectory,
                 parameters.QueueId,

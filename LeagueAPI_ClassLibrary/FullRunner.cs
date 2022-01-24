@@ -11,6 +11,7 @@ namespace LeagueAPI_ClassLibrary
 {
     public class FullRunner
     {
+        private ILeagueAPIClient LeagueAPIClient { get; set; }
         private IMatchCollector MatchCollector { get; set; }
         private IDDragonRepository Repository { get; set; }
         private IDdragonRepositoryUpdater RepoUpdater { get; set; }
@@ -25,6 +26,7 @@ namespace LeagueAPI_ClassLibrary
         private string LogFilePath { get; set; }
 
         public FullRunner(
+            ILeagueAPIClient leagueAPIClient,
             IMatchCollector matchCollector,
             IDDragonRepository repository,
             IFileIO fileIO,
@@ -42,6 +44,7 @@ namespace LeagueAPI_ClassLibrary
             ExcelPrinter = excelPrinter;
             Logger = logger;
             RepoUpdater = repoUpdater;
+            LeagueAPIClient = leagueAPIClient;
         }
 
         public async Task<List<string>> DoFullRun(string outputDirectory, int queueId, string startPuuid, List<string> targetVersions, int maxCount, List<int> includeWinRatesForMinutes, string existingMatchesFile, bool getLatestVersion)
@@ -52,7 +55,7 @@ namespace LeagueAPI_ClassLibrary
                 InitialiseFileNames(outputDirectory, queueId.ToString());
                 List<LeagueMatch> alreadyScannedMatches = ReadExistingMatches(existingMatchesFile);
 
-                targetVersions = await RepoUpdater.GetParsedListOfVersions(targetVersions);
+                targetVersions = await LeagueAPIClient.GetParsedListOfVersions(targetVersions);
                 Task updateTask = Task.CompletedTask;
                 if (getLatestVersion) updateTask = RepoUpdater.GetLatestDdragonFiles();
 

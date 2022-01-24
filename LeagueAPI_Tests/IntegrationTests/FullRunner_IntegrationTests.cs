@@ -32,11 +32,11 @@ namespace LeagueAPI_Tests.IntegrationTests
             RealFileIO fileIO = new();
             DdragonRepository repo = new(fileIO, TestData.DdragonJsonFilesDirectoryPath);
             ArchiveExtractor extractor = new();
-            DdragonRepositoryUpdater repoUpdater = new(http, webClient, fileIO, logger, extractor, TestData.DdragonJsonFilesDirectoryPath);
+            DdragonRepositoryUpdater repoUpdater = new(client, webClient, fileIO, logger, extractor, TestData.DdragonJsonFilesDirectoryPath);
             RealDateTimeProvider dateTimeProvider = new();
             RealGuidProvider guidProvider = new();
             ExcelPrinter printer = new();
-            FullRunner runner = new(collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger, repoUpdater);
+            FullRunner runner = new(client, collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger, repoUpdater);
             List<string> createdFiles = await runner.DoFullRun(TestData.OutputDirectory, 450, TestData.AccountPuuid, TestData.RangeOfTargetVersions, maxCount: 1, null, null, false);
             Assert.IsTrue(createdFiles.Count == 4);
             DeleteCreatedFiles(createdFiles);

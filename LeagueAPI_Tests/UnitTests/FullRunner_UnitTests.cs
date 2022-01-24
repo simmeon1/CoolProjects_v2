@@ -114,7 +114,7 @@ namespace LeagueAPI_Tests.UnitTests
             guidProvider.Setup(x => x.NewGuid()).Returns("someGuid");
 
             Mock<IExcelPrinter> excelPrinter = new();
-            FullRunner runner = new(collector.Object, repo.Object, fileIO.Object, dateTimeProvider.Object, guidProvider.Object, excelPrinter.Object, logger, new Mock<IDdragonRepositoryUpdater>().Object);
+            FullRunner runner = new(new Mock<ILeagueAPIClient>().Object, collector.Object, repo.Object, fileIO.Object, dateTimeProvider.Object, guidProvider.Object, excelPrinter.Object, logger, new Mock<IDdragonRepositoryUpdater>().Object);
             return runner;
         }
     }

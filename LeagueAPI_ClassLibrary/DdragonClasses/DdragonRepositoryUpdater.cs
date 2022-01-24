@@ -1,19 +1,14 @@
 ﻿using Common_ClassLibrary;
-using ICSharpCode.SharpZipLib.GZip;
-using ICSharpCode.SharpZipLib.Tar;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace LeagueAPI_ClassLibrary
 {
     public class DdragonRepositoryUpdater : IDdragonRepositoryUpdater
     {
-        private IHttpClient HttpClient { get; set; }
+        private ILeagueAPIClient LeagueAPIClient { get; set; }
         private IWebClient WebClient { get; set; }
         private IFileIO FileIO { get; set; }
         private ILogger Logger { get; set; }
@@ -21,9 +16,9 @@ namespace LeagueAPI_ClassLibrary
 
         private string BaseName { get; set; }
         private string RepoPath { get; set; }
-        public DdragonRepositoryUpdater(IHttpClient httpClient, IWebClient webClient, IFileIO fileIO, ILogger logger, IArchiveExtractor archiveExtractor, string repoPath)
+        public DdragonRepositoryUpdater(ILeagueAPIClient leagueAPIClient, IWebClient webClient, IFileIO fileIO, ILogger logger, IArchiveExtractor archiveExtractor, string repoPath)
         {
-            HttpClient = httpClient;
+            LeagueAPIClient = leagueAPIClient;
             WebClient = webClient;
             FileIO = fileIO;
             Logger = logger;
@@ -33,8 +28,9 @@ namespace LeagueAPI_ClassLibrary
 
         public async Task GetLatestDdragonFiles()
         {
-            JArray versionsJson = await GetLatestVersions();
-            string latestVersion = versionsJson[0].ToString();
+            Logger.Log("Getting latest version...");
+            List<string> versionsJson = await GetLatestVersions();
+            string latestVersion = versionsJson[0];
             Logger.Log($"Latest versions retrieved ({latestVersion})");
             BaseName = $"dragontail-{latestVersion}";
             CleanUpFiles();
@@ -85,14 +81,9 @@ namespace LeagueAPI_ClassLibrary
             }
         }
 
-        private async Task<JArray> GetLatestVersions()
+        private async Task<List<string>> GetLatestVersions()
         {
-            Logger.Log("Getting latest version...");
-            HttpRequestMessage message = new(HttpMethod.Get, "https://ddragon.leagueoflegends.com/api/versions.json");
-            HttpResponseMessage response = await HttpClient.SendRequest(message);
-            string responseMessage = await response.Content.ReadAsStringAsync();
-            JArray result = JArray.Parse(responseMessage);
-            return result;
+            return await LeagueAPIClient.GetLatestVersions();
         }
 
         private void ExtractTGZ()
@@ -112,20 +103,6 @@ namespace LeagueAPI_ClassLibrary
         private string GetBaseNameWithTargetFolder()
         {
             return $"{BaseName}-extracted";
-        }
-
-        public async Task<List<string>> GetParsedListOfVersions(List<string> unparsedVersions)
-        {
-            List<string> parsedVersions = new();
-            JArray versionsJson = await GetLatestVersions();
-            foreach (string unparsedVersion in unparsedVersions)
-            {
-                int unparsedVersionIndex = int.Parse(unparsedVersion);
-                int unparsedVersionUpdatedIndex = unparsedVersionIndex * -1;
-                string parsedVersion = versionsJson[unparsedVersionUpdatedIndex].ToString();
-                parsedVersions.Add(parsedVersion);
-            }
-            return parsedVersions;
         }
     }
 }

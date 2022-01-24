@@ -4,8 +4,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace LeagueAPI_Tests.UnitTests
@@ -21,24 +19,19 @@ namespace LeagueAPI_Tests.UnitTests
             Mock<IWebClient> web = new();
             Mock<IFileIO> fileIO = new();
             Mock<IArchiveExtractor> extractor = new();
-            Mock<IHttpClient> http = new();
-            http.Setup(x => x.SendRequest(It.IsAny<HttpRequestMessage>()).Result).Returns(GetResponse(@"[""12.2"",""12.1""]"));
+            Mock<ILeagueAPIClient> leagueAPI = new();
+            leagueAPI.Setup(x => x.GetLatestVersions().Result).Returns(new List<string>() { "12.2", "12.1" });
 
             fileIO.SetupSequence(x => x.DeleteFolder(It.IsAny<string>())).Pass().Throws(new Exception());
 
             DdragonRepositoryUpdater updater = new(
-                httpClient: http.Object,
+                leagueAPIClient: leagueAPI.Object,
                 webClient: web.Object,
                 fileIO: fileIO.Object,
                 logger: new Mock<ILogger>().Object,
                 archiveExtractor: extractor.Object,
                 repoPath: "repoPath"
             );
-
-            List<string> parsedVersions = await updater.GetParsedListOfVersions(new List<string>() { "0", "-1" });
-            Assert.IsTrue(parsedVersions.Count == 2);
-            Assert.IsTrue(parsedVersions[0].Equals("12.2"));
-            Assert.IsTrue(parsedVersions[1].Equals("12.1"));
 
             await updater.GetLatestDdragonFiles();
 
@@ -59,13 +52,6 @@ namespace LeagueAPI_Tests.UnitTests
             fileIO.Verify(x => x.Copy($@"{folderName}\12.2\data\en_US\item.json", @"repoPath\item.json", true), Times.Once());
             fileIO.Verify(x => x.Copy($@"{folderName}\12.2\data\en_US\runesReforged.json", @"repoPath\runesReforged.json", true), Times.Once());
             fileIO.Verify(x => x.Copy($@"{folderName}\12.2\data\en_US\summoner.json", @"repoPath\summoner.json", true), Times.Once());
-        }
-
-        private static HttpResponseMessage GetResponse(string responseContent)
-        {
-            HttpResponseMessage response = new(HttpStatusCode.OK);
-            response.Content = new StringContent(responseContent);
-            return response;
         }
     }
 }

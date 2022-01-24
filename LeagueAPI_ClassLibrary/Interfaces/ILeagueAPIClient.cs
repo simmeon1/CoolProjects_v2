@@ -8,5 +8,7 @@ namespace LeagueAPI_ClassLibrary
         Task<Account> GetAccountBySummonerName(string summonerName);
         Task<LeagueMatch> GetMatch(string matchId);
         Task<List<string>> GetMatchIds(int queueId, string puuid);
+        Task<List<string>> GetLatestVersions();
+        Task<List<string>> GetParsedListOfVersions(List<string> unparsedVersions);
     }
 }

@@ -159,5 +159,24 @@ namespace LeagueAPI_ClassLibrary
             match.participants = participants;
             return match;
         }
+
+        public async Task<List<string>> GetLatestVersions()
+        {
+            return (await GetJArrayFromResponse("https://ddragon.leagueoflegends.com/api/versions.json")).ToObject<List<string>>();
+        }
+
+        public async Task<List<string>> GetParsedListOfVersions(List<string> unparsedVersions)
+        {
+            List<string> parsedVersions = new();
+            List<string> versionsJson = await GetLatestVersions();
+            foreach (string unparsedVersion in unparsedVersions)
+            {
+                int unparsedVersionIndex = int.Parse(unparsedVersion);
+                int unparsedVersionUpdatedIndex = unparsedVersionIndex * -1;
+                string parsedVersion = versionsJson[unparsedVersionUpdatedIndex].ToString();
+                parsedVersions.Add(parsedVersion);
+            }
+            return parsedVersions;
+        }
     }
 }
