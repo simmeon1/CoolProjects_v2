@@ -178,5 +178,15 @@ namespace LeagueAPI_ClassLibrary
             }
             return parsedVersions;
         }
+
+        public async Task<string> GetNameOfQueue(int queueId)
+        {
+            JArray queues = await GetJArrayFromResponse("https://static.developer.riotgames.com/docs/lol/queues.json");
+            foreach (JToken queue in queues)
+            {
+                if ((int)queue["queueId"] == queueId) return (string)queue["map"];
+            }
+            return "";
+        }
     }
 }

@@ -10,5 +10,6 @@ namespace LeagueAPI_ClassLibrary
         Task<List<string>> GetMatchIds(int queueId, string puuid);
         Task<List<string>> GetLatestVersions();
         Task<List<string>> GetParsedListOfVersions(List<string> unparsedVersions);
+        Task<string> GetNameOfQueue(int queueId);
     }
 }

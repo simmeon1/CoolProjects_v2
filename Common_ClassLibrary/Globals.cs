@@ -5,9 +5,9 @@ namespace Common_ClassLibrary
 {
     public static class Globals
     {
-        public static string GetDateTimeFileNameFriendlyConcatenatedWithString(DateTime time, string @string)
+        public static string GetDateTimeFileNameFriendlyConcatenatedWithString(DateTime time, string str)
         {
-            return $"{GetDateTimeFileNameFriendly(time)}_{@string}";
+            return $"{GetDateTimeFileNameFriendly(time)}_{str}";
         }
 
         public static string GetDateTimeFileNameFriendly(DateTime time)

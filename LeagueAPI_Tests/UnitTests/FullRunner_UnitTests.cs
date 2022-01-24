@@ -46,11 +46,11 @@ namespace LeagueAPI_Tests.UnitTests
         private static void DefaultAssert(List<string> result)
         {
             Assert.IsTrue(result.Count == 5);
-            Assert.IsTrue(result[0].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Matches_450_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[1].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\ItemSet_All_450_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[2].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\ItemSet_Sub20_450_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[3].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Stats_450_2020-02-02--00-00-00_someGuid.xlsx"));
-            Assert.IsTrue(result[4].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Log_450_2020-02-02--00-00-00_someGuid.txt"));
+            Assert.IsTrue(result[0].Equals($"C:\\Results_HA_12.2,12.1_2020-02-02--00-00-00\\Matches_HA_12.2,12.1_2020-02-02--00-00-00.json"));
+            Assert.IsTrue(result[1].Equals($"C:\\Results_HA_12.2,12.1_2020-02-02--00-00-00\\ItemSet_All_HA_12.2,12.1_2020-02-02--00-00-00.json"));
+            Assert.IsTrue(result[2].Equals($"C:\\Results_HA_12.2,12.1_2020-02-02--00-00-00\\ItemSet_Sub20_HA_12.2,12.1_2020-02-02--00-00-00.json"));
+            Assert.IsTrue(result[3].Equals($"C:\\Results_HA_12.2,12.1_2020-02-02--00-00-00\\Stats_HA_12.2,12.1_2020-02-02--00-00-00.xlsx"));
+            Assert.IsTrue(result[4].Equals($"C:\\Results_HA_12.2,12.1_2020-02-02--00-00-00\\Log_HA_12.2,12.1_2020-02-02--00-00-00.txt"));
         }
 
         [TestMethod]
@@ -59,10 +59,10 @@ namespace LeagueAPI_Tests.UnitTests
             Parameters paramms = GetParams();
             List<string> result = await SetupFullRunner().DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, null, null, true);
             Assert.IsTrue(result.Count == 4);
-            Assert.IsTrue(result[0].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Matches_450_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[1].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\ItemSet_All_450_2020-02-02--00-00-00_someGuid.json"));
-            Assert.IsTrue(result[2].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Stats_450_2020-02-02--00-00-00_someGuid.xlsx"));
-            Assert.IsTrue(result[3].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Log_450_2020-02-02--00-00-00_someGuid.txt"));
+            Assert.IsTrue(result[0].Equals($"C:\\Results_HA_12.2,12.1_2020-02-02--00-00-00\\Matches_HA_12.2,12.1_2020-02-02--00-00-00.json"));
+            Assert.IsTrue(result[1].Equals($"C:\\Results_HA_12.2,12.1_2020-02-02--00-00-00\\ItemSet_All_HA_12.2,12.1_2020-02-02--00-00-00.json"));
+            Assert.IsTrue(result[2].Equals($"C:\\Results_HA_12.2,12.1_2020-02-02--00-00-00\\Stats_HA_12.2,12.1_2020-02-02--00-00-00.xlsx"));
+            Assert.IsTrue(result[3].Equals($"C:\\Results_HA_12.2,12.1_2020-02-02--00-00-00\\Log_HA_12.2,12.1_2020-02-02--00-00-00.txt"));
         }
 
         [TestMethod]
@@ -72,7 +72,7 @@ namespace LeagueAPI_Tests.UnitTests
             Parameters paramms = GetParams();
             List<string> result = await SetupFullRunner(throwExceptionOnMatchCollection: true).DoFullRun(paramms.OutputDirectory, paramms.QueueId, paramms.AccountPuuid, paramms.RangeOfTargetVersions, 10, null, null, paramms.GetLatestDdragonData);
             Assert.IsTrue(result.Count == 1);
-            Assert.IsTrue(result[0].Equals($"C:\\Results_450_2020-02-02--00-00-00_someGuid\\Log_450_2020-02-02--00-00-00_someGuid.txt"));
+            Assert.IsTrue(result[0].Equals($"C:\\Results_HA_12.2,12.1_2020-02-02--00-00-00\\Log_HA_12.2,12.1_2020-02-02--00-00-00.txt"));
         }
 
         private static Parameters GetParams()
@@ -85,7 +85,7 @@ namespace LeagueAPI_Tests.UnitTests
                 MaxCount = 1,
                 OutputDirectory = "C:\\",
                 QueueId = 450,
-                RangeOfTargetVersions = new List<string> { "ss" },
+                RangeOfTargetVersions = new List<string> { "0", "-1" },
                 Token = "ss",
                 IncludeWinRatesForMinutes = new List<int>() { 20 },
                 ExistingMatchesFile = "gg"
@@ -114,7 +114,13 @@ namespace LeagueAPI_Tests.UnitTests
             guidProvider.Setup(x => x.NewGuid()).Returns("someGuid");
 
             Mock<IExcelPrinter> excelPrinter = new();
-            FullRunner runner = new(new Mock<ILeagueAPIClient>().Object, collector.Object, repo.Object, fileIO.Object, dateTimeProvider.Object, guidProvider.Object, excelPrinter.Object, logger, new Mock<IDdragonRepositoryUpdater>().Object);
+
+            Mock<ILeagueAPIClient> leagueApiClient = new();
+            leagueApiClient.Setup(x => x.GetNameOfQueue(450).Result).Returns("HA");
+            leagueApiClient.Setup(x => x.GetParsedListOfVersions(It.IsAny<List<string>>()).Result).Returns(new List<string>() { "12.2", "12.1" });
+
+
+            FullRunner runner = new(leagueApiClient.Object, collector.Object, repo.Object, fileIO.Object, dateTimeProvider.Object, guidProvider.Object, excelPrinter.Object, logger, new Mock<IDdragonRepositoryUpdater>().Object);
             return runner;
         }
     }

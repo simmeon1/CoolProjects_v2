@@ -52,10 +52,11 @@ namespace LeagueAPI_ClassLibrary
             List<string> createdFiles = new();
             try
             {
-                InitialiseFileNames(outputDirectory, queueId.ToString());
+                targetVersions = await LeagueAPIClient.GetParsedListOfVersions(targetVersions);
+
+                await InitialiseFileNames(outputDirectory, queueId, targetVersions);
                 List<LeagueMatch> alreadyScannedMatches = ReadExistingMatches(existingMatchesFile);
 
-                targetVersions = await LeagueAPIClient.GetParsedListOfVersions(targetVersions);
                 Task updateTask = Task.CompletedTask;
                 if (getLatestVersion) updateTask = RepoUpdater.GetLatestDdragonFiles();
 
@@ -83,9 +84,11 @@ namespace LeagueAPI_ClassLibrary
             return alreadyScannedMatches;
         }
 
-        private void InitialiseFileNames(string outputDirectory, string queueId)
+        private async Task InitialiseFileNames(string outputDirectory, int queueId, List<string> targetVersions)
         {
-            string idString = $"{queueId}_{Globals.GetDateTimeFileNameFriendlyConcatenatedWithString(DateTimeProvider.Now(), GuidProvider.NewGuid())}";
+            string queueName = await LeagueAPIClient.GetNameOfQueue(queueId);
+            string versionsStr = Extensions.ConcatenateListOfStringsToCommaString(targetVersions);
+            string idString = $"{queueName}_{versionsStr}_{Globals.GetDateTimeFileNameFriendly(DateTimeProvider.Now())}";
             string resultsFolder = $"Results_{idString}";
             string path = Path.Combine(outputDirectory, resultsFolder);
             if (!FileIO.DirectoryExists(path)) FileIO.CreateDirectory(path);

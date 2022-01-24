@@ -212,6 +212,26 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(parsedVersions[1].Equals("12.1"));
         }
 
+        [TestMethod]
+        public async Task GetNameOfQueueReturnsExpectedName()
+        {
+            LeagueAPIClient client = SetUpHttpClientWithSuccessfulResponse(@"[
+    {
+        ""queueId"": 2,
+        ""map"": ""Summoner's Rift""
+    },
+    {
+        ""queueId"": 450,
+        ""map"": ""Howling Abyss""
+    }
+]");
+            string name = await client.GetNameOfQueue(10);
+            Assert.IsTrue(name.Equals(""));
+
+            name = await client.GetNameOfQueue(450);
+            Assert.IsTrue(name.Equals("Howling Abyss"));
+        }
+
         private static HttpResponseMessage GetSuccessfulResponse(string responseContent)
         {
             HttpResponseMessage response = new(HttpStatusCode.OK);
