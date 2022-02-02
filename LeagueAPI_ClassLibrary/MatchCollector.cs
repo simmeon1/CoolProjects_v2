@@ -106,9 +106,9 @@ namespace LeagueAPI_ClassLibrary
                         LeagueMatch match = await Client.GetMatch(matchId);
                         scannedMatchIds.Add(matchId);
 
-                        if (match == null || match.queueId == 0 || match.participants == null || match.participants.Count == 0)
+                        if (match == null || match.participants == null || match.participants.Count == 0 || match.gameVersion.IsNullOrEmpty())
                         {
-                            Logger.Log($"Skipped adding match {match.matchId} due to bad data from server.");
+                            Logger.Log($"Skipped adding match {matchId} due to bad data from server.");
                             continue;
                         }
                         int versionComparisonResult = CompareTargetVersionAgainstGameVersion(rangeOfTargetVersions, match.gameVersion);
@@ -116,7 +116,7 @@ namespace LeagueAPI_ClassLibrary
                         else if (versionComparisonResult == 1) break;
 
                         result.Add(match);
-                        Logger.Log($"Added match {match.matchId} (version {match.gameVersion}, queueId {match.queueId}), current count is {result.Count}");
+                        Logger.Log($"Added match {matchId} (version {match.gameVersion}, queueId {queueId}), current count is {result.Count}");
                         if (result.Count >= maxCount) return result;
                         foreach (Participant participant in match.participants)
                         {
