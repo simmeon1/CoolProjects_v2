@@ -177,7 +177,7 @@ namespace MusicPlaylistBuilder
             usSongEntries = GetSongsWithRemappedProperties(usSongEntries, usSongPropertyMappings);
             List<SongCLS> usSongs = GetSongObjectsFromEntries(usSongEntries);
 
-            SpotifyCredentials credentials = File.ReadAllText(@"C:\Users\simme\source\repos\CoolProjects_v2\SpotifyAPI_Tests\credentials.json").DeserializeObject<SpotifyCredentials>();
+            SpotifyCredentials credentials = File.ReadAllText(@"C:\Users\simme\source\repos\CoolProjects_v2\MusicPlaylistBuilder\credentials.json").DeserializeObject<SpotifyCredentials>();
             SpotifyAPIClient client = new(new RealHttpClient(), delayer, credentials);
 
             HashSet<string> ukSearchTerms = GetSearchTerms(ukSongs);
@@ -312,7 +312,7 @@ namespace MusicPlaylistBuilder
 
         private static string RemoveCharsAndTrim(string result)
         {
-            List<string> toReplaceWithSpace = new() { "-", "–", ":", "+", "\"", ",", "!", "?", ".", "'", "(", ")", "*", "/", "\\", "&" };
+            List<string> toReplaceWithSpace = new() { "-", "ï¿½", ":", "+", "\"", ",", "!", "?", ".", "'", "(", ")", "*", "/", "\\", "&" };
             foreach (string ch in toReplaceWithSpace) result = result.Replace(ch, " ");
             result = Regex.Replace(result, "\\s+", " ");
             return result.Trim();

@@ -17,10 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common_ClassLibrary", "Comm
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeagueAPI_Console", "LeagueAPI_Console\LeagueAPI_Console.csproj", "{4761BE14-9808-479E-BF41-55E20A50D9D1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpotifyAPI_ClassLibrary", "SpotifyAPI_ClassLibrary\SpotifyAPI_ClassLibrary.csproj", "{84ACC4FD-FB69-4AD3-83B1-1C3F5E6F5E1F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpotifyAPI_Tests", "SpotifyAPI_Tests\SpotifyAPI_Tests.csproj", "{CCC16390-B7F6-42E4-8352-74BB0A7FB670}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViGEm", "ViGEm\ViGEm.csproj", "{AFD8620C-31A1-4BB4-A7FB-CFCF274CBCB7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicPlaylistBuilder", "MusicPlaylistBuilder\MusicPlaylistBuilder.csproj", "{4F32AF37-A320-416B-ACFB-78BD542525EB}"
@@ -59,14 +55,6 @@ Global
 		{4761BE14-9808-479E-BF41-55E20A50D9D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4761BE14-9808-479E-BF41-55E20A50D9D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4761BE14-9808-479E-BF41-55E20A50D9D1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{84ACC4FD-FB69-4AD3-83B1-1C3F5E6F5E1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84ACC4FD-FB69-4AD3-83B1-1C3F5E6F5E1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84ACC4FD-FB69-4AD3-83B1-1C3F5E6F5E1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84ACC4FD-FB69-4AD3-83B1-1C3F5E6F5E1F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CCC16390-B7F6-42E4-8352-74BB0A7FB670}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CCC16390-B7F6-42E4-8352-74BB0A7FB670}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CCC16390-B7F6-42E4-8352-74BB0A7FB670}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CCC16390-B7F6-42E4-8352-74BB0A7FB670}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AFD8620C-31A1-4BB4-A7FB-CFCF274CBCB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AFD8620C-31A1-4BB4-A7FB-CFCF274CBCB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFD8620C-31A1-4BB4-A7FB-CFCF274CBCB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
