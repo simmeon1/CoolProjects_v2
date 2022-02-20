@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Common_ClassLibrary
 {
@@ -7,6 +9,16 @@ namespace Common_ClassLibrary
         public async Task Delay(int milliseconds)
         {
             await Task.Delay(milliseconds);
+        }
+
+        public async Task Delay(TimeSpan timeSpan)
+        {
+            await Task.Delay(timeSpan);
+        }
+
+        public void Sleep(int milliseconds)
+        {
+            Thread.Sleep(milliseconds);
         }
     }
 }
