@@ -21,7 +21,7 @@ namespace JourneyPlanner_ClassLibrary
             DateTime dateTo,
             MultiJourneyCollectorResults existingResults = null)
         {
-            JourneyCollection allJourneys = existingResults == null ? new() : existingResults.JourneyCollection;
+            JourneyCollection allJourneys = existingResults == null ? new JourneyCollection() : existingResults.JourneyCollection;
             Dictionary<string, Dictionary<string, bool>> progress = GetProgressDict(retrieversAndData);
             if (existingResults != null) UpdateJourneysAndDictWithDataFromExistingProgress(allJourneys, progress, existingResults.Progress);
 
@@ -88,8 +88,8 @@ namespace JourneyPlanner_ClassLibrary
 
         private static List<DateTime> GetAllDates(DateTime dateFrom, DateTime dateTo)
         {
-            List<DateTime> listOfExtraDates = new() { };
             DateTime tempDate = dateFrom.AddDays(1);
+            List<DateTime> listOfExtraDates = new();
             while (DateTime.Compare(tempDate, dateTo) <= 0)
             {
                 listOfExtraDates.Add(tempDate);
