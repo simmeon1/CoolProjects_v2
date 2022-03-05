@@ -55,5 +55,21 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
             Assert.IsTrue(collection2.GetCount() == 1);
             Assert.IsTrue(collection2[0].ToString().Contains("EDI-VAR"));
         }
+        
+        [TestMethod]
+        public void AlreadyContainsJourneyWorksAsExpected()
+        {
+            Assert.IsTrue(collection.AlreadyContainsJourney(journey1));
+            Assert.IsFalse(new JourneyCollection().AlreadyContainsJourney(journey1));
+        }
+        
+        [TestMethod]
+        public void AddRangeWorksAsExpected()
+        {
+            JourneyCollection journeyCollection = new();
+            journeyCollection.AddRange(collection);
+            Assert.IsTrue(journeyCollection.AlreadyContainsJourney(journey1));
+            Assert.IsTrue(journeyCollection.AlreadyContainsJourney(journey2));
+        }
     }
 }
