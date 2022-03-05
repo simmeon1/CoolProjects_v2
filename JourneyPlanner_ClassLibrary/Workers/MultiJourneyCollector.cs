@@ -1,10 +1,12 @@
-﻿using Common_ClassLibrary;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using Common_ClassLibrary;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.Interfaces;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Workers
 {
     public class MultiJourneyCollector : IMultiJourneyCollector
     {
@@ -46,7 +48,7 @@ namespace JourneyPlanner_ClassLibrary
                 RemoveAlreadyCompletedPathsForRetriever(retrieverData, retrieverName, progress);
                 if (retrieverData.GetCountOfDirectPaths() == 0) continue;
 
-                string fullClassName = $"{Assembly.GetExecutingAssembly().GetName().Name}.{retrieverName}";
+                string fullClassName = $"{Assembly.GetExecutingAssembly().GetName().Name}.JourneyRetrievers.{retrieverName}";
                 IJourneyRetriever retriever = InstanceCreator.CreateInstance(fullClassName, c);
                 try
                 {
@@ -143,7 +145,7 @@ namespace JourneyPlanner_ClassLibrary
             foreach (KeyValuePair<string, JourneyRetrieverData> data in retrieversAndData)
             {
                 string worker = data.Key;
-                progress.Add(worker, new());
+                progress.Add(worker, new Dictionary<string, bool>());
                 foreach (DirectPath directPath in data.Value.DirectPaths)
                 {
                     progress[data.Key].Add(directPath.ToString(), false);

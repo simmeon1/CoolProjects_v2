@@ -1,12 +1,7 @@
-﻿using Common_ClassLibrary;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System;
 using System.Text;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Classes
 {
     public class SequentialJourneyCollection
     {

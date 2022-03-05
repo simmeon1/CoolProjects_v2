@@ -1,13 +1,14 @@
-﻿using Common_ClassLibrary;
-using JourneyPlanner_ClassLibrary;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using JourneyPlanner_ClassLibrary;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.Workers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Workers
 {
     [TestClass]
-    public class SequentialJourneyCollectionBuilder_UnitTests
+    public class SequentialJourneyCollectionBuilderUnitTests
     {        
         [TestMethod]
         public void GetFullPathCombinationOfFLights_MultipleFlights()

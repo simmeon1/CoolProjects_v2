@@ -1,7 +1,7 @@
-﻿using Common_ClassLibrary;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Common_ClassLibrary;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Classes
 {
     public class Path
     {

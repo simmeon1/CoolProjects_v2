@@ -1,14 +1,16 @@
-﻿using Common_ClassLibrary;
-using OpenQA.Selenium;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.Interfaces;
+using JourneyPlanner_ClassLibrary.Workers;
+using OpenQA.Selenium;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 {
     public class NationalExpressWorker : IJourneyRetriever
     {

@@ -1,17 +1,12 @@
 ﻿using Common_ClassLibrary;
-using JourneyPlanner_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using OpenQA.Selenium;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.JourneyRetrievers
 {
     [TestClass]
-    public class GoogleFlightsWorker_UnitTests
+    public class GoogleFlightsWorkerUnitTests
     {
         Mock<IWebDriver> driverMock;
         Mock<ILogger> logger;

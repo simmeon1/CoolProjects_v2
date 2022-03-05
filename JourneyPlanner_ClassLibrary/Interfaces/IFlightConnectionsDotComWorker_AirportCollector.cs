@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using JourneyPlanner_ClassLibrary.Classes;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Interfaces
 {
-    public interface IFlightConnectionsDotComWorker_AirportCollector
+    public interface IFlightConnectionsDotComWorkerAirportCollector
     {
         List<Airport> CollectAirports(int maxCountToCollect = 0);
     }

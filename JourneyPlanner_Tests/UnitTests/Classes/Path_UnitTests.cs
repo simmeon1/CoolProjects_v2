@@ -1,13 +1,12 @@
-﻿using Common_ClassLibrary;
-using JourneyPlanner_ClassLibrary;
+﻿using System.Collections.Generic;
+using Common_ClassLibrary;
+using JourneyPlanner_ClassLibrary.Classes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Classes
 {
     [TestClass]
-    public class Path_UnitTests
+    public class PathUnitTests
     {
         private static readonly List<string> entries = new() { "ABZ", "EDI" };
         private readonly Path path = new(entries);

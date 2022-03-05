@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
+using JourneyPlanner_ClassLibrary.Classes;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Workers
 {
     public class JourneyRetrieverDataToLocalLinksConverter
     {

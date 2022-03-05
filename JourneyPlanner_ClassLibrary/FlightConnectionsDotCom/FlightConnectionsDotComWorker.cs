@@ -1,10 +1,9 @@
-﻿using Common_ClassLibrary;
+﻿using System.Collections.ObjectModel;
+using Common_ClassLibrary;
+using JourneyPlanner_ClassLibrary.Interfaces;
 using OpenQA.Selenium;
-using SeleniumExtras.WaitHelpers;
-using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.FlightConnectionsDotCom
 {
     public class FlightConnectionsDotComWorker
     {

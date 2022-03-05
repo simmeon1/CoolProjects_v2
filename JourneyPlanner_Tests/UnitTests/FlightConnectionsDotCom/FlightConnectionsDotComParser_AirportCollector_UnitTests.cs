@@ -1,16 +1,17 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Common_ClassLibrary;
-using JourneyPlanner_ClassLibrary;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.FlightConnectionsDotCom;
+using JourneyPlanner_ClassLibrary.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using OpenQA.Selenium;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.FlightConnectionsDotCom
 {
     [TestClass]
-    public class FlightConnectionsDotComParser_AirportCollector_UnitTests
+    public class FlightConnectionsDotComParserAirportCollectorUnitTests
     {
         Mock<IWebDriver> driverMock;
         Mock<ILogger> logger;
@@ -79,7 +80,7 @@ namespace JourneyPlanner_Tests.UnitTests
             searchButton.Setup(x => x.Text).Returns(agreeButtonContainsFakeText ? "Fake" : "AGREE");
             driverMock.Setup(x => x.FindElements(By.CssSelector("button"))).Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { searchButton.Object }));
 
-            FlightConnectionsDotComWorker_AirportCollector siteParser = new(worker);
+            FlightConnectionsDotComWorkerAirportCollector siteParser = new(worker);
             List<Airport> results = siteParser.CollectAirports(maxCountToCollect: maxCountToCollect);
             Assert.IsTrue(results.Count == resultCountExpectation);
             if (results.Count > 0) Assert.IsTrue(results[0].Equals(airport1));

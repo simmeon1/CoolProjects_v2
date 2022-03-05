@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using JourneyPlanner_ClassLibrary.AirportFilterers;
+using JourneyPlanner_ClassLibrary.Classes;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Workers
 {
     public class AirportListFilterer
     {

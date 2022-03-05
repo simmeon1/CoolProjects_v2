@@ -1,16 +1,18 @@
-﻿using Common_ClassLibrary;
-using OpenQA.Selenium;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
+using Common_ClassLibrary;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.Interfaces;
+using OpenQA.Selenium;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.FlightConnectionsDotCom
 {
-    public class FlightConnectionsDotComWorker_AirportCollector : IFlightConnectionsDotComWorker_AirportCollector
+    public class FlightConnectionsDotComWorkerAirportCollector : IFlightConnectionsDotComWorkerAirportCollector
     {
         private const string collectingAirports = "Collecting airports";
         private FlightConnectionsDotComWorker Worker { get; set; }
-        public FlightConnectionsDotComWorker_AirportCollector(FlightConnectionsDotComWorker worker)
+        public FlightConnectionsDotComWorkerAirportCollector(FlightConnectionsDotComWorker worker)
         {
             Worker = worker;
         }

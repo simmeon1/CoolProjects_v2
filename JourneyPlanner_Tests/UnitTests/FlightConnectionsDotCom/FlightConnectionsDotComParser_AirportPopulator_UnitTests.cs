@@ -1,16 +1,18 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Common_ClassLibrary;
-using JourneyPlanner_ClassLibrary;
+using JourneyPlanner_ClassLibrary.AirportFilterers;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.FlightConnectionsDotCom;
+using JourneyPlanner_ClassLibrary.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using OpenQA.Selenium;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.FlightConnectionsDotCom
 {
     [TestClass]
-    public class FlightConnectionsDotComParser_AirportPopulator_UnitTests
+    public class FlightConnectionsDotComParserAirportPopulatorUnitTests
     {
         Mock<IWebDriver> driverMock;
         Mock<ILogger> logger;
@@ -159,7 +161,7 @@ namespace JourneyPlanner_Tests.UnitTests
                 }
             }
 
-            FlightConnectionsDotComWorker_AirportPopulator siteParser = new(worker);
+            FlightConnectionsDotComWorkerAirportPopulator siteParser = new(worker);
             Dictionary<string, HashSet<string>> result = siteParser.PopulateAirports(airports, filterer);
             return result;
         }

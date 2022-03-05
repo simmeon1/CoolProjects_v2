@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace JourneyPlanner_Tests.IntegrationTests
 {
     [TestClass]
-    public class ChromeWorker_IntegrationTests
+    public class ChromeWorkerIntegrationTests
     {
 
         ChromeDriver chromeDriver;

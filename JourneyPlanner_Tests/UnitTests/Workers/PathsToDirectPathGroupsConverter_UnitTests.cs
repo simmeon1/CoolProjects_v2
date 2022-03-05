@@ -1,16 +1,15 @@
-﻿using Common_ClassLibrary;
+﻿using System.Collections.Generic;
 using JourneyPlanner_ClassLibrary;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.JourneyRetrievers;
+using JourneyPlanner_ClassLibrary.Workers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Workers
 {
     [TestClass]
 
-    public class PathsToDirectPathGroupsConverter_UnitTests
+    public class PathsToDirectPathGroupsConverterUnitTests
     {
         private const string megabus = "megabus";
         private const string scotrail = "scotrail";

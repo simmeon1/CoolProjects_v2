@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.FlightConnectionsDotCom;
+using JourneyPlanner_ClassLibrary.Workers;
 
 namespace JourneyPlanner_Console
 {
@@ -54,8 +57,8 @@ namespace JourneyPlanner_Console
                 fileIO: new RealFileIO(),
                 dateTimeProvider: new RealDateTimeProvider(),
                 printer: new ExcelPrinter(),
-                airportCollector: new FlightConnectionsDotComWorker_AirportCollector(worker),
-                airportPopulator: new FlightConnectionsDotComWorker_AirportPopulator(worker),
+                airportCollector: new FlightConnectionsDotComWorkerAirportCollector(worker),
+                airportPopulator: new FlightConnectionsDotComWorkerAirportPopulator(worker),
                 multiJourneyCollector);
 
             bool success = false;

@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
+using JourneyPlanner_ClassLibrary.Interfaces;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Workers
 {
     public class JourneyRetrieverInstanceCreator : IJourneyRetrieverInstanceCreator
     {

@@ -1,12 +1,14 @@
-﻿using Common_ClassLibrary;
-using JourneyPlanner_ClassLibrary;
+﻿using System.Collections.Generic;
+using Common_ClassLibrary;
+using JourneyPlanner_ClassLibrary.AirportFilterers;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.Workers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Workers
 {
     [TestClass]
-    public class AirportListFilterer_UnitTests
+    public class AirportListFiltererUnitTests
     {
         private const string codeABZ = "ABZ";
         private const string codeSOF = "SOF";

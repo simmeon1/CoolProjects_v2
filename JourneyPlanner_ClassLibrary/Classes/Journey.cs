@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using JourneyPlanner_ClassLibrary.JourneyRetrievers;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Classes
 {
     public class Journey
     {

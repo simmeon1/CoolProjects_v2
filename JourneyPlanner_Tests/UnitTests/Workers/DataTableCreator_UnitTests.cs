@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
-using JourneyPlanner_ClassLibrary;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.Workers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Workers
 {
     [TestClass]
     [SuppressMessage("ReSharper", "PossibleNullReferenceException")]

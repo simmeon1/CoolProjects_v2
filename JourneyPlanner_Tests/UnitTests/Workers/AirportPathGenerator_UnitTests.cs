@@ -1,11 +1,12 @@
-﻿using JourneyPlanner_ClassLibrary;
+﻿using System.Collections.Generic;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.Workers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Workers
 {
     [TestClass]
-    public class AirportPathGenerator_UnitTests
+    public class AirportPathGeneratorUnitTests
     {
         private const string codeABZ = "ABZ";
         private const string codeSOF = "SOF";

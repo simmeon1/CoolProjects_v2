@@ -1,7 +1,6 @@
-﻿using OpenQA.Selenium;
-using System;
+﻿using JourneyPlanner_ClassLibrary.Classes;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.AirportFilterers
 {
     public interface IAirportFilterer
     {

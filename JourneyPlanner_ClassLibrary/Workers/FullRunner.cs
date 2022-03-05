@@ -1,13 +1,13 @@
-﻿using Common_ClassLibrary;
-using Newtonsoft.Json;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Common_ClassLibrary;
+using JourneyPlanner_ClassLibrary.AirportFilterers;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.Interfaces;
+using Newtonsoft.Json;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Workers
 {
     public class FullRunner
     {
@@ -15,8 +15,8 @@ namespace JourneyPlanner_ClassLibrary
         public JourneyRetrieverComponents Components { get; set; }
         public IFileIO FileIO { get; set; }
         public IExcelPrinter Printer { get; set; }
-        public IFlightConnectionsDotComWorker_AirportCollector AirportCollector { get; set; }
-        public IFlightConnectionsDotComWorker_AirportPopulator AirportPopulator { get; set; }
+        public IFlightConnectionsDotComWorkerAirportCollector AirportCollector { get; set; }
+        public IFlightConnectionsDotComWorkerAirportPopulator AirportPopulator { get; set; }
         public IDateTimeProvider DateTimeProvider { get; set; }
         public IMultiJourneyCollector MultiJourneyCollector { get; set; }
 
@@ -25,8 +25,8 @@ namespace JourneyPlanner_ClassLibrary
             IFileIO fileIO,
             IDateTimeProvider dateTimeProvider,
             IExcelPrinter printer,
-            IFlightConnectionsDotComWorker_AirportCollector airportCollector,
-            IFlightConnectionsDotComWorker_AirportPopulator airportPopulator,
+            IFlightConnectionsDotComWorkerAirportCollector airportCollector,
+            IFlightConnectionsDotComWorkerAirportPopulator airportPopulator,
             IMultiJourneyCollector multiJourneyCollector)
         {
             FileIO = fileIO;

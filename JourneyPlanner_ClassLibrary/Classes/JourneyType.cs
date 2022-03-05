@@ -1,4 +1,4 @@
-﻿namespace JourneyPlanner_ClassLibrary
+﻿namespace JourneyPlanner_ClassLibrary.Classes
 {
     public enum JourneyType
     {

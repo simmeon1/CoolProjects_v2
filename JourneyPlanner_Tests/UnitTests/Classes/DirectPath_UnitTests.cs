@@ -1,13 +1,10 @@
-﻿using Common_ClassLibrary;
-using JourneyPlanner_ClassLibrary;
+﻿using JourneyPlanner_ClassLibrary.Classes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Classes
 {
     [TestClass]
-    public class DirectPath_UnitTests
+    public class DirectPathUnitTests
     {
         [TestMethod]
         public void BuildsOK()

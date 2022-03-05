@@ -1,12 +1,12 @@
-﻿using Common_ClassLibrary;
-using JourneyPlanner_ClassLibrary;
+﻿using System.Collections.Generic;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.Workers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Workers
 {
     [TestClass]
-    public class JourneyRetrieverDataToLocalLinksConverter_UnitTests
+    public class JourneyRetrieverDataToLocalLinksConverterUnitTests
     {
         [TestMethod]
         public void ExpectedResults()

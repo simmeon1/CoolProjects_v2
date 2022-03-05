@@ -1,18 +1,9 @@
-﻿using Common_ClassLibrary;
-using JourneyPlanner_ClassLibrary;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Newtonsoft.Json;
-using OpenQA.Selenium;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Threading.Tasks;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Workers
 {
     [TestClass]
-    public class FullRunner_UnitTests
+    public class FullRunnerUnitTests
     {
 //        [TestMethod]
 //        public async Task RunIsSuccesful_NoFilesProvidedAsync()

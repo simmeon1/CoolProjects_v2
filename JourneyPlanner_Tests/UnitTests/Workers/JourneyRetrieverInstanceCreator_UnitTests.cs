@@ -1,18 +1,19 @@
-﻿using Common_ClassLibrary;
-using JourneyPlanner_ClassLibrary;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using JourneyPlanner_ClassLibrary;
+using JourneyPlanner_ClassLibrary.Interfaces;
+using JourneyPlanner_ClassLibrary.JourneyRetrievers;
+using JourneyPlanner_ClassLibrary.Workers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Workers
 {
     [TestClass]
-    public class JourneyRetrieverInstanceCreator_UnitTests
+    public class JourneyRetrieverInstanceCreatorUnitTests
     {
         [TestMethod]
-        public void AllClassesThatImplementInterfaceBuildOKWithExpectedConstructor()
+        public void AllClassesThatImplementInterfaceBuildOkWithExpectedConstructor()
         {
             Type interfaceType = typeof(IJourneyRetriever);
             IEnumerable<Type> types = interfaceType.Assembly.GetTypes()

@@ -1,12 +1,12 @@
-﻿using Common_ClassLibrary;
-using OpenQA.Selenium;
-using SeleniumExtras.WaitHelpers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Common_ClassLibrary;
+using JourneyPlanner_ClassLibrary.Interfaces;
+using OpenQA.Selenium;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Workers
 {
     public class JourneyRetrieverComponents
     {
@@ -39,7 +39,7 @@ namespace JourneyPlanner_ClassLibrary
         public void NavigateToUrl(string url)
         {
             INavigation navigation = Driver.Navigate();
-            if (navigation != null) navigation.GoToUrl(url);
+            navigation?.GoToUrl(url);
         }
         
         public bool ElementsContainsClass(IWebElement element, string targetCls)
@@ -56,7 +56,8 @@ namespace JourneyPlanner_ClassLibrary
         {
             IWebElement element = WebDriverWaitProvider.Until(d =>
             {
-                if (container == null) container = d;
+                container ??= d;
+                int fails = 0;
                 while (true)
                 {
                     try
@@ -65,12 +66,9 @@ namespace JourneyPlanner_ClassLibrary
                         for (int i = 0; i < webElements.Count; i++)
                         {
                             IWebElement webElement = webElements[i];
-                            string attr = webElement.GetAttribute(attribute);
-                            if (attr == null) attr = "";
-                            if (attr.Trim().ToLower().Contains(text.ToLower()))
-                            {
-                                if (indexOfElement == -1 || i == indexOfElement) return webElement;
-                            }
+                            string attr = webElement.GetAttribute(attribute) ?? "";
+                            if (!attr.Trim().ToLower().Contains(text.ToLower())) continue;
+                            if (indexOfElement == -1 || i == indexOfElement) return webElement;
                         }
                         return null;
                     }
@@ -82,6 +80,7 @@ namespace JourneyPlanner_ClassLibrary
                     {
                         Log("Error with finding element by attribute. Details:");
                         Log(ex.ToString());
+                        if (fails++ == 100) throw;
                     }
                 }
             }, seconds);
@@ -90,6 +89,7 @@ namespace JourneyPlanner_ClassLibrary
 
         public IWebElement FindElementByAttributeAndClickIt(By by, string attribute = "innerText", string text = "", ISearchContext container = null, int indexOfElement = -1, bool clickElement = true, int seconds = 10)
         {
+            int fails = 0;
             while (true)
             {
                 try
@@ -107,13 +107,15 @@ namespace JourneyPlanner_ClassLibrary
                 {
                     Log("Error with finding element by attribute and clicking. Details:");
                     Log(ex.ToString());
+                    if (fails++ == 100) throw;
                 }
             }
         }
 
         public IWebElement FindElementByAttributeAndSendKeysToIt(By by, string attribute = "innerText", string text = "", ISearchContext container = null, int indexOfElement = -1, List<string> keys = null, bool doClearFirst = true, int seconds = 10)
         {
-            if (keys == null) keys = new();
+            keys ??= new List<string>();
+            int fails = 0;
             while (true)
             {
                 try
@@ -134,6 +136,7 @@ namespace JourneyPlanner_ClassLibrary
                 {
                     Log("Error with finding element and sending keys. Details:");
                     Log(ex.ToString());
+                    if (fails++ == 100) throw;
                 }
             }
         }
@@ -142,7 +145,8 @@ namespace JourneyPlanner_ClassLibrary
         {
             ReadOnlyCollection<IWebElement> elements = WebDriverWaitProvider.Until(d =>
             {
-                if (container == null) container = d;
+                container ??= d;
+                int fails = 0;
                 while (true)
                 {
                     List<IWebElement> results = new();
@@ -168,6 +172,7 @@ namespace JourneyPlanner_ClassLibrary
                     {
                         Log("Error with finding multiple elements. Details:");
                         Log(ex.ToString());
+                        if (fails++ == 100) throw;
                     }
                 }
             }, seconds);

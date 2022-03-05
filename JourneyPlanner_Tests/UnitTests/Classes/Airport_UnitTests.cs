@@ -1,14 +1,10 @@
-﻿using Common_ClassLibrary;
-using JourneyPlanner_ClassLibrary;
+﻿using JourneyPlanner_ClassLibrary.Classes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Classes
 {
     [TestClass]
-    public class Airport_UnitTests
+    public class AirportUnitTests
     {        
         [TestMethod]
         public void AirportsHaveEqualHashCode()

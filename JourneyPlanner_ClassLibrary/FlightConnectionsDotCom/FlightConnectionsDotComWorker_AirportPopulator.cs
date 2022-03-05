@@ -1,13 +1,16 @@
-﻿using Common_ClassLibrary;
-using OpenQA.Selenium;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Common_ClassLibrary;
+using JourneyPlanner_ClassLibrary.AirportFilterers;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.Interfaces;
+using OpenQA.Selenium;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.FlightConnectionsDotCom
 {
-    public class FlightConnectionsDotComWorker_AirportPopulator : IFlightConnectionsDotComWorker_AirportPopulator
+    public class FlightConnectionsDotComWorkerAirportPopulator : IFlightConnectionsDotComWorkerAirportPopulator
     {
         private const string gettingAirportsAndTheirConnections = "Getting airports and their connections";
         private const string collectingAirportDestinationsFromEachAirportPage = "Collecting airport destinations from each airport page";
@@ -16,7 +19,7 @@ namespace JourneyPlanner_ClassLibrary
         private List<Airport> AirportsList { get; set; }
         private IAirportFilterer Filterer { get; set; }
 
-        public FlightConnectionsDotComWorker_AirportPopulator(FlightConnectionsDotComWorker worker)
+        public FlightConnectionsDotComWorkerAirportPopulator(FlightConnectionsDotComWorker worker)
         {
             Worker = worker;
         }

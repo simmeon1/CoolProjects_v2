@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Classes
 {
     public class Airport
     {

@@ -1,10 +1,10 @@
-﻿using OpenQA.Selenium;
+﻿using System;
+using JourneyPlanner_ClassLibrary.Interfaces;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.WaitHelpers;
-using System;
-using System.Diagnostics;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Classes
 {
     public class RealWebDriverWaitProvider : IWebDriverWaitProvider
     {

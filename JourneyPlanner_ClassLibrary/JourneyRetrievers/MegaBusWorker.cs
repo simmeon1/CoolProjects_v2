@@ -1,11 +1,14 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.Interfaces;
+using JourneyPlanner_ClassLibrary.Workers;
+using Newtonsoft.Json.Linq;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 {
     public class MegaBusWorker : IJourneyRetriever
     {

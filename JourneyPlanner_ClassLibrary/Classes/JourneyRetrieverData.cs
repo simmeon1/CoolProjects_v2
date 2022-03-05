@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Classes
 {
     public class JourneyRetrieverData
     {
@@ -15,7 +14,7 @@ namespace JourneyPlanner_ClassLibrary
         public JourneyRetrieverData(List<DirectPath> directPaths, Dictionary<string, string> translations = null)
         {
             DirectPaths = directPaths;
-            Translations = translations ?? new();
+            Translations = translations ?? new Dictionary<string, string>();
         }
 
         public string GetTranslation(string location)

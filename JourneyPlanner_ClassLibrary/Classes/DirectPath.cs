@@ -1,8 +1,6 @@
-﻿using Common_ClassLibrary;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Classes
 {
     public class DirectPath
     {

@@ -5,11 +5,13 @@ using Newtonsoft.Json;
 using OpenQA.Selenium.Chrome;
 using System.Collections.Generic;
 using System.IO;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.FlightConnectionsDotCom;
 
 namespace JourneyPlanner_Tests.IntegrationTests
 {
     [TestClass]
-    public class FlightConnectionsDotComWorker_IntegrationTests
+    public class FlightConnectionsDotComWorkerIntegrationTests
     {
 
         ChromeDriver chromeDriver;
@@ -30,7 +32,7 @@ namespace JourneyPlanner_Tests.IntegrationTests
         [TestMethod]
         public void CollectAirports_ReturnsValues()
         {
-            FlightConnectionsDotComWorker_AirportCollector collector = new(worker);
+            FlightConnectionsDotComWorkerAirportCollector collector = new(worker);
             List<Airport> results = collector.CollectAirports(maxCountToCollect: 10);
             Assert.IsTrue(results.Count == 10);
         }
@@ -41,7 +43,7 @@ namespace JourneyPlanner_Tests.IntegrationTests
             Airport airport1 = new("ABZ", "Aberdeen", "United Kingdom", "Aberdeen Airport", "https://www.flightconnections.com/flights-to-aberdeen-abz");
             Airport airport2 = new("LHR", "asd", "asd", "asd", "https://www.flightconnections.com/flights-to-london-heathrow-lhr");
             List<Airport> airports = new() { airport1, airport2 };
-            FlightConnectionsDotComWorker_AirportPopulator populator = new(worker);
+            FlightConnectionsDotComWorkerAirportPopulator populator = new(worker);
             Dictionary<string, HashSet<string>> results = populator.PopulateAirports(airports);
             Assert.IsTrue(results.Count == 2);
             Assert.IsTrue(results[airport1.Code].Count > 0);
@@ -61,7 +63,7 @@ namespace JourneyPlanner_Tests.IntegrationTests
             string airportsListJson = JsonConvert.SerializeObject(airportsList);
             File.WriteAllText(airportListJsonFileName, airportsListJson);
 
-            FlightConnectionsDotComWorker_AirportPopulator populator = new(worker);
+            FlightConnectionsDotComWorkerAirportPopulator populator = new(worker);
             Dictionary<string, HashSet<string>> results = populator.PopulateAirports(airportsList);
             string resultsListJson = JsonConvert.SerializeObject(results);
             File.WriteAllText("resultsListJson.json", resultsListJson);

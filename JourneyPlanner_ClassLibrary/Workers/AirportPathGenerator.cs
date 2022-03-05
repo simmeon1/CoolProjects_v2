@@ -1,11 +1,8 @@
-﻿using Common_ClassLibrary;
-using JourneyPlanner_ClassLibrary;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using JourneyPlanner_ClassLibrary.Classes;
 
-namespace JourneyPlanner_ClassLibrary
+namespace JourneyPlanner_ClassLibrary.Workers
 {
     public class AirportPathGenerator
     {

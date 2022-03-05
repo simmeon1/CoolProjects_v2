@@ -1,11 +1,12 @@
-﻿using JourneyPlanner_ClassLibrary;
+﻿using System;
+using JourneyPlanner_ClassLibrary.Classes;
+using JourneyPlanner_ClassLibrary.JourneyRetrievers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Classes
 {
     [TestClass]
-    public class Journey_UnitTests
+    public class JourneyUnitTests
     {
         private readonly Journey journey = new(new DateTime(2000, 10, 10, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(3, 5, 10), "ABZ-EDI", 25);
         

@@ -1,4 +1,6 @@
-﻿namespace JourneyPlanner_ClassLibrary
+﻿using JourneyPlanner_ClassLibrary.Classes;
+
+namespace JourneyPlanner_ClassLibrary.AirportFilterers
 {
     public class UKBulgariaFilterer : IAirportFilterer
     {

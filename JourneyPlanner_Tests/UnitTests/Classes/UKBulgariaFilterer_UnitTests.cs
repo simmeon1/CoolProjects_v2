@@ -1,10 +1,11 @@
-﻿using JourneyPlanner_ClassLibrary;
+﻿using JourneyPlanner_ClassLibrary.AirportFilterers;
+using JourneyPlanner_ClassLibrary.Classes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace JourneyPlanner_Tests.UnitTests
+namespace JourneyPlanner_Tests.UnitTests.Classes
 {
     [TestClass]
-    public class UKBulgariaFilterer_UnitTests
+    public class UkBulgariaFiltererUnitTests
     {
         private readonly UKBulgariaFilterer filterer = new();
         [TestMethod]
