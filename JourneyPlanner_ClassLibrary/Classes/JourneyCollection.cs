@@ -8,7 +8,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
         public List<Journey> Journeys { get; set; }
         public JourneyCollection()
         {
-            Journeys = new();
+            Journeys = new List<Journey>();
         }
 
         public JourneyCollection(List<Journey> journeys)
@@ -18,15 +18,9 @@ namespace JourneyPlanner_ClassLibrary.Classes
 
         public Journey this[int index]
         {
-            get
-            {
-                return Journeys[index];
-            }
+            get => Journeys[index];
 
-            set
-            {
-                Journeys[index] = value;
-            }
+            set => Journeys[index] = value;
         }
 
         public int GetCount()
@@ -47,12 +41,12 @@ namespace JourneyPlanner_ClassLibrary.Classes
 
         public int GetCountOfFlights()
         {
-            return Journeys.Where(x => x.IsFlight()).Count();
+            return Journeys.Count(x => x.IsFlight());
         }
 
         public int GetCountOfLocalLinks()
         {
-            return Journeys.Where(x => !x.IsFlight()).Count();
+            return Journeys.Count(x => !x.IsFlight());
         }
 
         public Journey GetFirst()
@@ -72,7 +66,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
 
         public JourneyCollection GetJourneysThatContainPath(string path)
         {
-            return new(Journeys.Where(j => j.Path.Equals(path)).ToList());
+            return new JourneyCollection(Journeys.Where(j => j.Path.Equals(path)).ToList());
         }
 
         public void RemoveJourneysThatMatchPathAndRetriever(string retrieverName, string path)
@@ -80,7 +74,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
             List<Journey> newList = new();
             foreach (Journey journey in Journeys)
             {
-                if (journey.RetrievedWithWorker.Equals(retrieverName) && journey.Path.ToString().Equals(path)) continue;
+                if (journey.RetrievedWithWorker.Equals(retrieverName) && journey.Path.Equals(path)) continue;
                 newList.Add(journey);
             }
             Journeys = newList;

@@ -19,13 +19,13 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         [TestMethod]
         public void GetDepartingAirportIsCorrect()
         {
-            Assert.IsTrue(journey.GetDepartingAirport().Equals("ABZ"));
+            Assert.IsTrue(journey.GetDepartingLocation().Equals("ABZ"));
         }
         
         [TestMethod]
         public void GetArrivingAirportIsCorrect()
         {
-            Assert.IsTrue(journey.GetArrivingAirport().Equals("EDI"));
+            Assert.IsTrue(journey.GetArrivingLocation().Equals("EDI"));
         }
     }
 }

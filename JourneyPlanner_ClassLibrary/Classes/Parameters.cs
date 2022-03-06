@@ -26,5 +26,8 @@ namespace JourneyPlanner_ClassLibrary.Classes
         public int NoLongerThan { get; set; }
         public bool OnlyIncludeShortestPaths { get; set; }
         public bool Headless { get; set; }
+        public string Home { get; set; }
+        public double TransportFromHomeCost { get; set; }
+        public double ExtraCostPerFlight { get; set; }
     }
 }

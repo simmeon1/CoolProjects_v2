@@ -14,7 +14,13 @@ namespace JourneyPlanner_ClassLibrary.Workers
         private Type TypeDouble { get; set; }
         private Type TypeBool { get; set; }
         private Type TypeDateTime { get; set; }
-        private List<string> AirlinesWithFreeCheckedInBaggage;
+        private double AvgLength { get; set; }
+        private double AvgCost { get; set; }
+        private double AvgCompanyCount { get; set; }
+        private bool SkipUndoableJourneys { get; set; }
+        private bool SkipNotSameDayFinishJourneys { get; set; }
+        private Dictionary<string, Airport> AirportDict { get; set; }
+        private Dictionary<SequentialJourneyCollection, double> JourneyExtraCosts { get; set; }
 
         public DataTableCreator()
         {
@@ -23,154 +29,221 @@ namespace JourneyPlanner_ClassLibrary.Workers
             TypeDouble = Type.GetType("System.Double");
             TypeBool = Type.GetType("System.Boolean");
             TypeDateTime = Type.GetType("System.DateTime");
-            AirlinesWithFreeCheckedInBaggage = new() { "TAROM", "Loganair" };
         }
 
-        public List<DataTable> GetTables(List<Airport> airportList, List<SequentialJourneyCollection> sequentialCollections, bool skipUndoableJourneys, bool skipNotSameDayFinishJourneys, bool includeCheckedInBaggage)
+        public List<DataTable> GetTables(
+            List<Airport> airportList,
+            List<SequentialJourneyCollection> sequentialCollections,
+            bool skipUndoableJourneys,
+            bool skipNotSameDayFinishJourneys,
+            string home,
+            double transportFromHomeCost,
+            double extraCostPerFlight
+        )
+        {
+            InitialiseData(airportList, sequentialCollections, home, transportFromHomeCost, extraCostPerFlight,
+                skipUndoableJourneys, skipNotSameDayFinishJourneys);
+            List<SequentialJourneyCollection> reducedAndOrderedList = GetReducedAndOrderedList(sequentialCollections);
+            return GetPopulatedTables(reducedAndOrderedList);
+        }
+
+        private List<DataTable> GetPopulatedTables(List<SequentialJourneyCollection> reducedAndOrderedList)
+        {
+            DataTable mainTable = GetMainTable();
+            DataTable subTable = GetSubTable();
+            List<DataTable> tables = PopulateTables(reducedAndOrderedList, mainTable, subTable);
+            return tables;
+        }
+
+        private List<DataTable> PopulateTables(
+            List<SequentialJourneyCollection> reducedAndOrderedList,
+            DataTable mainTable, DataTable subTable
+        ) {
+            List<DataTable> tables = new();
+            for (int i = 0; i < reducedAndOrderedList.Count; i++)
+            {
+                SequentialJourneyCollection seqCollection = reducedAndOrderedList[i];
+                int id = i + 1;
+                AddRowToMainTable(seqCollection, id, mainTable);
+                AddRowsToSubTable(seqCollection, id, subTable);
+            }
+
+            tables.Add(mainTable);
+            tables.Add(subTable);
+            return tables;
+        }
+
+        private void AddRowToMainTable(SequentialJourneyCollection seqCollection, int id, DataTable mainTable)
+        {
+            int index = 0;
+            DataRow row = mainTable.NewRow();
+            row[index++] = seqCollection.GetFullPath();
+            row[index++] = id;
+            row[index++] = seqCollection.GetCountOfFlights();
+            row[index++] = seqCollection.GetCountOfBuses();
+            if (!SkipUndoableJourneys) row[index++] = seqCollection.SequenceIsDoable();
+            if (!SkipNotSameDayFinishJourneys) row[index++] = seqCollection.StartsAndEndsOnSameDay();
+            row[index++] = GetShortDateTime(seqCollection.GetStartTime());
+            row[index++] = GetShortDateTime(seqCollection.GetEndTime());
+            row[index++] = GetShortTimeSpan(seqCollection.GetLength());
+            row[index++] = GetFullCostForJourney(seqCollection);
+            row[index++] = seqCollection.GetCountOfCompanies();
+            row[index++] = GetCountryChanges(seqCollection);
+            row[index++] = GetBargainPercentage(seqCollection);
+            row[index++] = seqCollection.GetCost();
+            row[index++] = JourneyExtraCosts[seqCollection];
+            row[index++] = seqCollection.HasJourneyWithZeroCost();
+            mainTable.Rows.Add(row);
+        }
+
+        private DataTable GetMainTable()
+        {
+            DataTable mainTable = new("Summary");
+            DataColumn doableColumn = new("Doable", TypeBool);
+            DataColumn sameDayFinishColumn = new("Same Day Finish", TypeBool);
+            mainTable.Columns.AddRange(new List<DataColumn>
+            {
+                new("Path", TypeString),
+                new("Id", TypeInt32),
+                new("Flights", TypeInt32),
+                new("Buses", TypeInt32),
+                doableColumn,
+                sameDayFinishColumn,
+                new("Start", TypeDateTime),
+                new("End", TypeDateTime),
+                new("Length", TypeString),
+                new("Total Cost £", TypeDouble),
+                new("Companies", TypeInt32),
+                new("Country Changes", TypeInt32),
+                new("Bargain %", TypeDouble),
+                new("Cost £", TypeDouble),
+                new("Extra Cost £", TypeDouble),
+                new("Has 0 Cost Journey", TypeBool)
+            }.ToArray());
+            if (SkipUndoableJourneys) mainTable.Columns.Remove(doableColumn);
+            if (SkipNotSameDayFinishJourneys) mainTable.Columns.Remove(sameDayFinishColumn);
+            return mainTable;
+        }
+
+        private List<SequentialJourneyCollection> GetReducedAndOrderedList(
+            List<SequentialJourneyCollection> sequentialCollections
+        ) {
+            return sequentialCollections
+                .OrderByDescending(c => c.SequenceIsDoable())
+                .ThenByDescending(c => c.StartsAndEndsOnSameDay())
+                .ThenBy(c => c.GetCountOfFlights())
+                .ThenBy(GetCountryChanges)
+                .ThenBy(c => c.HasJourneyWithZeroCost())
+                .ThenByDescending(GetBargainPercentage)
+                .ThenBy(c => c.GetLength())
+                .ThenBy(GetFullCostForJourney)
+                .ThenBy(c => c.GetStartTime())
+                .ToList();
+        }
+
+        private void InitialiseData(List<Airport> airportList, List<SequentialJourneyCollection> sequentialCollections,
+            string home, double transportFromHomeCost,
+            double extraCostPerFlight, bool skipUndoableJourneys, bool skipNotSameDayFinishJourneys)
+        {
+            AirportDict = GetAirportDict(airportList);
+            JourneyExtraCosts =
+                GetExtraCostsForJourneys(sequentialCollections, home, transportFromHomeCost, extraCostPerFlight);
+            AvgLength = sequentialCollections.Count == 0
+                ? 0
+                : sequentialCollections.Average(x => x.GetLength().TotalMinutes);
+            AvgCost = sequentialCollections.Count == 0 ? 0 : sequentialCollections.Average(GetFullCostForJourney);
+            AvgCompanyCount = sequentialCollections.Count == 0
+                ? 0
+                : sequentialCollections.Average(x => x.GetCountOfCompanies());
+            SkipUndoableJourneys = skipUndoableJourneys;
+            SkipNotSameDayFinishJourneys = skipNotSameDayFinishJourneys;
+        }
+
+        private static Dictionary<string, Airport> GetAirportDict(List<Airport> airportList)
         {
             Dictionary<string, Airport> airportDict = new();
             foreach (Airport airport in airportList)
             {
                 if (!airportDict.ContainsKey(airport.Code)) airportDict.Add(airport.Code, airport);
             }
-
-            double avgLength = sequentialCollections.Count == 0 ? 0 : sequentialCollections.Average(x => x.GetLength().TotalMinutes);
-            double avgCost = sequentialCollections.Count == 0 ? 0 : sequentialCollections.Average(x => GetFinalCostForFullJourney(x, includeCheckedInBaggage));
-
-            List<SequentialJourneyCollection> reducedAndOrderedList = sequentialCollections
-                                                                    .OrderByDescending(c => c.SequenceIsDoable())
-                                                                    .ThenByDescending(c => c.StartsAndEndsOnSameDay())
-                                                                    .ThenBy(c => c.GetCountOfFlights())
-                                                                    .ThenBy(c => GetCountryChanges(airportDict, c))
-                                                                    .ThenBy(c => c.HasJourneyWithZeroCost())
-                                                                    .ThenByDescending(c => GetBargainPercentage(c, avgLength, avgCost, includeCheckedInBaggage))
-                                                                    .ThenBy(c => c.GetLength())
-                                                                    .ThenBy(c => GetFinalCostForFullJourney(c, includeCheckedInBaggage))
-                                                                    .ThenBy(c => c.GetStartTime())
-                                                                    .ToList();
-
-            List<DataTable> tables = new();
-            DataTable mainTable = new("Summary");
-            DataColumn doableColumn = new("Doable", TypeBool);
-            DataColumn sameDayFinishColumn = new("Same Day Finish", TypeBool);
-            string costColumnName = "Cost £ " + (includeCheckedInBaggage ? "with" : "without") + " checked baggage";
-            mainTable.Columns.AddRange(new List<DataColumn> {
-                new("Path", TypeString),
-                new("Id", TypeInt32),
-                new("Count of Flights", TypeInt32),
-                new("Count of Buses", TypeInt32),
-                doableColumn,
-                sameDayFinishColumn,
-                new("Start", TypeDateTime),
-                new("End", TypeDateTime),
-                new("Length", TypeString),
-                new("Country Changes", TypeInt32),
-                new(costColumnName, TypeDouble),
-                new("Bargain %", TypeDouble),
-                new("Has Journey With 0 Cost", TypeBool)
-            }.ToArray());
-            if (skipUndoableJourneys) mainTable.Columns.Remove(doableColumn);
-            if (skipNotSameDayFinishJourneys) mainTable.Columns.Remove(sameDayFinishColumn);
-
-            DataTable subTable = GetSubTable(includeCheckedInBaggage);
-
-            for (int i = 0; i < reducedAndOrderedList.Count; i++)
-            {
-                SequentialJourneyCollection seqCollection = reducedAndOrderedList[i];
-                int id = i + 1;
-                int index = 0;
-                DataRow row = mainTable.NewRow();
-                row[index++] = seqCollection.GetFullPath();
-                row[index++] = id;
-                row[index++] = seqCollection.GetCountOfFlights();
-                row[index++] = seqCollection.GetCountOfBuses();
-                if (!skipUndoableJourneys) row[index++] = seqCollection.SequenceIsDoable();
-                if (!skipNotSameDayFinishJourneys) row[index++] = seqCollection.StartsAndEndsOnSameDay();
-                row[index++] = GetShortDateTime(seqCollection.GetStartTime());
-                row[index++] = GetShortDateTime(seqCollection.GetEndTime());
-                row[index++] = GetShortTimeSpan(seqCollection.GetLength());
-                row[index++] = GetCountryChanges(airportDict, seqCollection);
-                row[index++] = GetFinalCostForFullJourney(seqCollection, includeCheckedInBaggage);
-                row[index++] = GetBargainPercentage(seqCollection, avgLength, avgCost, includeCheckedInBaggage);
-                row[index++] = seqCollection.HasJourneyWithZeroCost();
-                mainTable.Rows.Add(row);
-                AddRowsToSubTable(seqCollection, id, subTable, airportDict, includeCheckedInBaggage);
-            }
-            tables.Add(mainTable);
-            tables.Add(subTable);
-            return tables;
+            return airportDict;
         }
 
-        private double GetFinalCostForFullJourney(SequentialJourneyCollection col, bool includeCheckedInBaggage)
+        private double GetFullCostForJourney(SequentialJourneyCollection x)
         {
-            if (!includeCheckedInBaggage) return col.GetCost();
-
-            double cost = 0;
-            for (int i = 0; i < col.Count(); i++)
-            {
-                Journey journey = col[i];
-                double journeyCost = GetFinalCostForSingleJourney(journey, includeCheckedInBaggage);
-                cost += journeyCost;
-            }
-            return cost;
+            return x.GetCost() + JourneyExtraCosts[x];
         }
 
-        private double GetFinalCostForSingleJourney(Journey journey, bool includeCheckedInBaggage)
+        private static Dictionary<SequentialJourneyCollection, double> GetExtraCostsForJourneys(
+            List<SequentialJourneyCollection> sequentialCollections,
+            string home,
+            double transportFromHomeCost,
+            double extraCostPerFlight
+        )
         {
-            double journeyCost = journey.Cost;
-            if (!includeCheckedInBaggage) return journeyCost;
-
-            if (journey.IsFlight() && !AirlinesWithFreeCheckedInBaggage.Any(a => a.ToLower().Trim().Contains(journey.Company.ToLower().Trim())))
+            Dictionary<SequentialJourneyCollection, double> journeyExtraCosts = new();
+            foreach (SequentialJourneyCollection col in sequentialCollections)
             {
-                journeyCost += 30;
+                double extraCost = 0;
+                if (!col.GetDepartingLocation().Equals(home)) extraCost += transportFromHomeCost;
+                extraCost += col.GetCountOfFlights() * extraCostPerFlight;
+                journeyExtraCosts.Add(col, extraCost);
             }
-            return journeyCost;
+
+            return journeyExtraCosts;
         }
 
-        private double GetBargainPercentage(SequentialJourneyCollection seqCollection, double avgLength, double avgCost, bool includeCheckedInBaggage)
+        private double GetBargainPercentage(SequentialJourneyCollection seqCollection)
         {
-            return Math.Round((100 - ((seqCollection.GetLength().TotalMinutes / avgLength) * 100)) + (100 - ((GetFinalCostForFullJourney(seqCollection, includeCheckedInBaggage) / avgCost) * 100)), 2);
+            return Math.Round(
+                (100 - ((seqCollection.GetLength().TotalMinutes / AvgLength) * 100)) +
+                (100 - ((GetFullCostForJourney(seqCollection) / AvgCost) * 100)) +
+                (100 - ((seqCollection.GetCountOfCompanies() / AvgCompanyCount) * 100))
+            , 2);
         }
 
-        private static int GetCountryChanges(Dictionary<string, Airport> airportDict, SequentialJourneyCollection c)
+        private int GetCountryChanges(SequentialJourneyCollection c)
         {
             int changes = 0;
             Journey previousJourney = c.JourneyCollection[0];
-            if (!airportDict[previousJourney.GetDepartingAirport()].Country.Equals(airportDict[previousJourney.GetArrivingAirport()].Country)) changes++;
+            if (!AirportDict[previousJourney.GetDepartingLocation()].Country
+                .Equals(AirportDict[previousJourney.GetArrivingLocation()].Country)) changes++;
+            
             for (int i = 1; i < c.JourneyCollection.GetCount(); i++)
             {
                 Journey currentJourney = c.JourneyCollection[i];
-                if (!airportDict[currentJourney.GetArrivingAirport()].Country.Equals(airportDict[previousJourney.GetArrivingAirport()].Country)) changes++;
+                if (!AirportDict[currentJourney.GetArrivingLocation()].Country
+                    .Equals(AirportDict[previousJourney.GetArrivingLocation()].Country)) changes++;
                 previousJourney = currentJourney;
             }
+
             return changes;
         }
 
-        private DataTable GetSubTable(bool includeCheckedInBaggage)
+        private DataTable GetSubTable()
         {
             DataTable subTable = new("Details");
-            string costColumnName = "Cost £ " + (includeCheckedInBaggage ? "with" : "without") + " checked baggage";
-
-            subTable.Columns.AddRange(new List<DataColumn> {
-                new DataColumn("Path", TypeString),
-                new DataColumn("Id", TypeInt32),
-                new DataColumn("Journey #", TypeInt32),
-                new DataColumn("Is Flight", TypeBool),
-                new DataColumn("Departing Time", TypeDateTime),
-                new DataColumn("Arriving Time", TypeDateTime),
-                new DataColumn("Departing City", TypeString),
-                new DataColumn("Arriving City", TypeString),
-                new DataColumn("Departing Country", TypeString),
-                new DataColumn("Arriving Country", TypeString),
-                new DataColumn("Duration", TypeString),
-                new DataColumn("Wait Time From Prev", TypeString),
-                new DataColumn("Company", TypeString),
-                new DataColumn(costColumnName, TypeDouble)
+            subTable.Columns.AddRange(new List<DataColumn>
+            {
+                new("Path", TypeString),
+                new("Id", TypeInt32),
+                new("Journey #", TypeInt32),
+                new("Is Flight", TypeBool),
+                new("Departing Time", TypeDateTime),
+                new("Arriving Time", TypeDateTime),
+                new("Departing City", TypeString),
+                new("Arriving City", TypeString),
+                new("Departing Country", TypeString),
+                new("Arriving Country", TypeString),
+                new("Company", TypeString),
+                new("Wait Time From Prev", TypeString),
+                new("Length", TypeString),
+                new("Cost £", TypeDouble)
             }.ToArray());
             return subTable;
         }
 
-        private void AddRowsToSubTable(SequentialJourneyCollection sequentialCollection, int id, DataTable subTable, Dictionary<string, Airport> airportDict, bool includeCheckedInBaggage)
+        private void AddRowsToSubTable(SequentialJourneyCollection sequentialCollection, int id, DataTable subTable)
         {
             for (int i = 0; i < sequentialCollection.Count(); i++)
             {
@@ -183,14 +256,14 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 row[index++] = journey.IsFlight();
                 row[index++] = GetShortDateTime(journey.Departing);
                 row[index++] = GetShortDateTime(journey.Arriving);
-                row[index++] = airportDict[journey.GetDepartingAirport()].City;
-                row[index++] = airportDict[journey.GetArrivingAirport()].City;
-                row[index++] = airportDict[journey.GetDepartingAirport()].Country;
-                row[index++] = airportDict[journey.GetArrivingAirport()].Country;
-                row[index++] = GetShortTimeSpan(journey.Duration);
-                row[index++] = GetShortTimeSpan(i == 0 ? new TimeSpan() : (journey.Departing - sequentialCollection[i - 1].Arriving));
+                row[index++] = AirportDict[journey.GetDepartingLocation()].City;
+                row[index++] = AirportDict[journey.GetArrivingLocation()].City;
+                row[index++] = AirportDict[journey.GetDepartingLocation()].Country;
+                row[index++] = AirportDict[journey.GetArrivingLocation()].Country;
                 row[index++] = journey.Company;
-                row[index++] = GetFinalCostForSingleJourney(journey, includeCheckedInBaggage);
+                row[index++] = GetShortTimeSpan(i == 0 ? new TimeSpan() : (journey.Departing - sequentialCollection[i - 1].Arriving));
+                row[index++] = GetShortTimeSpan(journey.Duration);
+                row[index++] = journey.Cost;
                 subTable.Rows.Add(row);
             }
         }

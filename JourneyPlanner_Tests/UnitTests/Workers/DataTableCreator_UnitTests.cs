@@ -58,107 +58,68 @@ namespace JourneyPlanner_Tests.UnitTests.Workers
         [TestMethod]
         public void CorrectTables_AllColumns()
         {
-            List<DataTable> tables = creator.GetTables(airportList, flights, false, false, false);
+            List<DataTable> tables = creator.GetTables(airportList, flights, false, false, "ABZ", 20, 50);
             DataTable mainTable = tables[0];
             DataTable subTable = tables[1];
             int index = 0;
             Assert.IsTrue(mainTable.TableName.Equals("Summary"));
             Assert.IsTrue(mainTable.Rows.Count == 1);
-            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 13);
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals("ABZ-EDI-VAR"));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(1));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(2));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(0));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(true));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(true));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].ToString().Equals(DataTableCreator.GetShortDateTime(flight1Departing)));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].ToString().Equals(DataTableCreator.GetShortDateTime(flight2Arriving)));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals("06:00"));
-            Assert.IsTrue((int)mainTable.Rows[0].ItemArray[index++] == 1);
-            Assert.IsTrue((double)mainTable.Rows[0].ItemArray[index++] == 75.0);
-            Assert.IsTrue((double)mainTable.Rows[0].ItemArray[index++] == 0);
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(false));
+            object[] mainTableFirstRowItems = mainTable.Rows[0].ItemArray;
+            Assert.IsTrue(mainTableFirstRowItems.Length == 16);
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals("ABZ-EDI-VAR"));
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals(1));
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals(2));
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals(0));
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals(true));
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals(true));
+            Assert.IsTrue(mainTableFirstRowItems[index++].ToString().Equals("11/11/2000 10:00:00"));
+            Assert.IsTrue(mainTableFirstRowItems[index++].ToString().Equals("11/11/2000 18:00:00"));
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals("06:00"));
+            Assert.IsTrue((double)mainTableFirstRowItems[index++] == 175.0);
+            Assert.IsTrue((int)mainTableFirstRowItems[index++] == 2);
+            Assert.IsTrue((int)mainTableFirstRowItems[index++] == 1);
+            Assert.IsTrue((double)mainTableFirstRowItems[index++] == 0);
+            Assert.IsTrue((double)mainTableFirstRowItems[index++] == 75.0);
+            Assert.IsTrue((double)mainTableFirstRowItems[index++] == 100.0);
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals(false));
 
             int subIndex = 0;
             Assert.IsTrue(subTable.TableName.Equals("Details"));
             Assert.IsTrue(subTable.Rows.Count == 2);
-            Assert.IsTrue(subTable.Rows[0].ItemArray.Length == 14);
-            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(Flight1Path));
-            Assert.IsTrue((int)subTable.Rows[0].ItemArray[subIndex++] == 1);
-            Assert.IsTrue((int)subTable.Rows[0].ItemArray[subIndex++] == 1);
-            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(true));
-            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].ToString().Equals(DataTableCreator.GetShortDateTime(flight1Departing)));
-            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].ToString().Equals(DataTableCreator.GetShortDateTime(flight1Arriving)));
-            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(airport1.City));
-            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(airport2.City));
-            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(airport1.Country));
-            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(airport2.Country));
-            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].ToString().Equals(DataTableCreator.GetShortTimeSpan(flight1Span)));
-            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].ToString().Equals(DataTableCreator.GetShortTimeSpan(new TimeSpan())));
-            Assert.IsTrue(subTable.Rows[0].ItemArray[subIndex++].Equals(Flight1Airline));
-            Assert.IsTrue((double)subTable.Rows[0].ItemArray[subIndex++] == 25);
+            object[] subTableFirstRowItems = subTable.Rows[0].ItemArray;
+            Assert.IsTrue(subTableFirstRowItems.Length == 14);
+            Assert.IsTrue(subTableFirstRowItems[subIndex++].Equals(Flight1Path));
+            Assert.IsTrue((int)subTableFirstRowItems[subIndex++] == 1);
+            Assert.IsTrue((int)subTableFirstRowItems[subIndex++] == 1);
+            Assert.IsTrue(subTableFirstRowItems[subIndex++].Equals(true));
+            Assert.IsTrue(subTableFirstRowItems[subIndex++].ToString().Equals("11/11/2000 10:00:00"));
+            Assert.IsTrue(subTableFirstRowItems[subIndex++].ToString().Equals("11/11/2000 11:30:40"));
+            Assert.IsTrue(subTableFirstRowItems[subIndex++].Equals(airport1.City));
+            Assert.IsTrue(subTableFirstRowItems[subIndex++].Equals(airport2.City));
+            Assert.IsTrue(subTableFirstRowItems[subIndex++].Equals(airport1.Country));
+            Assert.IsTrue(subTableFirstRowItems[subIndex++].Equals(airport2.Country));
+            Assert.IsTrue(subTableFirstRowItems[subIndex++].Equals(Flight1Airline));
+            Assert.IsTrue(subTableFirstRowItems[subIndex++].ToString().Equals("00:00"));
+            Assert.IsTrue(subTableFirstRowItems[subIndex++].ToString().Equals("01:30"));
+            Assert.IsTrue((double)subTableFirstRowItems[subIndex++] == 25);
 
             subIndex = 0;
-            Assert.IsTrue(subTable.Rows[1].ItemArray.Length == 14);
-            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(Flight2Path));
-            Assert.IsTrue((int)subTable.Rows[1].ItemArray[subIndex++] == 1);
-            Assert.IsTrue((int)subTable.Rows[1].ItemArray[subIndex++] == 2);
-            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(true));
-            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].ToString().Equals(DataTableCreator.GetShortDateTime(flight2Departing)));
-            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].ToString().Equals(DataTableCreator.GetShortDateTime(flight2Arriving)));
-            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(airport2.City));
-            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(airport3.City));
-            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(airport2.Country));
-            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(airport3.Country));
-            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].ToString().Equals(DataTableCreator.GetShortTimeSpan(flight2Span)));
-            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].ToString().Equals(DataTableCreator.GetShortTimeSpan(new TimeSpan(2, 29, 20))));
-            Assert.IsTrue(subTable.Rows[1].ItemArray[subIndex++].Equals(Flight2Airline));
-            Assert.IsTrue((double)subTable.Rows[1].ItemArray[subIndex++] == 50);
-        }
-
-        [TestMethod]
-        public void CorrectTables_SomeColumns()
-        {
-            List<DataTable> tables = creator.GetTables(airportList, flights, true, true, false);
-            DataTable mainTable = tables[0];
-            DataTable subTable = tables[1];
-            int index = 0;
-            Assert.IsTrue(mainTable.TableName.Equals("Summary"));
-            Assert.IsTrue(mainTable.Rows.Count == 1);
-            Assert.IsTrue(mainTable.Rows[0].ItemArray.Length == 11);
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals("ABZ-EDI-VAR"));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(1));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(2));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(0));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].ToString().Equals(DataTableCreator.GetShortDateTime(flight1Departing)));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].ToString().Equals(DataTableCreator.GetShortDateTime(flight2Arriving)));
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals("06:00"));
-            Assert.IsTrue((int)mainTable.Rows[0].ItemArray[index++] == 1);
-            Assert.IsTrue((double)mainTable.Rows[0].ItemArray[index++] == 75);
-            Assert.IsTrue((double)mainTable.Rows[0].ItemArray[index++] == 0);
-            Assert.IsTrue(mainTable.Rows[0].ItemArray[index++].Equals(false));
-        }
-
-        [TestMethod]
-        public void CorrectTables_CountryChangesIsCorrect()
-        {
-            flight1Departing = new DateTime(2000, 11, 11, 10, 0, 00);
-            flight1Arriving = new DateTime(2000, 11, 11, 11, 30, 40);
-            flight1Span = new TimeSpan(1, 10, 40);
-            const string flight1Airline = "easyJet";
-            const string flight1Path = "ABZ-VAR";
-
-            airport1 = new Airport("ABZ", "", "UK", "", "");
-            airport2 = new Airport("VAR", "", "BG", "", "");
-            airportList = new List<Airport> { airport1, airport2 };
-
-            flight1 = new Journey(flight1Departing, flight1Arriving, flight1Airline, flight1Span, flight1Path, 25);
-            creator = new DataTableCreator();
-            correctSeq = new SequentialJourneyCollection(new JourneyCollection(new List<Journey>() { flight1 }));
-            flights = new List<SequentialJourneyCollection> { correctSeq };
-            List<DataTable> tables = creator.GetTables(airportList, flights, true, true, false);
-            DataTable mainTable = tables[0];
-            Assert.IsTrue((int)mainTable.Rows[0].ItemArray[7] == 1);
+            object[] subTableSecondRowItems = subTable.Rows[1].ItemArray;
+            Assert.IsTrue(subTableSecondRowItems.Length == 14);
+            Assert.IsTrue(subTableSecondRowItems[subIndex++].Equals(Flight2Path));
+            Assert.IsTrue((int)subTableSecondRowItems[subIndex++] == 1);
+            Assert.IsTrue((int)subTableSecondRowItems[subIndex++] == 2);
+            Assert.IsTrue(subTableSecondRowItems[subIndex++].Equals(true));
+            Assert.IsTrue(subTableSecondRowItems[subIndex++].ToString().Equals("11/11/2000 14:00:00"));
+            Assert.IsTrue(subTableSecondRowItems[subIndex++].ToString().Equals("11/11/2000 18:00:00"));
+            Assert.IsTrue(subTableSecondRowItems[subIndex++].Equals(airport2.City));
+            Assert.IsTrue(subTableSecondRowItems[subIndex++].Equals(airport3.City));
+            Assert.IsTrue(subTableSecondRowItems[subIndex++].Equals(airport2.Country));
+            Assert.IsTrue(subTableSecondRowItems[subIndex++].Equals(airport3.Country));
+            Assert.IsTrue(subTableSecondRowItems[subIndex++].Equals(Flight2Airline));
+            Assert.IsTrue(subTableSecondRowItems[subIndex++].ToString().Equals("02:29"));
+            Assert.IsTrue(subTableSecondRowItems[subIndex++].ToString().Equals("02:00"));
+            Assert.IsTrue((double)subTableSecondRowItems[subIndex++] == 50);
         }
     }
 }

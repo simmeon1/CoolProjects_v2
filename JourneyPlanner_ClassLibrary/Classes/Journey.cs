@@ -7,13 +7,13 @@ namespace JourneyPlanner_ClassLibrary.Classes
     public class Journey
     {
         private const string GoogleFlightsWorkerName = nameof(GoogleFlightsWorker);
-        public DateTime Departing { get; set; }
-        public DateTime Arriving { get; set; }
-        public string Company { get; set; }
-        public TimeSpan Duration { get; set; }
-        public string Path { get; set; }
-        public double Cost { get; set; }
-        public string RetrievedWithWorker { get; set; }
+        public DateTime Departing { get; }
+        public DateTime Arriving { get; }
+        public string Company { get; }
+        public TimeSpan Duration { get; }
+        public string Path { get; }
+        public double Cost { get; }
+        public string RetrievedWithWorker { get; }
         public Journey(DateTime departing, DateTime arriving, string company, TimeSpan duration, string path, double cost, string retrievedWithWorker = GoogleFlightsWorkerName)
         {
             Departing = departing;
@@ -27,15 +27,15 @@ namespace JourneyPlanner_ClassLibrary.Classes
 
         public override string ToString()
         {
-            return $"{GetDepartingAirport()}-{GetArrivingAirport()} - {Departing} - {Arriving} - {Company} - {Duration} - {Cost} - {RetrievedWithWorker}";
+            return $"{GetDepartingLocation()}-{GetArrivingLocation()} - {Departing} - {Arriving} - {Company} - {Duration} - {Cost} - {RetrievedWithWorker}";
         }
         
-        public string GetDepartingAirport()
+        public string GetDepartingLocation()
         {
             return Regex.Replace(Path, @"(\w+)\W+\w+", "$1");
         }
         
-        public string GetArrivingAirport()
+        public string GetArrivingLocation()
         {
             return Regex.Replace(Path, @"\w+\W+(\w+)", "$1");
         }

@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace JourneyPlanner_Tests.UnitTests.Classes
 {
     [TestClass]
-    public class SequentialFlightCollectionUnitTests
+    public class SequentialJourneyCollectionUnitTests
     {
         private readonly Journey flight1 = new(new DateTime(2000, 11, 11, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(1, 10, 10), "ABZ-EDI", 25);
         private readonly Journey bus1 = new(new DateTime(2000, 11, 11, 07, 00, 00), new DateTime(2000, 11, 11, 13, 00, 00), "easyJet", new TimeSpan(4, 0, 0), "ABZ-EDI", 15, "busWorker");

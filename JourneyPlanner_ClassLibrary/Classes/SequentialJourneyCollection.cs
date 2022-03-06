@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace JourneyPlanner_ClassLibrary.Classes
@@ -9,7 +10,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
 
         public SequentialJourneyCollection()
         {
-            JourneyCollection = new();
+            JourneyCollection = new JourneyCollection();
         }
 
         public SequentialJourneyCollection(JourneyCollection journeyCollection)
@@ -23,7 +24,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
             Journey previousJourney = journeyCollection[0];
             for (int i = 1; i < journeyCollection.GetCount(); i++)
             {
-                if (!previousJourney.GetArrivingAirport().Equals(journeyCollection[i].GetDepartingAirport()))
+                if (!previousJourney.GetArrivingLocation().Equals(journeyCollection[i].GetDepartingLocation()))
                 {
                     throw new Exception("Journeys are not connected.");
                 }
@@ -76,7 +77,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
             for (int i = 1; i < JourneyCollection.GetCount(); i++)
             {
                 Journey journey = JourneyCollection[i];
-                path.Append($"-{journey.GetArrivingAirport()}");
+                path.Append($"-{journey.GetArrivingLocation()}");
             }
             return path.ToString();
         }
@@ -124,7 +125,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
 
         public TimeSpan GetLength()
         {
-            if (IsNotValid()) return new();
+            if (IsNotValid()) return new TimeSpan();
             TimeSpan time = new();
             for (int i = 0; i < JourneyCollection.GetCount(); i++)
             {
@@ -145,6 +146,18 @@ namespace JourneyPlanner_ClassLibrary.Classes
             if (IsNotValid()) return false;
             for (int i = 0; i < JourneyCollection.GetCount(); i++) if (JourneyCollection[i].Cost == 0) return true;
             return false;
+        }
+
+        public string GetDepartingLocation()
+        {
+            return JourneyCollection[0].GetDepartingLocation();
+        }
+
+        public double GetCountOfCompanies()
+        {
+            HashSet<string> companies = new();
+            for (int i = 0; i < JourneyCollection.GetCount(); i++) companies.Add(JourneyCollection[i].Company);
+            return companies.Count;
         }
     }
 }
