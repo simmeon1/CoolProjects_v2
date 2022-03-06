@@ -17,6 +17,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
         private double AvgLength { get; set; }
         private double AvgCost { get; set; }
         private double AvgCompanyCount { get; set; }
+        private double AvgCountryChanges { get; set; }
         private bool SkipUndoableJourneys { get; set; }
         private bool SkipNotSameDayFinishJourneys { get; set; }
         private Dictionary<string, Airport> AirportDict { get; set; }
@@ -88,6 +89,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             row[index++] = GetShortTimeSpan(seqCollection.GetLength());
             row[index++] = GetFullCostForJourney(seqCollection);
             row[index++] = seqCollection.GetCountOfCompanies();
+            row[index++] = seqCollection.GetCompaniesString();
             row[index++] = GetCountryChanges(seqCollection);
             row[index++] = GetBargainPercentage(seqCollection);
             row[index++] = seqCollection.GetCost();
@@ -113,7 +115,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 new("End", TypeDateTime),
                 new("Length", TypeString),
                 new("Total Cost £", TypeDouble),
-                new("Companies", TypeInt32),
+                new("Companies Count", TypeInt32),
+                new("Companies", TypeString),
                 new("Country Changes", TypeInt32),
                 new("Bargain %", TypeDouble),
                 new("Cost £", TypeDouble),
@@ -155,6 +158,9 @@ namespace JourneyPlanner_ClassLibrary.Workers
             AvgCompanyCount = sequentialCollections.Count == 0
                 ? 0
                 : sequentialCollections.Average(x => x.GetCountOfCompanies());
+            AvgCountryChanges = sequentialCollections.Count == 0
+                ? 0
+                : sequentialCollections.Average(GetCountryChanges);
             SkipUndoableJourneys = skipUndoableJourneys;
             SkipNotSameDayFinishJourneys = skipNotSameDayFinishJourneys;
         }
@@ -198,7 +204,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
             return Math.Round(
                 (100 - ((seqCollection.GetLength().TotalMinutes / AvgLength) * 100)) +
                 (100 - ((GetFullCostForJourney(seqCollection) / AvgCost) * 100)) +
-                (100 - ((seqCollection.GetCountOfCompanies() / AvgCompanyCount) * 100))
+                (100 - ((seqCollection.GetCountOfCompanies() / AvgCompanyCount) * 100)) +
+                (100 - ((GetCountryChanges(seqCollection) / AvgCountryChanges) * 100))
             , 2);
         }
 

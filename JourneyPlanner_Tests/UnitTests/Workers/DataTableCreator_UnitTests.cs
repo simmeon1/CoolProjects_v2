@@ -65,7 +65,7 @@ namespace JourneyPlanner_Tests.UnitTests.Workers
             Assert.IsTrue(mainTable.TableName.Equals("Summary"));
             Assert.IsTrue(mainTable.Rows.Count == 1);
             object[] mainTableFirstRowItems = mainTable.Rows[0].ItemArray;
-            Assert.IsTrue(mainTableFirstRowItems.Length == 16);
+            Assert.IsTrue(mainTableFirstRowItems.Length == 17);
             Assert.IsTrue(mainTableFirstRowItems[index++].Equals("ABZ-EDI-VAR"));
             Assert.IsTrue(mainTableFirstRowItems[index++].Equals(1));
             Assert.IsTrue(mainTableFirstRowItems[index++].Equals(2));
@@ -77,6 +77,7 @@ namespace JourneyPlanner_Tests.UnitTests.Workers
             Assert.IsTrue(mainTableFirstRowItems[index++].Equals("06:00"));
             Assert.IsTrue((double)mainTableFirstRowItems[index++] == 175.0);
             Assert.IsTrue((int)mainTableFirstRowItems[index++] == 2);
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals("easyJet, wizz"));
             Assert.IsTrue((int)mainTableFirstRowItems[index++] == 1);
             Assert.IsTrue((double)mainTableFirstRowItems[index++] == 0);
             Assert.IsTrue((double)mainTableFirstRowItems[index++] == 75.0);
@@ -132,7 +133,7 @@ namespace JourneyPlanner_Tests.UnitTests.Workers
             Assert.IsTrue(mainTable.TableName.Equals("Summary"));
             Assert.IsTrue(mainTable.Rows.Count == 1);
             object[] mainTableFirstRowItems = mainTable.Rows[0].ItemArray;
-            Assert.IsTrue(mainTableFirstRowItems.Length == 14);
+            Assert.IsTrue(mainTableFirstRowItems.Length == 15);
             Assert.IsTrue(mainTableFirstRowItems[index++].Equals("ABZ-EDI-VAR"));
             Assert.IsTrue(mainTableFirstRowItems[index++].Equals(1));
             Assert.IsTrue(mainTableFirstRowItems[index++].Equals(2));
@@ -142,6 +143,7 @@ namespace JourneyPlanner_Tests.UnitTests.Workers
             Assert.IsTrue(mainTableFirstRowItems[index++].Equals("06:00"));
             Assert.IsTrue((double)mainTableFirstRowItems[index++] == 195.0);
             Assert.IsTrue((int)mainTableFirstRowItems[index++] == 2);
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals("easyJet, wizz"));
             Assert.IsTrue((int)mainTableFirstRowItems[index++] == 1);
             Assert.IsTrue((double)mainTableFirstRowItems[index++] == 0);
             Assert.IsTrue((double)mainTableFirstRowItems[index++] == 75.0);

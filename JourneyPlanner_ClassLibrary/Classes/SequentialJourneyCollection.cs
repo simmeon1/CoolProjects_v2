@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using Common_ClassLibrary;
 
 namespace JourneyPlanner_ClassLibrary.Classes
 {
@@ -141,9 +143,19 @@ namespace JourneyPlanner_ClassLibrary.Classes
 
         public double GetCountOfCompanies()
         {
+            return GetCompanies().Count;
+        }
+
+        private HashSet<string> GetCompanies()
+        {
             HashSet<string> companies = new();
             for (int i = 0; i < JourneyCollection.GetCount(); i++) companies.Add(JourneyCollection[i].Company);
-            return companies.Count;
+            return companies;
+        }
+
+        public string GetCompaniesString()
+        {
+            return GetCompanies().ToList().ConcatenateListOfStringsToCommaAndSpaceString();
         }
     }
 }
