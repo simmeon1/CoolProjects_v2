@@ -40,6 +40,20 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         }
 
         [TestMethod]
+        public void TransportFromHomeCostGetSetWorks()
+        {
+            p.TransportFromHomeCost = 2;
+            Assert.IsTrue(p.TransportFromHomeCost == 2);
+        }
+        
+        [TestMethod]
+        public void ExtraCostPerFlightGetSetWorks()
+        {
+            p.ExtraCostPerFlight = 2;
+            Assert.IsTrue(p.ExtraCostPerFlight == 2);
+        }
+        
+        [TestMethod]
         public void MaxLocalLinksGetSetWorks()
         {
             p.MaxLocalLinks = 2;
@@ -123,6 +137,13 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         {
             p.FileSavePath = "asd";
             Assert.IsTrue(p.FileSavePath.Equals("asd"));
+        }
+        
+        [TestMethod]
+        public void HomeGetSetWorks()
+        {
+            p.Home = "asd";
+            Assert.IsTrue(p.Home.Equals("asd"));
         }
 
         [TestMethod]

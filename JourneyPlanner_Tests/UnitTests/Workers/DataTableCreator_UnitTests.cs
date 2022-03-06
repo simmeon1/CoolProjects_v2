@@ -121,5 +121,32 @@ namespace JourneyPlanner_Tests.UnitTests.Workers
             Assert.IsTrue(subTableSecondRowItems[subIndex++].ToString().Equals("02:00"));
             Assert.IsTrue((double)subTableSecondRowItems[subIndex++] == 50);
         }
+        
+        [TestMethod]
+        public void CorrectTables_2()
+        {
+            List<DataTable> tables = creator.GetTables(airportList, flights, true, true, "FCO", 20, 50);
+            DataTable mainTable = tables[0];
+            DataTable subTable = tables[1];
+            int index = 0;
+            Assert.IsTrue(mainTable.TableName.Equals("Summary"));
+            Assert.IsTrue(mainTable.Rows.Count == 1);
+            object[] mainTableFirstRowItems = mainTable.Rows[0].ItemArray;
+            Assert.IsTrue(mainTableFirstRowItems.Length == 14);
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals("ABZ-EDI-VAR"));
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals(1));
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals(2));
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals(0));
+            Assert.IsTrue(mainTableFirstRowItems[index++].ToString().Equals("11/11/2000 10:00:00"));
+            Assert.IsTrue(mainTableFirstRowItems[index++].ToString().Equals("11/11/2000 18:00:00"));
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals("06:00"));
+            Assert.IsTrue((double)mainTableFirstRowItems[index++] == 195.0);
+            Assert.IsTrue((int)mainTableFirstRowItems[index++] == 2);
+            Assert.IsTrue((int)mainTableFirstRowItems[index++] == 1);
+            Assert.IsTrue((double)mainTableFirstRowItems[index++] == 0);
+            Assert.IsTrue((double)mainTableFirstRowItems[index++] == 75.0);
+            Assert.IsTrue((double)mainTableFirstRowItems[index++] == 120.0);
+            Assert.IsTrue(mainTableFirstRowItems[index++].Equals(false));
+        }
     }
 }

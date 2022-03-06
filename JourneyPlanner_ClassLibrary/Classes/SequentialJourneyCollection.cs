@@ -6,16 +6,11 @@ namespace JourneyPlanner_ClassLibrary.Classes
 {
     public class SequentialJourneyCollection
     {
-        public JourneyCollection JourneyCollection { get; set; }
-
-        public SequentialJourneyCollection()
-        {
-            JourneyCollection = new JourneyCollection();
-        }
-
+        public JourneyCollection JourneyCollection { get; }
         public SequentialJourneyCollection(JourneyCollection journeyCollection)
         {
-            if (journeyCollection != null && journeyCollection.GetCount() > 1) DoSequenceCheck(journeyCollection);
+            if (journeyCollection == null || journeyCollection.GetCount() == 0) throw new Exception("No journeys in collection.");
+            DoSequenceCheck(journeyCollection);
             JourneyCollection = journeyCollection;
         }
 
@@ -55,19 +50,14 @@ namespace JourneyPlanner_ClassLibrary.Classes
             }
         }
 
-        private bool IsNotValid()
-        {
-            return JourneyCollection == null || JourneyCollection.GetCount() == 0;
-        }
-        
         public int Count()
         {
-            return IsNotValid() ? 0 : JourneyCollection.GetCount();
+            return JourneyCollection.GetCount();
         }
 
         public override string ToString()
         {
-            return IsNotValid() ? "No journeys in sequence." : $"{GetFullPath()}, Doable = {SequenceIsDoable()}, Start = {GetStartTime()}, End = {GetEndTime()}, Cost = {GetCost()}";
+            return $"{GetFullPath()}, Doable = {SequenceIsDoable()}, Start = {GetStartTime()}, End = {GetEndTime()}, Cost = {GetCost()}";
         }
 
         public string GetFullPath()
@@ -84,7 +74,6 @@ namespace JourneyPlanner_ClassLibrary.Classes
 
         public bool SequenceIsDoable()
         {
-            if (IsNotValid()) return false;
             if (JourneyCollection.GetCount() == 1) return true;
             Journey previousJourney = JourneyCollection[0];
             for (int i = 1; i < JourneyCollection.GetCount(); i++)
@@ -98,34 +87,32 @@ namespace JourneyPlanner_ClassLibrary.Classes
         public double GetCost()
         {
             double cost = 0;
-            if (IsNotValid()) return cost;
             for (int i = 0; i < JourneyCollection.GetCount(); i++) cost += JourneyCollection[i].Cost;
             return cost;
         }
 
         public DateTime? GetStartTime()
         {
-            return IsNotValid() ? null : JourneyCollection.GetFirst().Departing;
+            return JourneyCollection.GetFirst().Departing;
         }
 
         public DateTime? GetEndTime()
         {
-            return IsNotValid() ? null : JourneyCollection.GetLast().Arriving;
+            return JourneyCollection.GetLast().Arriving;
         }
 
         public int GetCountOfFlights()
         {
-            return IsNotValid() ? 0 : JourneyCollection.GetCountOfFlights();
+            return JourneyCollection.GetCountOfFlights();
         }
         
         public int GetCountOfBuses()
         {
-            return IsNotValid() ? 0 : JourneyCollection.GetCountOfLocalLinks();
+            return JourneyCollection.GetCountOfLocalLinks();
         }
 
         public TimeSpan GetLength()
         {
-            if (IsNotValid()) return new TimeSpan();
             TimeSpan time = new();
             for (int i = 0; i < JourneyCollection.GetCount(); i++)
             {
@@ -138,12 +125,11 @@ namespace JourneyPlanner_ClassLibrary.Classes
         
         public bool StartsAndEndsOnSameDay()
         {
-            return !IsNotValid() && GetStartTime().Value.Day == GetEndTime().Value.Day;
+            return GetStartTime().Value.Day == GetEndTime().Value.Day;
         }
         
         public bool HasJourneyWithZeroCost()
         {
-            if (IsNotValid()) return false;
             for (int i = 0; i < JourneyCollection.GetCount(); i++) if (JourneyCollection[i].Cost == 0) return true;
             return false;
         }

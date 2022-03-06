@@ -24,38 +24,18 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
             JourneyCollection collection = new(new List<Journey>() { flight1, flight3 });
             Assert.ThrowsException<Exception>(() => new SequentialJourneyCollection(collection));
         }
-
+        
         [TestMethod]
-        public void SerialiseDeserialize()
+        public void ExceptionIsThrownForEmptySequence()
         {
-            SequentialJourneyCollection collection = CreateSeqCollectionWithFlights(flight1, flight2, flight3, flight4);
-            string json = collection.SerializeObject();
-            SequentialJourneyCollection collection2 = json.DeserializeObject<SequentialJourneyCollection>();
-            Assert.IsTrue(collection.ToString().Equals(collection2.ToString()));
+            JourneyCollection collection = new(new List<Journey>());
+            Assert.ThrowsException<Exception>(() => new SequentialJourneyCollection(collection));
         }
 
         [TestMethod]
         public void ToStringIsCorrectWithSomeFlights()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2, flight3, flight4).ToString().Equals("ABZ-EDI-VAR-BOJ-LTN, Doable = False, Start = 11/11/2000 10:20:30, End = 12/11/2000 01:00:00, Cost = 125"));
-        }
-
-        [TestMethod]
-        public void ToStringIsCorrectWithNullFlights()
-        {
-            Assert.IsTrue(new SequentialJourneyCollection(null).ToString().Equals("No journeys in sequence."));
-        }
-
-        [TestMethod]
-        public void ToStringIsCorrectWithNoFlights()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights().ToString().Equals("No journeys in sequence."));
-        }
-
-        [TestMethod]
-        public void ToStringIsCorrectWithNoFlightCollection()
-        {
-            Assert.IsTrue(new SequentialJourneyCollection().ToString().Equals("No journeys in sequence."));
         }
 
         [TestMethod]
@@ -78,12 +58,6 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         public void CountIsCorrectWhenValid()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).Count() == 2);
-        }
-
-        [TestMethod]
-        public void CountIsCorrectWhenNotValid()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).Count() == 0);
         }
 
         [TestMethod]
@@ -111,27 +85,9 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         }
 
         [TestMethod]
-        public void SequenceIsInvalidAndNotDoable()
-        {
-            Assert.IsFalse(CreateSeqCollectionWithFlights(null).SequenceIsDoable());
-        }
-
-        [TestMethod]
-        public void CostIsZeroWhenInvalid()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetCost() == 0);
-        }
-
-        [TestMethod]
         public void CostIsCorrect()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).GetCost() == 75);
-        }
-
-        [TestMethod]
-        public void GetStartTimeIsNullWhenInvalid()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetStartTime() == null);
         }
 
         [TestMethod]
@@ -141,21 +97,9 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         }
 
         [TestMethod]
-        public void GetEndTimeIsNullWhenInvalid()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetEndTime() == null);
-        }
-
-        [TestMethod]
         public void GetEndTimeIsCorrect()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).GetEndTime() == flight2.Arriving);
-        }
-
-        [TestMethod]
-        public void GetTotalTimeIsZeroWhenInvalid()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetLength().TotalHours == 0);
         }
 
         [TestMethod]
@@ -163,12 +107,6 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         {
             TimeSpan time = CreateSeqCollectionWithFlights(flight1, flight2).GetLength();
             Assert.IsTrue(time.ToString().Equals("05:39:30"));
-        }
-
-        [TestMethod]
-        public void StartsAndEndsOnSameDayIsFalseIfInvalid()
-        {
-            Assert.IsFalse(CreateSeqCollectionWithFlights(null).StartsAndEndsOnSameDay());
         }
 
         [TestMethod]
@@ -190,21 +128,9 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         }
 
         [TestMethod]
-        public void CountOfFlightsIsZeroInInvalid()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetCountOfFlights() == 0);
-        }
-        
-        [TestMethod]
         public void CountOfBusesIsCorrect()
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(bus1, flight2).GetCountOfBuses() == 1);
-        }
-
-        [TestMethod]
-        public void CountOfBusesIsZeroInInvalid()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(null).GetCountOfBuses() == 0);
         }
 
         [TestMethod]
@@ -219,16 +145,22 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         {
             Assert.IsTrue(!CreateSeqCollectionWithFlights(flight3, flight4).HasJourneyWithZeroCost());
         }
-
+        
         [TestMethod]
-        public void HasZeroCostIsInvalid()
+        public void GetDepartingLocationIsCorrect()
         {
-            Assert.IsTrue(!CreateSeqCollectionWithFlights(null).HasJourneyWithZeroCost());
+            Assert.IsTrue(CreateSeqCollectionWithFlights(flight3, flight4).GetDepartingLocation().Equals("VAR"));
+        }
+        
+        [TestMethod]
+        public void GetCountOfCompaniesIsCorrect()
+        {
+            Assert.IsTrue(CreateSeqCollectionWithFlights(flight2, flight3).GetCountOfCompanies() == 1);
         }
 
         private static SequentialJourneyCollection CreateSeqCollectionWithFlights(params Journey[] flights)
         {
-            return new(flights == null ? null : new JourneyCollection(flights.ToList()));
+            return new SequentialJourneyCollection(flights == null ? null : new JourneyCollection(flights.ToList()));
         }
     }
 }
