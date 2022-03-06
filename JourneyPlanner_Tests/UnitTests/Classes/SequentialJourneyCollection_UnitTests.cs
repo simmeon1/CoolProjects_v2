@@ -157,6 +157,12 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight2, flight3).GetCountOfCompanies() == 1);
         }
+        
+        [TestMethod]
+        public void GetCompaniesStringIsCorrect()
+        {
+            Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).GetCompaniesString().Equals("easyJet, wizz"));
+        }
 
         private static SequentialJourneyCollection CreateSeqCollectionWithFlights(params Journey[] flights)
         {
