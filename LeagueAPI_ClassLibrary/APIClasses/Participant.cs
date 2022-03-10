@@ -25,5 +25,7 @@
         public int? summoner1Id { get; set; }
         public int? summoner2Id { get; set; }
         public bool? win { get; set; }
+        public int physicalDamageDealtToChampions { get; set; }
+        public int magicDamageDealtToChampions { get; set; }
     }
 }

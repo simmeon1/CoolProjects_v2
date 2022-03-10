@@ -79,7 +79,7 @@ namespace LeagueAPI_Tests.UnitTests
         {
             return new()
             {
-                AccountName = "ss",
+                Name = "ss",
                 AccountPuuid = "ss",
                 DdragonJsonFilesDirectoryPath = "ss",
                 MaxCount = 1,

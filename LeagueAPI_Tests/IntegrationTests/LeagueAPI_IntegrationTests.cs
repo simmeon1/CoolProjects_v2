@@ -32,8 +32,8 @@ namespace LeagueAPI_Tests.IntegrationTests
         [TestMethod]
         public async Task GetAccountBySummonerName_KeyIsValid()
         {
-            Account acc = await LeagueAPIClient.GetAccountBySummonerName(TestData.AccountName);
-            Assert.IsTrue(acc.Name.Equals(TestData.AccountName));
+            Account acc = await LeagueAPIClient.GetAccountBySummonerName(TestData.Name);
+            Assert.IsTrue(acc.Name.Equals(TestData.Name));
             Assert.IsTrue(acc.AccountId.Length > 0);
             Assert.IsTrue(acc.Id.Length > 0);
             Assert.IsTrue(acc.Puuid.Length > 0);

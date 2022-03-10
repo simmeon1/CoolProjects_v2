@@ -27,6 +27,24 @@ namespace LeagueAPI_ClassLibrary
             JObject obj = await GetJObjectFromResponse($"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}");
             return obj == null ? null : new Account((string)obj["id"], (string)obj["accountId"], (string)obj["puuid"], (string)obj["name"]);
         }
+        
+        public async Task<SpectatorData> GetSpectatorDataByEncryptedSummonerId(string encryptedSummonerId)
+        {
+            JObject obj = await GetJObjectFromResponse($"https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/{encryptedSummonerId}");
+            JToken participantsArr = obj["participants"];
+            List<SpectatedParticipant> participants = new();
+            foreach (JToken p in participantsArr)
+            {
+                SpectatedParticipant participant = new()
+                {
+                    teamId = int.Parse(p["teamId"].ToString()),
+                    championId = int.Parse(p["championId"].ToString()),
+                    summonerId = p["summonerId"].ToString()
+                };
+                participants.Add(participant);
+            }
+            return obj == null ? null : new SpectatorData(participants);
+        }
 
         private async Task<JObject> GetJObjectFromResponse(string uri)
         {
@@ -44,8 +62,10 @@ namespace LeagueAPI_ClassLibrary
         {
             HttpResponseMessage response = await SendRequest(uri);
             string responseMessage = await response.Content.ReadAsStringAsync();
-            if (((int)response.StatusCode).ToString()[0] == '2') return responseMessage;
-            if ((int)response.StatusCode >= 400 && (int)response.StatusCode != (int)HttpStatusCode.Forbidden) return null;
+            if (response.IsSuccessStatusCode) return responseMessage;
+
+            int responseStatusCode = (int)response.StatusCode;
+            if (responseStatusCode >= 400 && responseStatusCode != (int)HttpStatusCode.Forbidden) return null;
             throw new InvalidOperationException(
                 $"The request was not successful.{Environment.NewLine}" +
                 $"URI: {uri}.{Environment.NewLine}" +
@@ -130,30 +150,32 @@ namespace LeagueAPI_ClassLibrary
             JToken arr = obj["info"]["participants"];
             foreach (JToken p in arr)
             {
-                Participant participant = new();
-                participant.championId = int.Parse(p["championId"].ToString());
-                participant.puuid = p["puuid"].ToString();
-                participant.item0 = int.Parse(p["item0"].ToString());
-                participant.item1 = int.Parse(p["item1"].ToString());
-                participant.item2 = int.Parse(p["item2"].ToString());
-                participant.item3 = int.Parse(p["item3"].ToString());
-                participant.item4 = int.Parse(p["item4"].ToString());
-                participant.item5 = int.Parse(p["item5"].ToString());
-                participant.item6 = int.Parse(p["item6"].ToString());
-                participant.perk1_1 = int.Parse(p["perks"]["styles"][0]["selections"][0]["perk"].ToString());
-                participant.perk1_2 = int.Parse(p["perks"]["styles"][0]["selections"][1]["perk"].ToString());
-                participant.perk1_3 = int.Parse(p["perks"]["styles"][0]["selections"][2]["perk"].ToString());
-                participant.perk1_4 = int.Parse(p["perks"]["styles"][0]["selections"][3]["perk"].ToString());
-                participant.perk2_1 = int.Parse(p["perks"]["styles"][1]["selections"][0]["perk"].ToString());
-                participant.perk2_2 = int.Parse(p["perks"]["styles"][1]["selections"][1]["perk"].ToString());
-                participant.perkTree_1 = int.Parse(p["perks"]["styles"][0]["style"].ToString());
-                participant.perkTree_2 = int.Parse(p["perks"]["styles"][1]["style"].ToString());
-                participant.statPerkDefense = int.Parse(p["perks"]["statPerks"]["defense"].ToString());
-                participant.statPerkFlex = int.Parse(p["perks"]["statPerks"]["flex"].ToString());
-                participant.statPerkOffense = int.Parse(p["perks"]["statPerks"]["offense"].ToString());
-                participant.summoner1Id = int.Parse(p["summoner1Id"].ToString());
-                participant.summoner2Id = int.Parse(p["summoner2Id"].ToString());
-                participant.win = bool.Parse(p["win"].ToString());
+                Participant participant = new()
+                {
+                    championId = int.Parse(p["championId"].ToString()),
+                    puuid = p["puuid"].ToString(),
+                    item0 = int.Parse(p["item0"].ToString()),
+                    item1 = int.Parse(p["item1"].ToString()),
+                    item2 = int.Parse(p["item2"].ToString()),
+                    item3 = int.Parse(p["item3"].ToString()),
+                    item4 = int.Parse(p["item4"].ToString()),
+                    item5 = int.Parse(p["item5"].ToString()),
+                    item6 = int.Parse(p["item6"].ToString()),
+                    perk1_1 = int.Parse(p["perks"]["styles"][0]["selections"][0]["perk"].ToString()),
+                    perk1_2 = int.Parse(p["perks"]["styles"][0]["selections"][1]["perk"].ToString()),
+                    perk1_3 = int.Parse(p["perks"]["styles"][0]["selections"][2]["perk"].ToString()),
+                    perk1_4 = int.Parse(p["perks"]["styles"][0]["selections"][3]["perk"].ToString()),
+                    perk2_1 = int.Parse(p["perks"]["styles"][1]["selections"][0]["perk"].ToString()),
+                    perk2_2 = int.Parse(p["perks"]["styles"][1]["selections"][1]["perk"].ToString()),
+                    perkTree_1 = int.Parse(p["perks"]["styles"][0]["style"].ToString()),
+                    perkTree_2 = int.Parse(p["perks"]["styles"][1]["style"].ToString()),
+                    statPerkDefense = int.Parse(p["perks"]["statPerks"]["defense"].ToString()),
+                    statPerkFlex = int.Parse(p["perks"]["statPerks"]["flex"].ToString()),
+                    statPerkOffense = int.Parse(p["perks"]["statPerks"]["offense"].ToString()),
+                    summoner1Id = int.Parse(p["summoner1Id"].ToString()),
+                    summoner2Id = int.Parse(p["summoner2Id"].ToString()),
+                    win = bool.Parse(p["win"].ToString())
+                };
                 participants.Add(participant);
             }
             match.participants = participants;

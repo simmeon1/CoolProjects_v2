@@ -238,5 +238,24 @@ namespace LeagueAPI_Tests.UnitTests
             response.Content = new StringContent(responseContent);
             return response;
         }
+        
+        [TestMethod]
+        public async Task GetSpectatedDataWorksAsExpected()
+        {
+            LeagueAPIClient client = SetUpHttpClientWithSuccessfulResponse(@"{
+    ""participants"": [
+        {
+            ""teamId"": 100,
+            ""championId"": 122,
+            ""summonerId"": ""test"",
+        }
+    ],
+}");
+            SpectatorData data = await client.GetSpectatorDataByEncryptedSummonerId("test");
+            Assert.IsTrue(data.participants.Count == 1);
+            Assert.IsTrue(data.participants[0].teamId == 100);
+            Assert.IsTrue(data.participants[0].championId == 122);
+            Assert.IsTrue(data.participants[0].summonerId.Equals("test"));
+        }
     }
 }
