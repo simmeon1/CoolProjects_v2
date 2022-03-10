@@ -21,5 +21,10 @@ namespace Common_ClassLibrary
             LogDetails.Enqueue(message);
             Console.WriteLine(message);
         }
+
+        public void ReadKey()
+        {
+            Console.ReadKey();
+        }
     }
 }

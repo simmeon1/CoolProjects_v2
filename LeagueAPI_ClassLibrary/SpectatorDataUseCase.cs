@@ -6,13 +6,11 @@ namespace LeagueAPI_ClassLibrary
 {
     public class SpectatorDataUseCase
     {
-        private readonly List<LeagueMatch> matches;
         private Dictionary<int, DamageDealt> champsAndDamage;
 
         public SpectatorDataUseCase(List<LeagueMatch> matches)
         {
-            this.matches = matches ?? new List<LeagueMatch>();
-            PopulateChampsAndDamage();
+            PopulateChampsAndDamage(matches);
         }
 
         public string GetDamagePlayerIsPlayingAgainst(SpectatorData spectatorData, string playerId)
@@ -29,7 +27,7 @@ namespace LeagueAPI_ClassLibrary
             foreach (SpectatedParticipant enemy in enemyParticipants)
             {
                 int champId = enemy.championId.Value;
-                dmg.IncrementDmg(champsAndDamage[champId]);
+                dmg.IncrementDmg(champsAndDamage.ContainsKey(champId) ? champsAndDamage[champId] : new DamageDealt(0,0));
             }
             return dmg;
         }
@@ -47,13 +45,13 @@ namespace LeagueAPI_ClassLibrary
             return participants.First(p => p.summonerId.Equals(playerId)).teamId.Value;
         }
 
-        private void PopulateChampsAndDamage()
+        private void PopulateChampsAndDamage(List<LeagueMatch> matches)
         {
             champsAndDamage = new Dictionary<int, DamageDealt>();
-            AddMatchesData();
+            AddMatchesData(matches);
         }
 
-        private void AddMatchesData()
+        private void AddMatchesData(List<LeagueMatch> matches)
         {
             foreach (LeagueMatch match in matches)
             {

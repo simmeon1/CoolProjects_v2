@@ -31,6 +31,8 @@ namespace LeagueAPI_ClassLibrary
         public async Task<SpectatorData> GetSpectatorDataByEncryptedSummonerId(string encryptedSummonerId)
         {
             JObject obj = await GetJObjectFromResponse($"https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/{encryptedSummonerId}");
+            if (obj == null) return null;
+            
             JToken participantsArr = obj["participants"];
             List<SpectatedParticipant> participants = new();
             foreach (JToken p in participantsArr)
@@ -154,6 +156,8 @@ namespace LeagueAPI_ClassLibrary
                 {
                     championId = int.Parse(p["championId"].ToString()),
                     puuid = p["puuid"].ToString(),
+                    physicalDamageDealtToChampions = int.Parse(p["physicalDamageDealtToChampions"].ToString()),
+                    magicDamageDealtToChampions = int.Parse(p["magicDamageDealtToChampions"].ToString()),
                     item0 = int.Parse(p["item0"].ToString()),
                     item1 = int.Parse(p["item1"].ToString()),
                     item2 = int.Parse(p["item2"].ToString()),

@@ -146,7 +146,7 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public async Task GetMatch_GetsAllResults()
         {
-            LeagueAPIClient leagueClient = SetUpHttpClientWithSuccessfulResponse(@"{'metadata':{'matchId':'EUW1_5364680752','participants':['TxdGlxaUW6x9KvDuk-FEXYbancmWThQ-PQgfkrKW898JcYyAM43T-Gn0sUi0LbYIsUWDJhgxRS_8Wg','G3_8zPn_vTiFPTElkGg7Q3eLF_b9CQ7XZX8vIKYA-jVn2rk-cCihPCaWbRiOdmeBeEg6XkarJwzmUg']},'info':{'gameVersion':'11.14.385.9967','mapId':12,'participants':[{'championId':1, 'puuid': '9zz9VE1mATZrQfcPdgkRw6EyOIAD4h99mtLx8U3F1kAPz2hbAim92GQYcPjurBMDpIGAFKtzgGNL9Q','item0':20,'item1':21,'item2':22,'item3':23,'item4':24,'item5':25,'item6':26,'perks':{'statPerks':{'defense':100,'flex':101,'offense':102},'styles':[{'selections':[{'perk':200},{'perk':201},{'perk':202},{'perk':203}],'style':2000},{'selections':[{'perk':301},{'perk':302}],'style':3000}]},'summoner1Id':50,'summoner2Id':51,'win':true}],'queueId':450,'gameDuration':'600000'}}");
+            LeagueAPIClient leagueClient = SetUpHttpClientWithSuccessfulResponse(@"{'metadata':{'matchId':'EUW1_5364680752','participants':['TxdGlxaUW6x9KvDuk-FEXYbancmWThQ-PQgfkrKW898JcYyAM43T-Gn0sUi0LbYIsUWDJhgxRS_8Wg','G3_8zPn_vTiFPTElkGg7Q3eLF_b9CQ7XZX8vIKYA-jVn2rk-cCihPCaWbRiOdmeBeEg6XkarJwzmUg']},'info':{'gameVersion':'11.14.385.9967','mapId':12,'participants':[{'championId':1, 'puuid': '9zz9VE1mATZrQfcPdgkRw6EyOIAD4h99mtLx8U3F1kAPz2hbAim92GQYcPjurBMDpIGAFKtzgGNL9Q','item0':20,'item1':21,'item2':22,'item3':23,'item4':24,'item5':25,'item6':26,'perks':{'statPerks':{'defense':100,'flex':101,'offense':102},'styles':[{'selections':[{'perk':200},{'perk':201},{'perk':202},{'perk':203}],'style':2000},{'selections':[{'perk':301},{'perk':302}],'style':3000}]},'summoner1Id':50,'summoner2Id':51,'win':true, 'physicalDamageDealtToChampions':100, 'magicDamageDealtToChampions':200}],'queueId':450,'gameDuration':'600000'}}");
             LeagueMatch match = await leagueClient.GetMatch("EUW1_5364680752");
             Assert.IsTrue(match.matchId.Equals("EUW1_5364680752"));
             Assert.IsTrue(match.gameVersion.Equals("11.14.385.9967"));
@@ -181,12 +181,14 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(p1.summoner1Id == 50);
             Assert.IsTrue(p1.summoner2Id == 51);
             Assert.IsTrue(p1.win == true);
+            Assert.IsTrue(p1.physicalDamageDealtToChampions == 100);
+            Assert.IsTrue(p1.magicDamageDealtToChampions == 200);
         }
 
         [TestMethod]
         public async Task GetMatch_GetsAllResults_TestTimespanOnly()
         {
-            LeagueAPIClient leagueClient = SetUpHttpClientWithSuccessfulResponse(@"{'metadata':{'matchId':'EUW1_5364680752','participants':['TxdGlxaUW6x9KvDuk-FEXYbancmWThQ-PQgfkrKW898JcYyAM43T-Gn0sUi0LbYIsUWDJhgxRS_8Wg','G3_8zPn_vTiFPTElkGg7Q3eLF_b9CQ7XZX8vIKYA-jVn2rk-cCihPCaWbRiOdmeBeEg6XkarJwzmUg']},'info':{'gameVersion':'11.14.385.9967','mapId':12,'participants':[{'championId':1, 'puuid': '9zz9VE1mATZrQfcPdgkRw6EyOIAD4h99mtLx8U3F1kAPz2hbAim92GQYcPjurBMDpIGAFKtzgGNL9Q','item0':20,'item1':21,'item2':22,'item3':23,'item4':24,'item5':25,'item6':26,'perks':{'statPerks':{'defense':100,'flex':101,'offense':102},'styles':[{'selections':[{'perk':200},{'perk':201},{'perk':202},{'perk':203}],'style':2000},{'selections':[{'perk':301},{'perk':302}],'style':3000}]},'summoner1Id':50,'summoner2Id':51,'win':true}],'queueId':450,'gameDuration':'1000', 'gameEndTimestamp': '10'}}");
+            LeagueAPIClient leagueClient = SetUpHttpClientWithSuccessfulResponse(@"{'metadata':{'matchId':'EUW1_5364680752','participants':['TxdGlxaUW6x9KvDuk-FEXYbancmWThQ-PQgfkrKW898JcYyAM43T-Gn0sUi0LbYIsUWDJhgxRS_8Wg','G3_8zPn_vTiFPTElkGg7Q3eLF_b9CQ7XZX8vIKYA-jVn2rk-cCihPCaWbRiOdmeBeEg6XkarJwzmUg']},'info':{'gameVersion':'11.14.385.9967','mapId':12,'participants':[{'championId':1, 'puuid': '9zz9VE1mATZrQfcPdgkRw6EyOIAD4h99mtLx8U3F1kAPz2hbAim92GQYcPjurBMDpIGAFKtzgGNL9Q','item0':20,'item1':21,'item2':22,'item3':23,'item4':24,'item5':25,'item6':26,'perks':{'statPerks':{'defense':100,'flex':101,'offense':102},'styles':[{'selections':[{'perk':200},{'perk':201},{'perk':202},{'perk':203}],'style':2000},{'selections':[{'perk':301},{'perk':302}],'style':3000}]},'summoner1Id':50,'summoner2Id':51,'win':true, 'physicalDamageDealtToChampions':100, 'magicDamageDealtToChampions':200}],'queueId':450,'gameDuration':'1000', 'gameEndTimestamp': '10'}}");
             LeagueMatch match = await leagueClient.GetMatch("EUW1_5364680752");
             Assert.IsTrue(match.duration.TotalSeconds == 1000);
         }
@@ -240,7 +242,7 @@ namespace LeagueAPI_Tests.UnitTests
         }
         
         [TestMethod]
-        public async Task GetSpectatedDataWorksAsExpected()
+        public async Task GetSpectatedDataReturnsData()
         {
             LeagueAPIClient client = SetUpHttpClientWithSuccessfulResponse(@"{
     ""participants"": [
@@ -256,6 +258,14 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(data.participants[0].teamId == 100);
             Assert.IsTrue(data.participants[0].championId == 122);
             Assert.IsTrue(data.participants[0].summonerId.Equals("test"));
+        }
+        
+        [TestMethod]
+        public async Task GetSpectatedDataReturnsNoData()
+        {
+            LeagueAPIClient client = SetUpHttpClientWithResponse(HttpStatusCode.NotFound, "");
+            SpectatorData data = await client.GetSpectatorDataByEncryptedSummonerId("test");
+            Assert.IsTrue(data == null);
         }
     }
 }
