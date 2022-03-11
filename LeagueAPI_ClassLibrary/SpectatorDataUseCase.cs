@@ -70,15 +70,14 @@ namespace LeagueAPI_ClassLibrary
         private void AddParticipantData(Participant participant)
         {
             int champId = participant.championId.GetValueOrDefault();
-            int physDmg = participant.physicalDamageDealtToChampions;
-            int magDmg = participant.magicDamageDealtToChampions;
+            DamageDealt dmg = new(participant.physicalDamageDealtToChampions, participant.magicDamageDealtToChampions);
             if (champsAndDamage.ContainsKey(champId))
             {
-                champsAndDamage[champId].IncrementDmg(physDmg, magDmg);
+                champsAndDamage[champId].IncrementDmg(dmg);
             }
             else
             {
-                champsAndDamage.Add(champId, new DamageDealt(physDmg, magDmg));
+                champsAndDamage.Add(champId, dmg);
             }
         }
 
@@ -93,12 +92,6 @@ namespace LeagueAPI_ClassLibrary
                 Magical = mag;
             }
 
-            public void IncrementDmg(int phys, int mag)
-            {
-                Physical += phys;
-                Magical += mag;
-            }
-            
             public void IncrementDmg(DamageDealt dmg)
             {
                 Physical += dmg.Physical;
