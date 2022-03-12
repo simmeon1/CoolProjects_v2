@@ -33,10 +33,9 @@ namespace LeagueApiSpectator_Console
                 new RealDelayer(),
                 logger
             );
-            
+
             string encryptedSummonerId = parameters.Id;
             SpectatorDataUseCase useCase = new(matches);
-
             while (true)
             {
                 logger.Log("Retrieving spectator data...");
@@ -44,6 +43,7 @@ namespace LeagueApiSpectator_Console
                 logger.Log(spectatorData == null
                     ? "User is not in game."
                     : useCase.GetDamagePlayerIsPlayingAgainst(spectatorData, encryptedSummonerId));
+                logger.Log("Check items and spells!");
                 logger.Log("Press any key to repeat process.");
                 logger.ReadKey();
             }
