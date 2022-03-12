@@ -21,30 +21,46 @@ namespace LeagueAPI_Console
             }
 
             Parameters parameters = File.ReadAllText(parametersPath).DeserializeObject<Parameters>();
-            RealFileIO fileIO = new();
+            RealFileIO fileIo = new();
             RealHttpClient http = new();
             RealWebClient webClient = new();
             RealDelayer delayer = new();
             Logger_Console logger = new();
             LeagueAPIClient client = new(http, parameters.Token, delayer, logger);
             MatchCollector collector = new(client, logger);
-            DdragonRepository repo = new(fileIO, parameters.DdragonJsonFilesDirectoryPath);
+            DdragonRepository repo = new(fileIo, parameters.DdragonJsonFilesDirectoryPath);
             ArchiveExtractor extractor = new();
-            DdragonRepositoryUpdater repoUpdater = new(client, webClient, fileIO, logger, extractor, parameters.DdragonJsonFilesDirectoryPath);
+            DdragonRepositoryUpdater repoUpdater = new(client, webClient, fileIo, logger, extractor,
+                parameters.DdragonJsonFilesDirectoryPath);
             RealDateTimeProvider dateTimeProvider = new();
-            RealGuidProvider guidProvider = new();
             ExcelPrinter printer = new();
-            FullRunner runner = new(client, collector, repo, fileIO, dateTimeProvider, guidProvider, printer, logger, repoUpdater);
-            List<string> files = await runner.DoFullRun(
+            
+            List<string> parsedTargetVersions = await client.GetParsedListOfVersions(parameters.RangeOfTargetVersions);
+            MatchSaver matchSaver = new(
+                client,
+                fileIo,
+                repo,
+                printer,
+                logger,
+                dateTimeProvider,
                 parameters.OutputDirectory,
                 parameters.QueueId,
+                parsedTargetVersions,
+                parameters.IncludeWinRatesForMinutes
+            );
+
+            FullRunner runner = new(client, collector, repo, fileIo, logger, repoUpdater, matchSaver);
+            await runner.DoFullRun(
+                parameters.QueueId,
                 parameters.AccountPuuid,
-                targetVersions: parameters.RangeOfTargetVersions,
-                maxCount: parameters.MaxCount,
-                parameters.IncludeWinRatesForMinutes,
+                parsedTargetVersions,
+                parameters.MaxCount,
                 parameters.ExistingMatchesFile,
-                parameters.GetLatestDdragonData);
-            if (files.Count > 0) logger.Log($"{files.Count} files written at {parameters.OutputDirectory}. Press any key to exit." );
+                parameters.GetLatestDdragonData,
+                parameters.OutputDirectory
+            );
+            
+            logger.Log("Press any key to exit.");
             Console.ReadKey();
         }
     }
