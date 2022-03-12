@@ -42,7 +42,7 @@ namespace LeagueAPI_Tests.UnitTests
             SpectatorData specData = new(spectatedParticipants);
             SpectatorDataUseCase useCase = new(matches);
             string result = useCase.GetDamagePlayerIsPlayingAgainst(specData, "me");
-            Assert.IsTrue(result.Equals("45/55 - 400"));
+            Assert.IsTrue(result.Equals("45/55 - 200"));
         }
 
         private static LeagueMatch GetMatch(List<Participant> participants1)

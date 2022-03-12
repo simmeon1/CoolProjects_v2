@@ -23,13 +23,19 @@ namespace LeagueAPI_ClassLibrary
 
         private DamageDealt GetDamageDealtFromEnemyTeam(List<SpectatedParticipant> enemyParticipants)
         {
-            DamageDealt dmg = new(0, 0);
+            double averagePhysical = 0;
+            double averageMagical = 0;
+            
             foreach (SpectatedParticipant enemy in enemyParticipants)
             {
                 int champId = enemy.championId.Value;
-                dmg.IncrementDmg(champsAndDamage.ContainsKey(champId) ? champsAndDamage[champId] : new DamageDealt(0,0));
+                if (!champsAndDamage.ContainsKey(champId)) continue;
+                
+                DamageDealt entry = champsAndDamage[champId];
+                averagePhysical += entry.GetAveragePhysical();
+                averageMagical += entry.GetAverageMagical();
             }
-            return dmg;
+            return new DamageDealt(averagePhysical, averageMagical);
         }
 
         private static List<SpectatedParticipant> GetEnemyPlayers(SpectatorData spectatorData, int playerTeamId)
@@ -83,32 +89,45 @@ namespace LeagueAPI_ClassLibrary
 
         private class DamageDealt
         {
-            private long Physical { get; set; }
-            private long Magical { get; set; }
+            private double Physical { get; set; }
+            private double Magical { get; set; }
+            private int Entries { get; set; }
 
-            public DamageDealt(int phys, int mag)
+            public DamageDealt(double phys, double mag)
             {
                 Physical = phys;
                 Magical = mag;
+                Entries = 1;
             }
 
             public void IncrementDmg(DamageDealt dmg)
             {
                 Physical += dmg.Physical;
                 Magical += dmg.Magical;
+                Entries++;
+            }
+            
+            public double GetAveragePhysical()
+            {
+                return Physical / Entries;
+            }
+            
+            public double GetAverageMagical()
+            {
+                return Magical / Entries;
             }
 
             public override string ToString()
             {
-                long allDmg = Physical + Magical;
+                double allDmg = Physical + Magical;
                 double percentPhys = GetPercent(allDmg, Physical);
                 double percentMag = GetPercent(allDmg, Magical);
                 return $"{percentPhys}/{percentMag} - {allDmg}";
             }
 
-            private static double GetPercent(long allDmg, long dmg)
+            private static double GetPercent(double allDmg, double dmg)
             {
-                return Math.Round((double)dmg / allDmg * 100, 2);
+                return Math.Round(dmg / allDmg * 100, 2);
             }
         }
     }
