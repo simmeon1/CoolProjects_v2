@@ -122,12 +122,18 @@ namespace LeagueAPI_ClassLibrary
                 double allDmg = Physical + Magical;
                 double percentPhys = GetPercent(allDmg, Physical);
                 double percentMag = GetPercent(allDmg, Magical);
-                return $"{percentPhys}/{percentMag} - {allDmg}";
+                return $"{percentPhys}/{percentMag} - {Round(allDmg)}";
             }
 
             private static double GetPercent(double allDmg, double dmg)
             {
-                return Math.Round(dmg / allDmg * 100, 2);
+                double value = dmg / allDmg * 100;
+                return Round(value);
+            }
+
+            private static double Round(double value)
+            {
+                return Math.Round(value, 2);
             }
         }
     }
