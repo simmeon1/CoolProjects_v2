@@ -35,30 +35,8 @@ namespace LeagueAPI_Console
             RealDateTimeProvider dateTimeProvider = new();
             ExcelPrinter printer = new();
             
-            List<string> parsedTargetVersions = await client.GetParsedListOfVersions(parameters.RangeOfTargetVersions);
-            MatchSaver matchSaver = new(
-                client,
-                fileIo,
-                repo,
-                printer,
-                logger,
-                dateTimeProvider,
-                parameters.OutputDirectory,
-                parameters.QueueId,
-                parsedTargetVersions,
-                parameters.IncludeWinRatesForMinutes
-            );
-
-            FullRunner runner = new(client, collector, repo, fileIo, logger, repoUpdater, matchSaver);
-            await runner.DoFullRun(
-                parameters.QueueId,
-                parameters.AccountPuuid,
-                parsedTargetVersions,
-                parameters.MaxCount,
-                parameters.ExistingMatchesFile,
-                parameters.GetLatestDdragonData,
-                parameters.OutputDirectory
-            );
+            FullRunner runner = new(client, collector, repo, fileIo, logger, repoUpdater, printer, dateTimeProvider);
+            await runner.DoFullRun(parameters);
             
             logger.Log("Press any key to exit.");
             Console.ReadKey();

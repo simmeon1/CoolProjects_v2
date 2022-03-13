@@ -8,61 +8,73 @@ namespace LeagueAPI_ClassLibrary
 {
     public class FullRunner
     {
-        private IMatchSaver MatchSaver { get; set; }
         private ILeagueAPIClient LeagueApiClient { get; set; }
         private IMatchCollector MatchCollector { get; set; }
         private IDDragonRepository Repository { get; set; }
         private IDdragonRepositoryUpdater RepoUpdater { get; set; }
+        private IExcelPrinter ExcelPrinter { get; }
+        private IDateTimeProvider DateTimeProvider { get; }
         private IFileIO FileIo { get; set; }
         private ILogger Logger { get; set; }
 
-        public FullRunner(
-            ILeagueAPIClient leagueApiClient,
+        public FullRunner(ILeagueAPIClient leagueApiClient,
             IMatchCollector matchCollector,
             IDDragonRepository repository,
             IFileIO fileIo,
             ILogger logger,
-            IDdragonRepositoryUpdater repoUpdater, IMatchSaver matchSaver
-        )
-        {
+            IDdragonRepositoryUpdater repoUpdater,
+            IExcelPrinter excelPrinter, 
+            IDateTimeProvider dateTimeProvider
+        ) {
             MatchCollector = matchCollector;
             Repository = repository;
             FileIo = fileIo;
             Logger = logger;
             RepoUpdater = repoUpdater;
-            MatchSaver = matchSaver;
+            ExcelPrinter = excelPrinter;
+            DateTimeProvider = dateTimeProvider;
             LeagueApiClient = leagueApiClient;
         }
 
-        public async Task<List<string>> DoFullRun(
-            int queueId,
-            string startPuuid,
-            List<string> targetVersions,
-            int maxCount,
-            string existingMatchesFile,
-            bool getLatestVersion,
-            string outputDirectory
-        )
-        {
+        public async Task<List<string>> DoFullRun(Parameters p) {
             try
             {
-                List<LeagueMatch> alreadyScannedMatches = ReadExistingMatches(existingMatchesFile);
-
                 Task updateTask = Task.CompletedTask;
-                if (getLatestVersion) updateTask = RepoUpdater.GetLatestDdragonFiles();
+                if (p.GetLatestDdragonData) updateTask = RepoUpdater.GetLatestDdragonFiles();
+                
+                List<string> parsedTargetVersions = await LeagueApiClient.GetParsedListOfVersions(p.RangeOfTargetVersions);
+                string queueName = await LeagueApiClient.GetNameOfQueue(p.QueueId);
+                
+                List<LeagueMatch> alreadyScannedMatches = ReadExistingMatches(p.ExistingMatchesFile);
+
+                string outputDirectory = p.OutputDirectory;
+                string versionsStr = parsedTargetVersions.ConcatenateListOfStringsToCommaString();
+
+                MatchSaver matchSaver = new(
+                    FileIo, 
+                    Repository, 
+                    ExcelPrinter, 
+                    Logger,
+                    DateTimeProvider,
+                    outputDirectory,
+                    queueName,
+                    versionsStr, 
+                    p.IncludeWinRatesForMinutes
+                );
 
                 List<LeagueMatch> matches = 
-                    await MatchCollector.GetMatches(startPuuid, queueId, targetVersions, maxCount, alreadyScannedMatches);
+                    await MatchCollector.GetMatches(p.AccountPuuid, p.QueueId, parsedTargetVersions, p.MaxCount, alreadyScannedMatches);
                 await updateTask;
                 Repository.RefreshData();
-                return await MatchSaver.SaveMatches(matches);
+                return matchSaver.SaveMatches(matches);
             }
             catch (Exception ex)
             {
                 Logger.Log(ex.ToString());
-                string fileName = Path.Combine(outputDirectory, "leagueApi_log.txt");
+                string fileName = Path.Combine(p.OutputDirectory, "leagueApi_log.txt");
                 FileIo.WriteAllText(fileName, Logger.GetContent());
-                return new List<string>() {fileName};
+                Logger.Log($"Log file written at {p.OutputDirectory}.");
+                return new List<string> {fileName};
             }
         }
 

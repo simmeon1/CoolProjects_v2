@@ -10,7 +10,7 @@ namespace LeagueAPI_ClassLibrary
 {
     public interface IMatchSaver
     {
-        Task<List<string>> SaveMatches(List<LeagueMatch> matches);
+        List<string> SaveMatches(List<LeagueMatch> matches);
     }
 
     public class MatchSaver : IMatchSaver
@@ -20,48 +20,41 @@ namespace LeagueAPI_ClassLibrary
         private readonly IExcelPrinter excelPrinter;
         private readonly ILogger logger;
         private readonly IDateTimeProvider dateTimeProvider;
-        private readonly string outputDirectory;
-        private readonly int queueId;
-        private readonly List<string> targetVersions;
         private List<int> includeWinRatesForMinutes;
-        private readonly ILeagueAPIClient leagueApiClient;
+        private readonly string outputDirectory;
+        private readonly string baseId;
 
         public MatchSaver(
-            ILeagueAPIClient leagueApiClient,
             IFileIO fileIo,
             IDDragonRepository repository,
             IExcelPrinter excelPrinter,
             ILogger logger,
             IDateTimeProvider dateTimeProvider,
             string outputDirectory,
-            int queueId,
-            List<string> targetVersions,
-            List<int> includeWinRatesForMinutes) {
+            string queueName,
+            string versionsStr,
+            List<int> includeWinRatesForMinutes
+        ) {
             this.fileIo = fileIo;
             this.repository = repository;
             this.excelPrinter = excelPrinter;
             this.logger = logger;
+            this.includeWinRatesForMinutes = includeWinRatesForMinutes;
             this.dateTimeProvider = dateTimeProvider;
             this.outputDirectory = outputDirectory;
-            this.queueId = queueId;
-            this.targetVersions = targetVersions;
-            this.includeWinRatesForMinutes = includeWinRatesForMinutes;
-            this.leagueApiClient = leagueApiClient;
+            baseId = $"{queueName}_{versionsStr}_";
         }
 
-        public async Task<List<string>> SaveMatches(List<LeagueMatch> matches) {
-            string queueName = await leagueApiClient.GetNameOfQueue(queueId);
-            string versionsStr = targetVersions.ConcatenateListOfStringsToCommaString();
-            string idString = $"{queueName}_{versionsStr}_{Globals.GetDateTimeFileNameFriendly(dateTimeProvider.Now())}";
-            string resultsFolder = $"Results_{idString}";
-            string path = Path.Combine(outputDirectory, resultsFolder);
-            if (!fileIo.DirectoryExists(path)) fileIo.CreateDirectory(path);
+        public List<string> SaveMatches(List<LeagueMatch> matches) {
+            List<string> createdFiles = new();
+
+            string idString = $"{baseId}{Globals.GetDateTimeFileNameFriendly(dateTimeProvider.Now())}";
+            string path = Path.Combine(outputDirectory, $"Results_{idString}");
             string matchesFilePath = Path.Combine(path, $"Matches_{idString}.json");
             string itemSetFilePath = Path.Combine(path, $"ItemSet_All_{idString}.json");
             string statsFilePath = Path.Combine(path, $"Stats_{idString}.xlsx");
             string logFilePath = Path.Combine(path, $"Log_{idString}.txt");
-            
-            List<string> createdFiles = new();
+            if (!fileIo.DirectoryExists(path)) fileIo.CreateDirectory(path);
             
             fileIo.WriteAllText(matchesFilePath, matches.SerializeObject());
             createdFiles.Add(matchesFilePath);
@@ -116,7 +109,7 @@ namespace LeagueAPI_ClassLibrary
             logger.Log($"{createdFiles.Count} files written at {path}.");
             return createdFiles;
         }
-        
+
         private static Dictionary<int, Dictionary<int, WinLossData>> GetResultsDict(List<KeyValuePair<int, DataCollectorResults>> pairs, Func<DataCollectorResults, Dictionary<int, WinLossData>> func)
         {
             Dictionary<int, Dictionary<int, WinLossData>> dict = new();
