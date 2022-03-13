@@ -13,7 +13,7 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public void CompareTargetVersionAgainstGameVersion_DoesCorrectComparisons()
         {
-            MatchCollector collector = new(new Mock<ILeagueAPIClient>().Object, new Logger_Debug());
+            MatchCollector collector = new(new Mock<ILeagueAPIClient>().Object, new Logger_Debug(), new Mock<IMatchAddedHandler>().Object);
             Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.14" }, "11.14") == 0);
             Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.15" }, "11.14") == 1);
             Assert.IsTrue(MatchCollector.CompareTargetVersionAgainstGameVersion(new List<string> { "11.13" }, "11.14") == -1);
@@ -66,7 +66,7 @@ namespace LeagueAPI_Tests.UnitTests
             clientMock.Setup(x => x.GetMatch(matchId3).Result).Returns(matchWithCorrectVersionAndRepeatingId);
             clientMock.Setup(x => x.GetMatch(matchId4).Result).Returns(matchWIthOutdatedVersion);
 
-            MatchCollector collector = new(clientMock.Object, new Logger_Debug());
+            MatchCollector collector = new(clientMock.Object, new Logger_Debug(), new Mock<IMatchAddedHandler>().Object);
             List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, new List<string> { targetVersion }, 10);
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));
@@ -89,7 +89,7 @@ namespace LeagueAPI_Tests.UnitTests
             clientMock.Setup(x => x.GetMatchIds(queueId, startingPuuid).Result).Returns(new List<string>() { matchId2 });
             clientMock.Setup(x => x.GetMatch(matchId2).Result).Returns(matchWithCorrectVersion);
 
-            MatchCollector collector = new(clientMock.Object, new Logger_Debug());
+            MatchCollector collector = new(clientMock.Object, new Logger_Debug(), new Mock<IMatchAddedHandler>().Object);
             List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, new List<string> { targetVersion }, 10);
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));
@@ -112,7 +112,7 @@ namespace LeagueAPI_Tests.UnitTests
             clientMock.Setup(x => x.GetMatchIds(queueId, startingPuuid).Result).Returns(new List<string>() { matchId2 });
             clientMock.Setup(x => x.GetMatch(matchId2).Result).Returns(matchWithCorrectVersion);
 
-            MatchCollector collector = new(clientMock.Object, new Logger_Debug());
+            MatchCollector collector = new(clientMock.Object, new Logger_Debug(), new Mock<IMatchAddedHandler>().Object);
             List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, new List<string> { targetVersion }, 1);
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId2));
@@ -135,7 +135,7 @@ namespace LeagueAPI_Tests.UnitTests
             clientMock.Setup(x => x.GetMatchIds(queueId, startingPuuid).Result).Returns(new List<string>() { matchId });
             clientMock.Setup(x => x.GetMatch(matchId).Result).Returns(match);
 
-            MatchCollector collector = new(clientMock.Object, new Logger_Debug());
+            MatchCollector collector = new(clientMock.Object, new Logger_Debug(), new Mock<IMatchAddedHandler>().Object);
             List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, new List<string> { targetVersion }, 1, new List<LeagueMatch>() { match });
             Assert.IsTrue(matches.Count == 1);
             Assert.IsTrue(matches[0].matchId.Equals(matchId));
@@ -165,7 +165,7 @@ namespace LeagueAPI_Tests.UnitTests
             clientMock.Setup(x => x.GetMatch(matchId1).Result).Returns(match1);
             clientMock.Setup(x => x.GetMatch(matchId2).Result).Returns(match2);
 
-            MatchCollector collector = new(clientMock.Object, new Logger_Debug());
+            MatchCollector collector = new(clientMock.Object, new Logger_Debug(), new Mock<IMatchAddedHandler>().Object);
             List<LeagueMatch> matches = await collector.GetMatches(startingPuuid, queueId, new List<string> { targetVersion }, 10, new List<LeagueMatch>() { match1 });
             Assert.IsTrue(matches.Count == 2);
             Assert.IsTrue(matches[0].matchId.Equals(matchId1));

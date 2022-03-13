@@ -29,8 +29,6 @@ namespace LeagueAPI_ClassLibrary
             foreach (SpectatedParticipant enemy in enemyParticipants)
             {
                 int champId = enemy.championId.Value;
-                if (!champsAndDamage.ContainsKey(champId)) continue;
-                
                 DamageDealt entry = champsAndDamage[champId];
                 averagePhysical += entry.GetAveragePhysical();
                 averageMagical += entry.GetAverageMagical();
