@@ -2,8 +2,10 @@
 
 namespace LeagueAPI_ClassLibrary
 {
-    public interface IMatchAddedHandler
+    public interface IMatchCollectorEventHandler
     {
+        void CollectingStarted();
         void MatchAdded(List<LeagueMatch> matches);
+        void CollectingFinished();
     }
 }

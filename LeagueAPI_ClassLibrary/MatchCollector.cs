@@ -12,12 +12,17 @@ namespace LeagueAPI_ClassLibrary
     {
         private ILeagueAPIClient Client { get; set; }
         private ILogger Logger { get; set; }
-        private IMatchAddedHandler MatchAddedHandler { get; set; }
-        public MatchCollector(ILeagueAPIClient client, ILogger logger, IMatchAddedHandler matchAddedHandler)
+        private IMatchCollectorEventHandler MatchCollectorEventHandler { get; set; }
+
+        public MatchCollector(
+            ILeagueAPIClient client,
+            ILogger logger,
+            IMatchCollectorEventHandler matchCollectorEventHandler
+        )
         {
             Client = client;
             Logger = logger;
-            MatchAddedHandler = matchAddedHandler;
+            MatchCollectorEventHandler = matchCollectorEventHandler;
         }
 
         /// <summary>
@@ -43,7 +48,7 @@ namespace LeagueAPI_ClassLibrary
         {
             return Regex.Replace(v, @"^(\w+)\.(\w+).*", "$1").ToString();
         }
-        
+
         private static string GetPatch(string v)
         {
             return Regex.Replace(v, @"^(\w+)\.(\w+).*", "$2").ToString();
@@ -59,10 +64,10 @@ namespace LeagueAPI_ClassLibrary
         {
             int v1Season = int.Parse(GetSeason(v1));
             int v2Season = int.Parse(GetSeason(v2));
-            
+
             if (v1Season > v2Season) return 1;
             if (v1Season < v2Season) return -1;
-            
+
             int v1Patch = int.Parse(GetPatch(v1));
             int v2Patch = int.Parse(GetPatch(v2));
 
@@ -71,8 +76,15 @@ namespace LeagueAPI_ClassLibrary
             return 0;
         }
 
-        public async Task<List<LeagueMatch>> GetMatches(string startPuuid, int queueId, List<string> rangeOfTargetVersions, int maxCount, List<LeagueMatch> alreadyScannedMatches = null)
+        public async Task<List<LeagueMatch>> GetMatches(
+            string startPuuid,
+            int queueId,
+            List<string> rangeOfTargetVersions,
+            int maxCount,
+            List<LeagueMatch> alreadyScannedMatches = null
+        )
         {
+            MatchCollectorEventHandler.CollectingStarted();
             HashSet<string> scannedMatchIds = new();
             Queue<string> puuidQueue = new();
             HashSet<string> puuidsToScan = new();
@@ -86,7 +98,11 @@ namespace LeagueAPI_ClassLibrary
                 if (alreadyScannedMatches != null)
                 {
                     result.AddRange(alreadyScannedMatches);
-                    if (result.Count >= maxCount) return result;
+                    if (result.Count >= maxCount)
+                    {
+                        MatchCollectorEventHandler.CollectingFinished();
+                        return result;
+                    }
 
                     foreach (LeagueMatch match in alreadyScannedMatches) scannedMatchIds.Add(match.matchId);
                     foreach (Participant p in alreadyScannedMatches.Last().participants) puuidsToScan.Add(p.puuid);
@@ -105,19 +121,35 @@ namespace LeagueAPI_ClassLibrary
                         LeagueMatch match = await Client.GetMatch(matchId);
                         scannedMatchIds.Add(matchId);
 
-                        if (match == null || match.participants == null || match.participants.Count == 0 || match.gameVersion.IsNullOrEmpty())
+                        if (
+                            match == null ||
+                            match.participants == null ||
+                            match.participants.Count == 0 ||
+                            match.gameVersion.IsNullOrEmpty()
+                        )
                         {
                             Logger.Log($"Skipped adding match {matchId} due to bad data from server.");
                             continue;
                         }
-                        int versionComparisonResult = CompareTargetVersionAgainstGameVersion(rangeOfTargetVersions, match.gameVersion);
+
+                        int versionComparisonResult = CompareTargetVersionAgainstGameVersion(
+                            rangeOfTargetVersions,
+                            match.gameVersion
+                        );
                         if (versionComparisonResult == -1) continue;
                         else if (versionComparisonResult == 1) break;
 
                         result.Add(match);
-                        Logger.Log($"Added match {matchId} (version {match.gameVersion}, queueId {queueId}), current count is {result.Count}");
-                        MatchAddedHandler.MatchAdded(result);
-                        if (result.Count >= maxCount) return result;
+                        Logger.Log(
+                            $"Added match {matchId} (version {match.gameVersion}, queueId {queueId}), current count is {result.Count}"
+                        );
+                        MatchCollectorEventHandler.MatchAdded(result);
+                        if (result.Count >= maxCount)
+                        {
+                            MatchCollectorEventHandler.CollectingFinished();
+                            return result;
+                        }
+
                         foreach (Participant participant in match.participants)
                         {
                             if (puuidsToScan.Contains(participant.puuid)) continue;
@@ -126,6 +158,8 @@ namespace LeagueAPI_ClassLibrary
                         }
                     }
                 }
+
+                MatchCollectorEventHandler.CollectingFinished();
                 return result;
             }
             catch (Exception ex)
@@ -133,6 +167,7 @@ namespace LeagueAPI_ClassLibrary
                 Logger.Log("Collections of matches stopped due to exception. Details:");
                 Logger.Log(ex.ToString());
                 Logger.Log($"Matches to be returned: {result.Count}.");
+                MatchCollectorEventHandler.CollectingFinished();
                 return result;
             }
         }

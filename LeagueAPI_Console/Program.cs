@@ -29,14 +29,45 @@ namespace LeagueAPI_Console
             LeagueAPIClient client = new(http, parameters.Token, delayer, logger);
             DdragonRepository repo = new(fileIo, parameters.DdragonJsonFilesDirectoryPath);
             ArchiveExtractor extractor = new();
-            DdragonRepositoryUpdater repoUpdater = new(client, webClient, fileIo, logger, extractor,
-                parameters.DdragonJsonFilesDirectoryPath);
+            DdragonRepositoryUpdater repoUpdater = new(
+                client,
+                webClient,
+                fileIo,
+                logger,
+                extractor,
+                parameters.DdragonJsonFilesDirectoryPath
+            );
             RealDateTimeProvider dateTimeProvider = new();
             ExcelPrinter printer = new();
-            
-            FullRunner runner = new(client, repo, fileIo, logger, repoUpdater, printer, dateTimeProvider);
-            await runner.DoFullRun(parameters);
-            
+
+            List<string> parsedTargetVersions = await client.GetParsedListOfVersions(parameters.RangeOfTargetVersions);
+            string queueName = await client.GetNameOfQueue(parameters.QueueId);
+
+            MatchSaver matchSaver = new(
+                fileIo,
+                repo,
+                printer,
+                logger,
+                dateTimeProvider,
+                parameters.OutputDirectory,
+                queueName,
+                parsedTargetVersions.ConcatenateListOfStringsToCommaString(),
+                parameters.IncludeWinRatesForMinutes
+            );
+
+            MatchCollectorEventHandler matchCollectorEventHandler = new(fileIo, matchSaver, parameters.OutputDirectory);
+            MatchCollector collector = new(client, logger, matchCollectorEventHandler);
+
+            FullRunner runner = new(
+                repo,
+                fileIo,
+                logger,
+                repoUpdater,
+                collector,
+                matchSaver
+            );
+            await runner.DoFullRun(parameters, parsedTargetVersions);
+
             logger.Log("Press any key to exit.");
             Console.ReadKey();
         }

@@ -8,84 +8,65 @@ namespace LeagueAPI_ClassLibrary
 {
     public class FullRunner
     {
-        private ILeagueAPIClient LeagueApiClient { get; set; }
-        private IDDragonRepository Repository { get; set; }
-        private IDdragonRepositoryUpdater RepoUpdater { get; set; }
-        private IExcelPrinter ExcelPrinter { get; }
-        private IDateTimeProvider DateTimeProvider { get; }
-        private IFileIO FileIo { get; set; }
-        private ILogger Logger { get; set; }
+        private readonly IDDragonRepository repository;
+        private readonly IDdragonRepositoryUpdater repoUpdater;
+        private readonly IMatchCollector matchCollector;
+        private readonly IMatchSaver matchSaver;
+        private readonly IFileIO fileIo;
+        private readonly ILogger logger;
 
-        public FullRunner(ILeagueAPIClient leagueApiClient,
+        public FullRunner(
             IDDragonRepository repository,
             IFileIO fileIo,
             ILogger logger,
             IDdragonRepositoryUpdater repoUpdater,
-            IExcelPrinter excelPrinter,
-            IDateTimeProvider dateTimeProvider
-        ) {
-            Repository = repository;
-            FileIo = fileIo;
-            Logger = logger;
-            RepoUpdater = repoUpdater;
-            ExcelPrinter = excelPrinter;
-            DateTimeProvider = dateTimeProvider;
-            LeagueApiClient = leagueApiClient;
+            IMatchCollector matchCollector,
+            IMatchSaver matchSaver
+        )
+        {
+            this.repository = repository;
+            this.fileIo = fileIo;
+            this.logger = logger;
+            this.repoUpdater = repoUpdater;
+            this.matchCollector = matchCollector;
+            this.matchSaver = matchSaver;
         }
 
-        public async Task<List<string>> DoFullRun(Parameters p) {
+        public async Task<List<string>> DoFullRun(Parameters p, List<string> parsedTargetVersions)
+        {
             try
             {
-                if (p.GetLatestDdragonData) await RepoUpdater.GetLatestDdragonFiles();
-                Repository.RefreshData();
-                
-                List<string> parsedTargetVersions = await LeagueApiClient.GetParsedListOfVersions(p.RangeOfTargetVersions);
-                string queueName = await LeagueApiClient.GetNameOfQueue(p.QueueId);
-                
+                if (p.GetLatestDdragonData) await repoUpdater.GetLatestDdragonFiles();
+                repository.RefreshData();
+
                 List<LeagueMatch> alreadyScannedMatches = ReadExistingMatches(p.ExistingMatchesFile);
-
-                string outputDirectory = p.OutputDirectory;
-                string versionsStr = parsedTargetVersions.ConcatenateListOfStringsToCommaString();
-
-                MatchSaver matchSaver = new(
-                    FileIo, 
-                    Repository, 
-                    ExcelPrinter, 
-                    Logger,
-                    DateTimeProvider,
-                    outputDirectory,
-                    queueName,
-                    versionsStr, 
-                    p.IncludeWinRatesForMinutes
-                );
-
-                MatchAddedHandler matchAddedHandler = new(FileIo, matchSaver, outputDirectory);
-                MatchCollector collector = new(LeagueApiClient, Logger, matchAddedHandler);
-
-                List<LeagueMatch> matches = 
-                    await collector.GetMatches(p.AccountPuuid, p.QueueId, parsedTargetVersions, p.MaxCount, alreadyScannedMatches);
+                List<LeagueMatch> matches =
+                    await matchCollector.GetMatches(
+                        p.AccountPuuid,
+                        p.QueueId,
+                        parsedTargetVersions,
+                        p.MaxCount,
+                        alreadyScannedMatches
+                    );
                 return matchSaver.SaveMatches(matches);
             }
             catch (Exception ex)
             {
-                Logger.Log(ex.ToString());
+                logger.Log(ex.ToString());
                 string fileName = Path.Combine(p.OutputDirectory, "leagueApi_log.txt");
-                FileIo.WriteAllText(fileName, Logger.GetContent());
-                Logger.Log($"Log file written at {p.OutputDirectory}.");
+                fileIo.WriteAllText(fileName, logger.GetContent());
+                logger.Log($"Log file written at {p.OutputDirectory}.");
                 return new List<string> {fileName};
             }
         }
 
         private List<LeagueMatch> ReadExistingMatches(string existingMatchesFile)
         {
-            List<LeagueMatch> alreadyScannedMatches = null;
             bool matchesProvided = !existingMatchesFile.IsNullOrEmpty();
-            if (matchesProvided)
-            {
-                Logger.Log("Reading already scanned matches...");
-                alreadyScannedMatches = FileIo.ReadAllText(existingMatchesFile).DeserializeObject<List<LeagueMatch>>();
-            }
-            return alreadyScannedMatches;
+            if (!matchesProvided) return null;
+
+            logger.Log("Reading already scanned matches...");
+            return fileIo.ReadAllText(existingMatchesFile).DeserializeObject<List<LeagueMatch>>();
         }
     }
 }
