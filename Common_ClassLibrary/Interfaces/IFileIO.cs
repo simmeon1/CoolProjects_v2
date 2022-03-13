@@ -8,10 +8,12 @@ namespace Common_ClassLibrary
         string ReadAllText(string path);
         void WriteAllText(string path, string contents);
         bool DirectoryExists(string path);
+        bool FileExists(string filePath);
         DirectoryInfo CreateDirectory(string path);
         void AppendAllText(string path, string contents);
         void DeleteFile(string path);
         void DeleteFolder(string path);
         void Copy(string path, string destFileName, bool overwrite);
+        FileStream CreateFile(string fileName);
     }
 }

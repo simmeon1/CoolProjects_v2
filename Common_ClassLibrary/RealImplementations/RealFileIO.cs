@@ -5,9 +5,19 @@ namespace Common_ClassLibrary
 {
     public class RealFileIO : IFileIO
     {
+        public bool FileExists(string filePath)
+        {
+            return File.Exists(filePath);
+        }
+
         public DirectoryInfo CreateDirectory(string path)
         {
             return Directory.CreateDirectory(path);
+        }
+
+        public FileStream CreateFile(string fileName)
+        {
+            return File.Create(fileName);
         }
 
         public bool DirectoryExists(string path)

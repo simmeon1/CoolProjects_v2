@@ -27,7 +27,6 @@ namespace LeagueAPI_Console
             RealDelayer delayer = new();
             Logger_Console logger = new();
             LeagueAPIClient client = new(http, parameters.Token, delayer, logger);
-            MatchCollector collector = new(client, logger);
             DdragonRepository repo = new(fileIo, parameters.DdragonJsonFilesDirectoryPath);
             ArchiveExtractor extractor = new();
             DdragonRepositoryUpdater repoUpdater = new(client, webClient, fileIo, logger, extractor,
@@ -35,7 +34,7 @@ namespace LeagueAPI_Console
             RealDateTimeProvider dateTimeProvider = new();
             ExcelPrinter printer = new();
             
-            FullRunner runner = new(client, collector, repo, fileIo, logger, repoUpdater, printer, dateTimeProvider);
+            FullRunner runner = new(client, repo, fileIo, logger, repoUpdater, printer, dateTimeProvider);
             await runner.DoFullRun(parameters);
             
             logger.Log("Press any key to exit.");

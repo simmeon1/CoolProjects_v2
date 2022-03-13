@@ -9,7 +9,6 @@ namespace LeagueAPI_ClassLibrary
     public class FullRunner
     {
         private ILeagueAPIClient LeagueApiClient { get; set; }
-        private IMatchCollector MatchCollector { get; set; }
         private IDDragonRepository Repository { get; set; }
         private IDdragonRepositoryUpdater RepoUpdater { get; set; }
         private IExcelPrinter ExcelPrinter { get; }
@@ -18,15 +17,13 @@ namespace LeagueAPI_ClassLibrary
         private ILogger Logger { get; set; }
 
         public FullRunner(ILeagueAPIClient leagueApiClient,
-            IMatchCollector matchCollector,
             IDDragonRepository repository,
             IFileIO fileIo,
             ILogger logger,
             IDdragonRepositoryUpdater repoUpdater,
-            IExcelPrinter excelPrinter, 
+            IExcelPrinter excelPrinter,
             IDateTimeProvider dateTimeProvider
         ) {
-            MatchCollector = matchCollector;
             Repository = repository;
             FileIo = fileIo;
             Logger = logger;
@@ -39,8 +36,8 @@ namespace LeagueAPI_ClassLibrary
         public async Task<List<string>> DoFullRun(Parameters p) {
             try
             {
-                Task updateTask = Task.CompletedTask;
-                if (p.GetLatestDdragonData) updateTask = RepoUpdater.GetLatestDdragonFiles();
+                if (p.GetLatestDdragonData) await RepoUpdater.GetLatestDdragonFiles();
+                Repository.RefreshData();
                 
                 List<string> parsedTargetVersions = await LeagueApiClient.GetParsedListOfVersions(p.RangeOfTargetVersions);
                 string queueName = await LeagueApiClient.GetNameOfQueue(p.QueueId);
@@ -62,10 +59,11 @@ namespace LeagueAPI_ClassLibrary
                     p.IncludeWinRatesForMinutes
                 );
 
+                MatchAddedHandler matchAddedHandler = new(FileIo, matchSaver, outputDirectory);
+                MatchCollector collector = new(LeagueApiClient, Logger, matchAddedHandler);
+
                 List<LeagueMatch> matches = 
-                    await MatchCollector.GetMatches(p.AccountPuuid, p.QueueId, parsedTargetVersions, p.MaxCount, alreadyScannedMatches);
-                await updateTask;
-                Repository.RefreshData();
+                    await collector.GetMatches(p.AccountPuuid, p.QueueId, parsedTargetVersions, p.MaxCount, alreadyScannedMatches);
                 return matchSaver.SaveMatches(matches);
             }
             catch (Exception ex)

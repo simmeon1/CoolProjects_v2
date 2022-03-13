@@ -12,10 +12,12 @@ namespace LeagueAPI_ClassLibrary
     {
         private ILeagueAPIClient Client { get; set; }
         private ILogger Logger { get; set; }
-        public MatchCollector(ILeagueAPIClient client, ILogger logger)
+        private IMatchAddedHandler MatchAddedHandler { get; set; }
+        public MatchCollector(ILeagueAPIClient client, ILogger logger, IMatchAddedHandler matchAddedHandler)
         {
             Client = client;
             Logger = logger;
+            MatchAddedHandler = matchAddedHandler;
         }
 
         /// <summary>
@@ -30,14 +32,11 @@ namespace LeagueAPI_ClassLibrary
             string maxVersion = rangeOfTargetVersions.Last();
             if (CompareVersions(minVersion, maxVersion) == 1)
             {
-                string temp = maxVersion;
-                maxVersion = minVersion;
-                minVersion = temp;
+                (maxVersion, minVersion) = (minVersion, maxVersion);
             }
 
             if (CompareVersions(gameVersion, maxVersion) == 1) return -1;
-            else if (CompareVersions(gameVersion, minVersion) == -1) return 1;
-            return 0;
+            return CompareVersions(gameVersion, minVersion) == -1 ? 1 : 0;
         }
 
         private static string GetSeason(string v)
@@ -117,6 +116,7 @@ namespace LeagueAPI_ClassLibrary
 
                         result.Add(match);
                         Logger.Log($"Added match {matchId} (version {match.gameVersion}, queueId {queueId}), current count is {result.Count}");
+                        MatchAddedHandler.MatchAdded(result);
                         if (result.Count >= maxCount) return result;
                         foreach (Participant participant in match.participants)
                         {

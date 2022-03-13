@@ -8,11 +8,6 @@ using Common_ClassLibrary;
 
 namespace LeagueAPI_ClassLibrary
 {
-    public interface IMatchSaver
-    {
-        List<string> SaveMatches(List<LeagueMatch> matches);
-    }
-
     public class MatchSaver : IMatchSaver
     {
         private readonly IFileIO fileIo;
