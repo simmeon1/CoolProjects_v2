@@ -19,9 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeagueAPI_Console", "League
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ViGEm", "ViGEm\ViGEm.csproj", "{AFD8620C-31A1-4BB4-A7FB-CFCF274CBCB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicPlaylistBuilder", "MusicPlaylistBuilder\MusicPlaylistBuilder.csproj", "{4F32AF37-A320-416B-ACFB-78BD542525EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlaylistBuilder", "MusicPlaylistBuilder\MusicPlaylistBuilder.csproj", "{4F32AF37-A320-416B-ACFB-78BD542525EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeagueApiSpectator_Console", "LeagueApiSpectator_Console\LeagueApiSpectator_Console.csproj", "{4F6F2823-6AD2-48E1-9EE2-E7C8B5B732C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeagueGui", "LeagueGui\LeagueGui.csproj", "{820C82B0-C76A-4298-8BB4-46244315D5BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,10 +65,10 @@ Global
 		{4F32AF37-A320-416B-ACFB-78BD542525EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F32AF37-A320-416B-ACFB-78BD542525EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F32AF37-A320-416B-ACFB-78BD542525EB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4F6F2823-6AD2-48E1-9EE2-E7C8B5B732C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4F6F2823-6AD2-48E1-9EE2-E7C8B5B732C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4F6F2823-6AD2-48E1-9EE2-E7C8B5B732C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4F6F2823-6AD2-48E1-9EE2-E7C8B5B732C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{820C82B0-C76A-4298-8BB4-46244315D5BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{820C82B0-C76A-4298-8BB4-46244315D5BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{820C82B0-C76A-4298-8BB4-46244315D5BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{820C82B0-C76A-4298-8BB4-46244315D5BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
