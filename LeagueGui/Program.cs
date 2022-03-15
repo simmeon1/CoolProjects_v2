@@ -44,5 +44,6 @@ namespace LeagueGui
         public string Token { get; set; }
         public string MatchesPath { get; set; }
         public int ReminderInterval { get; set; }
+        public string ReminderWav { get; set; }
     }
 }

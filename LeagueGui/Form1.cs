@@ -79,10 +79,12 @@ namespace LeagueGui
         private void reminderButton_Click(object sender, EventArgs e)
         {
             playReminders = !playReminders;
-            string action = !playReminders ? "Disable" : "Enable";
+            string enableText = "Enable";
+            string disableText = "Disable";
+            string action = playReminders ? enableText : disableText;
             Log($"Reminders {action.ToLower()}d.");
             if (playReminders) Log($"Playing reminders every {reminderInterval} seconds.");
-            reminderButton.Text = action + " Reminders";
+            reminderButton.Text = (playReminders ? disableText : enableText).Trim() + " Reminders";
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -90,7 +92,7 @@ namespace LeagueGui
             DateTime now = DateTime.Now;
             if (!playReminders || (now - lastReminder).Seconds < reminderInterval) return;
             lastReminder = now;
-            SoundPlayer player = new(@"c:\Windows\Media\chimes.wav");
+            SoundPlayer player = new(parameters.ReminderWav);
             player.Play();
         }
 
