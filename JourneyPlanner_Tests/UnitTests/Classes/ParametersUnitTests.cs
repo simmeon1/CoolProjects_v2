@@ -173,7 +173,21 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
             p.NoLongerThan = 500;
             Assert.IsTrue(p.NoLongerThan == 500);
         }
+        
+        [TestMethod]
+        public void HotelCostGetSetWorks()
+        {
+            p.HotelCost = 500;
+            Assert.IsTrue(p.HotelCost == 500);
+        }
 
+        [TestMethod]
+        public void EarlyFlightHourGetSetWorks()
+        {
+            p.EarlyFlightHour = 500;
+            Assert.IsTrue(p.EarlyFlightHour == 500);
+        }
+        
         [TestMethod]
         public void OnlyIncludeShortestPathsGetSetWorks()
         {

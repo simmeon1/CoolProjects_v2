@@ -27,7 +27,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
             IExcelPrinter printer,
             IFlightConnectionsDotComWorkerAirportCollector airportCollector,
             IFlightConnectionsDotComWorkerAirportPopulator airportPopulator,
-            IMultiJourneyCollector multiJourneyCollector)
+            IMultiJourneyCollector multiJourneyCollector
+        )
         {
             FileIO = fileIO;
             Printer = printer;
@@ -59,8 +60,10 @@ namespace JourneyPlanner_ClassLibrary.Workers
             else
             {
                 airportsList = AirportCollector.CollectAirports();
-                FileIO.WriteAllText($"{runResultsPath}\\{runId}_airportList.json",
-                    airportsList.SerializeObject(Formatting.Indented));
+                FileIO.WriteAllText(
+                    $"{runResultsPath}\\{runId}_airportList.json",
+                    airportsList.SerializeObject(Formatting.Indented)
+                );
             }
 
             IAirportFilterer filterer = new NoFilterer();
@@ -76,8 +79,10 @@ namespace JourneyPlanner_ClassLibrary.Workers
             else
             {
                 airportsAndDestinations = AirportPopulator.PopulateAirports(airportsList, filterer);
-                FileIO.WriteAllText($"{runResultsPath}\\{runId}_airportDestinations.json",
-                    airportsAndDestinations.SerializeObject(Formatting.Indented));
+                FileIO.WriteAllText(
+                    $"{runResultsPath}\\{runId}_airportDestinations.json",
+                    airportsAndDestinations.SerializeObject(Formatting.Indented)
+                );
             }
 
             AirportListFilterer airportListFilterer = new(airportsList);
@@ -96,8 +101,13 @@ namespace JourneyPlanner_ClassLibrary.Workers
 
             Components.Logger.Log($"Generating paths...");
             AirportPathGenerator generator = new(filteredAirportsAndDestinations, localLinks);
-            List<Path> paths = generator.GeneratePaths(Parameters.Origins, Parameters.Destinations,
-                Parameters.MaxFlights, Parameters.MaxLocalLinks, Parameters.OnlyIncludeShortestPaths);
+            List<Path> paths = generator.GeneratePaths(
+                Parameters.Origins,
+                Parameters.Destinations,
+                Parameters.MaxFlights,
+                Parameters.MaxLocalLinks,
+                Parameters.OnlyIncludeShortestPaths
+            );
             List<List<string>> pathsDetailed = new();
             foreach (Path path in paths)
             {
@@ -107,8 +117,10 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 pathsDetailed.Add(pathDetailed);
             }
 
-            FileIO.WriteAllText($"{runResultsPath}\\{runId}_latestPaths.json",
-                pathsDetailed.SerializeObject(Formatting.Indented));
+            FileIO.WriteAllText(
+                $"{runResultsPath}\\{runId}_latestPaths.json",
+                pathsDetailed.SerializeObject(Formatting.Indented)
+            );
 
             if (Parameters.OnlyPrintPaths)
             {
@@ -128,35 +140,62 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     .DeserializeObject<MultiJourneyCollectorResults>();
             }
 
-            MultiJourneyCollectorResults journeyCollectorResults = await MultiJourneyCollector.GetJourneys(Components,
-                workersAndData, Parameters.DateFrom, Parameters.DateTo, existingResults);
-            FileIO.WriteAllText($"{runResultsPath}\\{runId}_journeyCollectorResults.json",
-                journeyCollectorResults.SerializeObject(Formatting.Indented));
+            MultiJourneyCollectorResults journeyCollectorResults = await MultiJourneyCollector.GetJourneys(
+                Components,
+                workersAndData,
+                Parameters.DateFrom,
+                Parameters.DateTo,
+                existingResults
+            );
+            FileIO.WriteAllText(
+                $"{runResultsPath}\\{runId}_journeyCollectorResults.json",
+                journeyCollectorResults.SerializeObject(Formatting.Indented)
+            );
             PrintPathsAndJourneysAndFinish(airportsList, journeyCollectorResults, runId, runResultsPath, paths);
-            return;
         }
 
-        private void PrintPathsAndJourneysAndFinish(List<Airport> airportsList,
-            MultiJourneyCollectorResults journeyCollectorResults, string runId, string runResultsPath, List<Path> paths)
+        private void PrintPathsAndJourneysAndFinish(
+            List<Airport> airportsList,
+            MultiJourneyCollectorResults journeyCollectorResults,
+            string runId,
+            string runResultsPath,
+            List<Path> paths
+        )
         {
             SequentialJourneyCollectionBuilder builder = new();
-            List<SequentialJourneyCollection> results = builder.GetFullPathCombinationOfJourneys(paths,
-                journeyCollectorResults.JourneyCollection, Parameters.SkipUndoableJourneys,
-                Parameters.SkipNotSameDayFinishJourneys, Parameters.NoLongerThan);
+            List<SequentialJourneyCollection> results = builder.GetFullPathCombinationOfJourneys(
+                paths,
+                journeyCollectorResults.JourneyCollection,
+                Parameters.SkipUndoableJourneys,
+                Parameters.SkipNotSameDayFinishJourneys,
+                Parameters.NoLongerThan
+            );
 
             DataTableCreator dtCreator = new();
             Printer.PrintTablesToWorksheet(
-                dtCreator.GetTables(airportsList, results, Parameters.SkipUndoableJourneys,
-                    Parameters.SkipNotSameDayFinishJourneys, Parameters.Home, Parameters.TransportFromHomeCost,
-                    Parameters.ExtraCostPerFlight), $"{runResultsPath}\\{runId}_results.xlsx");
+                dtCreator.GetTables(
+                    airportsList,
+                    results,
+                    Parameters.SkipUndoableJourneys,
+                    Parameters.SkipNotSameDayFinishJourneys,
+                    Parameters.Home,
+                    Parameters.TransportFromHomeCost,
+                    Parameters.ExtraCostPerFlight,
+                    Parameters.HotelCost,
+                    Parameters.EarlyFlightHour
+                ),
+                $"{runResultsPath}\\{runId}_results.xlsx"
+            );
             Components.Logger.Log($"Saved files to {runResultsPath}");
             SaveLogAndQuitDriver(runId, runResultsPath);
         }
 
         private void SaveLogAndQuitDriver(string runId, string runResultsPath)
         {
-            FileIO.WriteAllText($"{runResultsPath}\\{runId}_log.txt",
-                Components.Logger.GetContent().SerializeObject(Formatting.Indented));
+            FileIO.WriteAllText(
+                $"{runResultsPath}\\{runId}_log.txt",
+                Components.Logger.GetContent().SerializeObject(Formatting.Indented)
+            );
         }
     }
 }

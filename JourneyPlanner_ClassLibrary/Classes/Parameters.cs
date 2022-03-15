@@ -29,5 +29,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
         public string Home { get; set; }
         public double TransportFromHomeCost { get; set; }
         public double ExtraCostPerFlight { get; set; }
+        public double HotelCost { get; set; }
+        public int EarlyFlightHour { get; set; }
     }
 }
