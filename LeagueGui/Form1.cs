@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Media;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Common_ClassLibrary;
 using LeagueAPI_ClassLibrary;
@@ -56,39 +57,17 @@ namespace LeagueGui
             );
         }
 
-        private static T DeserializeJsonFile<T>(string parametersPath)
+        private static async Task<T> DeserializeJsonFile<T>(string parametersPath)
         {
-            return File.ReadAllText(parametersPath).DeserializeObject<T>();
+            string text = await File.ReadAllTextAsync(parametersPath);
+            return await Task.Run(() => text.DeserializeObject<T>());
         }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            SetButtons(false);
-
-            reminderInterval = parameters.ReminderInterval;
-
-            Log("Reading matches file...");
-            matches = DeserializeJsonFile<List<LeagueMatch>>(parameters.MatchesPath);
-
-            Log("Creating objects...");
-            leagueClient = new LeagueAPIClient(
-                new RealHttpClient(),
-                parameters.Token,
-                new RealDelayer(),
-                this
-            );
-            
-            useCase = new SpectatorDataUseCase(matches);
-            Log("Loaded!");
-            SetButtons(true);
-            timer1.Start();
-        }
-
+        
         private void SetButtons(bool enabled)
         {
-            foreach (object control in Controls)
+            foreach (Button button in new List<Button>() { reminderButton, clearLogButton, damageButton })
             {
-                if (control is Button button) button.Enabled = enabled;
+                button.Enabled = enabled;
             }
         }
 
@@ -113,6 +92,28 @@ namespace LeagueGui
             lastReminder = now;
             SoundPlayer player = new(@"c:\Windows\Media\chimes.wav");
             player.Play();
+        }
+
+        private async void Form1_Shown(object sender, EventArgs e)
+        {
+            SetButtons(false);
+            reminderInterval = parameters.ReminderInterval;
+
+            Log("Creating objects...");
+            leagueClient = new LeagueAPIClient(
+                new RealHttpClient(),
+                parameters.Token,
+                new RealDelayer(),
+                this
+            );
+            
+            Log("Reading matches file...");
+            matches = await DeserializeJsonFile<List<LeagueMatch>>(parameters.MatchesPath);
+            
+            useCase = new SpectatorDataUseCase(matches);
+            Log("Loaded!");
+            SetButtons(true);
+            timer1.Start();
         }
     }
 }
