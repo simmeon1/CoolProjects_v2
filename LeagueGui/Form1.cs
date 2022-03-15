@@ -79,7 +79,7 @@ namespace LeagueGui
         private void reminderButton_Click(object sender, EventArgs e)
         {
             playReminders = !playReminders;
-            string action = playReminders ? "Disable" : "Enable";
+            string action = !playReminders ? "Disable" : "Enable";
             Log($"Reminders {action.ToLower()}d.");
             if (playReminders) Log($"Playing reminders every {reminderInterval} seconds.");
             reminderButton.Text = action + " Reminders";
