@@ -35,6 +35,7 @@ namespace LeagueGui
             this.damageButton = new System.Windows.Forms.Button();
             this.reminderButton = new System.Windows.Forms.Button();
             this.clearLogButton = new System.Windows.Forms.Button();
+            this.reminderBox = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -42,13 +43,15 @@ namespace LeagueGui
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.AutoSize = true;
-            this.tableLayoutPanel1.ColumnCount = 2;
+            this.tableLayoutPanel1.ColumnCount = 3;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel1.Controls.Add(this.listBox1, 0, 2);
-            this.tableLayoutPanel1.Controls.Add(this.damageButton, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.reminderButton, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.clearLogButton, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.listBox1, 1, 2);
+            this.tableLayoutPanel1.Controls.Add(this.damageButton, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.reminderButton, 2, 0);
+            this.tableLayoutPanel1.Controls.Add(this.clearLogButton, 2, 1);
+            this.tableLayoutPanel1.Controls.Add(this.reminderBox, 0, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -56,6 +59,8 @@ namespace LeagueGui
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(1081, 635);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
@@ -65,20 +70,20 @@ namespace LeagueGui
             this.listBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listBox1.FormattingEnabled = true;
             this.listBox1.ItemHeight = 15;
-            this.listBox1.Location = new System.Drawing.Point(3, 75);
+            this.listBox1.Location = new System.Drawing.Point(209, 75);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(1075, 557);
+            this.listBox1.Size = new System.Drawing.Size(869, 557);
             this.listBox1.TabIndex = 0;
             // 
             // damageButton
             // 
             this.damageButton.AutoSize = true;
             this.damageButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.damageButton.Location = new System.Drawing.Point(3, 3);
+            this.damageButton.Location = new System.Drawing.Point(209, 3);
             this.damageButton.MaximumSize = new System.Drawing.Size(0, 30);
             this.damageButton.MinimumSize = new System.Drawing.Size(0, 30);
             this.damageButton.Name = "damageButton";
-            this.damageButton.Size = new System.Drawing.Size(534, 30);
+            this.damageButton.Size = new System.Drawing.Size(431, 30);
             this.damageButton.TabIndex = 1;
             this.damageButton.Text = "Get Enemy Team Damage";
             this.damageButton.UseVisualStyleBackColor = true;
@@ -88,11 +93,11 @@ namespace LeagueGui
             // 
             this.reminderButton.AutoSize = true;
             this.reminderButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.reminderButton.Location = new System.Drawing.Point(543, 3);
+            this.reminderButton.Location = new System.Drawing.Point(646, 3);
             this.reminderButton.MaximumSize = new System.Drawing.Size(0, 30);
             this.reminderButton.MinimumSize = new System.Drawing.Size(0, 30);
             this.reminderButton.Name = "reminderButton";
-            this.reminderButton.Size = new System.Drawing.Size(535, 30);
+            this.reminderButton.Size = new System.Drawing.Size(432, 30);
             this.reminderButton.TabIndex = 2;
             this.reminderButton.Text = "Enable Spell Reminders";
             this.reminderButton.UseVisualStyleBackColor = true;
@@ -102,15 +107,27 @@ namespace LeagueGui
             // 
             this.clearLogButton.AutoSize = true;
             this.clearLogButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.clearLogButton.Location = new System.Drawing.Point(543, 39);
+            this.clearLogButton.Location = new System.Drawing.Point(646, 39);
             this.clearLogButton.MaximumSize = new System.Drawing.Size(0, 30);
             this.clearLogButton.MinimumSize = new System.Drawing.Size(0, 30);
             this.clearLogButton.Name = "clearLogButton";
-            this.clearLogButton.Size = new System.Drawing.Size(535, 30);
+            this.clearLogButton.Size = new System.Drawing.Size(432, 30);
             this.clearLogButton.TabIndex = 3;
             this.clearLogButton.Text = "Clear";
             this.clearLogButton.UseVisualStyleBackColor = true;
             this.clearLogButton.Click += new System.EventHandler(this.clearLog_Click);
+            // 
+            // reminderBox
+            // 
+            this.reminderBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.reminderBox.Location = new System.Drawing.Point(3, 3);
+            this.reminderBox.Name = "reminderBox";
+            this.tableLayoutPanel1.SetRowSpan(this.reminderBox, 3);
+            this.reminderBox.Size = new System.Drawing.Size(200, 629);
+            this.reminderBox.TabIndex = 4;
+            this.reminderBox.Text = "Spells!!";
+            this.reminderBox.UseVisualStyleBackColor = true;
+            this.reminderBox.Visible = false;
             // 
             // timer1
             // 
@@ -140,6 +157,7 @@ namespace LeagueGui
         private System.Windows.Forms.Button reminderButton;
         private System.Windows.Forms.Button clearLogButton;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Button reminderBox;
     }
 }
 

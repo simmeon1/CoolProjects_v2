@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Media;
 using System.Threading.Tasks;
@@ -79,6 +80,7 @@ namespace LeagueGui
         private void reminderButton_Click(object sender, EventArgs e)
         {
             playReminders = !playReminders;
+            reminderBox.Visible = playReminders;
             string enableText = "Enable";
             string disableText = "Disable";
             string action = playReminders ? enableText : disableText;
@@ -87,13 +89,16 @@ namespace LeagueGui
             reminderButton.Text = (playReminders ? disableText : enableText).Trim() + " Reminders";
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
+        private async void timer1_Tick(object sender, EventArgs e)
         {
             DateTime now = DateTime.Now;
             if (!playReminders || (now - lastReminder).Seconds < reminderInterval) return;
             lastReminder = now;
             SoundPlayer player = new(parameters.ReminderWav);
             player.Play();
+            reminderBox.BackColor = Color.Red;
+            await Task.Delay(1000);
+            reminderBox.BackColor = Color.White;
         }
 
         private async void Form1_Shown(object sender, EventArgs e)
