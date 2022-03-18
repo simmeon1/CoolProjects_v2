@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Media;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -31,11 +33,8 @@ namespace LeagueGui
         );
 
         private readonly Parameters parameters;
-        private List<LeagueMatch> matches;
         private SpectatorDataUseCase useCase;
         private LeagueAPIClient leagueClient;
-        private bool playReminders;
-        private DateTime lastReminder = DateTime.Now;
         private readonly Bitmap screenPixel = new(1, 1, PixelFormat.Format32bppArgb);
 
         public Form1()
@@ -84,9 +83,9 @@ namespace LeagueGui
 
         private void SetButtons(bool enabled)
         {
-            foreach (Button button in new List<Button> {reminderButton, clearLogButton, damageButton})
+            foreach (Control control in new List<Control> {damageButton})
             {
-                button.Enabled = enabled;
+                control.Enabled = enabled;
             }
         }
 
@@ -95,36 +94,37 @@ namespace LeagueGui
             listBox1.Items.Clear();
         }
 
-        private void reminderButton_Click(object sender, EventArgs e)
+        private async void timer1_Tick(object sender, EventArgs e)
         {
-            playReminders = !playReminders;
-            string enableText = "Enable";
-            string disableText = "Disable";
-            string action = playReminders ? enableText : disableText;
-            Log($"Reminders {action.ToLower()}d.");
-            reminderButton.Text = (playReminders ? disableText : enableText).Trim() + " Reminders";
-        }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            DateTime now = DateTime.Now;
-            if (!playReminders || (now - lastReminder).Seconds < 2) return;
-            lastReminder = now;
-
-            bool hasD = SpellAtLocationIsAvailable(987, 1019);
-            bool hasF = SpellAtLocationIsAvailable(1022, 1023);
-
-            string file = "";
-            if (hasD && !hasF) file = "D";
-            else if (!hasD && hasF) file = "F";
-            else if (hasD && hasF) file = "D+F";
-
-            if (!file.IsNullOrEmpty()) new SoundPlayer(Path.Combine(parameters.WavLocation, $"{file}.wav")).Play();
+            // while (true)
+            // {
+            //     Point cursor = new();
+            //     GetCursorPos(ref cursor);
+            //     Color c = GetColorAt(cursor);
+            //     Debug.WriteLine($"{cursor.X},{cursor.Y},{c.GetBrightness()}");
+            //     await Task.Delay(1000);
+            // }
+            //938,1030,0.72156864
+            
+            List<CheckBox> reminderButtons = new() {buttonR, buttonD, buttonF};
+            foreach (CheckBox reminderButton in reminderButtons)
+            {
+                if (!reminderButton.Checked) continue;
+                
+                string tag = (string)reminderButton.Tag;
+                string[] coordinates = tag.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                int x = int.Parse(coordinates[0]);
+                int y = int.Parse(coordinates[1]);
+                if (!SpellAtLocationIsAvailable(x, y)) continue;
+                
+                char letter = reminderButton.Name.Last();
+                await Task.Run(() => new SoundPlayer(Path.Combine(parameters.WavLocation, $"{letter}.wav")).PlaySync());
+            }
         }
 
         private bool SpellAtLocationIsAvailable(int x, int y)
         {
-            return GetColorAt(new Point(x, y)).GetBrightness() == (float)0.72156864;
+            return GetColorAt(new Point(x, y)).GetBrightness() == (float) 0.72156864;
         }
 
         private Color GetColorAt(Point location)
@@ -141,6 +141,8 @@ namespace LeagueGui
 
         private async void Form1_Shown(object sender, EventArgs e)
         {
+            timer1.Interval = 3000;
+            timer1.Start();
             SetButtons(false);
 
             Log("Creating objects...");
@@ -152,12 +154,11 @@ namespace LeagueGui
             );
 
             Log("Reading matches file...");
-            matches = await DeserializeJsonFile<List<LeagueMatch>>(parameters.MatchesPath);
+            List<LeagueMatch> matches = await DeserializeJsonFile<List<LeagueMatch>>(parameters.MatchesPath);
 
             useCase = new SpectatorDataUseCase(matches);
             Log("Loaded!");
             SetButtons(true);
-            timer1.Start();
         }
     }
 }
