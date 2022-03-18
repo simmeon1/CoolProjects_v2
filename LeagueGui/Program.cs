@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -43,7 +45,6 @@ namespace LeagueGui
         public string Id { get; set; }
         public string Token { get; set; }
         public string MatchesPath { get; set; }
-        public int ReminderInterval { get; set; }
-        public string ReminderWav { get; set; }
+        public string WavLocation { get; set; }
     }
 }
