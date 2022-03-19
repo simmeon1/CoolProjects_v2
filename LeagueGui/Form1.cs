@@ -79,7 +79,8 @@ namespace LeagueGui
         private static async Task<T> DeserializeJsonFile<T>(string parametersPath)
         {
             string text = await File.ReadAllTextAsync(parametersPath);
-            return await Task.Run(() => text.DeserializeObject<T>());
+            // return await Task.Run(() => text.DeserializeObject<T>());
+            return text.DeserializeObject<T>();
         }
 
         private void SetButtons(bool enabled)
@@ -97,20 +98,10 @@ namespace LeagueGui
 
         private async void timer1_Tick(object sender, EventArgs e)
         {
-            // while (true)
-            // {
-            //     Point cursor = new();
-            //     GetCursorPos(ref cursor);
-            //     Color c = GetColorAt(cursor);
-            //     Debug.WriteLine($"{cursor.X},{cursor.Y},{c.GetBrightness()}");
-            //     await Task.Delay(1000);
-            // }
-            //938,1030,0.72156864
-
             if (soundsPlaying) return;
             
             soundsPlaying = true;
-            List<CheckBox> reminderButtons = new() {buttonR, buttonD, buttonF};
+            List<CheckBox> reminderButtons = new() {buttonR, buttonD, buttonF, button1, button2, button3};
             foreach (CheckBox reminderButton in reminderButtons)
             {
                 if (!reminderButton.Checked) continue;
@@ -119,17 +110,18 @@ namespace LeagueGui
                 string[] coordinates = tag.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 int x = int.Parse(coordinates[0]);
                 int y = int.Parse(coordinates[1]);
-                if (!SpellAtLocationIsAvailable(x, y)) continue;
-                
+                float expectedBrightness = coordinates.Length == 2 ? (float) 0.72156864 : float.Parse(coordinates[2]);
+                if (!SpellAtLocationIsAvailable(x, y, expectedBrightness)) continue;
+
                 char letter = reminderButton.Name.Last();
                 await Task.Run(() => new SoundPlayer(Path.Combine(parameters.WavLocation, $"{letter}.wav")).PlaySync());
             }
             soundsPlaying = false;
         }
 
-        private bool SpellAtLocationIsAvailable(int x, int y)
+        private bool SpellAtLocationIsAvailable(int x, int y, float brightnessValue)
         {
-            return GetColorAt(new Point(x, y)).GetBrightness() == (float) 0.72156864;
+            return GetColorAt(new Point(x, y)).GetBrightness() == brightnessValue;
         }
 
         private Color GetColorAt(Point location)
@@ -146,6 +138,15 @@ namespace LeagueGui
 
         private async void Form1_Shown(object sender, EventArgs e)
         {
+            // while (true)
+            // {
+            //     Point cursor = new();
+            //     GetCursorPos(ref cursor);
+            //     Color c = GetColorAt(cursor);
+            //     Debug.WriteLine($"{cursor.X},{cursor.Y},{c.GetBrightness()}");
+            //     await Task.Delay(1000);
+            // }
+            
             timer1.Start();
             SetButtons(false);
 
@@ -158,9 +159,8 @@ namespace LeagueGui
             );
 
             Log("Reading matches file...");
-            List<LeagueMatch> matches = await DeserializeJsonFile<List<LeagueMatch>>(parameters.MatchesPath);
-
-            useCase = new SpectatorDataUseCase(matches);
+            
+            useCase = new SpectatorDataUseCase(await DeserializeJsonFile<List<LeagueMatch>>(parameters.MatchesPath));
             Log("Loaded!");
             SetButtons(true);
         }
