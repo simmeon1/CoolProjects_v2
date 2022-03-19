@@ -36,6 +36,7 @@ namespace LeagueGui
         private SpectatorDataUseCase useCase;
         private LeagueAPIClient leagueClient;
         private readonly Bitmap screenPixel = new(1, 1, PixelFormat.Format32bppArgb);
+        private bool soundsPlaying;
 
         public Form1()
         {
@@ -105,7 +106,10 @@ namespace LeagueGui
             //     await Task.Delay(1000);
             // }
             //938,1030,0.72156864
+
+            if (soundsPlaying) return;
             
+            soundsPlaying = true;
             List<CheckBox> reminderButtons = new() {buttonR, buttonD, buttonF};
             foreach (CheckBox reminderButton in reminderButtons)
             {
@@ -120,6 +124,7 @@ namespace LeagueGui
                 char letter = reminderButton.Name.Last();
                 await Task.Run(() => new SoundPlayer(Path.Combine(parameters.WavLocation, $"{letter}.wav")).PlaySync());
             }
+            soundsPlaying = false;
         }
 
         private bool SpellAtLocationIsAvailable(int x, int y)
@@ -141,7 +146,6 @@ namespace LeagueGui
 
         private async void Form1_Shown(object sender, EventArgs e)
         {
-            timer1.Interval = 3000;
             timer1.Start();
             SetButtons(false);
 
