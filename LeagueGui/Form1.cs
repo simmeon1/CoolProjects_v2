@@ -37,6 +37,7 @@ namespace LeagueGui
         private LeagueAPIClient leagueClient;
         private readonly Bitmap screenPixel = new(1, 1, PixelFormat.Format32bppArgb);
         private bool soundsPlaying;
+        private readonly List<CheckBox> reminderButtons;
 
         public Form1()
         {
@@ -47,6 +48,7 @@ namespace LeagueGui
         {
             InitializeComponent();
             this.parameters = parameters;
+            reminderButtons = new List<CheckBox> {buttonR, buttonD, buttonF, button1, button2, button3};
         }
 
         public void Log(string message)
@@ -80,7 +82,7 @@ namespace LeagueGui
         {
             string text = await File.ReadAllTextAsync(parametersPath);
             // return await Task.Run(() => text.DeserializeObject<T>());
-            return text.DeserializeObject<T>();
+            return await Task.Run(() => text.DeserializeObject<T>());
         }
 
         private void SetButtons(bool enabled)
@@ -101,40 +103,27 @@ namespace LeagueGui
             if (soundsPlaying) return;
             
             soundsPlaying = true;
-            List<CheckBox> reminderButtons = GetReminderButtons();
-            List<char> lettersToPlay = new();
-            foreach (CheckBox reminderButton in reminderButtons)
-            {
-                if (!reminderButton.Checked) continue;
-                
-                string tag = (string)reminderButton.Tag;
-                string[] coordinates = tag.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                int x = int.Parse(coordinates[0]);
-                int y = int.Parse(coordinates[1]);
-                float expectedBrightness = coordinates.Length == 2 ? (float) 0.72156864 : float.Parse(coordinates[2]);
-                if (!SpellAtLocationIsAvailable(x, y, expectedBrightness)) continue;
 
-                char letter = reminderButton.Name.Last();
-                lettersToPlay.Add(letter);
-            }
-
-            if (lettersToPlay.Any())
-            {
-                await Task.Run(() =>
+            await Task.Run(
+                () =>
+                {
+                    foreach (CheckBox reminderButton in reminderButtons)
                     {
-                        foreach (char letter  in lettersToPlay)
-                        {
-                            new SoundPlayer(Path.Combine(parameters.WavLocation, $"{letter}.wav")).PlaySync();
-                        }
+                        if (!reminderButton.Checked) continue;
+                        
+                        string tag = (string)reminderButton.Tag;
+                        string[] coordinates = tag.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        int x = int.Parse(coordinates[0]);
+                        int y = int.Parse(coordinates[1]);
+                        float expectedBrightness = coordinates.Length == 2 ? (float) 0.72156864 : float.Parse(coordinates[2]);
+                        if (!SpellAtLocationIsAvailable(x, y, expectedBrightness)) continue;
+                        
+                        char letter = reminderButton.Name.Last();
+                        new SoundPlayer(Path.Combine(parameters.WavLocation, $"{letter}.wav")).PlaySync();
                     }
-                );
-            }
+                }).ConfigureAwait(false);
+            
             soundsPlaying = false;
-        }
-
-        private List<CheckBox> GetReminderButtons()
-        {
-            return new List<CheckBox> {buttonR, buttonD, buttonF, button1, button2, button3};
         }
 
         private bool SpellAtLocationIsAvailable(int x, int y, float brightnessValue)
@@ -185,9 +174,8 @@ namespace LeagueGui
 
         private void reminderToggleButton_Click(object sender, EventArgs e)
         {
-            List<CheckBox> boxes = GetReminderButtons();
-            bool setting = boxes.Any(b => b.Checked);
-            foreach (CheckBox checkBox in boxes)
+            bool setting = reminderButtons.Any(b => b.Checked);
+            foreach (CheckBox checkBox in reminderButtons)
             {
                 checkBox.Checked = !setting;
             }
