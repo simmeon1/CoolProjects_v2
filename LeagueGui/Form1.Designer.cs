@@ -130,12 +130,13 @@ namespace LeagueGui
             this.reminderPanel.Controls.Add(this.buttonD, 1, 0);
             this.reminderPanel.Controls.Add(this.buttonF, 2, 0);
             this.reminderPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.reminderPanel.Location = new System.Drawing.Point(349, 34);
+            this.reminderPanel.Location = new System.Drawing.Point(346, 31);
+            this.reminderPanel.Margin = new System.Windows.Forms.Padding(0);
             this.reminderPanel.Name = "reminderPanel";
             this.reminderPanel.RowCount = 2;
-            this.reminderPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.reminderPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.reminderPanel.Size = new System.Drawing.Size(341, 62);
+            this.reminderPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.reminderPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.reminderPanel.Size = new System.Drawing.Size(347, 68);
             this.reminderPanel.TabIndex = 0;
             // 
             // button1
@@ -143,9 +144,9 @@ namespace LeagueGui
             this.button1.Appearance = System.Windows.Forms.Appearance.Button;
             this.button1.AutoSize = true;
             this.button1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button1.Location = new System.Drawing.Point(3, 34);
+            this.button1.Location = new System.Drawing.Point(3, 37);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(107, 25);
+            this.button1.Size = new System.Drawing.Size(109, 28);
             this.button1.TabIndex = 16;
             this.button1.Tag = "1073,1017,0.61960787";
             this.button1.Text = "1";
@@ -157,9 +158,9 @@ namespace LeagueGui
             this.button2.Appearance = System.Windows.Forms.Appearance.Button;
             this.button2.AutoSize = true;
             this.button2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button2.Location = new System.Drawing.Point(116, 34);
+            this.button2.Location = new System.Drawing.Point(118, 37);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(107, 25);
+            this.button2.Size = new System.Drawing.Size(109, 28);
             this.button2.TabIndex = 15;
             this.button2.Tag = "1105,1020";
             this.button2.Text = "2";
@@ -171,9 +172,9 @@ namespace LeagueGui
             this.button3.Appearance = System.Windows.Forms.Appearance.Button;
             this.button3.AutoSize = true;
             this.button3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button3.Location = new System.Drawing.Point(229, 34);
+            this.button3.Location = new System.Drawing.Point(233, 37);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(109, 25);
+            this.button3.Size = new System.Drawing.Size(111, 28);
             this.button3.TabIndex = 14;
             this.button3.Tag = "1136,1013";
             this.button3.Text = "3";
@@ -187,7 +188,7 @@ namespace LeagueGui
             this.buttonR.Dock = System.Windows.Forms.DockStyle.Fill;
             this.buttonR.Location = new System.Drawing.Point(3, 3);
             this.buttonR.Name = "buttonR";
-            this.buttonR.Size = new System.Drawing.Size(107, 25);
+            this.buttonR.Size = new System.Drawing.Size(109, 28);
             this.buttonR.TabIndex = 9;
             this.buttonR.Tag = "938,1030";
             this.buttonR.Text = "R";
@@ -199,9 +200,9 @@ namespace LeagueGui
             this.buttonD.Appearance = System.Windows.Forms.Appearance.Button;
             this.buttonD.AutoSize = true;
             this.buttonD.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonD.Location = new System.Drawing.Point(116, 3);
+            this.buttonD.Location = new System.Drawing.Point(118, 3);
             this.buttonD.Name = "buttonD";
-            this.buttonD.Size = new System.Drawing.Size(107, 25);
+            this.buttonD.Size = new System.Drawing.Size(109, 28);
             this.buttonD.TabIndex = 13;
             this.buttonD.Tag = "987,1019";
             this.buttonD.Text = "D";
@@ -213,9 +214,9 @@ namespace LeagueGui
             this.buttonF.Appearance = System.Windows.Forms.Appearance.Button;
             this.buttonF.AutoSize = true;
             this.buttonF.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonF.Location = new System.Drawing.Point(229, 3);
+            this.buttonF.Location = new System.Drawing.Point(233, 3);
             this.buttonF.Name = "buttonF";
-            this.buttonF.Size = new System.Drawing.Size(109, 25);
+            this.buttonF.Size = new System.Drawing.Size(111, 28);
             this.buttonF.TabIndex = 11;
             this.buttonF.Tag = "1022,1023";
             this.buttonF.Text = "F";
