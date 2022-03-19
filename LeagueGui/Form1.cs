@@ -102,6 +102,7 @@ namespace LeagueGui
             
             soundsPlaying = true;
             List<CheckBox> reminderButtons = GetReminderButtons();
+            List<char> lettersToPlay = new();
             foreach (CheckBox reminderButton in reminderButtons)
             {
                 if (!reminderButton.Checked) continue;
@@ -114,7 +115,19 @@ namespace LeagueGui
                 if (!SpellAtLocationIsAvailable(x, y, expectedBrightness)) continue;
 
                 char letter = reminderButton.Name.Last();
-                await Task.Run(() => new SoundPlayer(Path.Combine(parameters.WavLocation, $"{letter}.wav")).PlaySync());
+                lettersToPlay.Add(letter);
+            }
+
+            if (lettersToPlay.Any())
+            {
+                await Task.Run(() =>
+                    {
+                        foreach (char letter  in lettersToPlay)
+                        {
+                            new SoundPlayer(Path.Combine(parameters.WavLocation, $"{letter}.wav")).PlaySync();
+                        }
+                    }
+                );
             }
             soundsPlaying = false;
         }
