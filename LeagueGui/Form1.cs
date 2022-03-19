@@ -101,7 +101,7 @@ namespace LeagueGui
             if (soundsPlaying) return;
             
             soundsPlaying = true;
-            List<CheckBox> reminderButtons = new() {buttonR, buttonD, buttonF, button1, button2, button3};
+            List<CheckBox> reminderButtons = GetReminderButtons();
             foreach (CheckBox reminderButton in reminderButtons)
             {
                 if (!reminderButton.Checked) continue;
@@ -117,6 +117,11 @@ namespace LeagueGui
                 await Task.Run(() => new SoundPlayer(Path.Combine(parameters.WavLocation, $"{letter}.wav")).PlaySync());
             }
             soundsPlaying = false;
+        }
+
+        private List<CheckBox> GetReminderButtons()
+        {
+            return new List<CheckBox> {buttonR, buttonD, buttonF, button1, button2, button3};
         }
 
         private bool SpellAtLocationIsAvailable(int x, int y, float brightnessValue)
@@ -163,6 +168,16 @@ namespace LeagueGui
             useCase = new SpectatorDataUseCase(await DeserializeJsonFile<List<LeagueMatch>>(parameters.MatchesPath));
             Log("Loaded!");
             SetButtons(true);
+        }
+
+        private void reminderToggleButton_Click(object sender, EventArgs e)
+        {
+            List<CheckBox> boxes = GetReminderButtons();
+            bool setting = boxes.Any(b => b.Checked);
+            foreach (CheckBox checkBox in boxes)
+            {
+                checkBox.Checked = !setting;
+            }
         }
     }
 }
