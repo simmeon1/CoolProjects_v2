@@ -251,7 +251,6 @@ namespace LeagueGui
         #endregion
 
         private System.Windows.Forms.TableLayoutPanel mainPanel;
-        private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.Button damageButton;
         private System.Windows.Forms.Button clearLogButton;
         private System.Windows.Forms.Timer timer1;

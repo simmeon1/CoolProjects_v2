@@ -51,7 +51,7 @@ namespace LeagueGui
 
         public void Log(string message)
         {
-            listBox1.Items.Add(message);
+            log.Items.Add(message);
         }
 
         public bool Contains(string message)
@@ -93,7 +93,7 @@ namespace LeagueGui
 
         private void clearLog_Click(object sender, EventArgs e)
         {
-            listBox1.Items.Clear();
+            log.Items.Clear();
         }
 
         private async void timer1_Tick(object sender, EventArgs e)
