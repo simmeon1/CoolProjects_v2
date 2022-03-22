@@ -100,7 +100,7 @@ namespace LeagueGui
 
         private async void timer1_Tick(object sender, EventArgs e)
         {
-            if (soundsPlaying) return;
+            if (soundsPlaying || reminderButtons.All(b => !b.Checked)) return;
             
             soundsPlaying = true;
 
