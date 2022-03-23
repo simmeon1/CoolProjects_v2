@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -77,14 +76,7 @@ namespace LeagueGui
                     : useCase.GetDamagePlayerIsPlayingAgainst(spectatorData, encryptedSummonerId)
             );
         }
-
-        private static async Task<T> DeserializeJsonFile<T>(string parametersPath)
-        {
-            string text = await File.ReadAllTextAsync(parametersPath);
-            // return await Task.Run(() => text.DeserializeObject<T>());
-            return await Task.Run(() => text.DeserializeObject<T>());
-        }
-
+        
         private void SetButtons(bool enabled)
         {
             foreach (Control control in new List<Control> {damageButton})
@@ -166,8 +158,18 @@ namespace LeagueGui
             );
 
             Log("Reading matches file...");
-            
-            useCase = new SpectatorDataUseCase(await DeserializeJsonFile<List<LeagueMatch>>(parameters.MatchesPath));
+
+            useCase = new SpectatorDataUseCase(new List<LeagueMatch>());
+            using (StreamReader sr = new(parameters.MatchesPath))
+            {
+                string line = await sr.ReadLineAsync();
+                while (!line.IsNullOrEmpty())
+                {
+                    LeagueMatch match = line.DeserializeObject<LeagueMatch>();
+                    useCase.AddMatchData(match);
+                    line = await sr.ReadLineAsync();
+                }
+            }
             Log("Loaded!");
             SetButtons(true);
         }

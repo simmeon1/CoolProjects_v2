@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Common_ClassLibrary;
 
 namespace LeagueAPI_ClassLibrary
@@ -45,6 +46,7 @@ namespace LeagueAPI_ClassLibrary
             string idString = $"{baseId}{Globals.GetDateTimeFileNameFriendly(dateTimeProvider.Now())}";
             string path = Path.Combine(outputDirectory, $"Results_{idString}");
             string matchesFilePath = Path.Combine(path, $"Matches_{idString}.json");
+            string matchesLinesFilePath = Path.Combine(path, $"MatchesLines_{idString}.txt");
             string itemSetFilePath = Path.Combine(path, $"ItemSet_All_{idString}.json");
             string statsFilePath = Path.Combine(path, $"Stats_{idString}.xlsx");
             string logFilePath = Path.Combine(path, $"Log_{idString}.txt");
@@ -52,6 +54,14 @@ namespace LeagueAPI_ClassLibrary
             
             fileIo.WriteAllText(matchesFilePath, matches.SerializeObject());
             createdFiles.Add(matchesFilePath);
+
+            StringBuilder sb = new("");
+            foreach (LeagueMatch match in matches)
+            {
+                sb.AppendLine(match.SerializeObject());
+            }
+            fileIo.WriteAllText(matchesLinesFilePath, sb.ToString());
+            createdFiles.Add(matchesLinesFilePath);
 
             includeWinRatesForMinutes ??= new List<int>();
             DataCollector collector = new();

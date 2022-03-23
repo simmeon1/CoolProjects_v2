@@ -59,8 +59,13 @@ namespace LeagueAPI_ClassLibrary
         {
             foreach (LeagueMatch match in matches)
             {
-                AddParticipantsData(match.participants);
+                AddMatchData(match);
             }
+        }
+
+        public void AddMatchData(LeagueMatch match)
+        {
+            AddParticipantsData(match.participants);
         }
 
         private void AddParticipantsData(List<Participant> participants)
