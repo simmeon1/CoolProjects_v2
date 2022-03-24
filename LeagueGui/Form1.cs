@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Media;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Common_ClassLibrary;
@@ -15,28 +13,12 @@ namespace LeagueGui
 {
     public partial class Form1 : Form, ILogger
     {
-        [DllImport("user32.dll")]
-        static extern bool GetCursorPos(ref Point lpPoint);
-
-        [DllImport("gdi32.dll", CharSet = CharSet.Auto, SetLastError = true, ExactSpelling = true)]
-        public static extern int BitBlt(
-            IntPtr hDC,
-            int x,
-            int y,
-            int nWidth,
-            int nHeight,
-            IntPtr hSrcDC,
-            int xSrc,
-            int ySrc,
-            int dwRop
-        );
-
         private readonly Parameters parameters;
-        private SpectatorDataUseCase useCase;
         private LeagueAPIClient leagueClient;
-        private readonly Bitmap screenPixel = new(1, 1, PixelFormat.Format32bppArgb);
         private bool soundsPlaying;
-        private readonly List<CheckBox> reminderButtons;
+        private List<CheckBox> reminderButtons;
+        private readonly WindowsNativeMethods windowsNativeMethods = new();
+        private readonly SpectatorDataUseCase useCase = new(new List<LeagueMatch>());
 
         public Form1()
         {
@@ -47,7 +29,6 @@ namespace LeagueGui
         {
             InitializeComponent();
             this.parameters = parameters;
-            reminderButtons = new List<CheckBox> {buttonR, buttonD, buttonF, button1, button2, button3};
         }
 
         public void Log(string message)
@@ -75,14 +56,6 @@ namespace LeagueGui
                     ? "User is not in game."
                     : useCase.GetDamagePlayerIsPlayingAgainst(spectatorData, encryptedSummonerId)
             );
-        }
-        
-        private void SetButtons(bool enabled)
-        {
-            foreach (Control control in new List<Control> {damageButton})
-            {
-                control.Enabled = enabled;
-            }
         }
 
         private void clearLog_Click(object sender, EventArgs e)
@@ -120,19 +93,7 @@ namespace LeagueGui
 
         private bool SpellAtLocationIsAvailable(int x, int y, float brightnessValue)
         {
-            return GetColorAt(new Point(x, y)).GetBrightness() == brightnessValue;
-        }
-
-        private Color GetColorAt(Point location)
-        {
-            using Graphics gdest = Graphics.FromImage(screenPixel);
-            using Graphics gsrc = Graphics.FromHwnd(IntPtr.Zero);
-            IntPtr hSrcDC = gsrc.GetHdc();
-            IntPtr hDC = gdest.GetHdc();
-            int retval = BitBlt(hDC, 0, 0, 1, 1, hSrcDC, location.X, location.Y, (int) CopyPixelOperation.SourceCopy);
-            gdest.ReleaseHdc();
-            gsrc.ReleaseHdc();
-            return screenPixel.GetPixel(0, 0);
+            return windowsNativeMethods.GetColorAt(new Point(x, y)).GetBrightness() == brightnessValue;
         }
 
         private async void Form1_Shown(object sender, EventArgs e)
@@ -146,9 +107,8 @@ namespace LeagueGui
             //     await Task.Delay(1000);
             // }
             
-            timer1.Start();
-            SetButtons(false);
-
+            reminderButtons = new List<CheckBox> {buttonR, buttonD, buttonF, button1, button2, button3};
+            damageButton.Enabled = false;
             Log("Creating objects...");
             leagueClient = new LeagueAPIClient(
                 new RealHttpClient(),
@@ -158,8 +118,7 @@ namespace LeagueGui
             );
 
             Log("Reading matches file...");
-
-            useCase = new SpectatorDataUseCase(new List<LeagueMatch>());
+            
             using (StreamReader sr = new(parameters.MatchesPath))
             {
                 string line = await sr.ReadLineAsync();
@@ -171,7 +130,8 @@ namespace LeagueGui
                 }
             }
             Log("Loaded!");
-            SetButtons(true);
+            damageButton.Enabled = true;
+            timer1.Start();
         }
 
         private void reminderToggleButton_Click(object sender, EventArgs e)
