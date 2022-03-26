@@ -86,7 +86,7 @@ namespace MusicPlaylistBuilder
                 "https://en.wikipedia.org/wiki/List_of_Billboard_Hot_100_top-ten_singles_in_2021",
                 "https://en.wikipedia.org/wiki/List_of_Billboard_Hot_100_top-ten_singles_in_2022"
             };
-            List<string> ukLinks = new()
+            List<string> ukkLinks = new()
             {
                 "https://en.wikipedia.org/wiki/List_of_UK_top-ten_singles_in_1952",
                 "https://en.wikipedia.org/wiki/List_of_UK_top-ten_singles_in_1953",
@@ -160,26 +160,85 @@ namespace MusicPlaylistBuilder
                 "https://en.wikipedia.org/wiki/List_of_UK_top-ten_singles_in_2021",
                 "https://en.wikipedia.org/wiki/List_of_UK_top-ten_singles_in_2022"
             };
+
+            List<string> danceLinks = new()
+            {
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1974_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1975_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1976_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1977_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1978_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1979_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1980_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1981_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1982_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1983_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1984_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1985_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1986_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1987_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1988_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1989_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1990_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1991_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1992_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1993_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1994_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1995_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1996_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1997_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1998_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1999_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2000_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2001_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2002_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2003_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2004_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2005_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2006_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2007_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2008_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2009_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2010_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2011_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2012_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2013_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2014_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2015_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2016_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2017_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2018_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2019_(U.S.)",
+                "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2020_(U.S.)"
+            };
+
             RealDelayer delayer = new();
 
-            //ChromeDriver driver = new();
-            //WikipediaScrapper scrapper = new(driver, driver, delayer);
-            //List<Dictionary<string, string>> songEntries = scrapper.GetSongsFromLinks(ukLinks);
-            //string x = songEntries.SerializeObject(Formatting.Indented);
-
-            List<Dictionary<string, string>> ukSongEntries =
-                File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\music_uk_results.json")
+            // ChromeDriver driver = new();
+            // WikipediaScrapper scrapper = new(driver, driver, delayer);
+            // List<Dictionary<string, string>> danceSongEntries = scrapper.GetSongsFromLinks(danceLinks);
+            // string x = danceSongEntries.SerializeObject(Formatting.Indented);
+            
+            List<Dictionary<string, string>> danceSongEntries =
+                File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\music_dance_results.json")
                     .DeserializeObject<List<Dictionary<string, string>>>();
-            Dictionary<string, string> ukSongPropertyMappings = GetUkSinglesTopTenChartMappings();
-            ukSongEntries = GetSongsWithRemappedProperties(ukSongEntries, ukSongPropertyMappings);
-            List<SongCLS> ukSongs = GetSongObjectsFromEntries(ukSongEntries);
+            Dictionary<string, string> danceSongPropertyMappings = GetUkSinglesTopTenChartMappings();
+            danceSongEntries = GetSongsWithRemappedProperties(danceSongEntries, danceSongPropertyMappings);
+            List<SongCLS> danceSongs = GetSongObjectsFromEntries(danceSongEntries);
 
-            List<Dictionary<string, string>> usSongEntries =
-                File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\music_us_results.json")
-                    .DeserializeObject<List<Dictionary<string, string>>>();
-            Dictionary<string, string> usSongPropertyMappings = GetBillboardHot100TopTenChartMappings();
-            usSongEntries = GetSongsWithRemappedProperties(usSongEntries, usSongPropertyMappings);
-            List<SongCLS> usSongs = GetSongObjectsFromEntries(usSongEntries);
+            // List<Dictionary<string, string>> ukSongEntries =
+            //     File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\music_uk_results.json")
+            //         .DeserializeObject<List<Dictionary<string, string>>>();
+            // Dictionary<string, string> ukSongPropertyMappings = GetUkSinglesTopTenChartMappings();
+            // ukSongEntries = GetSongsWithRemappedProperties(ukSongEntries, ukSongPropertyMappings);
+            // List<SongCLS> ukSongs = GetSongObjectsFromEntries(ukSongEntries);
+
+            // List<Dictionary<string, string>> usSongEntries =
+            //     File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\music_us_results.json")
+            //         .DeserializeObject<List<Dictionary<string, string>>>();
+            // Dictionary<string, string> usSongPropertyMappings = GetBillboardHot100TopTenChartMappings();
+            // usSongEntries = GetSongsWithRemappedProperties(usSongEntries, usSongPropertyMappings);
+            // List<SongCLS> usSongs = GetSongObjectsFromEntries(usSongEntries);
 
             SpotifyCredentials credentials = File
                 .ReadAllText(@"C:\Users\simme\source\repos\CoolProjects_v2\MusicPlaylistBuilder\credentials.json")
@@ -187,27 +246,32 @@ namespace MusicPlaylistBuilder
             SpotifyAPIClient client = new(new RealHttpClient(), delayer, credentials);
 
 
-            // Dictionary<string, string> termsAndSpotifyIds = await GetSpotifyIds(fullList.Select(s => s.GetSearchTerms()).ToHashSet(), client);
-            Dictionary<string, string> termsAndSpotifyIds =
-                (await File.ReadAllTextAsync(@"C:\Users\simme\OneDrive\Desktop\music_spotifyIds.json"))
-                    .DeserializeObject<Dictionary<string, string>>();
-            
+            Dictionary<string, string> termsAndSpotifyIds = await GetSpotifyIds(danceSongs.Select(s => s.GetSearchTerms()).ToHashSet(), client);
+            // Dictionary<string, string> termsAndSpotifyIds =
+            //     (await File.ReadAllTextAsync(@"C:\Users\simme\OneDrive\Desktop\music_spotifyIds.json"))
+            //     .DeserializeObject<Dictionary<string, string>>();
+
             List<SongCLS> fullList = new();
-            fullList.AddRange(ukSongs);
-            fullList.AddRange(usSongs);
+            fullList.AddRange(danceSongs);
+            // fullList.AddRange(ukSongs);
+            // fullList.AddRange(usSongs);
             fullList = fullList.Distinct(new SearchTermsComparer()).ToList();
-            Dictionary<SongCLS, double> scores = AssignScoreToSongs2(fullList, 10);
-            
-            fullList = fullList.Where(s => s.Year >= 1975).ToList();
-            fullList = fullList.OrderByDescending(s => scores[s]).ToList();
-            fullList = fullList.Take((int) Math.Ceiling((decimal) (fullList.Count / 2))).ToList();
-            
-            await AddSongsToPlaylist(fullList, client, termsAndSpotifyIds, "test3");
+            // Dictionary<SongCLS, double> scores = AssignScoreToSongs2(fullList, 10);
+
+            // fullList = fullList.Where(s => s.Year >= 1975).ToList();
+            // fullList = fullList.OrderByDescending(s => scores[s]).ToList();
+            // fullList = fullList.Take((int) Math.Ceiling((decimal) (fullList.Count / 2))).ToList();
+
+            await AddSongsToPlaylist(fullList, client, termsAndSpotifyIds, "test4");
         }
 
-        private static async Task AddSongsToPlaylist(List<SongCLS> fullList, SpotifyAPIClient client, Dictionary<string, string> termsAndSpotifyIds, string playlistName)
+        private static async Task AddSongsToPlaylist(
+            List<SongCLS> fullList,
+            SpotifyAPIClient client,
+            Dictionary<string, string> termsAndSpotifyIds,
+            string playlistName
+        )
         {
-
             List<string> spotifyIds = fullList.Select(song => termsAndSpotifyIds[song.GetSearchTerms()])
                 .Where(t => !t.IsNullOrEmpty())
                 .ToList();
@@ -267,10 +331,17 @@ namespace MusicPlaylistBuilder
                     Artist = artist,
                     Song = songName,
                     Year = int.Parse(entry["Year"]),
-                    Peak = int.Parse(Regex.Replace(entry["Peak"], @"TBA", "1"))
                 };
-                int stay = int.Parse(Regex.Replace(entry["Weeks in top ten"], @"(\d+).*", "$1"));
-                song.WeeksInTopTen = stay;
+                
+                if (entry.ContainsKey("Peak"))
+                {
+                    song.Peak = int.Parse(Regex.Replace(entry["Peak"], @"TBA", "1"));
+                }
+                
+                if (entry.ContainsKey("Weeks in top ten"))
+                {
+                    song.WeeksInTopTen = int.Parse(Regex.Replace(entry["Weeks in top ten"], @"(\d+).*", "$1"));
+                }
                 results.Add(song);
             }
 
@@ -343,30 +414,20 @@ namespace MusicPlaylistBuilder
             result = Regex.Replace(result, "\\s+", " ");
             return result.Trim();
         }
-
-        private static Dictionary<string, string> GetBillboardHot100TopTenChartMappings()
+        
+        private static Dictionary<string, string> GetUkSinglesTopTenChartMappings()
         {
             Dictionary<string, string> songPropertyMappings = new()
             {
                 {"Artist(s)", "Artist"},
                 {"Artist", "Artist"},
                 {"Single", "Song"},
+                {"Title(s)", "Song"},
+                {"Song", "Song"},
                 {"Year", "Year"},
                 {"Peak", "Peak"},
+                {"Weeks in top 10", "Weeks in top ten"},
                 {"Weeks in top ten", "Weeks in top ten"}
-            };
-            return songPropertyMappings;
-        }
-
-        private static Dictionary<string, string> GetUkSinglesTopTenChartMappings()
-        {
-            Dictionary<string, string> songPropertyMappings = new()
-            {
-                {"Artist", "Artist"},
-                {"Single", "Song"},
-                {"Year", "Year"},
-                {"Peak", "Peak"},
-                {"Weeks in top 10", "Weeks in top ten"}
             };
             return songPropertyMappings;
         }
@@ -394,7 +455,7 @@ namespace MusicPlaylistBuilder
 
             return updatedSongs;
         }
-        
+
         private class SearchTermsComparer : IEqualityComparer<SongCLS>
         {
             public bool Equals(SongCLS x, SongCLS y)
@@ -407,6 +468,5 @@ namespace MusicPlaylistBuilder
                 return obj.GetSearchTerms().GetHashCode();
             }
         }
-
     }
 }

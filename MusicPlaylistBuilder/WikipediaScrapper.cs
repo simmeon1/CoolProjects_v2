@@ -112,7 +112,14 @@ namespace MusicPlaylistBuilder
                     for (int k = 1; k <= countOfRowsToFix; k++)
                     {
                         IWebElement rowToFix = rows[i + k];
-                        InsertCellInRowAtPositionWithText(rowToFix, j, cellText);
+                        try
+                        {
+                            InsertCellInRowAtPositionWithText(rowToFix, j, cellText);
+                        }
+                        catch (Exception e)
+                        {
+                            break;
+                        }
                     }
 
                     if (rowCells.Count == headerRowCells.Count) entry.Add(headerCellNames[j], cellText);
