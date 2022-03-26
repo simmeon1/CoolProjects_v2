@@ -167,35 +167,53 @@ namespace MusicPlaylistBuilder
             //List<Dictionary<string, string>> songEntries = scrapper.GetSongsFromLinks(ukLinks);
             //string x = songEntries.SerializeObject(Formatting.Indented);
 
-            List<Dictionary<string, string>> ukSongEntries = File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\music_uk_results.json").DeserializeObject<List<Dictionary<string, string>>>();
+            List<Dictionary<string, string>> ukSongEntries =
+                File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\music_uk_results.json")
+                    .DeserializeObject<List<Dictionary<string, string>>>();
             Dictionary<string, string> ukSongPropertyMappings = GetUkSinglesTopTenChartMappings();
             ukSongEntries = GetSongsWithRemappedProperties(ukSongEntries, ukSongPropertyMappings);
             List<SongCLS> ukSongs = GetSongObjectsFromEntries(ukSongEntries);
 
-            List<Dictionary<string, string>> usSongEntries = File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\music_us_results.json").DeserializeObject<List<Dictionary<string, string>>>();
+            List<Dictionary<string, string>> usSongEntries =
+                File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\music_us_results.json")
+                    .DeserializeObject<List<Dictionary<string, string>>>();
             Dictionary<string, string> usSongPropertyMappings = GetBillboardHot100TopTenChartMappings();
             usSongEntries = GetSongsWithRemappedProperties(usSongEntries, usSongPropertyMappings);
             List<SongCLS> usSongs = GetSongObjectsFromEntries(usSongEntries);
 
-            SpotifyCredentials credentials = File.ReadAllText(@"C:\Users\simme\source\repos\CoolProjects_v2\MusicPlaylistBuilder\credentials.json").DeserializeObject<SpotifyCredentials>();
+            SpotifyCredentials credentials = File
+                .ReadAllText(@"C:\Users\simme\source\repos\CoolProjects_v2\MusicPlaylistBuilder\credentials.json")
+                .DeserializeObject<SpotifyCredentials>();
             SpotifyAPIClient client = new(new RealHttpClient(), delayer, credentials);
 
-            HashSet<string> ukSearchTerms = GetSearchTerms(ukSongs);
-            HashSet<string> usSearchTerms = GetSearchTerms(usSongs);
-            HashSet<string> combinedSearchTerms = MergeSearchTerms(new List<HashSet<string>>() { ukSearchTerms, usSearchTerms });
-            Dictionary<string, string> termsAndSpotifyIds = await GetSpotifyIds(combinedSearchTerms, client);
 
-            //string songId = await client.GetIdOfFirstResultOfSearch("dio holy diver");
-            //string userId = await client.GetUserId();
-            //string playlistId = await client.CreatePlaylist("test1", userId);
-            //await client.AddSongsToPlaylist(playlistId, new() { songId });
+            // Dictionary<string, string> termsAndSpotifyIds = await GetSpotifyIds(fullList.Select(s => s.GetSearchTerms()).ToHashSet(), client);
+            Dictionary<string, string> termsAndSpotifyIds =
+                (await File.ReadAllTextAsync(@"C:\Users\simme\OneDrive\Desktop\music_spotifyIds.json"))
+                    .DeserializeObject<Dictionary<string, string>>();
+            
+            List<SongCLS> fullList = new();
+            fullList.AddRange(ukSongs);
+            fullList.AddRange(usSongs);
+            fullList = fullList.Distinct(new SearchTermsComparer()).ToList();
+            Dictionary<SongCLS, double> scores = AssignScoreToSongs2(fullList, 10);
+            
+            fullList = fullList.Where(s => s.Year >= 1975).ToList();
+            fullList = fullList.OrderByDescending(s => scores[s]).ToList();
+            fullList = fullList.Take((int) Math.Ceiling((decimal) (fullList.Count / 2))).ToList();
+            
+            await AddSongsToPlaylist(fullList, client, termsAndSpotifyIds, "test3");
+        }
 
+        private static async Task AddSongsToPlaylist(List<SongCLS> fullList, SpotifyAPIClient client, Dictionary<string, string> termsAndSpotifyIds, string playlistName)
+        {
 
-            //Dictionary<SongCLS, string> songSearchTerms = GetSearchTermsForSongs(songs);
-            Dictionary<SongCLS, double> songScores = AssignScoreToSongs2(ukSongs, 10);
-            List<SongCLS> orderedSongs = ukSongs.OrderByDescending(s => songScores[s]).ToList();
-            string a = orderedSongs.SerializeObject(Formatting.Indented);
-            string b = orderedSongs.Select(s => s.ToString() + " - " + songScores[s]).ToList().SerializeObject(Formatting.Indented);
+            List<string> spotifyIds = fullList.Select(song => termsAndSpotifyIds[song.GetSearchTerms()])
+                .Where(t => !t.IsNullOrEmpty())
+                .ToList();
+            string userId = await client.GetUserId();
+            string playlistId = await client.CreatePlaylist(playlistName, userId);
+            await client.AddSongsToPlaylist(playlistId, spotifyIds);
         }
 
         private async Task<Dictionary<string, string>> GetSpotifyIds(HashSet<string> terms, SpotifyAPIClient client)
@@ -208,6 +226,7 @@ namespace MusicPlaylistBuilder
                 result.Add(term, await client.GetIdOfFirstResultOfSearch(term));
                 Debug.WriteLine($"{++counter}/{terms.Count}");
             }
+
             return result;
         }
 
@@ -221,6 +240,7 @@ namespace MusicPlaylistBuilder
                     result.Add(terms);
                 }
             }
+
             return result;
         }
 
@@ -236,22 +256,24 @@ namespace MusicPlaylistBuilder
             List<SongCLS> results = new();
             foreach (Dictionary<string, string> entry in songsEntries)
             {
-
                 string artist = entry["Artist"];
                 artist = CleanUpArtist(artist);
 
                 string songName = entry["Song"];
                 songName = CleanUpSong(songName);
 
-                SongCLS song = new();
-                song.Artist = artist;
-                song.Song = songName;
-                song.Year = int.Parse(entry["Year"]);
-                song.Peak = int.Parse(Regex.Replace(entry["Peak"], @"TBA", "1"));
+                SongCLS song = new()
+                {
+                    Artist = artist,
+                    Song = songName,
+                    Year = int.Parse(entry["Year"]),
+                    Peak = int.Parse(Regex.Replace(entry["Peak"], @"TBA", "1"))
+                };
                 int stay = int.Parse(Regex.Replace(entry["Weeks in top ten"], @"(\d+).*", "$1"));
                 song.WeeksInTopTen = stay;
                 results.Add(song);
             }
+
             return results;
         }
 
@@ -270,12 +292,14 @@ namespace MusicPlaylistBuilder
                 int year = song.Year / yearDivider;
                 int peak = song.Peak;
                 int stay = song.WeeksInTopTen;
-                double peakScore = ((double)peak - 5) / 5 * 100 * -1;
+                double peakScore = ((double) peak - 5) / 5 * 100 * -1;
                 List<int> yearValues = yearAndWeekStaysOrdered[year];
                 int yearStayingPosition = yearValues.IndexOf(stay) + 1;
-                double stayScore = (yearStayingPosition - ((double)yearValues.Count / 2)) / yearValues.Count * 100 * -2;
+                double stayScore = (yearStayingPosition - ((double) yearValues.Count / 2)) / yearValues.Count * 100 *
+                                   -2;
                 result.Add(song, (stayScore + peakScore));
             }
+
             return result;
         }
 
@@ -287,8 +311,9 @@ namespace MusicPlaylistBuilder
                 int year = song.Year / yearDivider;
                 int stay = song.WeeksInTopTen;
                 if (yearAndWeekStay.ContainsKey(year)) yearAndWeekStay[year].Add(stay);
-                else yearAndWeekStay.Add(year, new List<int>() { stay });
+                else yearAndWeekStay.Add(year, new List<int>() {stay});
             }
+
             return yearAndWeekStay;
         }
 
@@ -303,7 +328,7 @@ namespace MusicPlaylistBuilder
         private string CleanUpArtist(string artist)
         {
             string result = artist;
-            List<string> joiningWords = new() { "and", "featuring", "presents", "presents", "with" };
+            List<string> joiningWords = new() {"and", "featuring", "presents", "presents", "with"};
             foreach (string word in joiningWords) result = Regex.Replace(result, "(.*)" + " " + word + ".*", "$1");
             result = Regex.Replace(result, @"([a-z])\d$", "$1");
             result = RemoveCharsAndTrim(result);
@@ -312,7 +337,8 @@ namespace MusicPlaylistBuilder
 
         private static string RemoveCharsAndTrim(string result)
         {
-            List<string> toReplaceWithSpace = new() { "-", "�", ":", "+", "\"", ",", "!", "?", ".", "'", "(", ")", "*", "/", "\\", "&" };
+            List<string> toReplaceWithSpace = new()
+                {"-", "�", ":", "+", "\"", ",", "!", "?", ".", "'", "(", ")", "*", "/", "\\", "&"};
             foreach (string ch in toReplaceWithSpace) result = result.Replace(ch, " ");
             result = Regex.Replace(result, "\\s+", " ");
             return result.Trim();
@@ -320,28 +346,35 @@ namespace MusicPlaylistBuilder
 
         private static Dictionary<string, string> GetBillboardHot100TopTenChartMappings()
         {
-            Dictionary<string, string> songPropertyMappings = new();
-            songPropertyMappings.Add("Artist(s)", "Artist");
-            songPropertyMappings.Add("Artist", "Artist");
-            songPropertyMappings.Add("Single", "Song");
-            songPropertyMappings.Add("Year", "Year");
-            songPropertyMappings.Add("Peak", "Peak");
-            songPropertyMappings.Add("Weeks in top ten", "Weeks in top ten");
-            return songPropertyMappings;
-        }
-        
-        private static Dictionary<string, string> GetUkSinglesTopTenChartMappings()
-        {
-            Dictionary<string, string> songPropertyMappings = new();
-            songPropertyMappings.Add("Artist", "Artist");
-            songPropertyMappings.Add("Single", "Song");
-            songPropertyMappings.Add("Year", "Year");
-            songPropertyMappings.Add("Peak", "Peak");
-            songPropertyMappings.Add("Weeks in top 10", "Weeks in top ten");
+            Dictionary<string, string> songPropertyMappings = new()
+            {
+                {"Artist(s)", "Artist"},
+                {"Artist", "Artist"},
+                {"Single", "Song"},
+                {"Year", "Year"},
+                {"Peak", "Peak"},
+                {"Weeks in top ten", "Weeks in top ten"}
+            };
             return songPropertyMappings;
         }
 
-        private List<Dictionary<string, string>> GetSongsWithRemappedProperties(List<Dictionary<string, string>> songs, Dictionary<string, string> songPropertyMappings)
+        private static Dictionary<string, string> GetUkSinglesTopTenChartMappings()
+        {
+            Dictionary<string, string> songPropertyMappings = new()
+            {
+                {"Artist", "Artist"},
+                {"Single", "Song"},
+                {"Year", "Year"},
+                {"Peak", "Peak"},
+                {"Weeks in top 10", "Weeks in top ten"}
+            };
+            return songPropertyMappings;
+        }
+
+        private List<Dictionary<string, string>> GetSongsWithRemappedProperties(
+            List<Dictionary<string, string>> songs,
+            Dictionary<string, string> songPropertyMappings
+        )
         {
             List<Dictionary<string, string>> updatedSongs = new();
             foreach (Dictionary<string, string> song in songs)
@@ -355,9 +388,25 @@ namespace MusicPlaylistBuilder
                     string value = song.ContainsKey(existingPropertyName) ? song[existingPropertyName] : "";
                     if (!value.IsNullOrEmpty()) updatedSong.Add(newPropertyName, value);
                 }
+
                 updatedSongs.Add(updatedSong);
             }
+
             return updatedSongs;
         }
+        
+        private class SearchTermsComparer : IEqualityComparer<SongCLS>
+        {
+            public bool Equals(SongCLS x, SongCLS y)
+            {
+                return x.GetSearchTerms().Equals(y.GetSearchTerms());
+            }
+
+            public int GetHashCode(SongCLS obj)
+            {
+                return obj.GetSearchTerms().GetHashCode();
+            }
+        }
+
     }
 }
