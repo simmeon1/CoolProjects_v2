@@ -161,7 +161,7 @@ namespace MusicPlaylistBuilder
                 "https://en.wikipedia.org/wiki/List_of_UK_top-ten_singles_in_2022"
             };
 
-            List<string> danceLinks = new()
+            List<string> danceeLinks = new()
             {
                 "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1974_(U.S.)",
                 "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_1975_(U.S.)",
@@ -212,19 +212,28 @@ namespace MusicPlaylistBuilder
                 "https://en.wikipedia.org/wiki/List_of_number-one_dance_singles_of_2020_(U.S.)"
             };
 
+            List<string> radioLinks = new()
+            {
+                "https://en.wikipedia.org/wiki/List_of_Hot_100_Airplay_number-one_singles_of_the_1980s",
+                "https://en.wikipedia.org/wiki/List_of_Hot_100_Airplay_number-one_singles_of_the_1990s",
+                "https://en.wikipedia.org/wiki/List_of_Hot_100_Airplay_number-one_singles_of_the_2000s",
+                "https://en.wikipedia.org/wiki/List_of_Hot_100_Airplay_number-one_singles_of_the_2010s",
+                "https://en.wikipedia.org/wiki/List_of_Hot_100_Airplay_number-one_singles_of_the_2020s"
+            };
+
             RealDelayer delayer = new();
 
             // ChromeDriver driver = new();
             // WikipediaScrapper scrapper = new(driver, driver, delayer);
-            // List<Dictionary<string, string>> danceSongEntries = scrapper.GetSongsFromLinks(danceLinks);
-            // string x = danceSongEntries.SerializeObject(Formatting.Indented);
+            // List<Dictionary<string, string>> radioSongEntries = scrapper.GetSongsFromLinks(radioLinks);
+            // string x = radioSongEntries.SerializeObject(Formatting.Indented);
             
-            List<Dictionary<string, string>> danceSongEntries =
-                File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\music_dance_results.json")
+            List<Dictionary<string, string>> radioSongEntries =
+                File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\music_radio_results.json")
                     .DeserializeObject<List<Dictionary<string, string>>>();
-            Dictionary<string, string> danceSongPropertyMappings = GetUkSinglesTopTenChartMappings();
-            danceSongEntries = GetSongsWithRemappedProperties(danceSongEntries, danceSongPropertyMappings);
-            List<SongCLS> danceSongs = GetSongObjectsFromEntries(danceSongEntries);
+            Dictionary<string, string> radioSongPropertyMappings = GetUkSinglesTopTenChartMappings();
+            radioSongEntries = GetSongsWithRemappedProperties(radioSongEntries, radioSongPropertyMappings);
+            List<SongCLS> radioSongs = GetSongObjectsFromEntries(radioSongEntries);
 
             // List<Dictionary<string, string>> ukSongEntries =
             //     File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\music_uk_results.json")
@@ -246,13 +255,13 @@ namespace MusicPlaylistBuilder
             SpotifyAPIClient client = new(new RealHttpClient(), delayer, credentials);
 
 
-            Dictionary<string, string> termsAndSpotifyIds = await GetSpotifyIds(danceSongs.Select(s => s.GetSearchTerms()).ToHashSet(), client);
+            Dictionary<string, string> termsAndSpotifyIds = await GetSpotifyIds(radioSongs.Select(s => s.GetSearchTerms()).ToHashSet(), client);
             // Dictionary<string, string> termsAndSpotifyIds =
             //     (await File.ReadAllTextAsync(@"C:\Users\simme\OneDrive\Desktop\music_spotifyIds.json"))
             //     .DeserializeObject<Dictionary<string, string>>();
 
             List<SongCLS> fullList = new();
-            fullList.AddRange(danceSongs);
+            fullList.AddRange(radioSongs);
             // fullList.AddRange(ukSongs);
             // fullList.AddRange(usSongs);
             fullList = fullList.Distinct(new SearchTermsComparer()).ToList();
@@ -262,7 +271,7 @@ namespace MusicPlaylistBuilder
             // fullList = fullList.OrderByDescending(s => scores[s]).ToList();
             // fullList = fullList.Take((int) Math.Ceiling((decimal) (fullList.Count / 2))).ToList();
 
-            await AddSongsToPlaylist(fullList, client, termsAndSpotifyIds, "test4");
+            await AddSongsToPlaylist(fullList, client, termsAndSpotifyIds, "test5");
         }
 
         private static async Task AddSongsToPlaylist(
@@ -330,8 +339,12 @@ namespace MusicPlaylistBuilder
                 {
                     Artist = artist,
                     Song = songName,
-                    Year = int.Parse(entry["Year"]),
                 };
+                
+                if (entry.ContainsKey("Year"))
+                {
+                    song.Year = int.Parse(entry["Year"]);
+                }
                 
                 if (entry.ContainsKey("Peak"))
                 {
@@ -420,12 +433,17 @@ namespace MusicPlaylistBuilder
             Dictionary<string, string> songPropertyMappings = new()
             {
                 {"Artist(s)", "Artist"},
+                {"Artist(s)[A]", "Artist"},
                 {"Artist", "Artist"},
+                
                 {"Single", "Song"},
                 {"Title(s)", "Song"},
+                {"Song[A]", "Song"},
                 {"Song", "Song"},
+                
                 {"Year", "Year"},
                 {"Peak", "Peak"},
+                
                 {"Weeks in top 10", "Weeks in top ten"},
                 {"Weeks in top ten", "Weeks in top ten"}
             };
