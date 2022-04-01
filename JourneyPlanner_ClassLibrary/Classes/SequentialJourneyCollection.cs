@@ -141,21 +141,30 @@ namespace JourneyPlanner_ClassLibrary.Classes
             return JourneyCollection[0].GetDepartingLocation();
         }
 
-        public double GetCountOfCompanies()
+        public int GetCountOfCompanies()
         {
-            return GetCompanies().Count;
+            return GetCompanies(j => true).Count;
+        }
+        
+        public int GetCountOfAirlines()
+        {
+            return GetCompanies(j => j.IsFlight()).Count;
         }
 
-        private HashSet<string> GetCompanies()
+        private HashSet<string> GetCompanies(Func<Journey, bool> journeyToIncludeFunc)
         {
             HashSet<string> companies = new();
-            for (int i = 0; i < JourneyCollection.GetCount(); i++) companies.Add(JourneyCollection[i].Company);
+            for (int i = 0; i < JourneyCollection.GetCount(); i++)
+            {
+                Journey journey = JourneyCollection[i];
+                if (journeyToIncludeFunc.Invoke(journey)) companies.Add(journey.Company);
+            }
             return companies;
         }
 
         public string GetCompaniesString()
         {
-            return GetCompanies().ToList().ConcatenateListOfStringsToCommaAndSpaceString();
+            return GetCompanies(j => true).ToList().ConcatenateListOfStringsToCommaAndSpaceString();
         }
     }
 }
