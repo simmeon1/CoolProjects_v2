@@ -27,7 +27,7 @@ namespace LeagueGui
         [DllImport("user32.dll")]
         private static extern bool GetCursorPos(ref Point lpPoint);
 
-        public Color GetColorAt(Point location)
+        public Color GetColorAtLocation(Point location)
         {
             using Graphics gdest = Graphics.FromImage(screenPixel);
             using Graphics gsrc = Graphics.FromHwnd(IntPtr.Zero);

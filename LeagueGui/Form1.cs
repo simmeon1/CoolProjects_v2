@@ -93,7 +93,7 @@ namespace LeagueGui
 
         private bool SpellAtLocationIsAvailable(int x, int y, float brightnessValue)
         {
-            return windowsNativeMethods.GetColorAt(new Point(x, y)).GetBrightness() == brightnessValue;
+            return windowsNativeMethods.GetColorAtLocation(new Point(x, y)).GetBrightness() == brightnessValue;
         }
 
         private async void Form1_Shown(object sender, EventArgs e)

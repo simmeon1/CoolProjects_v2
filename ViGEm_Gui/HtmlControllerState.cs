@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Newtonsoft.Json.Linq;
 
-namespace ViGEm
+namespace ViGEm_Gui
 {
     public class HtmlControllerState
     {
         /** LX */
-        public double A0 { get; set; }
+        public short A0 { get; set; }
         /** LY */
-        public double A1 { get; set; }
+        public short A1 { get; set; }
         /** RX */
-        public double A2 { get; set; }
+        public short A2 { get; set; }
         /** RY */
-        public double A3 { get; set; }
+        public short A3 { get; set; }
         /** x */
         public bool B0 { get; set; }
         /** circle */
@@ -51,6 +50,7 @@ namespace ViGEm
         public bool B16 { get; set; }
         /** touch */
         public bool B17 { get; set; }
+        public double TIMESTAMP { get; set; }
 
         public static HtmlControllerState FromJsonObject(string json)
         {
@@ -72,36 +72,37 @@ namespace ViGEm
         private static HtmlControllerState GetParsed(string json)
         {
             JObject obj = JObject.Parse(json);
-            return new HtmlControllerState()
-            {
-                A0 = double.Parse(obj["A0"].ToString()),
-                A1 = double.Parse(obj["A1"].ToString()),
-                A2 = double.Parse(obj["A2"].ToString()),
-                A3 = double.Parse(obj["A3"].ToString()),
-                B0 = ToBoolean(obj, "B0"),
-                B1 = ToBoolean(obj, "B1"),
-                B2 = ToBoolean(obj, "B2"),
-                B3 = ToBoolean(obj, "B3"),
-                B4 = ToBoolean(obj, "B4"),
-                B5 = ToBoolean(obj, "B5"),
-                B6 = ToBoolean(obj, "B6"),
-                B7 = ToBoolean(obj, "B7"),
-                B8 = ToBoolean(obj, "B8"),
-                B9 = ToBoolean(obj, "B9"),
-                B10 = ToBoolean(obj, "B10"),
-                B11 = ToBoolean(obj, "B11"),
-                B12 = ToBoolean(obj, "B12"),
-                B13 = ToBoolean(obj, "B13"),
-                B14 = ToBoolean(obj, "B14"),
-                B15 = ToBoolean(obj, "B15"),
-                B16 = ToBoolean(obj, "B16"),
-                B17 = ToBoolean(obj, "B17"),
-            };
+            HtmlControllerState state = new();
+            state.A0 = Convert.ToInt16(double.Parse(obj["A0"].ToString()));
+            state.A1 = Convert.ToInt16(double.Parse(obj["A1"].ToString()));
+            state.A2 = Convert.ToInt16(double.Parse(obj["A2"].ToString()));
+            state.A3 = Convert.ToInt16(double.Parse(obj["A3"].ToString()));
+            state.B0 = ToBoolean(obj, "B0");
+            state.B1 = ToBoolean(obj, "B1");
+            state.B2 = ToBoolean(obj, "B2");
+            state.B3 = ToBoolean(obj, "B3");
+            state.B4 = ToBoolean(obj, "B4");
+            state.B5 = ToBoolean(obj, "B5");
+            state.B6 = ToBoolean(obj, "B6");
+            state.B7 = ToBoolean(obj, "B7");
+            state.B8 = ToBoolean(obj, "B8");
+            state.B9 = ToBoolean(obj, "B9");
+            state.B10 = ToBoolean(obj, "B10");
+            state.B11 = ToBoolean(obj, "B11");
+            state.B12 = ToBoolean(obj, "B12");
+            state.B13 = ToBoolean(obj, "B13");
+            state.B14 = ToBoolean(obj, "B14");
+            state.B15 = ToBoolean(obj, "B15");
+            state.B16 = ToBoolean(obj, "B16");
+            state.B17 = ToBoolean(obj, "B17");
+            state.TIMESTAMP = double.Parse(obj["TIMESTAMP"].ToString());
+            return state;
         }
 
         private static bool ToBoolean(JObject obj, string propertyName)
         {
-            return Convert.ToBoolean(int.Parse(obj[propertyName].ToString()));
+            double value = double.Parse(obj[propertyName].ToString());
+            return Convert.ToBoolean(value > 0 ? 1 : 0);
         }
     }
 }
