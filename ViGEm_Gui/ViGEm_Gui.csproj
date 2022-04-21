@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net5.0-windows</TargetFramework>
+        <UseWindowsForms>true</UseWindowsForms>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\ViGEm.NET\ViGEmClient\ViGEmClient.NET.csproj" />
+      <ProjectReference Include="..\Common_ClassLibrary\Common_ClassLibrary.csproj" />
+      <ProjectReference Include="..\ViGEm_Common\ViGEm_Common.csproj" />
+      <ProjectReference Include="..\ViGEm_Console\ViGEm_Console.csproj" />
+    </ItemGroup>
+
+</Project>

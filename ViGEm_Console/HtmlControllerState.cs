@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace ViGEm_Gui
+namespace ViGEm_Common
 {
     public class HtmlControllerState
     {
