@@ -30,9 +30,26 @@ namespace ViGEm_Console
             ViGEmUseCase useCase = new(client);
             WindowsNativeMethods nativeMethods = new();
 
-
-            string statesJson = await File.ReadAllTextAsync(@"C:\Users\simme\OneDrive\Desktop\controller_path.json");
-            List<HtmlControllerState> states = HtmlControllerState.FromJsonArray(statesJson);
+            int timestamp = 0;
+            List<HtmlControllerState> states = new();
+            for (int i = 0; i < 1000; i++)
+            {
+                states.Add(new HtmlControllerState()
+                {
+                    B14 = true,
+                    TIMESTAMP = timestamp,
+                });
+                
+                states.Add(new HtmlControllerState()
+                {
+                    B14 = false,
+                    TIMESTAMP = timestamp + 500,
+                });
+                timestamp += 1000;
+            }
+            
+            string statesJson = File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\controller_path.json");
+            states = HtmlControllerState.FromJsonArray(statesJson);
             
             while (true)
             {
@@ -45,7 +62,7 @@ namespace ViGEm_Console
                     if (nativeMethods.GetColorAtLocation(pos).GetBrightness() == 0) break;
                     await Task.Delay(1000);
                 }
-            
+                
                 while (true)
                 {
                     if (nativeMethods.GetColorAtLocation(pos).GetBrightness() == 0) continue;

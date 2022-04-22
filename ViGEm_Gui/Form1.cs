@@ -105,17 +105,17 @@ namespace ViGEm_Gui
 
         private async void clearStatesButton_Click(object sender, EventArgs e)
         {
-            // ViGEmClient clientt = new();
-            // IDualShock4Controller controller = clientt.CreateDualShock4Controller();
-            // controller.Connect();
-            while (true)
-            {
-                int millisecondsDelay = 50;
-                controller.SetDPadDirection(DualShock4DPadDirection.West);
-                await Task.Delay(millisecondsDelay).ConfigureAwait(false);
-                controller.SetDPadDirection(DualShock4DPadDirection.None);
-                await Task.Delay(millisecondsDelay).ConfigureAwait(false);
-            }
+            // // ViGEmClient clientt = new();
+            // // IDualShock4Controller controller = clientt.CreateDualShock4Controller();
+            // // controller.Connect();
+            // while (true)
+            // {
+            //     int millisecondsDelay = 50;
+            //     controller.SetDPadDirection(DualShock4DPadDirection.West);
+            //     await Task.Delay(millisecondsDelay).ConfigureAwait(false);
+            //     controller.SetDPadDirection(DualShock4DPadDirection.None);
+            //     await Task.Delay(millisecondsDelay).ConfigureAwait(false);
+            // }
             
             states = new List<HtmlControllerState>();
         }
