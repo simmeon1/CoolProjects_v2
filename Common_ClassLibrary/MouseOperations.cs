@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace ViGEm_Gui
+namespace Common_ClassLibrary
 {
     public class MouseOperations
     {
@@ -32,7 +32,7 @@ namespace ViGEm_Gui
         private static extern void mouse_event(int dwFlags, int dx, int dy, int dwData, int dwExtraInfo);
 
         [DllImport("gdi32.dll", CharSet = CharSet.Auto, SetLastError = true, ExactSpelling = true)]
-        public static extern int BitBlt(IntPtr hDC, int x, int y, int nWidth, int nHeight, IntPtr hSrcDC, int xSrc, int ySrc, int dwRop);
+        private static extern int BitBlt(IntPtr hDc, int x, int y, int nWidth, int nHeight, IntPtr hSrcDc, int xSrc, int ySrc, int dwRop);
 
         public static void SetCursorPosition(int x, int y)
         {
@@ -72,9 +72,9 @@ namespace ViGEm_Gui
             {
                 using (Graphics gsrc = Graphics.FromHwnd(IntPtr.Zero))
                 {
-                    IntPtr hSrcDC = gsrc.GetHdc();
-                    IntPtr hDC = gdest.GetHdc();
-                    int retval = BitBlt(hDC, 0, 0, 1, 1, hSrcDC, location.X, location.Y, (int)CopyPixelOperation.SourceCopy);
+                    IntPtr hSrcDc = gsrc.GetHdc();
+                    IntPtr hDc = gdest.GetHdc();
+                    int retval = BitBlt(hDc, 0, 0, 1, 1, hSrcDc, location.X, location.Y, (int)CopyPixelOperation.SourceCopy);
                     gdest.ReleaseHdc();
                     gsrc.ReleaseHdc();
                 }
@@ -84,10 +84,10 @@ namespace ViGEm_Gui
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct MousePoint
+        public readonly struct MousePoint
         {
-            public int X;
-            public int Y;
+            public readonly int X;
+            public readonly int Y;
 
             public MousePoint(int x, int y)
             {
