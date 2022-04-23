@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace ViGEm_Common
 {
-    public class HtmlControllerState
+    public class ControllerState
     {
         /** LX */
         public short A0 { get; set; }
@@ -52,14 +52,14 @@ namespace ViGEm_Common
         public bool B17 { get; set; }
         public double TIMESTAMP { get; set; }
 
-        public static HtmlControllerState FromJsonObject(string json)
+        public static ControllerState FromJsonObject(string json)
         {
             return GetParsed(json);
         }
         
-        public static List<HtmlControllerState> FromJsonArray(string json)
+        public static List<ControllerState> FromJsonArray(string json)
         {
-            List<HtmlControllerState> result = new();
+            List<ControllerState> result = new();
             JArray arr = JArray.Parse(json);
             
             foreach (JToken entry in arr)
@@ -69,34 +69,34 @@ namespace ViGEm_Common
             return result;
         }
 
-        private static HtmlControllerState GetParsed(string json)
+        private static ControllerState GetParsed(string json)
         {
             JObject obj = JObject.Parse(json);
-            HtmlControllerState state = new();
-            state.A0 = Convert.ToInt16(double.Parse(obj["A0"].ToString()));
-            state.A1 = Convert.ToInt16(double.Parse(obj["A1"].ToString()));
-            state.A2 = Convert.ToInt16(double.Parse(obj["A2"].ToString()));
-            state.A3 = Convert.ToInt16(double.Parse(obj["A3"].ToString()));
-            state.B0 = ToBoolean(obj, "B0");
-            state.B1 = ToBoolean(obj, "B1");
-            state.B2 = ToBoolean(obj, "B2");
-            state.B3 = ToBoolean(obj, "B3");
-            state.B4 = ToBoolean(obj, "B4");
-            state.B5 = ToBoolean(obj, "B5");
-            state.B6 = ToBoolean(obj, "B6");
-            state.B7 = ToBoolean(obj, "B7");
-            state.B8 = ToBoolean(obj, "B8");
-            state.B9 = ToBoolean(obj, "B9");
-            state.B10 = ToBoolean(obj, "B10");
-            state.B11 = ToBoolean(obj, "B11");
-            state.B12 = ToBoolean(obj, "B12");
-            state.B13 = ToBoolean(obj, "B13");
-            state.B14 = ToBoolean(obj, "B14");
-            state.B15 = ToBoolean(obj, "B15");
-            state.B16 = ToBoolean(obj, "B16");
-            state.B17 = ToBoolean(obj, "B17");
-            state.TIMESTAMP = double.Parse(obj["TIMESTAMP"].ToString());
-            return state;
+            ControllerState controllerState = new();
+            controllerState.A0 = Convert.ToInt16(double.Parse(obj["A0"].ToString()));
+            controllerState.A1 = Convert.ToInt16(double.Parse(obj["A1"].ToString()));
+            controllerState.A2 = Convert.ToInt16(double.Parse(obj["A2"].ToString()));
+            controllerState.A3 = Convert.ToInt16(double.Parse(obj["A3"].ToString()));
+            controllerState.B0 = ToBoolean(obj, "B0");
+            controllerState.B1 = ToBoolean(obj, "B1");
+            controllerState.B2 = ToBoolean(obj, "B2");
+            controllerState.B3 = ToBoolean(obj, "B3");
+            controllerState.B4 = ToBoolean(obj, "B4");
+            controllerState.B5 = ToBoolean(obj, "B5");
+            controllerState.B6 = ToBoolean(obj, "B6");
+            controllerState.B7 = ToBoolean(obj, "B7");
+            controllerState.B8 = ToBoolean(obj, "B8");
+            controllerState.B9 = ToBoolean(obj, "B9");
+            controllerState.B10 = ToBoolean(obj, "B10");
+            controllerState.B11 = ToBoolean(obj, "B11");
+            controllerState.B12 = ToBoolean(obj, "B12");
+            controllerState.B13 = ToBoolean(obj, "B13");
+            controllerState.B14 = ToBoolean(obj, "B14");
+            controllerState.B15 = ToBoolean(obj, "B15");
+            controllerState.B16 = ToBoolean(obj, "B16");
+            controllerState.B17 = ToBoolean(obj, "B17");
+            controllerState.TIMESTAMP = double.Parse(obj["TIMESTAMP"].ToString());
+            return controllerState;
         }
 
         private static bool ToBoolean(JObject obj, string propertyName)

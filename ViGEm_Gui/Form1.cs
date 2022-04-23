@@ -15,30 +15,26 @@ using Nefarius.ViGEm.Client;
 using Nefarius.ViGEm.Client.Targets;
 using Nefarius.ViGEm.Client.Targets.DualShock4;
 using ViGEm_Common;
+using ViGEm_Console;
 
 namespace ViGEm_Gui
 {
     public partial class Form1 : Form
     {
-        private DualshockControllerWrapper controller;
+        private DualshockControllerWrapper controller = new();
         private Dictionary<string, bool> keysPressed = new();
-        private List<HtmlControllerState> states = new();
+        private List<ControllerState> states = new();
         private DateTime startTime = DateTime.Now;
-        private WindowsNativeMethods nativeMethods = new();
 
         public Form1()
         {
             InitializeComponent();
-            
-            ViGEmClient client = new();
-            IDualShock4Controller controller = client.CreateDualShock4Controller();
-            controller.Connect();
-            this.controller = new DualshockControllerWrapper(controller);
+            controller.StartController();
         }
 
         private void UpdateControllerState()
         {
-            HtmlControllerState state = new()
+            ControllerState state = new()
             {
                 A0 = GetAxisValue("A", "D"),
                 A1 = GetAxisValue("W", "S"),
@@ -64,10 +60,8 @@ namespace ViGEm_Gui
                 // B17 = KeyIsPressed("G"),
                 TIMESTAMP = (DateTime.Now - startTime).TotalMilliseconds,
             };
-
-            state.TIMESTAMP = (DateTime.Now - startTime).TotalMilliseconds;
+            controller.SetState(state);
             states.Add(state);
-            controller.SetStateFromHtmlControllerState(state);
         }
 
         private short GetAxisValue(string minValueKey, string maxValueKey)
@@ -75,7 +69,7 @@ namespace ViGEm_Gui
             short value = 0;
             if (KeyIsPressed(minValueKey)) value += short.MinValue;
             if (KeyIsPressed(maxValueKey)) value += short.MaxValue;
-            return value;
+            return (short) (value / 2);
         }
 
         private bool KeyIsPressed(string key)
@@ -116,8 +110,8 @@ namespace ViGEm_Gui
             //     controller.SetDPadDirection(DualShock4DPadDirection.None);
             //     await Task.Delay(millisecondsDelay).ConfigureAwait(false);
             // }
-            
-            states = new List<HtmlControllerState>();
+
+            states = new List<ControllerState>();
         }
 
         private void pixelLogTimer_Tick(object sender, EventArgs e)
@@ -132,8 +126,8 @@ namespace ViGEm_Gui
             // listBox.Items.Clear();
             // listBox.Items.Add($"{pos.X}, {pos.Y}, {nativeMethods.GetColorAtLocation(pos).GetBrightness()}, {pos.X}, {pos.Y}"
             // listBox.Items.Add($"{pos.X}, {pos.Y}, {nativeMethods.GetColorAtLocation(pos).GetBrightness()}, {pos.X}, {pos.Y}, " +
-                // $"{nativeMethods.GetColorAtWindowLocation(hwnd, pos.X, pos.Y).GetBrightness()}"
-                // $"{nativeMethods.GetColorAtWindowLocation(hwnd, pos.X, pos.Y).GetBrightness()}"
+            // $"{nativeMethods.GetColorAtWindowLocation(hwnd, pos.X, pos.Y).GetBrightness()}"
+            // $"{nativeMethods.GetColorAtWindowLocation(hwnd, pos.X, pos.Y).GetBrightness()}"
             // );
         }
 
