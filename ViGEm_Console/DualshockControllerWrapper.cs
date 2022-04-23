@@ -14,7 +14,7 @@ namespace ViGEm_Console
         {
             ViGEmClient client = new();
             controller = client.CreateDualShock4Controller();
-            controller.AutoSubmitReport = false;
+            // controller.AutoSubmitReport = false;
             controller.Connect();
         }
 
