@@ -20,5 +20,10 @@ namespace Common_ClassLibrary
         {
             Thread.Sleep(milliseconds);
         }
+        
+        public async Task GetCompletedTask()
+        {
+            await Task.CompletedTask;
+        }
     }
 }

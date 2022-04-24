@@ -1,18 +1,27 @@
 ﻿using Nefarius.ViGEm.Client;
 using Nefarius.ViGEm.Client.Targets;
 using Nefarius.ViGEm.Client.Targets.DualShock4;
+using static System.Byte;
 
 namespace AutoInput
 {
     public class DualshockControllerWrapper
     {
-        private IDualShock4Controller controller;
-        public void StartController()
+        private readonly IDualShock4Controller controller;
+        public DualshockControllerWrapper()
         {
-            ViGEmClient client = new();
-            controller = client.CreateDualShock4Controller();
-            controller.AutoSubmitReport = false;
+            controller = new ViGEmClient().CreateDualShock4Controller();
+            controller.AutoSubmitReport = false;   
+        }
+        
+        public void Connect()
+        {
             controller.Connect();
+        }
+        
+        public void Disconnect()
+        {
+            controller.Disconnect();
         }
 
         public void SetState(ControllerState controllerState)
@@ -27,8 +36,8 @@ namespace AutoInput
             controller.SetButtonState(DualShock4Button.Triangle, controllerState.B3);
             controller.SetButtonState(DualShock4Button.ShoulderLeft, controllerState.B4);
             controller.SetButtonState(DualShock4Button.ShoulderRight, controllerState.B5);
-            controller.SetButtonState(DualShock4Button.TriggerLeft, controllerState.B6);
-            controller.SetButtonState(DualShock4Button.TriggerRight, controllerState.B7);
+            controller.SetSliderValue(DualShock4Slider.LeftTrigger, GetSliderValue(controllerState.B6));
+            controller.SetSliderValue(DualShock4Slider.RightTrigger, GetSliderValue(controllerState.B7));
             controller.SetButtonState(DualShock4Button.Share, controllerState.B8);
             controller.SetButtonState(DualShock4Button.Options, controllerState.B9);
             controller.SetButtonState(DualShock4Button.ThumbLeft, controllerState.B10);
@@ -42,7 +51,12 @@ namespace AutoInput
             // Controller.SetButtonState(DualShock4Button.touch, state.b17);
             controller.SubmitReport();
         }
-        
+
+        private static byte GetSliderValue(bool sliderIsPressed)
+        {
+            return sliderIsPressed ? MaxValue : MinValue;
+        }
+
         public void SetButtonState(DualShock4Button button, bool pressed)
         {
             controller.SetButtonState(button, pressed);

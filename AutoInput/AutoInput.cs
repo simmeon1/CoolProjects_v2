@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Common_ClassLibrary;
-using Nefarius.ViGEm.Client.Targets.DualShock4;
+using Newtonsoft.Json;
 using SharpDX.DirectInput;
 
 namespace AutoInput
@@ -15,21 +13,28 @@ namespace AutoInput
     public partial class AutoInput : Form
     {
         private Joystick controllerHandle;
+        private List<ControllerState> controllerHandleStates = new();
         private WindowsNativeMethods nativeMethods = new();
         private readonly DualshockControllerWrapper controller = new();
         private readonly Dictionary<string, bool> keysPressed = new();
-        private List<ControllerState> states = new();
         private readonly DateTime startTime = DateTime.Now;
+        private ActionPlayer actionPlayer;
+        private IDelayer delayer = new RealDelayer();
 
         public AutoInput()
         {
             InitializeComponent();
-            controllerHandle = InitialiseControllerAndGetHandle(controller);
-            controllerHandle.Acquire();
+        }
+        
+        private async void AutoInput_Shown(object sender, EventArgs e)
+        {
+            actionPlayer = new ActionPlayer(delayer, new WindowsNativeMethods(), controller);
+            await GetControllerHandle();
         }
 
         private void UpdateControllerState()
         {
+            return;
             ControllerState state = new()
             {
                 A0 = GetAxisValue("A", "D"),
@@ -57,7 +62,7 @@ namespace AutoInput
                 TIMESTAMP = (DateTime.Now - startTime).TotalMilliseconds,
             };
             controller.SetState(state);
-            states.Add(state);
+            // states.Add(state);
         }
 
         private short GetAxisValue(string minValueKey, string maxValueKey)
@@ -73,7 +78,7 @@ namespace AutoInput
             return keysPressed.ContainsKey(key) && keysPressed[key];
         }
 
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        private void AutoInput_KeyDown(object sender, KeyEventArgs e)
         {
             string key = e.KeyData.ToString();
             if (keysPressed.ContainsKey(key) && keysPressed[key]) return;
@@ -81,15 +86,10 @@ namespace AutoInput
             UpdateControllerState();
         }
 
-        private void Form1_KeyUp(object sender, KeyEventArgs e)
+        private void AutoInput_KeyUp(object sender, KeyEventArgs e)
         {
             keysPressed[e.KeyData.ToString()] = false;
             UpdateControllerState();
-        }
-
-        private void copyStatesToClipboardButton_Click(object sender, EventArgs e)
-        {
-            Clipboard.SetText(states.SerializeObject().Replace("false", "0").Replace("true", "1"));
         }
 
         private void pixelLogTimer_Tick(object sender, EventArgs e)
@@ -108,166 +108,312 @@ namespace AutoInput
             // $"{nativeMethods.GetColorAtWindowLocation(hwnd, pos.X, pos.Y).GetBrightness()}"
             // );
         }
+        
+        private void recordStatesTimer_Tick(object sender, EventArgs e)
+        {
+            JoystickState currentState = controllerHandle.GetCurrentState();
+            if (!controllerHandleStates.Any() ||
+                !currentState.ToString().Equals(controllerHandleStates.Last().ToString()))
+            {
+                bool[] buttons = currentState.Buttons;
+                int[] arrows = currentState.PointOfViewControllers;
+                
+                ControllerState state = new()
+                {
+                    A0 = (short) (short.MinValue + currentState.X),
+                    A1 = (short) (short.MinValue + currentState.Y),
+                    A2 = (short) (short.MinValue + currentState.Z),
+                    A3 = (short) (short.MinValue + currentState.RotationZ),
+                    B0 = buttons[1],
+                    B1 = buttons[2],
+                    B2 = buttons[0],
+                    B3 = buttons[3],
+                    B4 = buttons[4],
+                    B5 = buttons[5],
+                    B6 = buttons[6],
+                    B7 = buttons[7],
+                    B8 = buttons[8],
+                    B9 = buttons[9],
+                    B10 = buttons[10],
+                    B11 = buttons[11],
+                    B12 = arrows[0] == 0,
+                    B13 = arrows[0] == 18000,
+                    B14 = arrows[0] == 27000,
+                    B15 = arrows[0] == 9000,
+                    // B16 = KeyIsPressed("G"),
+                    // B17 = KeyIsPressed("G"),
+                    TIMESTAMP = (DateTime.Now - startTime).TotalMilliseconds,
+                };
+                controllerHandleStates.Add(state);
+                Log("Controller state added.");
+            }
+        }
 
         private void Log(string message)
         {
-            listBox.Items.Add(message);
-            listBox.TopIndex = listBox.Items.Count - 1;
+            logListBox.Items.Add(message);
+            logListBox.TopIndex = logListBox.Items.Count - 1;
         }
 
-        private async void respawnButton_Click(object sender, EventArgs e)
+        private async Task GetControllerHandle()
         {
-            controller.SetButtonState(DualShock4Button.Square, true);
-            await Task.Delay(1000).ConfigureAwait(false);
-            controller.SetButtonState(DualShock4Button.Square, false);
-
-            controller.SetDPadDirection(DualShock4DPadDirection.South);
-            await Task.Delay(1000).ConfigureAwait(false);
-            controller.SetDPadDirection(DualShock4DPadDirection.None);
-
-            controller.SetButtonState(DualShock4Button.Cross, true);
-            await Task.Delay(1000).ConfigureAwait(false);
-            controller.SetButtonState(DualShock4Button.Cross, false);
-        }
-
-        private void forgetStatesButton_Click(object sender, EventArgs e)
-        {
-            states = new List<ControllerState>();
-        }
-        
-        private static Joystick InitialiseControllerAndGetHandle(DualshockControllerWrapper controller)
-        {
+            resetControllerHandleButton.Enabled = false;
+            controllerHandle?.Unacquire();
+            Log("Getting controller handle...");
             DirectInput directInput = new();
-            IList<DeviceInstance> firstDevices = directInput.GetDevices();
-            controller.StartController();
-            while (true)
-            {
-                IList<DeviceInstance> secondDevices = directInput.GetDevices();
-                foreach (DeviceInstance device in secondDevices)
-                {
-                    if (!firstDevices.Any(d => d.InstanceGuid.Equals(device.InstanceGuid)))
-                    {
-                        return new Joystick(directInput, device.InstanceGuid);
-                    }
-                }
-            }
-        }
-
-        private void replayStatesButton_Click(object sender, EventArgs e)
-        {
-            string statesJson = File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\controller_path.json");
-            List<ControllerState> states = ControllerState.FromJsonArray(statesJson);
-            double firstTimestamp = states[0].TIMESTAMP;
-
-            List<double> timeDiffs = new();
-            for (int i = 0; i < states.Count - 1; i++) timeDiffs.Add(states[i + 1].TIMESTAMP - states[i].TIMESTAMP);
-            // for (int i = 1; i < states.Count; i++)
+            // IList<DeviceInstance> firstDevices = directInput.GetDevices();
+            // while (true)
             // {
-            //     var lastState = states[i - 1];
-            //     var state = states[i];
-            //     if (state.A0 == lastState.A0 &&
-            //         state.A1 == lastState.A1 &&
-            //         state.A2 == lastState.A2 &&
-            //         state.A3 == lastState.A3 &&
-            //         state.B0 == lastState.B0 &&
-            //         state.B1 == lastState.B1 &&
-            //         state.B2 == lastState.B2 &&
-            //         state.B3 == lastState.B3 &&
-            //         state.B4 == lastState.B4 &&
-            //         state.B5 == lastState.B5 &&
-            //         state.B6 == lastState.B6 &&
-            //         state.B7 == lastState.B7 &&
-            //         state.B8 == lastState.B8 &&
-            //         state.B9 == lastState.B9 &&
-            //         state.B10 == lastState.B10 &&
-            //         state.B11 == lastState.B11 &&
-            //         state.B12 == lastState.B12 &&
-            //         state.B13 == lastState.B13 &&
-            //         state.B14 == lastState.B14 &&
-            //         state.B15 == lastState.B15 &&
-            //         state.B16 == lastState.B16 &&
-            //         state.B17 == lastState.B17)
+            //     IList<DeviceInstance> secondDevices = directInput.GetDevices();
+            //     foreach (DeviceInstance device in secondDevices)
             //     {
-            //         states.RemoveAt(i);
-            //         i--;
+            //         if (!firstDevices.Any(d => d.InstanceGuid.Equals(device.InstanceGuid)))
+            //         {
+            //             return new Joystick(directInput, device.InstanceGuid);
+            //         }
             //     }
             // }
-
-            foreach (ControllerState state in states) state.TIMESTAMP -= firstTimestamp;
-            timeDiffs = timeDiffs.OrderByDescending(t => t).ToList();
-            //Min should be around 25
-            double maxDiff = timeDiffs.First();
-            double minDiff = timeDiffs.Last();
-
+            
             while (true)
             {
-                Stopwatch watch = new();
-                watch.Start();
-                for (int i = 0; i < states.Count; i++)
+                DeviceInstance device = directInput
+                    .GetDevices()
+                    .FirstOrDefault(d => d.InstanceName.Equals("Wireless Controller"));
+                if (device != null)
                 {
-                    ControllerState controllerState = states[i];
-                    ControllerState nextControllerState = i == states.Count - 1 ? states[i] : states[i + 1];
-                    // double timeDiffBetweenStates = nextControllerState.TIMESTAMP - controllerState.TIMESTAMP;
-                    // string deviceState = controllerHandle.GetCurrentState().ToString();
-                    controller.SetState(controllerState);
-                    // watch.Restart();
-                    //WaitUntilStateIsUpdate(deviceState, controllerHandle);
-                    Console.WriteLine(watch.ElapsedMilliseconds);
-                    // long watchElapsedMilliseconds = watch.ElapsedMilliseconds;
-                    // double timeToWait = timeDiffBetweenStates - watchElapsedMilliseconds;
-                    // await Task.Delay((int) timeToWait).ConfigureAwait(false);
-                    while (watch.ElapsedMilliseconds < nextControllerState.TIMESTAMP) { }
+                    controllerHandle = new Joystick(directInput, device.InstanceGuid);
+                    controllerHandle.Acquire();
+                    Log("Controller handle received.");
+                    break;
                 }
-
-                // Point pos = new(4109, 324);
-                Point pos = new(2125, 570);
-
-                // while (true)
-                // {
-                //     if (nativeMethods.GetColorAtLocation(pos).GetBrightness() == 0) break;
-                //     await Task.Delay(1000).ConfigureAwait(false);
-                //     // Thread.Sleep(1000);
-                // }
-                //
-                // while (true)
-                // {
-                //     if (nativeMethods.GetColorAtLocation(pos).GetBrightness() == 0) continue;
-                //     await Task.Delay(3000).ConfigureAwait(false);
-                //     // Thread.Sleep(3000);
-                //     break;
-                // }
+                await delayer.Delay(1000);
             }
-
-            var x = 1;
-
-            // List<string> deviceStates = new();
-            // Stopwatch watch = new();
-            // int sleep = 1;
-            // for (int i = 0; i < 1000; i++)
-            // {
-            //     string deviceState = controllerHandle.GetCurrentState().ToString();
-            //     deviceStates.Add(deviceState);
-            //     controller.SetButtonState(DualShock4Button.Cross, i % 2 == 0);
-            //     await Task.Delay(sleep);
-            //     watch.Restart();
-            //     WaitUntilStateIsUpdate(deviceState, controllerHandle);
-            //     long watchElapsedMilliseconds = watch.ElapsedMilliseconds;
-            // }
-
-            var y = 1;
+            resetControllerHandleButton.Enabled = true;
         }
 
         private void recordStatesButton_Click(object sender, EventArgs e)
         {
-
+            recordStatesTimer.Enabled = !recordStatesTimer.Enabled;
+            if (recordStatesTimer.Enabled)
+            {
+                controllerHandleStates.Clear();
+            }
+            else
+            {
+                AddAction(new Action()
+                {
+                    Type = ActionType.SetStates,
+                    Enabled = true,
+                    Arguments = new[] {controllerHandleStates.SerializeObject().Replace("false", "0").Replace("true", "1")},
+                });
+            }
+            recordStatesButton.Text = recordStatesTimer.Enabled ? "Stop Recording States" : "Record States";
         }
-        
+
         private static void WaitUntilStateIsUpdate(string deviceState, Joystick controllerHandle)
         {
             while (deviceState.Equals(controllerHandle.GetCurrentState().ToString()))
             {
                 var x = 1;
             }
+        }
+
+        private async void playActionsButton_Click(object sender, EventArgs e)
+        {
+            CheckedListBox.CheckedItemCollection checkedActions = actionsListBox.CheckedItems;
+            Log($"Playing {checkedActions.Count} actions.");
+            for (int i = 0; i < checkedActions.Count; i++)
+            {
+                Action action = (Action) checkedActions[i];
+                Log($"Playing action {i + 1}.");
+                
+                // await Task.Run(async () => await actionPlayer.PlayAction(action));
+                
+                await actionPlayer.PlayAction(action);
+            }
+            Log($"Finished playing actions.");
+        }
+
+        private async void loadActionsButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dialog = GetFileDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+            
+            string actionJson = await File.ReadAllTextAsync(dialog.FileName);
+            try
+            {
+                List<Action> actions = actionJson.DeserializeObject<List<Action>>();
+                actionsListBox.Items.Clear();
+                foreach (Action action in actions) AddAction(action);
+            }
+            catch (Exception ex)
+            {
+                Log("Actions could not be loaded.");
+            }
+        }
+
+        private static OpenFileDialog GetFileDialog()
+        {
+            OpenFileDialog dialog = new();
+            dialog.Filter = "JSON|*.json";
+            return dialog;
+        }
+
+        private void AddAction(Action action)
+        {
+            int index = actionsListBox.Items.Add(action);
+            actionsListBox.SetItemChecked(index, action.Enabled);
+        }
+
+        private void UpdateAction(int index, Action action)
+        {
+            actionsListBox.Items[index] = action;
+            actionsListBox.SetItemChecked(index, action.Enabled);
+        }
+
+        private async void saveActionsButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dialog = GetFileDialog();
+            if (dialog.ShowDialog() != DialogResult.OK) return;
+
+            List<Action> actions = new();
+            for (int i = 0; i < actionsListBox.Items.Count; i++) actions.Add(GetActionAtIndex(i));
+
+            string json = actions.SerializeObject(Formatting.Indented);
+            await File.WriteAllTextAsync(dialog.FileName, json);
+        }
+
+        private Action GetActionAtIndex(int i)
+        {
+            return (Action) actionsListBox.Items[i];
+        }
+
+        private void moveActionUpButton_Click(object sender, EventArgs e)
+        {
+            MoveSelectedAction(true);
+        }
+
+        private void MoveSelectedAction(bool isUp)
+        {
+            ListBox.SelectedIndexCollection selectedIndices = actionsListBox.SelectedIndices;
+            if (!SingleActionIsSelected(selectedIndices)) return;
+
+            int index = selectedIndices[0];
+            if (!ActionCanBeMoved(index, isUp)) return;
+
+            CheckedListBox.ObjectCollection items = actionsListBox.Items;
+            int targetIndex = index + (isUp ? -1 : 1);
+            bool targetIsChecked = actionsListBox.GetItemChecked(targetIndex);
+            object targetItem = items[targetIndex];
+            items.RemoveAt(targetIndex);
+            items.Insert(index, targetItem);
+            actionsListBox.SetItemChecked(index, targetIsChecked);
+        }
+
+        private bool ActionCanBeMoved(int index, bool isUp)
+        {
+            if (isUp && index != 0) return true;
+            if (!isUp && index != actionsListBox.Items.Count - 1) return true;
+            Log("Cannot move action further.");
+            return false;
+        }
+
+        private bool SingleActionIsSelected(ListBox.SelectedIndexCollection selectedIndices, bool logMessage = true)
+        {
+            if (selectedIndices.Count == 1) return true;
+            if (logMessage) Log("Please select a single action.");
+            return false;
+        }
+
+        private void moveActionDownButton_Click(object sender, EventArgs e)
+        {
+            MoveSelectedAction(false);
+        }
+
+        private void addActionButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                AddAction(addActionTextBox.Text.DeserializeObject<Action>());
+            }
+            catch (Exception ex)
+            {
+                Log("Could not add action.");
+            }
+        }
+
+        private void deleteActionButton_Click(object sender, EventArgs e)
+        {
+            ListBox.SelectedIndexCollection selectedIndices = actionsListBox.SelectedIndices;
+            if (!SingleActionIsSelected(selectedIndices)) return;
+            actionsListBox.Items.RemoveAt(selectedIndices[0]);
+        }
+
+        private void clearLogButton_Click(object sender, EventArgs e)
+        {
+            logListBox.Items.Clear();
+            logListBox.TopIndex = 0;
+        }
+
+        private void actionsListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            updateActionTextBox.Text = "";
+            ListBox.SelectedIndexCollection selectedIndices = actionsListBox.SelectedIndices;
+            if (!SingleActionIsSelected(selectedIndices, false)) return;
+            Action action = GetActionAtIndex(selectedIndices[0]);
+            
+            
+            updateActionTextBox.Text = action.Type == ActionType.SetStates ? "" : action.SerializeObject(Formatting.Indented);
+        }
+
+        private void updateActionButton_Click(object sender, EventArgs e)
+        {
+            ListBox.SelectedIndexCollection selectedIndices = actionsListBox.SelectedIndices;
+            if (!SingleActionIsSelected(selectedIndices)) return;
+            try
+            {
+                UpdateAction(selectedIndices[0], updateActionTextBox.Text.DeserializeObject<Action>());
+            }
+            catch (Exception ex)
+            {
+                Log("Could not update action.");
+            }
+        }
+
+        private void actionsListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            GetActionAtIndex(e.Index).Enabled = e.NewValue == CheckState.Checked;
+        }
+
+        private async void connectControllerButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                controller.Connect();
+                await GetControllerHandle();
+            }
+            catch (Exception exception)
+            {
+                Log("Couldn't connect controller.");
+            }
+        }
+
+        private async void disconnectControllerButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                controller.Disconnect();
+                await GetControllerHandle();
+            }
+            catch (Exception exception)
+            {
+                Log("Couldn't disconnect controller.");
+            }
+        }
+
+        private async void resetControllerHandleButton_Click(object sender, EventArgs e)
+        {
+            await GetControllerHandle();
         }
     }
 }

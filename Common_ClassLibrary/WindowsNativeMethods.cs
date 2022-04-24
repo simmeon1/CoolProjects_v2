@@ -2,10 +2,11 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using Common_ClassLibrary.Interfaces;
 
 namespace Common_ClassLibrary
 {
-    public class WindowsNativeMethods
+    public class WindowsNativeMethods : INativeMethods
     {
         private readonly Bitmap screenPixel = new(1, 1, PixelFormat.Format32bppArgb);
 
@@ -37,7 +38,7 @@ namespace Common_ClassLibrary
             return screenPixel.GetPixel(0, 0);
         }
 
-        public Point GetCursorPosition()
+        public Point GetCursorLocation()
         {
             Point cursor = new();
             GetCursorPos(ref cursor);

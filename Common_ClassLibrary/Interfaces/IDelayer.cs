@@ -8,5 +8,6 @@ namespace Common_ClassLibrary
         Task Delay(int milliseconds);
         Task Delay(TimeSpan timeSpan);
         void Sleep(int milliseconds);
+        Task GetCompletedTask();
     }
 }
