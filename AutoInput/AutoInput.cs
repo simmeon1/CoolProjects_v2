@@ -25,7 +25,7 @@ namespace AutoInput
         {
             InitializeComponent();
         }
-        
+
         private async void AutoInput_Shown(object sender, EventArgs e)
         {
             actionPlayer = new ActionPlayer(delayer, new WindowsNativeMethods(), controller);
@@ -108,45 +108,83 @@ namespace AutoInput
             // $"{nativeMethods.GetColorAtWindowLocation(hwnd, pos.X, pos.Y).GetBrightness()}"
             // );
         }
-        
+
         private void recordStatesTimer_Tick(object sender, EventArgs e)
         {
-            JoystickState currentState = controllerHandle.GetCurrentState();
-            if (!controllerHandleStates.Any() ||
-                !currentState.ToString().Equals(controllerHandleStates.Last().ToString()))
+            double timestamp = (DateTime.Now - startTime).TotalMilliseconds;
+            JoystickState currentDeviceState = controllerHandle.GetCurrentState();
+
+            bool[] buttons = currentDeviceState.Buttons;
+            int[] arrows = currentDeviceState.PointOfViewControllers;
+            ControllerState newControllerState = new()
             {
-                bool[] buttons = currentState.Buttons;
-                int[] arrows = currentState.PointOfViewControllers;
-                
-                ControllerState state = new()
-                {
-                    A0 = (short) (short.MinValue + currentState.X),
-                    A1 = (short) (short.MinValue + currentState.Y),
-                    A2 = (short) (short.MinValue + currentState.Z),
-                    A3 = (short) (short.MinValue + currentState.RotationZ),
-                    B0 = buttons[1],
-                    B1 = buttons[2],
-                    B2 = buttons[0],
-                    B3 = buttons[3],
-                    B4 = buttons[4],
-                    B5 = buttons[5],
-                    B6 = buttons[6],
-                    B7 = buttons[7],
-                    B8 = buttons[8],
-                    B9 = buttons[9],
-                    B10 = buttons[10],
-                    B11 = buttons[11],
-                    B12 = arrows[0] == 0,
-                    B13 = arrows[0] == 18000,
-                    B14 = arrows[0] == 27000,
-                    B15 = arrows[0] == 9000,
-                    // B16 = KeyIsPressed("G"),
-                    // B17 = KeyIsPressed("G"),
-                    TIMESTAMP = (DateTime.Now - startTime).TotalMilliseconds,
-                };
-                controllerHandleStates.Add(state);
-                Log("Controller state added.");
+                A0 = (short) (short.MinValue + currentDeviceState.X),
+                A1 = (short) (short.MinValue + currentDeviceState.Y),
+                A2 = (short) (short.MinValue + currentDeviceState.Z),
+                A3 = (short) (short.MinValue + currentDeviceState.RotationZ),
+                B0 = buttons[1],
+                B1 = buttons[2],
+                B2 = buttons[0],
+                B3 = buttons[3],
+                B4 = buttons[4],
+                B5 = buttons[5],
+                B6 = buttons[6],
+                B7 = buttons[7],
+                B8 = buttons[8],
+                B9 = buttons[9],
+                B10 = buttons[10],
+                B11 = buttons[11],
+                B12 = arrows[0] == 0,
+                B13 = arrows[0] == 18000,
+                B14 = arrows[0] == 27000,
+                B15 = arrows[0] == 9000,
+                // B16 = KeyIsPressed("G"),
+                // B17 = KeyIsPressed("G"),
+                TIMESTAMP = timestamp,
+            };
+
+            ControllerState previousControllerState = controllerHandleStates.LastOrDefault();
+            if (previousControllerState != null && StatesAreTheSame(
+                newControllerState,
+                previousControllerState,
+                ignoreSticksButton.Checked
+            )) return;
+            controllerHandleStates.Add(newControllerState);
+            Log("Controller state added.");
+        }
+
+        private static bool StatesAreTheSame(ControllerState state1, ControllerState state2, bool ignoreSticks)
+        {
+            if (
+                state1.B0 != state2.B0 ||
+                state1.B1 != state2.B1 ||
+                state1.B2 != state2.B2 ||
+                state1.B3 != state2.B3 ||
+                state1.B4 != state2.B4 ||
+                state1.B5 != state2.B5 ||
+                state1.B6 != state2.B6 ||
+                state1.B7 != state2.B7 ||
+                state1.B8 != state2.B8 ||
+                state1.B9 != state2.B9 ||
+                state1.B10 != state2.B10 ||
+                state1.B11 != state2.B11 ||
+                state1.B12 != state2.B12 ||
+                state1.B13 != state2.B13 ||
+                state1.B14 != state2.B14 ||
+                state1.B15 != state2.B15 ||
+                (
+                    !ignoreSticks && (
+                        state1.A0 != state2.A0 ||
+                        state1.A1 != state2.A1 ||
+                        state1.A2 != state2.A2 ||
+                        state1.A3 != state2.A3
+                    )
+                )
+            )
+            {
+                return false;
             }
+            return true;
         }
 
         private void Log(string message)
@@ -173,7 +211,7 @@ namespace AutoInput
             //         }
             //     }
             // }
-            
+
             while (true)
             {
                 DeviceInstance device = directInput
@@ -191,25 +229,6 @@ namespace AutoInput
             resetControllerHandleButton.Enabled = true;
         }
 
-        private void recordStatesButton_Click(object sender, EventArgs e)
-        {
-            recordStatesTimer.Enabled = !recordStatesTimer.Enabled;
-            if (recordStatesTimer.Enabled)
-            {
-                controllerHandleStates.Clear();
-            }
-            else
-            {
-                AddAction(new Action()
-                {
-                    Type = ActionType.SetStates,
-                    Enabled = true,
-                    Arguments = new[] {controllerHandleStates.SerializeObject().Replace("false", "0").Replace("true", "1")},
-                });
-            }
-            recordStatesButton.Text = recordStatesTimer.Enabled ? "Stop Recording States" : "Record States";
-        }
-
         private static void WaitUntilStateIsUpdate(string deviceState, Joystick controllerHandle)
         {
             while (deviceState.Equals(controllerHandle.GetCurrentState().ToString()))
@@ -218,27 +237,12 @@ namespace AutoInput
             }
         }
 
-        private async void playActionsButton_Click(object sender, EventArgs e)
-        {
-            CheckedListBox.CheckedItemCollection checkedActions = actionsListBox.CheckedItems;
-            Log($"Playing {checkedActions.Count} actions.");
-            for (int i = 0; i < checkedActions.Count; i++)
-            {
-                Action action = (Action) checkedActions[i];
-                Log($"Playing action {i + 1}.");
-                
-                // await Task.Run(async () => await actionPlayer.PlayAction(action));
-                
-                await actionPlayer.PlayAction(action);
-            }
-            Log($"Finished playing actions.");
-        }
-
         private async void loadActionsButton_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dialog = GetFileDialog();
+            OpenFileDialog dialog = new();
+            dialog.Filter = "JSON|*.json";
             if (dialog.ShowDialog() != DialogResult.OK) return;
-            
+
             string actionJson = await File.ReadAllTextAsync(dialog.FileName);
             try
             {
@@ -250,13 +254,6 @@ namespace AutoInput
             {
                 Log("Actions could not be loaded.");
             }
-        }
-
-        private static OpenFileDialog GetFileDialog()
-        {
-            OpenFileDialog dialog = new();
-            dialog.Filter = "JSON|*.json";
-            return dialog;
         }
 
         private void AddAction(Action action)
@@ -273,7 +270,8 @@ namespace AutoInput
 
         private async void saveActionsButton_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dialog = GetFileDialog();
+            SaveFileDialog dialog = new();
+            dialog.Filter = "JSON|*.json";
             if (dialog.ShowDialog() != DialogResult.OK) return;
 
             List<Action> actions = new();
@@ -361,9 +359,10 @@ namespace AutoInput
             ListBox.SelectedIndexCollection selectedIndices = actionsListBox.SelectedIndices;
             if (!SingleActionIsSelected(selectedIndices, false)) return;
             Action action = GetActionAtIndex(selectedIndices[0]);
-            
-            
-            updateActionTextBox.Text = action.Type == ActionType.SetStates ? "" : action.SerializeObject(Formatting.Indented);
+
+
+            updateActionTextBox.Text =
+                action.Type == ActionType.SetStates ? "" : action.SerializeObject(Formatting.Indented);
         }
 
         private void updateActionButton_Click(object sender, EventArgs e)
@@ -414,6 +413,51 @@ namespace AutoInput
         private async void resetControllerHandleButton_Click(object sender, EventArgs e)
         {
             await GetControllerHandle();
+        }
+
+        private void recordStatesButton_CheckedChanged(object sender, EventArgs e)
+        {
+            bool newCheckState = recordStatesButton.Checked;
+            if (newCheckState)
+            {
+                controllerHandleStates.Clear();
+            }
+            else
+            {
+                AddAction(
+                    new Action()
+                    {
+                        Type = ActionType.SetStates,
+                        Enabled = true,
+                        Arguments = new[]
+                            {controllerHandleStates.SerializeObject().Replace("false", "0").Replace("true", "1")},
+                    }
+                );
+            }
+
+            recordStatesTimer.Enabled = newCheckState;
+        }
+
+        private async void playActionsButton_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!playActionsButton.Checked)
+            {
+                playActionsButton.Enabled = false;
+                return;
+            }
+            
+            CheckedListBox.CheckedItemCollection checkedActions = actionsListBox.CheckedItems;
+            Log($"Playing {checkedActions.Count} actions.");
+            for (int i = 0; i < checkedActions.Count; i++)
+            {
+                if (!playActionsButton.Checked) continue;
+                Action action = (Action) checkedActions[i];
+                Log($"Playing action {i + 1}.");
+                // await Task.Run(async () => await actionPlayer.PlayAction(action));
+                await actionPlayer.PlayAction(action);
+            }
+            Log($"Finished playing actions.");
+            playActionsButton.Enabled = true;
         }
     }
 }

@@ -32,9 +32,8 @@
             this.components = new System.ComponentModel.Container();
             this.logListBox = new System.Windows.Forms.ListBox();
             this.recordStatesTimer = new System.Windows.Forms.Timer(this.components);
-            this.playActionsButton = new System.Windows.Forms.Button();
             this.mainButtonsPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.recordStatesButton = new System.Windows.Forms.Button();
+            this.ignoreSticksButton = new System.Windows.Forms.CheckBox();
             this.actionsListBox = new System.Windows.Forms.CheckedListBox();
             this.listButtonsPanel = new System.Windows.Forms.TableLayoutPanel();
             this.moveActionUpButton = new System.Windows.Forms.Button();
@@ -45,11 +44,13 @@
             this.deleteActionButton = new System.Windows.Forms.Button();
             this.updateActionButton = new System.Windows.Forms.Button();
             this.updateActionTextBox = new System.Windows.Forms.TextBox();
-            this.loadActionsButton = new System.Windows.Forms.Button();
-            this.saveActionsButton = new System.Windows.Forms.Button();
             this.connectControllerButton = new System.Windows.Forms.Button();
             this.disconnectControllerButton = new System.Windows.Forms.Button();
             this.resetControllerHandleButton = new System.Windows.Forms.Button();
+            this.recordStatesButton = new System.Windows.Forms.CheckBox();
+            this.saveActionsButton = new System.Windows.Forms.Button();
+            this.loadActionsButton = new System.Windows.Forms.Button();
+            this.playActionsButton = new System.Windows.Forms.CheckBox();
             this.mainButtonsPanel.SuspendLayout();
             this.listButtonsPanel.SuspendLayout();
             this.SuspendLayout();
@@ -70,19 +71,6 @@
             this.recordStatesTimer.Interval = 1;
             this.recordStatesTimer.Tick += new System.EventHandler(this.recordStatesTimer_Tick);
             // 
-            // playActionsButton
-            // 
-            this.playActionsButton.AutoSize = true;
-            this.playActionsButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.playActionsButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.playActionsButton.Location = new System.Drawing.Point(192, 3);
-            this.playActionsButton.Name = "playActionsButton";
-            this.playActionsButton.Size = new System.Drawing.Size(183, 25);
-            this.playActionsButton.TabIndex = 6;
-            this.playActionsButton.Text = "Play Actions";
-            this.playActionsButton.UseVisualStyleBackColor = true;
-            this.playActionsButton.Click += new System.EventHandler(this.playActionsButton_Click);
-            // 
             // mainButtonsPanel
             // 
             this.mainButtonsPanel.ColumnCount = 5;
@@ -91,16 +79,17 @@
             this.mainButtonsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.mainButtonsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.mainButtonsPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            this.mainButtonsPanel.Controls.Add(this.recordStatesButton, 0, 0);
+            this.mainButtonsPanel.Controls.Add(this.playActionsButton, 2, 0);
+            this.mainButtonsPanel.Controls.Add(this.ignoreSticksButton, 1, 0);
             this.mainButtonsPanel.Controls.Add(this.logListBox, 3, 2);
             this.mainButtonsPanel.Controls.Add(this.actionsListBox, 0, 2);
             this.mainButtonsPanel.Controls.Add(this.listButtonsPanel, 2, 2);
-            this.mainButtonsPanel.Controls.Add(this.playActionsButton, 1, 0);
-            this.mainButtonsPanel.Controls.Add(this.loadActionsButton, 2, 0);
-            this.mainButtonsPanel.Controls.Add(this.saveActionsButton, 3, 0);
             this.mainButtonsPanel.Controls.Add(this.connectControllerButton, 0, 1);
             this.mainButtonsPanel.Controls.Add(this.disconnectControllerButton, 1, 1);
             this.mainButtonsPanel.Controls.Add(this.resetControllerHandleButton, 2, 1);
+            this.mainButtonsPanel.Controls.Add(this.recordStatesButton, 0, 0);
+            this.mainButtonsPanel.Controls.Add(this.saveActionsButton, 4, 0);
+            this.mainButtonsPanel.Controls.Add(this.loadActionsButton, 3, 0);
             this.mainButtonsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainButtonsPanel.Location = new System.Drawing.Point(0, 0);
             this.mainButtonsPanel.Name = "mainButtonsPanel";
@@ -108,21 +97,22 @@
             this.mainButtonsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.mainButtonsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.mainButtonsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.mainButtonsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.mainButtonsPanel.Size = new System.Drawing.Size(947, 560);
             this.mainButtonsPanel.TabIndex = 7;
             // 
-            // recordStatesButton
+            // ignoreSticksButton
             // 
-            this.recordStatesButton.AutoSize = true;
-            this.recordStatesButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.recordStatesButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.recordStatesButton.Location = new System.Drawing.Point(3, 3);
-            this.recordStatesButton.Name = "recordStatesButton";
-            this.recordStatesButton.Size = new System.Drawing.Size(183, 25);
-            this.recordStatesButton.TabIndex = 5;
-            this.recordStatesButton.Text = "Record States";
-            this.recordStatesButton.UseVisualStyleBackColor = true;
-            this.recordStatesButton.Click += new System.EventHandler(this.recordStatesButton_Click);
+            this.ignoreSticksButton.Appearance = System.Windows.Forms.Appearance.Button;
+            this.ignoreSticksButton.AutoSize = true;
+            this.ignoreSticksButton.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ignoreSticksButton.Location = new System.Drawing.Point(192, 3);
+            this.ignoreSticksButton.Name = "ignoreSticksButton";
+            this.ignoreSticksButton.Size = new System.Drawing.Size(183, 25);
+            this.ignoreSticksButton.TabIndex = 15;
+            this.ignoreSticksButton.Text = "Ignore Sticks";
+            this.ignoreSticksButton.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.ignoreSticksButton.UseVisualStyleBackColor = true;
             // 
             // actionsListBox
             // 
@@ -268,32 +258,6 @@
             this.updateActionTextBox.Size = new System.Drawing.Size(177, 43);
             this.updateActionTextBox.TabIndex = 7;
             // 
-            // loadActionsButton
-            // 
-            this.loadActionsButton.AutoSize = true;
-            this.loadActionsButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.loadActionsButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.loadActionsButton.Location = new System.Drawing.Point(381, 3);
-            this.loadActionsButton.Name = "loadActionsButton";
-            this.loadActionsButton.Size = new System.Drawing.Size(183, 25);
-            this.loadActionsButton.TabIndex = 7;
-            this.loadActionsButton.Text = "Load Actions";
-            this.loadActionsButton.UseVisualStyleBackColor = true;
-            this.loadActionsButton.Click += new System.EventHandler(this.loadActionsButton_Click);
-            // 
-            // saveActionsButton
-            // 
-            this.saveActionsButton.AutoSize = true;
-            this.saveActionsButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.saveActionsButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.saveActionsButton.Location = new System.Drawing.Point(570, 3);
-            this.saveActionsButton.Name = "saveActionsButton";
-            this.saveActionsButton.Size = new System.Drawing.Size(183, 25);
-            this.saveActionsButton.TabIndex = 8;
-            this.saveActionsButton.Text = "Save Actions";
-            this.saveActionsButton.UseVisualStyleBackColor = true;
-            this.saveActionsButton.Click += new System.EventHandler(this.saveActionsButton_Click);
-            // 
             // connectControllerButton
             // 
             this.connectControllerButton.AutoSize = true;
@@ -333,6 +297,60 @@
             this.resetControllerHandleButton.UseVisualStyleBackColor = true;
             this.resetControllerHandleButton.Click += new System.EventHandler(this.resetControllerHandleButton_Click);
             // 
+            // recordStatesButton
+            // 
+            this.recordStatesButton.Appearance = System.Windows.Forms.Appearance.Button;
+            this.recordStatesButton.AutoSize = true;
+            this.recordStatesButton.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.recordStatesButton.Location = new System.Drawing.Point(3, 3);
+            this.recordStatesButton.Name = "recordStatesButton";
+            this.recordStatesButton.Size = new System.Drawing.Size(183, 25);
+            this.recordStatesButton.TabIndex = 14;
+            this.recordStatesButton.Text = "Record States";
+            this.recordStatesButton.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.recordStatesButton.UseVisualStyleBackColor = true;
+            this.recordStatesButton.CheckedChanged += new System.EventHandler(this.recordStatesButton_CheckedChanged);
+            // 
+            // saveActionsButton
+            // 
+            this.saveActionsButton.AutoSize = true;
+            this.saveActionsButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.saveActionsButton.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.saveActionsButton.Location = new System.Drawing.Point(759, 3);
+            this.saveActionsButton.Name = "saveActionsButton";
+            this.saveActionsButton.Size = new System.Drawing.Size(185, 25);
+            this.saveActionsButton.TabIndex = 8;
+            this.saveActionsButton.Text = "Save Actions";
+            this.saveActionsButton.UseVisualStyleBackColor = true;
+            this.saveActionsButton.Click += new System.EventHandler(this.saveActionsButton_Click);
+            // 
+            // loadActionsButton
+            // 
+            this.loadActionsButton.AutoSize = true;
+            this.loadActionsButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.loadActionsButton.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.loadActionsButton.Location = new System.Drawing.Point(570, 3);
+            this.loadActionsButton.Name = "loadActionsButton";
+            this.loadActionsButton.Size = new System.Drawing.Size(183, 25);
+            this.loadActionsButton.TabIndex = 7;
+            this.loadActionsButton.Text = "Load Actions";
+            this.loadActionsButton.UseVisualStyleBackColor = true;
+            this.loadActionsButton.Click += new System.EventHandler(this.loadActionsButton_Click);
+            // 
+            // playActionsButton
+            // 
+            this.playActionsButton.Appearance = System.Windows.Forms.Appearance.Button;
+            this.playActionsButton.AutoSize = true;
+            this.playActionsButton.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.playActionsButton.Location = new System.Drawing.Point(381, 3);
+            this.playActionsButton.Name = "playActionsButton";
+            this.playActionsButton.Size = new System.Drawing.Size(183, 25);
+            this.playActionsButton.TabIndex = 16;
+            this.playActionsButton.Text = "Play Actions";
+            this.playActionsButton.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.playActionsButton.UseVisualStyleBackColor = true;
+            this.playActionsButton.CheckedChanged += new System.EventHandler(this.playActionsButton_CheckedChanged);
+            // 
             // AutoInput
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -355,9 +373,7 @@
 
         #endregion
         private System.Windows.Forms.Timer recordStatesTimer;
-        private System.Windows.Forms.Button playActionsButton;
         private System.Windows.Forms.TableLayoutPanel mainButtonsPanel;
-        private System.Windows.Forms.Button recordStatesButton;
         private System.Windows.Forms.Button loadActionsButton;
         private System.Windows.Forms.Button saveActionsButton;
         private System.Windows.Forms.ListBox logListBox;
@@ -374,5 +390,8 @@
         private System.Windows.Forms.Button connectControllerButton;
         private System.Windows.Forms.Button disconnectControllerButton;
         private System.Windows.Forms.Button resetControllerHandleButton;
+        private System.Windows.Forms.CheckBox recordStatesButton;
+        private System.Windows.Forms.CheckBox ignoreSticksButton;
+        private System.Windows.Forms.CheckBox playActionsButton;
     }
 }
