@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace AutoInput
         private WindowsNativeMethods nativeMethods = new();
         private readonly DualshockControllerWrapper controller = new();
         private readonly Dictionary<string, bool> keysPressed = new();
-        private readonly DateTime startTime = DateTime.Now;
+        private Stopwatch timer = new();
         private ActionPlayer actionPlayer;
         private IDelayer delayer = new RealDelayer();
 
@@ -32,7 +33,7 @@ namespace AutoInput
             await GetControllerHandle();
         }
 
-        private void UpdateControllerState()
+        private async void UpdateControllerState()
         {
             return;
             ControllerState state = new()
@@ -59,8 +60,9 @@ namespace AutoInput
                 B15 = KeyIsPressed("Oem7"),
                 // B16 = KeyIsPressed("G"),
                 // B17 = KeyIsPressed("G"),
-                TIMESTAMP = (DateTime.Now - startTime).TotalMilliseconds,
+                // TIMESTAMP = (DateTime.Now - startTime).TotalMilliseconds,
             };
+            await delayer.Delay(1000);
             controller.SetState(state);
             // states.Add(state);
         }
@@ -111,7 +113,7 @@ namespace AutoInput
 
         private void recordStatesTimer_Tick(object sender, EventArgs e)
         {
-            double timestamp = (DateTime.Now - startTime).TotalMilliseconds;
+            double timestamp = timer.ElapsedMilliseconds;
             JoystickState currentDeviceState = controllerHandle.GetCurrentState();
 
             bool[] buttons = currentDeviceState.Buttons;
@@ -421,6 +423,7 @@ namespace AutoInput
             if (newCheckState)
             {
                 controllerHandleStates.Clear();
+                timer.Restart();
             }
             else
             {
@@ -433,6 +436,7 @@ namespace AutoInput
                             {controllerHandleStates.SerializeObject().Replace("false", "0").Replace("true", "1")},
                     }
                 );
+                timer.Reset();
             }
 
             recordStatesTimer.Enabled = newCheckState;
@@ -442,6 +446,7 @@ namespace AutoInput
         {
             if (!playActionsButton.Checked)
             {
+                Log($"Waiting for current actions to finish.");
                 playActionsButton.Enabled = false;
                 return;
             }
@@ -457,6 +462,11 @@ namespace AutoInput
                 await actionPlayer.PlayAction(action);
             }
             Log($"Finished playing actions.");
+
+            playActionsButton.CheckedChanged -= playActionsButton_CheckedChanged;
+            playActionsButton.Checked = false;
+            playActionsButton.CheckedChanged += playActionsButton_CheckedChanged;
+            
             playActionsButton.Enabled = true;
         }
     }
