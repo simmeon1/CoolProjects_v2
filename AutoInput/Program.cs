@@ -8,6 +8,7 @@ using Common_ClassLibrary;
 using Nefarius.ViGEm.Client;
 using Nefarius.ViGEm.Client.Targets;
 using Nefarius.ViGEm.Client.Targets.DualShock4;
+using Timer = System.Timers.Timer;
 
 namespace AutoInput
 {
@@ -30,9 +31,9 @@ namespace AutoInput
 
         private static void DoManualTest()
         {
-            string file = File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\testMarioNes2.json");
+            string file = File.ReadAllText(@"C:\Users\simme\OneDrive\Desktop\testMarioNes6_noTimers_uniqueStates.json");
             List<Action> actions = file.DeserializeObject<List<Action>>();
-            List<ControllerState> states = actions[1].Arguments[0].DeserializeObject<List<ControllerState>>();
+            List<ControllerState> states = actions[0].Arguments[0].DeserializeObject<List<ControllerState>>();
             double firstTimestamp = states[0].TIMESTAMP;
             foreach (ControllerState state in states) state.TIMESTAMP -= firstTimestamp;
 
@@ -47,16 +48,22 @@ namespace AutoInput
                 Thread.Sleep(1000);
                 Stopwatch timer = new();
                 timer.Start();
+                // timer.
                 for (int i = 0; i < states.Count; i++)
                 {
                     ControllerState controllerState = states[i];
-                    if (timer.ElapsedMilliseconds < controllerState.TIMESTAMP)
+                    // Debug.WriteLine(diff);
+                    // int diff = (int) ((int)controllerState.TIMESTAMP - (int)timer.ElapsedMilliseconds);
+                    // Debug.WriteLine("start - " + diff);
+                    // if (timer.ElapsedMilliseconds < controllerState.TIMESTAMP)
+                    if (controllerState.TIMESTAMP - timer.Elapsed.TotalMilliseconds > 0)
                     {
                         i--;
                         continue;
                         // Thread.Sleep((int) (controllerState.TIMESTAMP - timer.ElapsedMilliseconds));
                     }
-
+                    
+                    // Debug.WriteLine("start - " + (controllerState.TIMESTAMP - timer.ElapsedMilliseconds));
                     if (lastState != null && lastState.A0 != controllerState.A0)
                         controller.SetAxisValue(0, controllerState.A0);
                     if (lastState != null && lastState.A1 != controllerState.A1)
@@ -97,6 +104,7 @@ namespace AutoInput
                     // Controller.SetButtonState(DualShock4Button.touch, state.b17);
                     controller.SubmitReport();
                     lastState = controllerState;
+                    // Debug.WriteLine("end - " + (controllerState.TIMESTAMP - timer.ElapsedMilliseconds));
                 }
             }
         }
