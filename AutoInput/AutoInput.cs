@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Common_ClassLibrary;
@@ -14,13 +15,13 @@ namespace AutoInput
     public partial class AutoInput : Form
     {
         private Joystick controllerHandle;
-        private List<ControllerState> controllerHandleStates = new();
+        private readonly List<ControllerState> controllerHandleStates = new();
         private WindowsNativeMethods nativeMethods = new();
         private readonly DualshockControllerWrapper controller = new();
         private readonly Dictionary<string, bool> keysPressed = new();
-        private DateTime startTime = DateTime.Now;
         private ActionPlayer actionPlayer;
-        private IDelayer delayer = new RealDelayer();
+        private readonly IDelayer delayer = new RealDelayer();
+        private CancellationTokenSource recordStatesCancelTokenSource;
 
         public AutoInput()
         {
@@ -31,61 +32,6 @@ namespace AutoInput
         {
             actionPlayer = new ActionPlayer(delayer, new WindowsNativeMethods(), controller);
             await GetControllerHandle();
-            await Task.Run(
-                () =>
-                {
-                    while (true)
-                    {
-                        if (!recordStatesButton.Checked) continue;
-                        // DateTime.Now - startTime;
-                        double timestamp = (DateTime.Now - startTime).TotalMilliseconds;
-                        // Debug.WriteLine("start - " + timestamp);
-                        JoystickState currentDeviceState = controllerHandle.GetCurrentState();
-
-                        bool[] buttons = currentDeviceState.Buttons;
-                        int[] arrows = currentDeviceState.PointOfViewControllers;
-                        ControllerState newControllerState = new()
-                        {
-                            A0 = (short) (short.MinValue + currentDeviceState.X),
-                            A1 = (short) (short.MinValue + currentDeviceState.Y),
-                            A2 = (short) (short.MinValue + currentDeviceState.Z),
-                            A3 = (short) (short.MinValue + currentDeviceState.RotationZ),
-                            B0 = buttons[1],
-                            B1 = buttons[2],
-                            B2 = buttons[0],
-                            B3 = buttons[3],
-                            B4 = buttons[4],
-                            B5 = buttons[5],
-                            B6 = buttons[6],
-                            B7 = buttons[7],
-                            B8 = buttons[8],
-                            B9 = buttons[9],
-                            B10 = buttons[10],
-                            B11 = buttons[11],
-                            B12 = arrows[0] == 0,
-                            B13 = arrows[0] == 18000,
-                            B14 = arrows[0] == 27000,
-                            B15 = arrows[0] == 9000,
-                            // B16 = KeyIsPressed("G"),
-                            // B17 = KeyIsPressed("G"),
-                            TIMESTAMP = timestamp,
-                        };
-
-                        ControllerState previousControllerState = controllerHandleStates.LastOrDefault();
-                        if (previousControllerState == null || !StatesAreTheSame(
-                            newControllerState,
-                            previousControllerState,
-                            ignoreSticksButton.Checked
-                        ))
-                        {
-                            controllerHandleStates.Add(newControllerState);
-                            // Log("Controller state added.");
-                            // Debug.WriteLine("Controller state added." + timestamp);
-                        }
-                        // Debug.WriteLine("end - " + (DateTime.Now - startTime).TotalMilliseconds);
-                    }
-                }
-            );
         }
 
         private async void UpdateControllerState()
@@ -166,11 +112,6 @@ namespace AutoInput
             // );
         }
 
-        private void recordStatesTimer_Tick(object sender, EventArgs e)
-        {
-
-        }
-
         private static bool StatesAreTheSame(ControllerState state1, ControllerState state2, bool ignoreSticks)
         {
             if (
@@ -216,34 +157,11 @@ namespace AutoInput
             resetControllerHandleButton.Enabled = false;
             controllerHandle?.Unacquire();
             Log("Getting controller handle...");
-            DirectInput directInput = new();
-            // IList<DeviceInstance> firstDevices = directInput.GetDevices();
-            // while (true)
-            // {
-            //     IList<DeviceInstance> secondDevices = directInput.GetDevices();
-            //     foreach (DeviceInstance device in secondDevices)
-            //     {
-            //         if (!firstDevices.Any(d => d.InstanceGuid.Equals(device.InstanceGuid)))
-            //         {
-            //             return new Joystick(directInput, device.InstanceGuid);
-            //         }
-            //     }
-            // }
 
-            while (true)
-            {
-                DeviceInstance device = directInput
-                    .GetDevices()
-                    .FirstOrDefault(d => d.InstanceName.Equals("Wireless Controller"));
-                if (device != null)
-                {
-                    controllerHandle = new Joystick(directInput, device.InstanceGuid);
-                    controllerHandle.Acquire();
-                    Log("Controller handle received.");
-                    break;
-                }
-                await delayer.Delay(1000);
-            }
+            DirectInputUseCase directInputUseCase = new(delayer);
+            controllerHandle = await directInputUseCase.GetControllerJoystick();
+            controllerHandle.Acquire();
+            Log("Controller handle received.");
             resetControllerHandleButton.Enabled = true;
         }
 
@@ -433,15 +351,17 @@ namespace AutoInput
             await GetControllerHandle();
         }
 
-        private void recordStatesButton_CheckedChanged(object sender, EventArgs e)
+        private async void recordStatesButton_CheckedChanged(object sender, EventArgs e)
         {
-            bool newCheckState = recordStatesButton.Checked;
-            if (newCheckState)
+            if (recordStatesButton.Checked)
             {
+                recordStatesCancelTokenSource = new CancellationTokenSource();
                 controllerHandleStates.Clear();
+                await RecordStatesTask(recordStatesCancelTokenSource.Token);
             }
             else
             {
+                recordStatesCancelTokenSource.Cancel();
                 AddAction(
                     new Action()
                     {
@@ -452,8 +372,66 @@ namespace AutoInput
                     }
                 );
             }
+        }
 
-            recordStatesTimer.Enabled = newCheckState;
+        private Task RecordStatesTask(CancellationToken cancellationToken)
+        {
+            return Task.Run(
+                () =>
+                {
+                    Stopwatch timer = new();
+                    timer.Start();
+                    while (true)
+                    {
+                        if (recordStatesCancelTokenSource.IsCancellationRequested) return;
+                        double timestamp = timer.Elapsed.TotalMilliseconds;
+                        JoystickState currentDeviceState = controllerHandle.GetCurrentState();
+
+                        bool[] buttons = currentDeviceState.Buttons;
+                        int[] arrows = currentDeviceState.PointOfViewControllers;
+                        ControllerState newControllerState = new()
+                        {
+                            A0 = (short) (short.MinValue + currentDeviceState.X),
+                            A1 = (short) (short.MinValue + currentDeviceState.Y),
+                            A2 = (short) (short.MinValue + currentDeviceState.Z),
+                            A3 = (short) (short.MinValue + currentDeviceState.RotationZ),
+                            B0 = buttons[1],
+                            B1 = buttons[2],
+                            B2 = buttons[0],
+                            B3 = buttons[3],
+                            B4 = buttons[4],
+                            B5 = buttons[5],
+                            B6 = buttons[6],
+                            B7 = buttons[7],
+                            B8 = buttons[8],
+                            B9 = buttons[9],
+                            B10 = buttons[10],
+                            B11 = buttons[11],
+                            B12 = arrows[0] == 0,
+                            B13 = arrows[0] == 18000,
+                            B14 = arrows[0] == 27000,
+                            B15 = arrows[0] == 9000,
+                            // B16 = KeyIsPressed("G"),
+                            // B17 = KeyIsPressed("G"),
+                            TIMESTAMP = timestamp,
+                        };
+
+                        ControllerState previousControllerState = controllerHandleStates.LastOrDefault();
+                        if (previousControllerState == null || !StatesAreTheSame(
+                            newControllerState,
+                            previousControllerState,
+                            ignoreSticksButton.Checked
+                        ))
+                        {
+                            controllerHandleStates.Add(newControllerState);
+                            // Log("Controller state added.");
+                            // Debug.WriteLine("Controller state added." + timestamp);
+                        }
+                        // Debug.WriteLine("end - " + (DateTime.Now - startTime).TotalMilliseconds);
+                    }
+                },
+                cancellationToken
+            );
         }
 
         private async void playActionsButton_CheckedChanged(object sender, EventArgs e)
@@ -464,7 +442,7 @@ namespace AutoInput
                 playActionsButton.Enabled = false;
                 return;
             }
-            
+
             CheckedListBox.CheckedItemCollection checkedActions = actionsListBox.CheckedItems;
             Log($"Playing {checkedActions.Count} actions.");
             for (int i = 0; i < checkedActions.Count; i++)
@@ -480,7 +458,6 @@ namespace AutoInput
             playActionsButton.CheckedChanged -= playActionsButton_CheckedChanged;
             playActionsButton.Checked = false;
             playActionsButton.CheckedChanged += playActionsButton_CheckedChanged;
-            
             playActionsButton.Enabled = true;
         }
     }

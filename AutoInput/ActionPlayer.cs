@@ -66,12 +66,13 @@ namespace AutoInput
 
             double firstTimestamp = states[0].TIMESTAMP;
             foreach (ControllerState state in states) state.TIMESTAMP -= firstTimestamp;
-            Stopwatch watch = new();
-            watch.Start();
+            Stopwatch timer = new();
+            timer.Start();
             for (int i = 0; i < states.Count; i++)
             {
+                
                 ControllerState controllerState = states[i];
-                ControllerState nextControllerState = i == states.Count - 1 ? states[i] : states[i + 1];
+                while (controllerState.TIMESTAMP - timer.Elapsed.TotalMilliseconds > 0) { }
                 // double timeDiffBetweenStates = nextControllerState.TIMESTAMP - controllerState.TIMESTAMP;
                 // string deviceState = controllerHandle.GetCurrentState().ToString();
                 controller.SetState(controllerState);
@@ -81,8 +82,6 @@ namespace AutoInput
                 // long watchElapsedMilliseconds = watch.ElapsedMilliseconds;
                 // double timeToWait = timeDiffBetweenStates - watchElapsedMilliseconds;
                 // await delayer.Delay((int) timeToWait);
-                double timeToWait = Math.Max(0, nextControllerState.TIMESTAMP - watch.ElapsedMilliseconds);
-                if (timeToWait > 0) await delayer.Delay((int) timeToWait);
                 // while (watch.ElapsedMilliseconds < nextControllerState.TIMESTAMP)
                 // {
                 // }

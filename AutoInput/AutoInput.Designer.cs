@@ -31,7 +31,6 @@
         {
             this.components = new System.ComponentModel.Container();
             this.logListBox = new System.Windows.Forms.ListBox();
-            this.recordStatesTimer = new System.Windows.Forms.Timer(this.components);
             this.mainButtonsPanel = new System.Windows.Forms.TableLayoutPanel();
             this.ignoreSticksButton = new System.Windows.Forms.CheckBox();
             this.actionsListBox = new System.Windows.Forms.CheckedListBox();
@@ -65,11 +64,6 @@
             this.logListBox.Name = "logListBox";
             this.logListBox.Size = new System.Drawing.Size(374, 492);
             this.logListBox.TabIndex = 3;
-            // 
-            // recordStatesTimer
-            // 
-            this.recordStatesTimer.Interval = 1;
-            this.recordStatesTimer.Tick += new System.EventHandler(this.recordStatesTimer_Tick);
             // 
             // mainButtonsPanel
             // 
@@ -372,7 +366,6 @@
         }
 
         #endregion
-        private System.Windows.Forms.Timer recordStatesTimer;
         private System.Windows.Forms.TableLayoutPanel mainButtonsPanel;
         private System.Windows.Forms.Button loadActionsButton;
         private System.Windows.Forms.Button saveActionsButton;

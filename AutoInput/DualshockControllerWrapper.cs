@@ -43,10 +43,10 @@ namespace AutoInput
             controller.SetButtonState(DualShock4Button.ThumbLeft, controllerState.B10);
             controller.SetButtonState(DualShock4Button.ThumbRight, controllerState.B11);
             if (controllerState.B12) controller.SetDPadDirection(DualShock4DPadDirection.North);
-            if (controllerState.B13) controller.SetDPadDirection(DualShock4DPadDirection.South);
-            if (controllerState.B14) controller.SetDPadDirection(DualShock4DPadDirection.West);
-            if (controllerState.B15) controller.SetDPadDirection(DualShock4DPadDirection.East);
-            if (!controllerState.B12 && !controllerState.B13 && !controllerState.B14 && !controllerState.B15) controller.SetDPadDirection(DualShock4DPadDirection.None);
+            else if (controllerState.B13) controller.SetDPadDirection(DualShock4DPadDirection.South);
+            else if (controllerState.B14) controller.SetDPadDirection(DualShock4DPadDirection.West);
+            else if (controllerState.B15) controller.SetDPadDirection(DualShock4DPadDirection.East);
+            else controller.SetDPadDirection(DualShock4DPadDirection.None);
             // Controller.SetButtonState(DualShock4Button.ps, state.b16);
             // Controller.SetButtonState(DualShock4Button.touch, state.b17);
             controller.SubmitReport();
