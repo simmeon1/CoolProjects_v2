@@ -1,14 +1,12 @@
 using Common_ClassLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
-using OpenQA.Selenium.Chrome;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using MusicPlaylistBuilder_ClassLibrary;
 
 namespace MusicPlaylistBuilder
 {
@@ -250,7 +248,7 @@ namespace MusicPlaylistBuilder
             // List<SongCLS> usSongs = GetSongObjectsFromEntries(usSongEntries);
 
             SpotifyCredentials credentials = File
-                .ReadAllText(@"C:\Users\simme\source\repos\CoolProjects_v2\MusicPlaylistBuilder\credentials.json")
+                .ReadAllText(@"C:\Users\simme\source\repos\CoolProjects_v2\MusicPlaylistBuilder_Tests\credentials.json")
                 .DeserializeObject<SpotifyCredentials>();
             SpotifyAPIClient client = new(new RealHttpClient(), delayer, credentials);
 

@@ -1,7 +1,4 @@
-﻿using Common_ClassLibrary;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -10,8 +7,11 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Common_ClassLibrary;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace MusicPlaylistBuilder
+namespace MusicPlaylistBuilder_ClassLibrary
 {
     public class SpotifyAPIClient
     {
@@ -30,7 +30,10 @@ namespace MusicPlaylistBuilder
 
         public async Task<string> GetIdOfFirstResultOfSearch(string query)
         {
-            JObject responseJson = await GetJObjectFromRequestResponse(HttpMethod.Get, $"{root}search?q={HttpUtility.UrlEncode(query)}&type=track&limit=1");
+            JObject responseJson = await GetJObjectFromRequestResponse(
+                HttpMethod.Get,
+                $"{root}search?q={HttpUtility.UrlEncode(query)}&type=track&limit=1"
+            );
             JToken items = responseJson["tracks"]["items"];
             return !items.Any() ? "" : items[0]["id"].ToString();
         }
@@ -40,16 +43,20 @@ namespace MusicPlaylistBuilder
             JObject responseJson = await GetJObjectFromRequestResponse(HttpMethod.Get, $"{root}me");
             return responseJson["id"].ToString();
         }
-        
+
         public async Task<string> CreatePlaylist(string name, string userId)
         {
             Dictionary<string, object> options = new();
             options.Add("name", name);
             options.Add("public", false);
-            JObject responseJson = await GetJObjectFromRequestResponse(HttpMethod.Post, $"{root}users/{userId}/playlists", Serialize(options));
+            JObject responseJson = await GetJObjectFromRequestResponse(
+                HttpMethod.Post,
+                $"{root}users/{userId}/playlists",
+                Serialize(options)
+            );
             return responseJson["id"].ToString();
         }
-        
+
         public async Task AddSongsToPlaylist(string playlistId, List<string> songIds)
         {
             List<string> partOfSongIds = new();
@@ -62,7 +69,11 @@ namespace MusicPlaylistBuilder
 
                 Dictionary<string, object> options = new();
                 options.Add("uris", partOfSongIds);
-                await GetJObjectFromRequestResponse(HttpMethod.Post, $"{root}playlists/{playlistId}/tracks", Serialize(options));
+                await GetJObjectFromRequestResponse(
+                    HttpMethod.Post,
+                    $"{root}playlists/{playlistId}/tracks",
+                    Serialize(options)
+                );
             }
         }
 
@@ -71,7 +82,11 @@ namespace MusicPlaylistBuilder
             return obj.SerializeObject(Formatting.Indented);
         }
 
-        private async Task<JObject> GetJObjectFromRequestResponse(HttpMethod httpMethod, string requestUri, string content = "")
+        private async Task<JObject> GetJObjectFromRequestResponse(
+            HttpMethod httpMethod,
+            string requestUri,
+            string content = ""
+        )
         {
             return JObject.Parse(await SendRequest(CreateRequestMessage(httpMethod, requestUri, content)));
         }
@@ -80,7 +95,11 @@ namespace MusicPlaylistBuilder
         {
             HttpRequestMessage requestMessage = new(HttpMethod.Post, "https://accounts.spotify.com/api/token");
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials.EncodedSecret);
-            requestMessage.Content = new StringContent($"grant_type=refresh_token&refresh_token={credentials.RefreshToken}", Encoding.UTF8, "application/x-www-form-urlencoded");
+            requestMessage.Content = new StringContent(
+                $"grant_type=refresh_token&refresh_token={credentials.RefreshToken}",
+                Encoding.UTF8,
+                "application/x-www-form-urlencoded"
+            );
             string responseText = await SendRequest(requestMessage);
             JObject tokenResponse = JObject.Parse(responseText);
             token = tokenResponse["access_token"].ToString();
@@ -99,7 +118,7 @@ namespace MusicPlaylistBuilder
 
             if (responseStatusCode == HttpStatusCode.TooManyRequests)
             {
-                await delayer.Delay(response.Headers.RetryAfter.Delta.Value);
+                await delayer.Delay(response.Headers.RetryAfter.Delta.Value.Add(TimeSpan.FromMilliseconds(1000)));
                 response = await ResendRequest(request);
             }
 
@@ -109,7 +128,11 @@ namespace MusicPlaylistBuilder
 
         private async Task<HttpResponseMessage> ResendRequest(HttpRequestMessage originalRequest)
         {
-            HttpRequestMessage clonedRequest = CreateRequestMessage(originalRequest.Method, originalRequest.RequestUri.ToString(), await originalRequest.Content.ReadAsStringAsync());
+            HttpRequestMessage clonedRequest = CreateRequestMessage(
+                originalRequest.Method,
+                originalRequest.RequestUri.ToString(),
+                await originalRequest.Content.ReadAsStringAsync()
+            );
             return await http.SendRequest(clonedRequest);
         }
 
@@ -117,7 +140,7 @@ namespace MusicPlaylistBuilder
         {
             HttpRequestMessage requestMessage = new(method, requestUri);
             requestMessage.Content = new StringContent(content);
-            requestMessage.Content.Headers.ContentType = new("application/json");
+            requestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             return requestMessage;

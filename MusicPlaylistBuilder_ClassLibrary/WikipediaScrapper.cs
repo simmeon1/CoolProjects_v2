@@ -1,12 +1,11 @@
-﻿using Common_ClassLibrary;
-using OpenQA.Selenium;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
-using System.Threading;
+using Common_ClassLibrary;
+using OpenQA.Selenium;
 
-namespace MusicPlaylistBuilder
+namespace MusicPlaylistBuilder_ClassLibrary
 {
     internal class WikipediaScrapper
     {

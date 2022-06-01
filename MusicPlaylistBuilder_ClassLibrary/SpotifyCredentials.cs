@@ -1,4 +1,4 @@
-﻿namespace MusicPlaylistBuilder
+﻿namespace MusicPlaylistBuilder_ClassLibrary
 {
     public class SpotifyCredentials
     {

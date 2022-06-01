@@ -4,6 +4,8 @@
     <TargetFramework>net5.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <RootNamespace>MusicPlaylistBuilder</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common_ClassLibrary\Common_ClassLibrary.csproj" />
+    <ProjectReference Include="..\MusicPlaylistBuilder_ClassLibrary\MusicPlaylistBuilder_ClassLibrary.csproj" />
   </ItemGroup>
 
 </Project>

@@ -17,11 +17,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common_ClassLibrary", "Comm
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeagueAPI_Console", "LeagueAPI_Console\LeagueAPI_Console.csproj", "{4761BE14-9808-479E-BF41-55E20A50D9D1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlaylistBuilder", "MusicPlaylistBuilder\MusicPlaylistBuilder.csproj", "{4F32AF37-A320-416B-ACFB-78BD542525EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicPlaylistBuilder_Tests", "MusicPlaylistBuilder\MusicPlaylistBuilder_Tests.csproj", "{4F32AF37-A320-416B-ACFB-78BD542525EB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeagueGui", "LeagueGui\LeagueGui.csproj", "{820C82B0-C76A-4298-8BB4-46244315D5BE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoInput", "AutoInput\AutoInput.csproj", "{3FD3D624-9EAB-4D75-A65E-4865EF2FABB8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicPlaylistBuilder_ClassLibrary", "MusicPlaylistBuilder_ClassLibrary\MusicPlaylistBuilder_ClassLibrary.csproj", "{B0F48652-59AC-4402-8053-76D121674045}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicPlaylistBuilder_Console", "MusicPlaylistBuilder_Console\MusicPlaylistBuilder_Console.csproj", "{58658F59-8027-46D5-A9D0-03367AB63FDC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +73,14 @@ Global
 		{3FD3D624-9EAB-4D75-A65E-4865EF2FABB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FD3D624-9EAB-4D75-A65E-4865EF2FABB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FD3D624-9EAB-4D75-A65E-4865EF2FABB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0F48652-59AC-4402-8053-76D121674045}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0F48652-59AC-4402-8053-76D121674045}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0F48652-59AC-4402-8053-76D121674045}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0F48652-59AC-4402-8053-76D121674045}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58658F59-8027-46D5-A9D0-03367AB63FDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58658F59-8027-46D5-A9D0-03367AB63FDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58658F59-8027-46D5-A9D0-03367AB63FDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58658F59-8027-46D5-A9D0-03367AB63FDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
