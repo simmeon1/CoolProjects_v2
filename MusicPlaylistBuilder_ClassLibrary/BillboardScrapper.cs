@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Common_ClassLibrary;
 using OpenQA.Selenium;
 
 namespace MusicPlaylistBuilder_ClassLibrary
 {
-    public class OfficialChartsScrapper
+    public class BillboardScrapper
     {
         private readonly IWebDriver driver;
         private readonly IJavaScriptExecutor js;
@@ -18,7 +15,7 @@ namespace MusicPlaylistBuilder_ClassLibrary
         private readonly IFileIO fileIo;
         private readonly ILogger logger;
 
-        public OfficialChartsScrapper(IWebDriver driver, IJavaScriptExecutor js, IHttpClient http, IFileIO fileIo, ILogger logger)
+        public BillboardScrapper(IWebDriver driver, IJavaScriptExecutor js, IHttpClient http, IFileIO fileIo, ILogger logger)
         {
             this.driver = driver;
             this.js = js;
@@ -27,16 +24,16 @@ namespace MusicPlaylistBuilder_ClassLibrary
             this.logger = logger;
         }
 
-        public async Task<Dictionary<string, SongEntry>> GetPages()
+        public Dictionary<string, SongEntry> GetPages()
         {
-            DateTime date = new(1952, 11, 14);
+            DateTime date = new(1958, 8, 2);
             Dictionary<string, SongEntry> entries = new();
 
             try
             {
                 while (date.CompareTo(DateTime.Now) < 0)
                 {
-                    await AddEntriesFromDate(date, entries);
+                    AddEntriesFromDate(date, entries);
                     date = date.AddDays(7);
                 }
             }
@@ -48,36 +45,18 @@ namespace MusicPlaylistBuilder_ClassLibrary
             return entries;
         }
 
-        private async Task AddEntriesFromDate(DateTime date, Dictionary<string, SongEntry> entries)
+        private void AddEntriesFromDate(DateTime date, Dictionary<string, SongEntry> entries)
         {
-            string dateStr = date.ToString("yyyyMMdd");
-            string singlesChartId = "7501";
-
-            HttpRequestMessage request = new(
-                HttpMethod.Get,
-                $"https://www.officialcharts.com/charts/singles-chart/{dateStr}/{singlesChartId}/"
-            );
-            HttpResponseMessage response = await http.SendRequest(request);
-            string responseText = await response.Content.ReadAsStringAsync();
-            string tableHtml = Regex.Match(
-                    responseText,
-                    "<section class=.chart.>(.|\n)*?^</section>",
-                    RegexOptions.Multiline
-                )
-                .Value;
-            tableHtml = Regex.Replace(tableHtml, "img src=\".*?\"", "img src=\"\"");
-            string filePath = "test.html";
-            fileIo.WriteAllText(filePath, tableHtml);
-            string fileUri = new Uri(Path.GetFullPath(filePath)).AbsoluteUri;
-            driver.Navigate().GoToUrl(fileUri);
-
+            string dateStr = date.ToString("yyyy-MM-dd");
+            string singlesChartId = "hot-100";
+            driver.Navigate().GoToUrl($"https://www.billboard.com/charts/{singlesChartId}/{dateStr}/");
             ReadOnlyCollection<object> trackRows = (ReadOnlyCollection<object>) js.ExecuteScript(
                 @"
 function getTrackRowTexts() {
     var result = [];
-    var tracks = document.querySelectorAll('.track');
+    var tracks = document.querySelectorAll('.o-chart-results-list-row-container');
     tracks.forEach(track => {
-        result.push(track.parentElement.parentElement.innerText);
+        result.push(track.innerText);
     });
     return result;
 }
@@ -92,11 +71,12 @@ return getTrackRowTexts();"
                 rowText = rowText.Replace("\n", "-:-");
                 rowText = rowText.Replace("-:--:-", "-:-");
                 string[] rowPieces = rowText.Split("-:-");
+                int diff = 7 - rowPieces.Length;
 
-                string title = rowPieces[2];
-                string artist = rowPieces[3];
-                int peak = int.Parse(rowPieces[5]);
-                int stay = int.Parse(rowPieces[6]);
+                string title = rowPieces[2 - diff];
+                string artist = rowPieces[3 - diff];
+                int peak = int.Parse(rowPieces[5 - diff]);
+                int stay = int.Parse(rowPieces[6 - diff]);
 
                 string trackId = artist + " " + title;
                 bool containsEntry = entries.ContainsKey(trackId);

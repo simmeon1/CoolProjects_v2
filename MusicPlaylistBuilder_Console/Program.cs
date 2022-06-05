@@ -13,12 +13,14 @@ namespace MusicPlaylistBuilder_Console
         static async Task Main(string[] args)
         {
             ChromeOptions chromeOptions = new();
-            chromeOptions.AddArgument("headless");
+            // chromeOptions.AddArgument("headless");
             ChromeDriver driver = new(chromeOptions);
             RealFileIO fileIo = new();
             Logger_Console logger = new();
-            OfficialChartsScrapper scrapper = new(driver, driver, new RealHttpClient(), fileIo, logger);
-            Dictionary<string, OfficialChartsSongEntry> entries = await scrapper.GetPages();
+            
+            BillboardScrapper scrapper = new(driver, driver, new RealHttpClient(), fileIo, logger);
+            Dictionary<string, SongEntry> entries = scrapper.GetPages();
+            
             fileIo.WriteAllText("results.json", entries.SerializeObject(Formatting.Indented));
             fileIo.WriteAllText("log.txt", logger.GetContent());
             Console.ReadKey();
