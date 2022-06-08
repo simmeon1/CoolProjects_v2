@@ -27,10 +27,10 @@ namespace MusicPlaylistBuilder_ClassLibrary
             this.logger = logger;
         }
 
-        public async Task<Dictionary<string, SongEntry>> GetPages()
+        public async Task<Dictionary<string, ScrappedSong>> GetPages()
         {
             DateTime date = new(1952, 11, 14);
-            Dictionary<string, SongEntry> entries = new();
+            Dictionary<string, ScrappedSong> entries = new();
 
             try
             {
@@ -48,7 +48,7 @@ namespace MusicPlaylistBuilder_ClassLibrary
             return entries;
         }
 
-        private async Task AddEntriesFromDate(DateTime date, Dictionary<string, SongEntry> entries)
+        private async Task AddEntriesFromDate(DateTime date, Dictionary<string, ScrappedSong> entries)
         {
             string dateStr = date.ToString("yyyyMMdd");
             string singlesChartId = "7501";
@@ -100,11 +100,11 @@ return getTrackRowTexts();"
 
                 string trackId = artist + " " + title;
                 bool containsEntry = entries.ContainsKey(trackId);
-                SongEntry entry = containsEntry
+                ScrappedSong entry = containsEntry
                     ? entries[trackId]
-                    : new SongEntry(title, artist, date);
-                entry.SetPeak(peak);
-                entry.SetStay(stay);
+                    : new ScrappedSong(title, artist, date);
+                entry.SetHigherPeak(peak);
+                entry.SetLongerStay(stay);
                 if (!containsEntry)
                 {
                     entries.Add(trackId, entry);

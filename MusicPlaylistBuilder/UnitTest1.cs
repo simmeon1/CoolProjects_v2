@@ -294,7 +294,7 @@ namespace MusicPlaylistBuilder
             int counter = 0;
             foreach (string term in terms)
             {
-                result.Add(term, await client.GetIdOfFirstResultOfSearch(term));
+                result.Add(term, await client.GetFirstSearchResultEntry(term));
                 Debug.WriteLine($"{++counter}/{terms.Count}");
             }
 

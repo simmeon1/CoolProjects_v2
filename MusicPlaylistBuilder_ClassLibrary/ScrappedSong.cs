@@ -2,7 +2,7 @@
 
 namespace MusicPlaylistBuilder_ClassLibrary
 {
-    public class SongEntry
+    public class ScrappedSong
     {
         public string Title { get; set; }
         public string Artist { get; set; }
@@ -10,21 +10,26 @@ namespace MusicPlaylistBuilder_ClassLibrary
         public int Peak { get; set; } = int.MaxValue;
         public int Stay { get; set; } = int.MinValue;
 
-        public SongEntry(string title, string artist, DateTime date)
+        public ScrappedSong(string title, string artist, DateTime date)
         {
             Title = title;
             Artist = artist;
             Date = date;
         }
 
-        public void SetPeak(int peak)
+        public void SetHigherPeak(int peak)
         {
             if (peak < Peak) Peak = peak;
         }
 
-        public void SetStay(int stay)
+        public void SetLongerStay(int stay)
         {
             if (stay > Stay) Stay = stay;
+        }
+        
+        public void SetEarlierDate(DateTime date)
+        {
+            if (date.CompareTo(Date) < 0) Date = date;
         }
 
         public override string ToString()

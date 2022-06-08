@@ -17,7 +17,7 @@ namespace MusicPlaylistBuilder
             ChromeDriver driver = new();
             RealFileIO fileIo = new();
             OfficialChartsScrapper scrapper = new(driver, driver, new RealHttpClient(), fileIo, new Logger_Console());
-            Dictionary<string, SongEntry> entries = await scrapper.GetPages();
+            Dictionary<string, ScrappedSong> entries = await scrapper.GetPages();
             fileIo.WriteAllText("results.json", entries.SerializeObject(Formatting.Indented));
         }
     }

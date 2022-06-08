@@ -28,14 +28,19 @@ namespace MusicPlaylistBuilder_ClassLibrary
             this.credentials = credentials;
         }
 
-        public async Task<string> GetIdOfFirstResultOfSearch(string query)
+        public async Task<SpotifySong> GetFirstSearchResultEntry(string query)
         {
             JObject responseJson = await GetJObjectFromRequestResponse(
                 HttpMethod.Get,
                 $"{root}search?q={HttpUtility.UrlEncode(query)}&type=track&limit=1"
             );
             JToken items = responseJson["tracks"]["items"];
-            return !items.Any() ? "" : items[0]["id"].ToString();
+            if (!items.Any()) return null;
+            JToken firstResult = items[0];
+            List<string> artists = firstResult["artists"].Select(artist => artist["name"].ToString()).ToList();
+            string name = firstResult["name"].ToString();
+            string id = firstResult["id"].ToString();
+            return new SpotifySong(artists, name, id);
         }
 
         public async Task<string> GetUserId()
@@ -107,33 +112,38 @@ namespace MusicPlaylistBuilder_ClassLibrary
 
         private async Task<string> SendRequest(HttpRequestMessage request)
         {
-            HttpResponseMessage response = await http.SendRequest(request);
-            HttpStatusCode responseStatusCode = response.StatusCode;
-
-            if (responseStatusCode == HttpStatusCode.Unauthorized)
+            HttpResponseMessage response;
+            while (true)
             {
-                await UpdateAccessToken();
-                response = await ResendRequest(request);
-            }
+                response = await http.SendRequest(request);
+                if (response.IsSuccessStatusCode) break;
 
-            if (responseStatusCode == HttpStatusCode.TooManyRequests)
-            {
-                await delayer.Delay(response.Headers.RetryAfter.Delta.Value.Add(TimeSpan.FromMilliseconds(1000)));
-                response = await ResendRequest(request);
+                HttpStatusCode responseStatusCode = response.StatusCode;
+                if (responseStatusCode == HttpStatusCode.Unauthorized)
+                {
+                    await UpdateAccessToken();
+                }
+                else if (responseStatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    await delayer.Delay(response.Headers.RetryAfter.Delta.Value.Add(TimeSpan.FromMilliseconds(1000)));
+                }
+                else if (responseStatusCode == HttpStatusCode.InternalServerError)
+                {
+                    await delayer.Delay(10000);
+                }
+                request = await GetClonedRequest(request);
             }
-
-            response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
         }
 
-        private async Task<HttpResponseMessage> ResendRequest(HttpRequestMessage originalRequest)
+        private async Task<HttpRequestMessage> GetClonedRequest(HttpRequestMessage originalRequest)
         {
             HttpRequestMessage clonedRequest = CreateRequestMessage(
                 originalRequest.Method,
                 originalRequest.RequestUri.ToString(),
                 await originalRequest.Content.ReadAsStringAsync()
             );
-            return await http.SendRequest(clonedRequest);
+            return clonedRequest;
         }
 
         private HttpRequestMessage CreateRequestMessage(HttpMethod method, string requestUri, string content = "")

@@ -24,10 +24,10 @@ namespace MusicPlaylistBuilder_ClassLibrary
             this.logger = logger;
         }
 
-        public Dictionary<string, SongEntry> GetPages()
+        public Dictionary<string, ScrappedSong> GetPages()
         {
             DateTime date = new(1958, 8, 2);
-            Dictionary<string, SongEntry> entries = new();
+            Dictionary<string, ScrappedSong> entries = new();
 
             try
             {
@@ -45,7 +45,7 @@ namespace MusicPlaylistBuilder_ClassLibrary
             return entries;
         }
 
-        private void AddEntriesFromDate(DateTime date, Dictionary<string, SongEntry> entries)
+        private void AddEntriesFromDate(DateTime date, Dictionary<string, ScrappedSong> entries)
         {
             string dateStr = date.ToString("yyyy-MM-dd");
             string singlesChartId = "hot-100";
@@ -80,11 +80,11 @@ return getTrackRowTexts();"
 
                 string trackId = artist + " " + title;
                 bool containsEntry = entries.ContainsKey(trackId);
-                SongEntry entry = containsEntry
+                ScrappedSong entry = containsEntry
                     ? entries[trackId]
-                    : new SongEntry(title, artist, date);
-                entry.SetPeak(peak);
-                entry.SetStay(stay);
+                    : new ScrappedSong(title, artist, date);
+                entry.SetHigherPeak(peak);
+                entry.SetLongerStay(stay);
                 if (!containsEntry)
                 {
                     entries.Add(trackId, entry);
