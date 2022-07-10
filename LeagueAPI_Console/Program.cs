@@ -1,6 +1,5 @@
 ﻿using Common_ClassLibrary;
 using LeagueAPI_ClassLibrary;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,9 +22,9 @@ namespace LeagueAPI_Console
             Parameters parameters = File.ReadAllText(parametersPath).DeserializeObject<Parameters>();
             RealFileIO fileIo = new();
             RealHttpClient http = new();
-            RealWebClient webClient = new();
-            RealDelayer delayer = new();
             Logger_Console logger = new();
+            RealWebClient webClient = new(logger);
+            RealDelayer delayer = new();
             LeagueAPIClient client = new(http, parameters.Token, delayer, logger);
             DdragonRepository repo = new(fileIo, parameters.DdragonJsonFilesDirectoryPath);
             ArchiveExtractor extractor = new();
@@ -41,7 +40,6 @@ namespace LeagueAPI_Console
             ExcelPrinter printer = new();
 
             List<string> parsedTargetVersions = await client.GetParsedListOfVersions(parameters.RangeOfTargetVersions);
-            string queueName = await client.GetNameOfQueue(parameters.QueueId);
 
             MatchSaver matchSaver = new(
                 fileIo,
@@ -50,7 +48,6 @@ namespace LeagueAPI_Console
                 logger,
                 dateTimeProvider,
                 parameters.OutputDirectory,
-                queueName,
                 parsedTargetVersions.ConcatenateListOfStringsToCommaString(),
                 parameters.IncludeWinRatesForMinutes
             );

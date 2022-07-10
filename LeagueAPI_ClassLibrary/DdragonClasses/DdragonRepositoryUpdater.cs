@@ -74,10 +74,9 @@ namespace LeagueAPI_ClassLibrary
                 FileIO.DeleteFile(GetBaseNameWithTar());
                 Logger.Log($"Deleted downloaded files.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Logger.Log($"There was an error with deleting the downloaded files ({BaseName}). Details:");
-                Logger.Log(ex.ToString());
+                Logger.Log($"Failed deleting the downloaded files ({BaseName}). They might be deleted already.");
             }
         }
 

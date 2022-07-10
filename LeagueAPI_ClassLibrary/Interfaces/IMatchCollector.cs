@@ -5,6 +5,12 @@ namespace LeagueAPI_ClassLibrary
 {
     public interface IMatchCollector
     {
-        Task<List<LeagueMatch>> GetMatches(string startPuuid, int queueId, List<string> rangeOfTargetVersions, int maxCount, List<LeagueMatch> alreadyScannedMatches = null);
+        Task<List<LeagueMatch>> GetMatches(
+            string startPuuid,
+            List<string> rangeOfTargetVersions,
+            int maxCount,
+            string startMatchId = "",
+            List<LeagueMatch> alreadyScannedMatches = null
+        );
     }
 }

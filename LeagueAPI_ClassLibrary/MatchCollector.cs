@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -46,12 +45,12 @@ namespace LeagueAPI_ClassLibrary
 
         private static string GetSeason(string v)
         {
-            return Regex.Replace(v, @"^(\w+)\.(\w+).*", "$1").ToString();
+            return Regex.Replace(v, @"^(\w+)\.(\w+).*", "$1");
         }
 
         private static string GetPatch(string v)
         {
-            return Regex.Replace(v, @"^(\w+)\.(\w+).*", "$2").ToString();
+            return Regex.Replace(v, @"^(\w+)\.(\w+).*", "$2");
         }
 
         /// <summary>
@@ -77,10 +76,10 @@ namespace LeagueAPI_ClassLibrary
         }
 
         public async Task<List<LeagueMatch>> GetMatches(
-            string startPuuid,
-            int queueId,
+            string defaultPuuid,
             List<string> rangeOfTargetVersions,
             int maxCount,
+            string startMatchId = "",
             List<LeagueMatch> alreadyScannedMatches = null
         )
         {
@@ -92,9 +91,6 @@ namespace LeagueAPI_ClassLibrary
 
             try
             {
-                puuidQueue.Enqueue(startPuuid);
-                puuidsToScan.Add(startPuuid);
-
                 if (alreadyScannedMatches != null)
                 {
                     result.AddRange(alreadyScannedMatches);
@@ -109,11 +105,14 @@ namespace LeagueAPI_ClassLibrary
                     foreach (string puuidToScan in puuidsToScan) puuidQueue.Enqueue(puuidToScan);
                 }
 
+                int queueId = await GetInitialSearchCriteria(defaultPuuid, startMatchId, puuidQueue, puuidsToScan);
+                string queueName = await Client.GetNameOfQueue(queueId);
+
                 while (puuidQueue.Count > 0)
                 {
                     string puuid = puuidQueue.Dequeue();
                     Logger.Log($"Scanning player {puuid}");
-                    List<string> matchIds = await Client.GetMatchIds(queueId, puuid);
+                    List<string> matchIds = await Client.GetMatchIds(puuid, queueId);
 
                     foreach (string matchId in matchIds)
                     {
@@ -137,11 +136,11 @@ namespace LeagueAPI_ClassLibrary
                             match.gameVersion
                         );
                         if (versionComparisonResult == -1) continue;
-                        else if (versionComparisonResult == 1) break;
+                        if (versionComparisonResult == 1) break;
 
                         result.Add(match);
                         Logger.Log(
-                            $"Added match {matchId} (version {match.gameVersion}, queueId {queueId}), current count is {result.Count}"
+                            $"Added match {matchId} (version {match.gameVersion}, queueId {queueId} {queueName}), current count is {result.Count}"
                         );
                         MatchCollectorEventHandler.MatchAdded(result);
                         if (result.Count >= maxCount)
@@ -170,6 +169,34 @@ namespace LeagueAPI_ClassLibrary
                 MatchCollectorEventHandler.CollectingFinished();
                 return result;
             }
+        }
+
+        private async Task<int> GetInitialSearchCriteria(
+            string defaultPuuid,
+            string startMatchId,
+            Queue<string> puuidQueue,
+            HashSet<string> puuidsToScan
+        )
+        {
+            int queueId;
+            string startPuuid;
+            if (!startMatchId.IsNullOrEmpty())
+            {
+                LeagueMatch match = await Client.GetMatch(startMatchId);
+                queueId = match.queueId.Value;
+                startPuuid = match.participants[0].puuid;
+            }
+            else
+            {
+                List<string> matchIds = await Client.GetMatchIds(defaultPuuid);
+                LeagueMatch match = await Client.GetMatch(matchIds[0]);
+                queueId = match.queueId.Value;
+                startPuuid = defaultPuuid;
+            }
+
+            puuidQueue.Enqueue(startPuuid);
+            puuidsToScan.Add(startPuuid);
+            return queueId;
         }
     }
 }

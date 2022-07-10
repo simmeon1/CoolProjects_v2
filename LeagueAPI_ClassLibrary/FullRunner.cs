@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace LeagueAPI_ClassLibrary
@@ -40,12 +41,18 @@ namespace LeagueAPI_ClassLibrary
                 repository.RefreshData();
 
                 List<LeagueMatch> alreadyScannedMatches = ReadExistingMatches(p.ExistingMatchesFile);
+                string matchId = p.MatchId;
+                if (Regex.IsMatch(matchId, @"^\d+$"))
+                {
+                    matchId = "EUW1_" + matchId;
+                }
+                
                 List<LeagueMatch> matches =
                     await matchCollector.GetMatches(
                         p.AccountPuuid,
-                        p.QueueId,
                         parsedTargetVersions,
                         p.MaxCount,
+                        matchId,
                         alreadyScannedMatches
                     );
                 return matchSaver.SaveMatches(matches);

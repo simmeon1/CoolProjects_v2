@@ -117,7 +117,7 @@ namespace LeagueAPI_Tests.UnitTests
                 .Returns(badResponse)
                 .Returns(goodResponse);
             LeagueAPIClient leagueClient = new(HttpClientMock.Object, "someKey", new Mock<IDelayer>().Object, new Logger_Debug());
-            List<string> matchIds = await leagueClient.GetMatchIds(450, "somePuuid");
+            List<string> matchIds = await leagueClient.GetMatchIds("somePuuid", 450);
             Assert.IsTrue(matchIds.Count == 1);
             Assert.IsTrue(matchIds[0].Contains(matchId1));
         }
@@ -131,7 +131,7 @@ namespace LeagueAPI_Tests.UnitTests
                     '" + matchId1 + @"',
                     '" + matchId2 + @"'
                   ]");
-            List<string> matchIds = await leagueClient.GetMatchIds(450, "somePuuid");
+            List<string> matchIds = await leagueClient.GetMatchIds("somePuuid", 450);
             Assert.IsTrue(matchIds.Count == 2);
             Assert.IsTrue(matchIds[0].Contains(matchId1));
             Assert.IsTrue(matchIds[1].Contains(matchId2));
@@ -140,7 +140,7 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public async Task GetMatchIds_ReturnsEmptyArrayWhenRequestIsNotFound()
         {
-            Assert.IsTrue((await SetUpHttpClientWithResponse(HttpStatusCode.NotFound).GetMatchIds(450, "somePuuid")).Count == 0);
+            Assert.IsTrue((await SetUpHttpClientWithResponse(HttpStatusCode.NotFound).GetMatchIds("somePuuid", 450)).Count == 0);
         }
 
         [TestMethod]

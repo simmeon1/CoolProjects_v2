@@ -127,9 +127,11 @@ namespace LeagueAPI_ClassLibrary
             return message;
         }
 
-        public async Task<List<string>> GetMatchIds(int queueId, string puuid)
+        public async Task<List<string>> GetMatchIds(string puuid, int queueId = 0)
         {
-            JArray array = await GetJArrayFromResponse($"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?queue={queueId}&start=0&count=100");
+            string uri = $"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count=100";
+            if (queueId > 0) uri += $"&queue={queueId}";
+            JArray array = await GetJArrayFromResponse(uri);
             List<string> ids = new();
             foreach (JToken id in array) ids.Add(id.ToString());
             return ids;

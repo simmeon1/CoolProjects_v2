@@ -26,7 +26,6 @@ namespace LeagueAPI_ClassLibrary
             ILogger logger,
             IDateTimeProvider dateTimeProvider,
             string outputDirectory,
-            string queueName,
             string versionsStr,
             List<int> includeWinRatesForMinutes
         ) {
@@ -37,7 +36,7 @@ namespace LeagueAPI_ClassLibrary
             this.includeWinRatesForMinutes = includeWinRatesForMinutes;
             this.dateTimeProvider = dateTimeProvider;
             this.outputDirectory = outputDirectory;
-            baseId = $"{queueName}_{versionsStr}_";
+            baseId = $"{versionsStr}_";
         }
 
         public List<string> SaveMatches(List<LeagueMatch> matches) {
