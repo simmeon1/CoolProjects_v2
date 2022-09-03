@@ -17,9 +17,14 @@ namespace JourneyPlanner_ClassLibrary.Workers
         public IWebDriverWaitProvider WebDriverWaitProvider { get; }
         public IHttpClient HttpClient { get; }
 
-        public JourneyRetrieverComponents(IWebDriver driver, ILogger logger,
-            IWebDriverWaitProvider webDriverWaitProvider, IDelayer delayer, IHttpClient httpClient,
-            IJavaScriptExecutor javaScriptExecutor)
+        public JourneyRetrieverComponents(
+            IWebDriver driver,
+            ILogger logger,
+            IWebDriverWaitProvider webDriverWaitProvider,
+            IDelayer delayer,
+            IHttpClient httpClient,
+            IJavaScriptExecutor javaScriptExecutor
+        )
         {
             Driver = driver;
             Logger = logger;
@@ -44,48 +49,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             INavigation navigation = Driver.Navigate();
             navigation?.GoToUrl(url);
         }
-
-        public bool ElementsContainsClass(IWebElement element, string targetCls)
-        {
-            string[] elementClasses = element.GetAttribute("class").Split(" ", StringSplitOptions.RemoveEmptyEntries);
-            foreach (string cls in elementClasses)
-            {
-                if (cls != null && cls.Equals(targetCls)) return true;
-            }
-
-            return false;
-        }
-
-        public IWebElement FindElementByAttribute(By by, string attribute = "innerText", string text = "",
-            ISearchContext container = null, int indexOfElement = -1, int seconds = 10)
-        {
-            IWebElement element = WebDriverWaitProvider.Until(d =>
-            {
-                container ??= d;
-                int fails = 0;
-                while (true)
-                {
-                    try
-                    {
-                        ReadOnlyCollection<IWebElement> webElements = container.FindElements(by);
-                        for (int i = 0; i < webElements.Count; i++)
-                        {
-                            IWebElement webElement = webElements[i];
-                            string attr = webElement.GetAttribute(attribute) ?? "";
-                            if (!attr.Trim().ToLower().Contains(text.ToLower())) continue;
-                            if (indexOfElement == -1 || i == indexOfElement) return webElement;
-                        }
-                        return null;
-                    }
-                    catch (Exception ex)
-                    {
-                        HandleException(ex, ref fails, "Error with finding element by attribute.");
-                    }
-                }
-            }, seconds);
-            return element;
-        }
-
+        
         private void HandleException(Exception ex, ref int fails, string message)
         {
             if (ex is WebDriverTimeoutException) throw ex;
@@ -93,7 +57,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
             {
                 const int milliseconds = 120000;
                 Log(
-                    $"Sockets used up. Waiting {TimeSpan.FromMilliseconds(milliseconds).Minutes} minutes. Continues at {DateTime.Now.AddMilliseconds(milliseconds).ToString()}");
+                    $"Sockets used up. Waiting {TimeSpan.FromMilliseconds(milliseconds).Minutes} minutes. Continues at {DateTime.Now.AddMilliseconds(milliseconds).ToString()}"
+                );
                 Delayer.Sleep(milliseconds);
                 return;
             }
@@ -104,84 +69,80 @@ namespace JourneyPlanner_ClassLibrary.Workers
             throw ex;
         }
 
-        public IWebElement FindElementByAttributeAndClickIt(By by, string attribute = "innerText", string text = "",
-            ISearchContext container = null, int indexOfElement = -1, bool clickElement = true, int seconds = 10)
+        public IWebElement FindElement(FindElementParameters p)
+        {
+            IWebElement element = WebDriverWaitProvider.Until(
+                d =>
+                {
+                    int fails = 0;
+                    try
+                    {
+                        int index = -1;
+                        ReadOnlyCollection<IWebElement> webElements = (p.Container ?? d).FindElements(p.BySelector);
+                        foreach (IWebElement webElement in webElements)
+                        {
+                            if (p.Matcher != null)
+                            {
+                                if (!p.Matcher.Invoke(webElement)) continue;
+                                index++;
+                                if (index == p.Index) return webElement;
+                            }
+                            else
+                            {
+                                index++;
+                                if (index == p.Index) return webElement;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        HandleException(ex, ref fails, "Error with finding element.");
+                    }
+                    return null;
+                },
+                p.Seconds
+            );
+            return element;
+        }
+        
+        public IWebElement FindElementAndClickIt(FindElementParameters p)
         {
             int fails = 0;
             while (true)
             {
                 try
                 {
-                    IWebElement element =
-                        FindElementByAttribute(by, attribute, text, container, indexOfElement, seconds);
-                    WebDriverWaitProvider.Until(WebDriverWaitProvider.ElementIsClickable(element));
-                    if (clickElement) element.Click();
+                    IWebElement element = FindElement(p);
+                    element.Click();
                     return element;
                 }
                 catch (Exception ex)
                 {
-                    HandleException(ex, ref fails, "Error with finding element by attribute and clicking.");
+                    HandleException(ex, ref fails, "Error clicking element.");
                 }
             }
         }
-
-        public IWebElement FindElementByAttributeAndSendKeysToIt(By by, string attribute = "innerText",
-            string text = "", ISearchContext container = null, int indexOfElement = -1, List<string> keys = null,
-            bool doClearFirst = true, int seconds = 10)
+        
+        public void FindElementAndSendKeysToIt(FindElementParameters p, bool doClearFirst, List<string> keys)
         {
-            keys ??= new List<string>();
             int fails = 0;
             while (true)
             {
                 try
                 {
-                    IWebElement element =
-                        FindElementByAttribute(by, attribute, text, container, indexOfElement, seconds);
+                    IWebElement element = FindElement(p);
                     if (doClearFirst) element.Clear();
                     foreach (string key in keys)
                     {
                         element.SendKeys(key);
                     }
-                    return element;
+                    return;
                 }
                 catch (Exception ex)
                 {
-                    HandleException(ex, ref fails, "Error with finding element and sending keys.");
+                    HandleException(ex, ref fails, "Error clicking element.");
                 }
             }
-        }
-
-        public ReadOnlyCollection<IWebElement> FindElementsNew(By by, string attribute = "innerText", string text = "",
-            ISearchContext container = null, int seconds = 10)
-        {
-            ReadOnlyCollection<IWebElement> elements = WebDriverWaitProvider.Until(d =>
-            {
-                container ??= d;
-                int fails = 0;
-                while (true)
-                {
-                    List<IWebElement> results = new();
-                    try
-                    {
-                        ReadOnlyCollection<IWebElement> webElements = container.FindElements(by);
-                        foreach (IWebElement webElement in webElements)
-                        {
-                            string attr = webElement.GetAttribute(attribute);
-                            if (attr == null) attr = "";
-                            if (attr.Trim().ToLower().Contains(text.ToLower()))
-                            {
-                                results.Add(webElement);
-                            }
-                        }
-                        return new ReadOnlyCollection<IWebElement>(results);
-                    }
-                    catch (Exception ex)
-                    {
-                        HandleException(ex, ref fails, "Error with finding multiple elements.");
-                    }
-                }
-            }, seconds);
-            return elements;
         }
     }
 }
