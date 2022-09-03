@@ -33,7 +33,7 @@ namespace JourneyPlanner_Tests.UnitTests.Workers
             foreach (Type type in types) instances.Add(instanceCreator.CreateInstance(type.FullName, components));
             Assert.IsTrue(instances.Count == 4);
             Assert.IsTrue(instances.Any(i => i.GetType().Name.Equals(nameof(GoogleFlightsWorker))));
-            Assert.IsTrue(instances.Any(i => i.GetType().Name.Equals(nameof(NationalExpressWorker))));
+            // Assert.IsTrue(instances.Any(i => i.GetType().Name.Equals(nameof(NationalExpressWorker))));
             Assert.IsTrue(instances.Any(i => i.GetType().Name.Equals(nameof(MegaBusWorker))));
             Assert.IsTrue(instances.Any(i => i.GetType().Name.Equals(nameof(MegaBusScheduledWorker))));
         }

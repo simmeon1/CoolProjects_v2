@@ -39,59 +39,26 @@ namespace JourneyPlanner_ClassLibrary.Workers
             Logger.Log(message);
         }
 
-        public async Task Delay(int milliseconds)
-        {
-            await Delayer.Delay(milliseconds);
-        }
-
         public void NavigateToUrl(string url)
         {
             INavigation navigation = Driver.Navigate();
             navigation?.GoToUrl(url);
         }
-        
-        private void HandleException(Exception ex, ref int fails, string message)
-        {
-            if (ex is WebDriverTimeoutException) throw ex;
-            if (ex.Message.Contains("Only one usage of each socket address"))
-            {
-                const int milliseconds = 120000;
-                Log(
-                    $"Sockets used up. Waiting {TimeSpan.FromMilliseconds(milliseconds).Minutes} minutes. Continues at {DateTime.Now.AddMilliseconds(milliseconds).ToString()}"
-                );
-                Delayer.Sleep(milliseconds);
-                return;
-            }
-
-            if (fails++ < 100) return;
-            Log($"{message}. Details:");
-            Log(ex.ToString());
-            throw ex;
-        }
 
         public IWebElement FindElement(FindElementParameters p)
         {
+            int fails = 0;
             IWebElement element = WebDriverWaitProvider.Until(
                 d =>
                 {
-                    int fails = 0;
                     try
                     {
-                        int index = -1;
+                        int index = 0;
                         ReadOnlyCollection<IWebElement> webElements = (p.Container ?? d).FindElements(p.BySelector);
                         foreach (IWebElement webElement in webElements)
                         {
-                            if (p.Matcher != null)
-                            {
-                                if (!p.Matcher.Invoke(webElement)) continue;
-                                index++;
-                                if (index == p.Index) return webElement;
-                            }
-                            else
-                            {
-                                index++;
-                                if (index == p.Index) return webElement;
-                            }
+                            if (p.Matcher != null && !p.Matcher.Invoke(webElement)) continue;
+                            if (index++ == p.Index) return webElement;
                         }
                     }
                     catch (Exception ex)
@@ -143,6 +110,25 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     HandleException(ex, ref fails, "Error clicking element.");
                 }
             }
+        }
+        
+        private void HandleException(Exception ex, ref int fails, string message)
+        {
+            if (ex is WebDriverTimeoutException) throw ex;
+            if (ex.Message.Contains("Only one usage of each socket address"))
+            {
+                const int milliseconds = 120000;
+                Log(
+                    $"Sockets used up. Waiting {TimeSpan.FromMilliseconds(milliseconds).Minutes} minutes. Continues at {DateTime.Now.AddMilliseconds(milliseconds).ToString()}"
+                );
+                Delayer.Sleep(milliseconds);
+                return;
+            }
+
+            if (fails++ < 100) return;
+            Log($"{message}. Details:");
+            Log(ex.ToString());
+            throw ex;
         }
     }
 }
