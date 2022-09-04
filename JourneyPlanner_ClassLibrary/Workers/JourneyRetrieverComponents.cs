@@ -90,7 +90,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             }
         }
         
-        public void FindElementAndSendKeysToIt(FindElementParameters p, bool doClearFirst, List<string> keys)
+        public void FindElementAndSendKeysToIt(FindElementParameters p, bool doClearFirst, string keys)
         {
             int fails = 0;
             while (true)
@@ -99,10 +99,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 {
                     IWebElement element = FindElement(p);
                     if (doClearFirst) element.Clear();
-                    foreach (string key in keys)
-                    {
-                        element.SendKeys(key);
-                    }
+                    element.SendKeys(keys);
                     return;
                 }
                 catch (Exception ex)
