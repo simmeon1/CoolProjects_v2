@@ -53,6 +53,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             {
                 //Doesn't show
             }
+
             SetToOneWayTrip();
         }
 
@@ -103,7 +104,10 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             ReadOnlyCollection<IWebElement> flights = C.Driver.FindElements(By.CssSelector("[aria-label^='From']"));
             foreach (IWebElement flight in flights)
             {
-                IWebElement parent = (IWebElement) C.JavaScriptExecutor.ExecuteScript("return arguments[0].parentElement", flight); 
+                IWebElement parent = (IWebElement) C.JavaScriptExecutor.ExecuteScript(
+                    "return arguments[0].parentElement",
+                    flight
+                );
                 string text = parent.GetAttribute("innerText");
                 string[] flightText = text.Split("\n", StringSplitOptions.RemoveEmptyEntries);
                 if (!flightText[6].Trim().Equals("Nonstop")) continue;
@@ -158,7 +162,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     Matcher = x => x.GetProperty("clientHeight").Equals("4")
                 }
             );
-            
+
             try
             {
                 C.WebDriverWaitProvider.Until(d => loadingBar.GetAttribute("aria-hidden") == null, 1);
@@ -178,7 +182,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     BySelector = By.CssSelector("[aria-label='Stops, Not selected']")
                 }
             );
-            
+
             C.FindElementAndClickIt(
                 new FindElementParameters
                 {
@@ -190,7 +194,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     }
                 }
             );
-            
+
             C.FindElementAndClickIt(
                 new FindElementParameters
                 {
@@ -220,8 +224,10 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     InputLocation(origin, false);
                     InputLocation(destination, true);
                 }
+
                 LastTypedOrigin = origin;
             }
+
             PopulateDateAndHitDone(dateFrom);
             if (!StopsSet) SetStopsToNone();
         }
@@ -235,14 +241,17 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     Index = isTarget ? 1 : 0
                 }
             );
+            
+            Sleep();
+            
             C.FindElementAndSendKeysToIt(
                 new FindElementParameters
                 {
                     BySelector = By.CssSelector("[role='combobox'][aria-autocomplete='both']"),
                     Index = 1
                 },
-                false,
-                new List<string> {JourneyRetrieverData.GetTranslation(origin), Keys.Return}
+                true,
+                JourneyRetrieverData.GetTranslation(origin) + Keys.Return
             );
         }
 
@@ -250,36 +259,46 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
         {
             const string format = "ddd, MMM dd";
             By selector = By.CssSelector("[aria-label='Departure']");
-            List<string> keysToSend = new();
-            foreach (char ch in format) keysToSend.Add(Keys.Backspace);
-            keysToSend.Add(date.ToString(format));
-            keysToSend.Add(Keys.Return);
+
+            C.FindElementAndClickIt(
+                new FindElementParameters
+                {
+                    BySelector = selector,
+                }
+            );
+
+            // C.FindElement(
+            //     new FindElementParameters
+            //     {
+            //         BySelector = By.CssSelector("[data-continuous-swipe-logging]"),
+            //         Matcher = x => x.GetProperty("clientWidth") != "0"
+            //     }
+            // );
+
+            Sleep();
 
             C.FindElementAndSendKeysToIt(
                 new FindElementParameters
                 {
                     BySelector = selector,
+                    Index = 1
                 },
                 false,
-                keysToSend
+                date.ToString(format) + Keys.Return
             );
 
-            if (!InitialSearchDone)
-            {
-                C.FindElementAndClickIt(
-                    new FindElementParameters
-                    {
-                        BySelector = By.CssSelector("button"),
-                        Matcher = x =>
-                        {
-                            string innerText = x.GetAttribute("innerText");
-                            return !innerText.IsNullOrEmpty() && innerText.Equals("Search");
-                        }
-                    }
-                );
-                InitialSearchDone = true;
-            }
+            C.FindElementAndClickIt(
+                new FindElementParameters
+                {
+                    BySelector = By.CssSelector("[aria-label^='Done. Search for one-way flights']"),
+                }
+            );
             WaitForProgressBarToBeGone();
+        }
+
+        private void Sleep()
+        {
+            C.Delayer.Sleep(200);
         }
     }
 }
