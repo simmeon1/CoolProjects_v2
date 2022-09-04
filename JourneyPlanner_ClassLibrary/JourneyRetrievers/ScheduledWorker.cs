@@ -17,38 +17,43 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             DateTime endTime,
             TimeSpan interval,
             TimeSpan duration,
-            string origin,
-            string destination,
+            List<DirectPath> paths,
             string companyName,
             string workerName,
             double cost
         )
         {
-            DateTime date = startDate;
             List<Journey> journeys = new();
-            while (date.CompareTo(endDate) < 1)
+            foreach (DirectPath path in paths)
             {
-                DateTime time = startTime;
-                while (true)
+                string origin = path.GetStart();
+                string destination = path.GetEnd();
+                DateTime date = startDate;
+                while (date.CompareTo(endDate) < 1)
                 {
-                    DateTime departure = new(date.Year, date.Month, date.Day, time.Hour, time.Minute, time.Second);
-                    DateTime arrival = departure.AddTicks(duration.Ticks);
-                    string path = $"{origin}-{destination}";
-                    Journey journey = new(
-                        departure,
-                        arrival,
-                        companyName,
-                        duration,
-                        path,
-                        cost,
-                        workerName
-                    );
-                    journeys.Add(journey);
-                    time += interval;
-                    if ((endTime - time).Ticks < 0) break;
+                    DateTime time = startTime;
+                    while (true)
+                    {
+                        DateTime departure = new(date.Year, date.Month, date.Day, time.Hour, time.Minute, time.Second);
+                        DateTime arrival = departure.AddTicks(duration.Ticks);
+                        Journey journey = new(
+                            departure,
+                            arrival,
+                            companyName,
+                            duration,
+                            $"{origin}-{destination}",
+                            cost,
+                            workerName
+                        );
+                        journeys.Add(journey);
+                        time += interval;
+                        if ((endTime - time).Ticks < 0) break;
+                    }
+
+                    date = date.AddDays(1);
                 }
-                date = date.AddDays(1);
             }
+
             return new JourneyCollection(journeys.OrderBy(j => j.ToString()).ToList());
         }
     }

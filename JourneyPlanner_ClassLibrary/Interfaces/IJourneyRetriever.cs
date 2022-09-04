@@ -12,6 +12,6 @@ namespace JourneyPlanner_ClassLibrary.Interfaces
     public interface IJourneyRetriever
     {
         void Initialise(JourneyRetrieverData data);
-        Task<JourneyCollection> GetJourneysForDates(string origin, string destination, List<DateTime> allDates);
+        Task<JourneyCollection> GetJourneysForDates(List<DirectPath> paths, List<DateTime> allDates);
     }
 }

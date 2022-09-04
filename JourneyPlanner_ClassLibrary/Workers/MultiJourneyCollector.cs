@@ -53,30 +53,26 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 try
                 {
                     retriever.Initialise(retrieverData);
-                    int pathsCollected = 0;
-                    int pathsToSearch = retrieverData.DirectPaths.Count;
+                    List<DirectPath> directPaths = retrieverData.DirectPaths;
+                    int pathsToSearch = directPaths.Count;
                     c.Log($"Beginning search for {pathsToSearch} paths using {retrieverName}.");
-                    foreach (DirectPath directPath in retrieverData.DirectPaths)
+                    JourneyCollection journeys = await retriever.GetJourneysForDates(directPaths, allDates);
+                    for (int i = 0; i < journeys.GetCount(); i++)
                     {
-                        string origin = directPath.GetStart();
-                        string destination = directPath.GetEnd();
-                        string pathName = directPath.ToString();
-                        c.Log($"Getting journeys for {pathName}.");
-                        JourneyCollection journeys = await retriever.GetJourneysForDates(origin, destination, allDates);
-                        for (int i = 0; i < journeys.GetCount(); i++)
+                        Journey journey = journeys[i];
+                        if (!allJourneys.AlreadyContainsJourney(journey))
                         {
-                            Journey journey = journeys[i];
-                            if (!allJourneys.AlreadyContainsJourney(journey))
-                            {
-                                allJourneys.Add(journey);
-                            }
+                            allJourneys.Add(journey);
                         }
-                        progress[retrieverName][pathName] = true;
-                        pathsCollected++;
-                        totalPathsCollected++;
-                        c.Log($"Collected data for {pathName} ({journeys.GetCount()} journeys) ({Globals.GetPercentageAndCountString(pathsCollected, pathsToSearch)}), total ({Globals.GetPercentageAndCountString(totalPathsCollected, totalPathsToSearch)})");
                     }
-                    c.Log($"Journey retrieval finished.");
+
+                    foreach (DirectPath directPath in directPaths)
+                    {
+                        progress[retrieverName][directPath.ToString()] = true;
+                        totalPathsCollected++;
+                    }
+
+                    c.Log($"Total progress ({Globals.GetPercentageAndCountString(totalPathsCollected, totalPathsToSearch)})");
                 }
                 catch (Exception ex)
                 {
@@ -85,6 +81,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     return new MultiJourneyCollectorResults(progress, allJourneys);
                 }
             }
+            c.Log($"Journey retrieval finished.");
             return new MultiJourneyCollectorResults(progress, allJourneys);
         }
 

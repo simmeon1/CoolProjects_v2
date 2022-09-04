@@ -10,7 +10,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 {
     public class MegaBusScheduledWorker : IJourneyRetriever
     {
-        private ScheduledWorker scheduledWorker = new ScheduledWorker();
+        private readonly ScheduledWorker scheduledWorker = new();
         public MegaBusScheduledWorker(JourneyRetrieverComponents c)
         {
         }
@@ -18,10 +18,9 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
         public void Initialise(JourneyRetrieverData data)
         {
         }
-
+        
         public async Task<JourneyCollection> GetJourneysForDates(
-            string origin,
-            string destination,
+            List<DirectPath> paths,
             List<DateTime> allDates
         )
         {
@@ -33,8 +32,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     new DateTime(1, 1, 1, 23, 0, 0),
                     new TimeSpan(1, 0, 0),
                     new TimeSpan(3, 30, 0),
-                    origin,
-                    destination,
+                    paths,
                     "Mega Bus (Scheduled)",
                     nameof(MegaBusScheduledWorker),
                     20

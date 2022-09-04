@@ -10,7 +10,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 {
     public class BDZTrainScheduledWorker : IJourneyRetriever
     {
-        private ScheduledWorker scheduledWorker = new ScheduledWorker();
+        private readonly ScheduledWorker scheduledWorker = new();
 
         public BDZTrainScheduledWorker(JourneyRetrieverComponents c)
         {
@@ -21,8 +21,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
         }
 
         public async Task<JourneyCollection> GetJourneysForDates(
-            string origin,
-            string destination,
+            List<DirectPath> paths,
             List<DateTime> allDates
         )
         {
@@ -34,8 +33,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     new DateTime(1, 1, 1, 22, 30, 0),
                     new TimeSpan(1, 0, 0, 0),
                     new TimeSpan(8, 30, 0),
-                    origin,
-                    destination,
+                    paths,
                     "BDZ Train (Scheduled)",
                     nameof(BDZTrainScheduledWorker),
                     15

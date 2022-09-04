@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Common_ClassLibrary;
@@ -86,22 +87,52 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             );
         }
 
-        public Task<JourneyCollection> GetJourneysForDates(string origin, string destination, List<DateTime> allDates)
+        public Task<JourneyCollection> GetJourneysForDates(List<DirectPath> paths, List<DateTime> allDates)
         {
-            List<Journey> results = new();
-            for (int i = 0; i < allDates.Count; i++)
-            {
-                DateTime date = allDates[i];
-                PopulateControlsAndSearch(origin, destination, date, i != 0);
-                GetFlightsForDate(date, results);
-            }
+            Dictionary<string, List<string>> originAndTargetGroups = new();
+            Dictionary<string, int> groupsAndDestinationsCounts = new();
 
-            return Task.FromResult(new JourneyCollection(results));
+            foreach (DirectPath path in paths)
+            {
+                string origin = $"{path.GetStart()}";
+                int groupIndex = groupsAndDestinationsCounts.ContainsKey(origin) ? groupsAndDestinationsCounts[origin] / 7 : 0;
+                string originGroup = $"{origin}_{groupIndex}";
+                
+                if (!originAndTargetGroups.ContainsKey(originGroup))
+                {
+                    originAndTargetGroups.Add(originGroup, new List<string>());
+                    if (!groupsAndDestinationsCounts.ContainsKey(origin))
+                    {
+                        groupsAndDestinationsCounts.Add(origin, 0);
+                    }
+                }
+
+                originAndTargetGroups[originGroup].Add(path.GetEnd());
+                groupsAndDestinationsCounts[origin]++;
+            }
+            
+            List<Journey> results = new();
+            int counter = 0;
+            foreach ((string origin, List<string> targets) in originAndTargetGroups)
+            {
+                int originalCount = results.Count;
+                for (int i = 0; i < allDates.Count; i++)
+                {
+                    DateTime date = allDates[i];
+                    if (i == 0) PopulateLocations(origin[..3], targets);
+                    PopulateDateAndHitDone(date);
+                    if (!StopsSet) SetStopsToNone();
+                    GetFlightsForDate(date, results);
+                }
+                counter++;
+                C.Logger.Log($"Collected data for paths from {origin} ({results.Count - originalCount} journeys) ({Globals.GetPercentageAndCountString(counter, originAndTargetGroups.Count)})");
+            }
+            return Task.FromResult(new JourneyCollection(results.OrderBy(j => j.ToString()).ToList()));
         }
 
         private void GetFlightsForDate(DateTime date, List<Journey> results)
         {
-            ReadOnlyCollection<IWebElement> flights = C.Driver.FindElements(By.CssSelector("[aria-label^='From']"));
+            ReadOnlyCollection<IWebElement> flights = C.Driver.FindElements(By.CssSelector("div[aria-label$='Select flight']"));
             foreach (IWebElement flight in flights)
             {
                 IWebElement parent = (IWebElement) C.JavaScriptExecutor.ExecuteScript(
@@ -147,8 +178,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 airlineText,
                 TimeSpan.Parse(durationText),
                 pathText,
-                cost,
-                nameof(GoogleFlightsWorker)
+                cost
             );
             return item;
         }
@@ -205,45 +235,21 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             WaitForProgressBarToBeGone();
         }
 
-        private void PopulateControlsAndSearch(
+        private void PopulateLocations(
             string origin,
-            string destination,
-            DateTime dateFrom,
-            bool skipLocationInput
+            List<string> destinations
         )
-        {
-            if (!skipLocationInput)
-            {
-                if (!LastTypedOrigin.Equals(destination))
-                {
-                    InputLocation(destination, true);
-                    InputLocation(origin, false);
-                }
-                else
-                {
-                    InputLocation(origin, false);
-                    InputLocation(destination, true);
-                }
-
-                LastTypedOrigin = origin;
-            }
-
-            PopulateDateAndHitDone(dateFrom);
-            if (!StopsSet) SetStopsToNone();
-        }
-
-        private void InputLocation(string origin, bool isTarget)
         {
             C.FindElementAndClickIt(
                 new FindElementParameters
                 {
                     BySelector = By.CssSelector("[role='combobox'][aria-autocomplete='inline']"),
-                    Index = isTarget ? 1 : 0
+                    Index = 0
                 }
             );
-            
+
             Sleep();
-            
+
             C.FindElementAndSendKeysToIt(
                 new FindElementParameters
                 {
@@ -253,6 +259,68 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 true,
                 JourneyRetrieverData.GetTranslation(origin) + Keys.Return
             );
+            
+            Sleep();
+
+            C.FindElementAndClickIt(
+                new FindElementParameters
+                {
+                    BySelector = By.CssSelector("[role='combobox'][aria-autocomplete='inline']"),
+                    Index = 1
+                }
+            );
+            
+            IWebElement addButton = C.FindElement(
+                new FindElementParameters
+                {
+                    BySelector = By.CssSelector("[aria-label='Destination, Select multiple airports']")
+                }
+            );
+            if (addButton.Displayed) addButton.Click();
+            
+            while (C.Driver.FindElements(By.CssSelector("div[data-code]")).Any(x => x.Displayed))
+            {
+                C.FindElementAndSendKeysToIt(
+                    new FindElementParameters
+                    {
+                        BySelector = By.CssSelector("[role='combobox'][aria-autocomplete='both']"),
+                        Index = 1
+                    },
+                    false,
+                    Keys.Backspace
+                );
+            }
+            
+            foreach (string destination in destinations)
+            {
+                string destTranslation = JourneyRetrieverData.GetTranslation(destination);
+                C.FindElementAndSendKeysToIt(
+                    new FindElementParameters
+                    {
+                        BySelector = By.CssSelector("[role='combobox'][aria-autocomplete='both']"),
+                        Index = 1
+                    },
+                    false,
+                    destTranslation
+                );
+
+                C.FindElementAndClickIt(
+                    new FindElementParameters
+                    {
+                        BySelector = By.CssSelector($"[data-code='{destTranslation}'] input"),
+                    }
+                );
+            }
+
+            C.FindElementAndClickIt(
+                new FindElementParameters
+                {
+                    BySelector = By.CssSelector($"[aria-label='Done']"),
+                    Index = 1
+                }
+            );
+            
+            Sleep();
         }
 
         private void PopulateDateAndHitDone(DateTime date)
@@ -266,14 +334,6 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     BySelector = selector,
                 }
             );
-
-            // C.FindElement(
-            //     new FindElementParameters
-            //     {
-            //         BySelector = By.CssSelector("[data-continuous-swipe-logging]"),
-            //         Matcher = x => x.GetProperty("clientWidth") != "0"
-            //     }
-            // );
 
             Sleep();
 
