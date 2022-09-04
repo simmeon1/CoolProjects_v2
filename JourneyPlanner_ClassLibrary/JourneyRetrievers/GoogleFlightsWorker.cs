@@ -100,20 +100,11 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 
         private void GetFlightsForDate(DateTime date, List<Journey> results)
         {
-            IWebElement resultsWindow = C.FindElement(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("[role='main']"),
-                    Matcher = x => !x.GetProperty("clientHeight").Equals("0"),
-                }
-            );
-
-            ReadOnlyCollection<IWebElement> flights = resultsWindow.FindElements(By.CssSelector("li"));
+            ReadOnlyCollection<IWebElement> flights = C.Driver.FindElements(By.CssSelector("[aria-label^='From']"));
             foreach (IWebElement flight in flights)
             {
-                string text = flight.GetAttribute("innerText");
-                if (text.Contains("flights")) continue;
-                if (text.Contains("Try different dates") || text.Contains("Try nearby airports")) break;
+                IWebElement parent = (IWebElement) C.JavaScriptExecutor.ExecuteScript("return arguments[0].parentElement", flight); 
+                string text = parent.GetAttribute("innerText");
                 string[] flightText = text.Split("\n", StringSplitOptions.RemoveEmptyEntries);
                 if (!flightText[6].Trim().Equals("Nonstop")) continue;
                 Journey item = GetJourneyFromText(date, flightText);
