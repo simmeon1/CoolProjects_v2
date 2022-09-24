@@ -8,6 +8,11 @@ namespace LeagueAPI_ClassLibrary
         public string Name { get; set; } = "";
         public List<string> Tags { get; set; } = new();
         public int Difficulty { get; set; }
+
+        public string GetFirstTag()
+        {
+            return Tags[0];
+        }
         public string GetCategory()
         {
             return "Champions";
