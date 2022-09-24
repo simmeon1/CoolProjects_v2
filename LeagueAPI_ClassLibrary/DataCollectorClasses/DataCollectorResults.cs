@@ -1,56 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace LeagueAPI_ClassLibrary
 {
     public class DataCollectorResults
     {
-        private Dictionary<int, WinLossData> ChampionData { get; set;  }
-        private Dictionary<int, WinLossData> ItemData { get; set; }
-        private Dictionary<int, WinLossData> RuneData { get; set; }
-        private Dictionary<int, WinLossData> RuneTreeData { get; set; }
-        private Dictionary<int, WinLossData> SpellData { get; set; }
-        private Dictionary<int, WinLossData> StatPerkData { get; set; }
-        public DataCollectorResults(
-            Dictionary<int, WinLossData> championData, Dictionary<int, WinLossData> itemData, Dictionary<int, WinLossData> runeData, 
-            Dictionary<int, WinLossData> runeTreeData, Dictionary<int, WinLossData> spellData, Dictionary<int, WinLossData> statPerkData)
+        private List<TableEntryAndWinLossData<ITableEntry>> entries;
+        public DataCollectorResults(List<TableEntryAndWinLossData<ITableEntry>> entries)
         {
-            ChampionData = championData;
-            ItemData = itemData;
-            RuneData = runeData;
-            RuneTreeData = runeTreeData;
-            SpellData = spellData;
-            StatPerkData = statPerkData;
+            this.entries = entries;
         }
 
-        public Dictionary<int, WinLossData> GetChampionData()
+        public List<TableEntryAndWinLossData<ITableEntry>> GetEntries()
         {
-            return ChampionData;
+            return entries;
         }
-
-        public Dictionary<int, WinLossData> GetItemData()
+        
+        public List<TableEntryAndWinLossData<Item>> GetItemData()
         {
-            return ItemData;
-        }
-
-        public Dictionary<int, WinLossData> GetRuneData()
-        {
-            return RuneData;
-        }
-
-        public Dictionary<int, WinLossData> GetRuneTreeData()
-        {
-            return RuneTreeData;
-        }
-
-        public Dictionary<int, WinLossData> GetSpellData()
-        {
-            return SpellData;
-        }
-
-        public Dictionary<int, WinLossData> GetStatPerkData()
-        {
-            return StatPerkData;
+            List<TableEntryAndWinLossData<Item>> items = new();
+            foreach (TableEntryAndWinLossData<ITableEntry> x in entries)
+            {
+                if (x.GetEntry() is Item i) items.Add(new TableEntryAndWinLossData<Item>(i, x.GetWinLossData()));
+            }
+            return items;
         }
     }
 }

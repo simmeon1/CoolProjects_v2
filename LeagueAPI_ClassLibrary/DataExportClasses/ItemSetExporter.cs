@@ -61,7 +61,7 @@ namespace LeagueAPI_ClassLibrary
             Repository = repository;
         }
 
-        public string GetItemSet(Dictionary<int, WinLossData> itemData, string itemSetName)
+        public string GetItemSet(List<TableEntryAndWinLossData<Item>> itemData, string itemSetName)
         {
             List<ItemEntry> guardianJsonArray = new();
             List<ItemEntry> bootsJsonArray = new();
@@ -70,15 +70,13 @@ namespace LeagueAPI_ClassLibrary
             List<ItemEntry> legendariesJsonArray = new();
 
             Item tear = null;
-            List<KeyValuePair<int, WinLossData>> sortedList = itemData.OrderByDescending(x => x.Value.GetWinRate()).ToList();
-            foreach (KeyValuePair<int, WinLossData> entry in sortedList)
+            List<TableEntryAndWinLossData<Item>> sortedList =
+                itemData.OrderByDescending(x => x.GetWinLossData().GetWinRate()).ToList();
+            foreach (TableEntryAndWinLossData<Item> entry in sortedList)
             {
-                int id = entry.Key;
-                double winRate = entry.Value.GetWinRate();
-                Item item = Repository.GetItem(id);
-                if (item == null) continue;
-
-                ItemEntry itemEntry = new(id, winRate);
+                double winRate = entry.GetWinLossData().GetWinRate();
+                Item item = entry.GetEntry();
+                ItemEntry itemEntry = new(item.Id, winRate);
 
                 if (item.IsTearOfTheGoddess()) tear = item;
                 if (item.IsGuardian()) guardianJsonArray.Add(itemEntry);
@@ -88,7 +86,8 @@ namespace LeagueAPI_ClassLibrary
                 else if (item.IsFinished() && item.IsMoreThan2000G()) legendariesJsonArray.Add(itemEntry);
             }
 
-            List<ItemEntry> legendariesAmendedJsonArray = GetLegendariesWithAmendedTearItemPositioning(itemData, legendariesJsonArray, tear);
+            List<ItemEntry> legendariesAmendedJsonArray =
+                GetLegendariesWithAmendedTearItemPositioning(itemData, legendariesJsonArray, tear);
 
             return BaseJson
                 .Replace(jsonTitle, itemSetName)
@@ -97,12 +96,22 @@ namespace LeagueAPI_ClassLibrary
                 .Replace(doranJson, GetSerializedList(doranJsonArray, (x => true)))
                 .Replace(mythics50PlusJson, GetSerializedList(mythicsJsonArray, (x => x.WinRateIsEqualOrAbove50())))
                 .Replace(mythics50MinusJson, GetSerializedList(mythicsJsonArray, (x => !x.WinRateIsEqualOrAbove50())))
-                .Replace(legendaries50PlusJson, GetSerializedList(legendariesAmendedJsonArray, (x => x.WinRateIsEqualOrAbove50())))
-                .Replace(legendaries50MinusJson, GetSerializedList(legendariesAmendedJsonArray, (x => !x.WinRateIsEqualOrAbove50())))
+                .Replace(
+                    legendaries50PlusJson,
+                    GetSerializedList(legendariesAmendedJsonArray, (x => x.WinRateIsEqualOrAbove50()))
+                )
+                .Replace(
+                    legendaries50MinusJson,
+                    GetSerializedList(legendariesAmendedJsonArray, (x => !x.WinRateIsEqualOrAbove50()))
+                )
                 .Replace("'", "\"");
         }
 
-        private List<ItemEntry> GetLegendariesWithAmendedTearItemPositioning(Dictionary<int, WinLossData> itemData, List<ItemEntry> legendariesJsonArray, Item tear)
+        private List<ItemEntry> GetLegendariesWithAmendedTearItemPositioning(
+            List<TableEntryAndWinLossData<Item>> itemData,
+            List<ItemEntry> legendariesJsonArray,
+            Item tear
+        )
         {
             if (tear == null) return legendariesJsonArray;
 
@@ -111,15 +120,18 @@ namespace LeagueAPI_ClassLibrary
 
             foreach (ItemEntry item in legendariesJsonArray)
             {
-                if (!tear.BuildsInto.Contains(item.Id.ToString()))
-                {
-                    legendariesAmendedJsonArray.Add(item);
-                    if (secondFormIdAndFirstForm.ContainsKey(item.Id))
-                    {
-                        Item firstForm = secondFormIdAndFirstForm[item.Id];
-                        legendariesAmendedJsonArray.Add(new ItemEntry(firstForm.Id, itemData[item.Id].GetWinRate()));
-                    }
-                }
+                if (tear.BuildsInto.Contains(item.Id.ToString())) continue;
+
+                legendariesAmendedJsonArray.Add(item);
+                if (!secondFormIdAndFirstForm.ContainsKey(item.Id)) continue;
+
+                Item firstForm = secondFormIdAndFirstForm[item.Id];
+                legendariesAmendedJsonArray.Add(
+                    new ItemEntry(
+                        firstForm.Id,
+                        itemData.First(i => i.GetEntry().Id == item.Id).GetWinLossData().GetWinRate()
+                    )
+                );
             }
             return legendariesAmendedJsonArray;
         }
@@ -165,7 +177,7 @@ namespace LeagueAPI_ClassLibrary
 
             public object GetSerialized()
             {
-                return new { id = Id.ToString(), count = 1 };
+                return new {id = Id.ToString(), count = 1};
             }
         }
     }

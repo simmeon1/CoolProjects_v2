@@ -7,7 +7,7 @@ namespace LeagueAPI_ClassLibrary
         Champion GetChampion(int id);
         Item GetItem(int id);
         Rune GetRune(int id);
-        string GetStatPerk(int id);
+        StatPerk GetStatPerk(int id);
         Spell GetSpell(int id);
         void RefreshData();
         Item GetItem(string itemName);

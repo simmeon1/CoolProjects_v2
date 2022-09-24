@@ -11,97 +11,65 @@ namespace LeagueAPI_ClassLibrary
 {
     public class DdragonRepository : IDDragonRepository
     {
-        private IFileIO FileIO { get; set; }
-        private string RepoPath { get; set; }
-        private JObject ChampionJson { get; set; }
-        private JObject ItemJson { get; set; }
-        private JArray RuneJson { get; set; }
-        private JObject StatPerkJson { get; set; }
-        private JObject SpellJson { get; set; }
+        private readonly IFileIO fileIO;
+        private readonly string repoPath;
+        private readonly Dictionary<int, Champion> champions = new();
+        private readonly Dictionary<int, Item> items = new();
+        private readonly Dictionary<int, Rune> runes = new();
+        private readonly Dictionary<int, StatPerk> statPerks = new();
+        private readonly Dictionary<int, Spell> spells = new();
         public DdragonRepository(IFileIO fileIO, string repoPath)
         {
-            FileIO = fileIO;
-            RepoPath = repoPath;
+            this.fileIO = fileIO;
+            this.repoPath = repoPath;
         }
 
         public void RefreshData()
         {
-            ChampionJson = JObject.Parse(FileIO.ReadAllText(Path.Combine(RepoPath, "champion.json")));
-            ItemJson = JObject.Parse(FileIO.ReadAllText(Path.Combine(RepoPath, "item.json")));
-            RuneJson = JArray.Parse(FileIO.ReadAllText(Path.Combine(RepoPath, "runesReforged.json")));
-            StatPerkJson = JObject.Parse(FileIO.ReadAllText(Path.Combine(RepoPath, "statPerks.json")));
-            SpellJson = JObject.Parse(FileIO.ReadAllText(Path.Combine(RepoPath, "summoner.json")));
+            PopulateChampions();
+            PopulateItems();
+            PopulateRunes();
+            PopulateStatPerks();
+            PopulateSpells();
         }
 
-        public Champion GetChampion(int id)
+        private void PopulateSpells()
         {
-            foreach (JProperty champ in ChampionJson["data"])
+            JObject spellJson = JObject.Parse(fileIO.ReadAllText(Path.Combine(repoPath, "summoner.json")));
+            foreach (JProperty entry in spellJson["data"])
             {
-                if (int.Parse(champ.Value["key"].ToString()) != id) continue;
-                Champion champion = new()
+                int id = int.Parse(entry.Value["key"].ToString());
+                Spell spell = new()
                 {
-                    Name = champ.Value["name"].ToString(),
-                    Difficulty = (int)champ.Value["info"]["difficulty"],
+                    Name = entry.Value["name"].ToString(),
+                    Cooldown = int.Parse(entry.Value["cooldown"][0].ToString()),
+                    Description = entry.Value["description"].ToString()
                 };
-                List<string> tags = new();
-                foreach (JToken tag in champ.Value["tags"]) tags.Add(tag.ToString());
-                champion.Tags = tags;
-                return champion;
+                spells.Add(id, spell);
             }
-            return null;
         }
 
-        public Item GetItem(int id)
+        private void PopulateStatPerks()
         {
-            foreach (JProperty itemEntry in ItemJson["data"])
+            JObject statPerkJson = JObject.Parse(fileIO.ReadAllText(Path.Combine(repoPath, "statPerks.json")));
+            foreach (KeyValuePair<string, JToken> entry in statPerkJson)
             {
-                if (int.Parse(itemEntry.Name) == id) return GetItemFromEntry(itemEntry);
+                int id = int.Parse(entry.Key);
+                statPerks.Add(id, new StatPerk(entry.Value.ToString()));
             }
-            return null;
         }
 
-        private static Item GetItemFromEntry(JProperty itemEntry)
+        private void PopulateRunes()
         {
-            Item item = new()
+            JArray runeJson = JArray.Parse(fileIO.ReadAllText(Path.Combine(repoPath, "runesReforged.json")));
+            foreach (JToken treeEntry in runeJson)
             {
-                Id = int.Parse(itemEntry.Name),
-                Name = itemEntry.Value["name"].ToString(),
-                Plaintext = itemEntry.Value["plaintext"].ToString(),
-                Description = itemEntry.Value["description"].ToString(),
-                Gold = int.Parse(itemEntry.Value["gold"]["total"].ToString())
-            };
-
-            GetBuildsIntoData(itemEntry, item);
-            GetTagsData(itemEntry, item);
-            return item;
-        }
-
-        private static void GetTagsData(JProperty itemEntry, Item item)
-        {
-            List<string> tags = new();
-            foreach (JToken tag in itemEntry.Value["tags"]) tags.Add(tag.ToString());
-            item.Tags = tags;
-        }
-
-        private static void GetBuildsIntoData(JProperty itemEntry, Item item)
-        {
-            List<string> buildsInto = new();
-            JArray buildsIntoJAray = (JArray)itemEntry.Value["into"];
-            if (buildsIntoJAray != null) foreach (JToken entry in buildsIntoJAray) buildsInto.Add(entry.ToString());
-            item.BuildsInto = buildsInto;
-        }
-
-        public Rune GetRune(int id)
-        {
-            foreach (JToken treeEntry in RuneJson)
-            {
-                string tree = (string)treeEntry["name"];
+                string tree = (string) treeEntry["name"];
                 for (int i = 0; i < treeEntry["slots"].Count(); i++)
                 {
                     JToken runeRow = treeEntry["slots"][i];
                     foreach (JToken rune in runeRow["runes"])
                     {
-                        if (int.Parse(rune["id"].ToString()) != id) continue;
                         Rune result = new()
                         {
                             Name = rune["name"].ToString(),
@@ -109,40 +77,93 @@ namespace LeagueAPI_ClassLibrary
                             LongDescription = rune["longDesc"].ToString(),
                             Tree = tree
                         };
-                        return result;
+                        runes.Add(int.Parse(rune["id"].ToString()), result);
                     }
                 }
             }
-            return null;
         }
 
-        public string GetStatPerk(int id)
+        private void PopulateItems()
         {
-            return StatPerkJson.ContainsKey(id.ToString()) ? StatPerkJson[id.ToString()].ToString() : null;
+            JObject itemJson = JObject.Parse(fileIO.ReadAllText(Path.Combine(repoPath, "item.json")));
+            foreach (JProperty itemEntry in itemJson["data"])
+            {
+                Item item = new()
+                {
+                    Id = int.Parse(itemEntry.Name),
+                    Name = itemEntry.Value["name"].ToString(),
+                    Plaintext = itemEntry.Value["plaintext"].ToString(),
+                    Description = itemEntry.Value["description"].ToString(),
+                    Gold = int.Parse(itemEntry.Value["gold"]["total"].ToString())
+                };
+                
+                List<string> buildsInto = new();
+                JArray buildsIntoJAray = (JArray)itemEntry.Value["into"];
+                if (buildsIntoJAray != null) foreach (JToken entry in buildsIntoJAray) buildsInto.Add(entry.ToString());
+                item.BuildsInto = buildsInto;
+
+                List<string> tags = new();
+                foreach (JToken tag in itemEntry.Value["tags"]) tags.Add(tag.ToString());
+                item.Tags = tags;
+                
+                items.Add(int.Parse(itemEntry.Name), item);
+            }
+        }
+
+        private void PopulateChampions()
+        {
+            JObject championJson = JObject.Parse(fileIO.ReadAllText(Path.Combine(repoPath, "champion.json")));
+            foreach (JProperty champ in championJson["data"])
+            {
+                int id = int.Parse(champ.Value["key"].ToString());
+                Champion champion = new()
+                {
+                    Name = champ.Value["name"].ToString(),
+                    Difficulty = (int) champ.Value["info"]["difficulty"],
+                };
+                List<string> tags = new();
+                foreach (JToken tag in champ.Value["tags"]) tags.Add(tag.ToString());
+                champion.Tags = tags;
+                champions.Add(id, champion);
+            }
+        }
+
+        public Champion GetChampion(int id)
+        {
+            return GetEntryOrNullFromDict(id, champions);
+        }
+
+        public Item GetItem(int id)
+        {
+            return GetEntryOrNullFromDict(id, items);
+        }
+
+        public Rune GetRune(int id)
+        {
+            return GetEntryOrNullFromDict(id, runes);
+        }
+
+        public StatPerk GetStatPerk(int id)
+        {
+            return GetEntryOrNullFromDict(id, statPerks);
         }
 
         public Spell GetSpell(int id)
         {
-            foreach (JProperty entry in SpellJson["data"])
-            {
-                if (int.Parse(entry.Value["key"].ToString()) != id) continue;
-                Spell spell = new()
-                {
-                    Name = entry.Value["name"].ToString(),
-                    Cooldown = int.Parse(entry.Value["cooldown"][0].ToString()),
-                    Description = entry.Value["description"].ToString()
-                };
-                return spell;
-            }
-            return null;
+            return GetEntryOrNullFromDict(id, spells);
+        }
+        
+        private static T GetEntryOrNullFromDict<T>(int id, IReadOnlyDictionary<int, T> dict)
+        {
+            return dict.ContainsKey(id) ? dict[id] : default;
         }
 
         public Item GetItem(string itemName)
         {
-            foreach (JProperty itemEntry in ItemJson["data"])
+            foreach (Item item in items.Values.ToList())
             {
-                string name = itemEntry.Value["name"].ToString();
-                if (name.Equals(itemName)) return GetItemFromEntry(itemEntry);
+                string name = item.Name;
+                if (name.Equals(itemName)) return item;
             }
             return null;
         }

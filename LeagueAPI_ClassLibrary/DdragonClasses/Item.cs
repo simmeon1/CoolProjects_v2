@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace LeagueAPI_ClassLibrary
 {
-    public class Item
+    public class Item : ITableEntry
     {
         public int Id { get; set; }
         public string Name { get; set; } = "";
@@ -64,6 +64,26 @@ namespace LeagueAPI_ClassLibrary
         {
             Match match = Regex.Match(Description, "360 mana.*<raritylegendary>(.*?)</raritylegendary>", RegexOptions.IgnoreCase);
             return match.Success ? match.Groups[1].Value.ToString() : "";
+        }
+
+        public string GetCategory()
+        {
+            return "Items";
+        }
+
+        public List<KeyValuePair<string, object>> GetProperties()
+        {
+            return new List<KeyValuePair<string, object>>
+            {
+                new("Name", Name),
+                new("Gold", Gold),
+                new("More than 2000G", IsMoreThan2000G()),
+                new("Is Mythic", IsMythic()),
+                new("Is Finished", IsFinished()),
+                new("Tags", GetTagsString()),
+                new("Plaintext", Plaintext),
+                new("Description", GetCleanDescription())
+            };
         }
     }
 }
