@@ -135,8 +135,8 @@ namespace LeagueAPI_ClassLibrary
                 .ThenByDescending(c => c.GetWinLossData().GetWinRate())
                 .ToList();
             runes = runes
-                .OrderBy(c => c.GetEntry().Tree)
-                .ThenBy(c => c.GetEntry().Slot)
+                .OrderBy(c => c.GetEntry().GetTree())
+                .ThenBy(c => c.GetEntry().GetSlot())
                 .ThenByDescending(c => c.GetWinLossData().GetWinRate())
                 .ToList();
             statPerks = statPerks.OrderByDescending(c => c.GetWinLossData().GetWinRate()).ToList();

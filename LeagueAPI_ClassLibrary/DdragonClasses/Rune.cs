@@ -5,13 +5,26 @@ namespace LeagueAPI_ClassLibrary
 {
     public class Rune : ITableEntry
     {
-        public string Name { get; set; } = "";
-        public string Tree { get; set; } = "";
-        public string LongDescription { get; set; } = "";
-        public int Slot { get; set; }
-        public string GetCleanDescription()
+        private readonly string name;
+        private readonly string tree;
+        private readonly string longDescription;
+        private readonly int slot;
+        public Rune(string name, string tree, string longDescription, int slot)
         {
-            return Regex.Replace(LongDescription, "<.*?>", "");
+            this.name = name;
+            this.tree = tree;
+            this.longDescription = longDescription;
+            this.slot = slot;
+        }
+
+        public string GetTree()
+        {
+            return tree;
+        }
+        
+        public int GetSlot()
+        {
+            return slot;
         }
 
         public string GetCategory()
@@ -23,11 +36,16 @@ namespace LeagueAPI_ClassLibrary
         {
             return new List<KeyValuePair<string, object>>
             {
-                new("Name", Name),
-                new("Tree", Tree),
-                new("Slot", Slot),
+                new("Name", name),
+                new("Tree", tree),
+                new("Slot", slot),
                 new("Description", GetCleanDescription())
             };
+        }
+        
+        private string GetCleanDescription()
+        {
+            return Regex.Replace(longDescription, "<.*?>", "");
         }
     }
 }

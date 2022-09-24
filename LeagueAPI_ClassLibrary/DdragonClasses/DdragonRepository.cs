@@ -70,13 +70,7 @@ namespace LeagueAPI_ClassLibrary
                     JToken runeRow = treeEntry["slots"][i];
                     foreach (JToken rune in runeRow["runes"])
                     {
-                        Rune result = new()
-                        {
-                            Name = rune["name"].ToString(),
-                            Slot = i,
-                            LongDescription = rune["longDesc"].ToString(),
-                            Tree = tree
-                        };
+                        Rune result = new(rune["name"].ToString(), tree, rune["longDesc"].ToString(), i);
                         runes.Add(int.Parse(rune["id"].ToString()), result);
                     }
                 }

@@ -16,17 +16,78 @@ namespace LeagueAPI_Tests.UnitTests
         public void TestInitialize()
         {
             Mock<IFileIO> fileIOMock = new();
-            fileIOMock.SetupSequence(x => x.ReadAllText(It.IsAny<string>()))
-                .Returns(@"{'data':{'Aatrox':{'key': '266', 'name':'Aatrox','info':{'difficulty':4},'tags':['Fighter','Tank']}}}")
-                .Returns(@"{'data':{'1001':{'name':'Boots','description':'rarityMythic<asd>ornnBonus','plaintext':'plaintext','gold':{'total':300},
-                            'tags':['Boots', 'b']},'3158':{'name':'s','description':'360 mana.*<raritylegendary>tearItem</raritylegendary>','plaintext':'s','gold':{'total':300},'tags':['Boots'], 'into':['Boots2', 'Boots3']}}}")
-                .Returns(@"[{'name':'Domination','slots':[{'runes':[{'id':8112,'name':'name','longDesc':'long<asd>desc'}]}]}]")
-                .Returns(@"{'5008': 'someText'}")
-                .Returns(@"{'data':{'SummonerBarrier':{'name':'name','key': '21','description':'desc','cooldown':[180]}}}");
-            Repo = new(fileIOMock.Object, "");
+            fileIOMock.Setup(x => x.ReadAllText("champion.json")).Returns(
+                @"
+{
+    'data': {
+        'Aatrox': {
+            'key': '266',
+            'name': 'Aatrox',
+            'info': {
+                'difficulty': 4
+            },
+            'tags': [
+                'Fighter',
+                'Tank'
+            ]
+        }
+    }
+}"
+            );
+            fileIOMock.Setup(x => x.ReadAllText("item.json")).Returns(
+                @"{'data':{'1001':{'name':'Boots','description':'rarityMythic<asd>ornnBonus','plaintext':'plaintext','gold':{'total':300},
+                            'tags':['Boots', 'b']},'3158':{'name':'s','description':'360 mana.*<raritylegendary>tearItem</raritylegendary>','plaintext':'s','gold':{'total':300},'tags':['Boots'], 'into':['Boots2', 'Boots3']}}}"
+            );
+            fileIOMock.Setup(x => x.ReadAllText("runesReforged.json")).Returns(
+                @"
+[
+    {
+        'key': 'Domination',
+        'name': 'Domination',
+        'slots': [
+            {
+                'runes': [
+                    {
+                        'id': 8112,
+                        'name': 'Electrocute',
+                        'longDesc': '<s>longDesc1</s>'
+                    },
+                    {
+                        'id': 8124,
+                        'name': 'Predator',
+                        'longDesc': '<s>longDesc2</s>'
+                    }
+                ]
+            },
+            {
+                'runes': [
+                    {
+                        'id': 8126,
+                        'name': 'CheapShot',
+                        'longDesc': '<s>longDesc3</s>'
+                    },
+                    {
+                        'id': 8139,
+                        'name': 'TasteOfBlood',
+                        'longDesc': '<s>longDesc4</s>'
+                    }
+                ]
+            }   
+        ]
+    }
+]"
+            );
+            fileIOMock.Setup(x => x.ReadAllText("statPerks.json")).Returns(@"
+{
+    '5008': '+9 Adaptive Force'
+}");
+            fileIOMock.Setup(x => x.ReadAllText("summoner.json")).Returns(
+                @"{'data':{'SummonerBarrier':{'name':'name','key': '21','description':'desc','cooldown':[180]}}}"
+            );
+            Repo = new DdragonRepository(fileIOMock.Object, "");
             Repo.RefreshData();
         }
-        
+
         [TestMethod]
         public void GetChampion_ExpectedValues()
         {
@@ -34,16 +95,15 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(obj != null);
             Assert.IsTrue(obj.Name.Equals("Aatrox"));
             Assert.IsTrue(obj.Difficulty == 4);
-            Assert.IsTrue(obj.GetTagsString().Equals("Fighter, Tank"));
         }
-        
+
         [TestMethod]
         public void GetChampion_NotFound()
         {
             Champion obj = Repo.GetChampion(0);
             Assert.IsTrue(obj == null);
         }
-        
+
         [TestMethod]
         public void GetItem_ExpectedValues()
         {
@@ -63,7 +123,7 @@ namespace LeagueAPI_Tests.UnitTests
 
             Item obj2 = Repo.GetItem(obj.Name);
             Assert.IsTrue(obj2.Id == obj.Id);
-            
+
             Item obj3 = Repo.GetItem("blah");
             Assert.IsTrue(obj3 == null);
 
@@ -76,11 +136,11 @@ namespace LeagueAPI_Tests.UnitTests
 
             obj4.BuildsInto = null;
             Assert.IsTrue(obj4.IsFinished());
-            
+
             obj4.BuildsInto = new();
             Assert.IsTrue(obj4.IsFinished());
         }
-        
+
         [TestMethod]
         public void GetItem_NotFound()
         {
@@ -91,20 +151,26 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public void GetRune_ExpectedValues()
         {
-            Rune obj = Repo.GetRune(8112);
-            Assert.IsTrue(obj != null);
-            Assert.IsTrue(obj.Name.Equals("name"));
-            Assert.IsTrue(obj.Tree.Equals("Domination"));
-            Assert.IsTrue(obj.LongDescription.Equals("long<asd>desc"));
-            Assert.IsTrue(obj.GetCleanDescription().Equals("longdesc"));
-            Assert.IsTrue(obj.Slot.Equals(0));
+            Rune obj = Repo.GetRune(8139);
+            List<KeyValuePair<string, object>> props = obj.GetProperties();
+            Assert.AreEqual(4, props.Count);
+            Assert.AreEqual("Name", props[0].Key);
+            Assert.AreEqual("TasteOfBlood", props[0].Value);
+            Assert.AreEqual("Tree", props[1].Key);
+            Assert.AreEqual("Domination", props[1].Value);
+            Assert.AreEqual("Slot", props[2].Key);
+            Assert.AreEqual(1, props[2].Value);
+            Assert.AreEqual("Description", props[3].Key);
+            Assert.AreEqual("longDesc4", props[3].Value);
+            Assert.AreEqual("Domination", obj.GetTree());
+            Assert.AreEqual("Runes", obj.GetCategory());
+            Assert.AreEqual(1, obj.GetSlot());
         }
 
         [TestMethod]
         public void GetRune_NotFound()
         {
-            Rune obj = Repo.GetRune(0);
-            Assert.IsTrue(obj == null);
+            Assert.AreEqual(null, Repo.GetRune(0));
         }
 
         [TestMethod]
@@ -123,20 +189,22 @@ namespace LeagueAPI_Tests.UnitTests
             Spell obj = Repo.GetSpell(0);
             Assert.IsTrue(obj == null);
         }
-        
+
         [TestMethod]
         public void GetStatPerk_ExpectedValues()
         {
-            string obj = Repo.GetStatPerk(5008);
-            Assert.IsTrue(obj != null);
-            Assert.IsTrue(obj.Equals("someText"));
+            StatPerk obj = Repo.GetStatPerk(5008);
+            List<KeyValuePair<string, object>> props = obj.GetProperties();
+            Assert.AreEqual(1, props.Count);
+            Assert.AreEqual("Name", props[0].Key);
+            Assert.AreEqual("+9 Adaptive Force", props[0].Value);
+            Assert.AreEqual("Stat Perks", obj.GetCategory());
         }
 
         [TestMethod]
         public void GetStatPerk_NotFound()
         {
-            string obj = Repo.GetStatPerk(0);
-            Assert.IsTrue(obj == null);
+            Assert.AreEqual(null, Repo.GetStatPerk(0));
         }
     }
 }
