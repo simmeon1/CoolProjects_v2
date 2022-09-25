@@ -183,14 +183,14 @@ namespace LeagueAPI_ClassLibrary
             if (!startMatchId.IsNullOrEmpty())
             {
                 LeagueMatch match = await Client.GetMatch(startMatchId);
-                queueId = match.queueId.Value;
+                queueId = match.queueId;
                 startPuuid = match.participants[0].puuid;
             }
             else
             {
                 List<string> matchIds = await Client.GetMatchIds(defaultPuuid);
                 LeagueMatch match = await Client.GetMatch(matchIds[0]);
-                queueId = match.queueId.Value;
+                queueId = match.queueId;
                 startPuuid = defaultPuuid;
             }
 

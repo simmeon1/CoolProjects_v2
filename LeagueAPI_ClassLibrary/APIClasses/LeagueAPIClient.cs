@@ -14,6 +14,7 @@ namespace LeagueAPI_ClassLibrary
         private string Token { get; set; }
         private IDelayer Delayer { get; set; }
         private ILogger Logger { get; set; }
+
         public LeagueAPIClient(IHttpClient client, string token, IDelayer delayer, ILogger logger)
         {
             Client = client;
@@ -24,15 +25,26 @@ namespace LeagueAPI_ClassLibrary
 
         public async Task<Account> GetAccountBySummonerName(string summonerName)
         {
-            JObject obj = await GetJObjectFromResponse($"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}");
-            return obj == null ? null : new Account((string)obj["id"], (string)obj["accountId"], (string)obj["puuid"], (string)obj["name"]);
+            JObject obj = await GetJObjectFromResponse(
+                $"https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}"
+            );
+            return obj == null
+                ? null
+                : new Account(
+                    (string) obj["id"],
+                    (string) obj["accountId"],
+                    (string) obj["puuid"],
+                    (string) obj["name"]
+                );
         }
-        
+
         public async Task<SpectatorData> GetSpectatorDataByEncryptedSummonerId(string encryptedSummonerId)
         {
-            JObject obj = await GetJObjectFromResponse($"https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/{encryptedSummonerId}");
+            JObject obj = await GetJObjectFromResponse(
+                $"https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/{encryptedSummonerId}"
+            );
             if (obj == null) return null;
-            
+
             JToken participantsArr = obj["participants"];
             List<SpectatedParticipant> participants = new();
             foreach (JToken p in participantsArr)
@@ -45,6 +57,7 @@ namespace LeagueAPI_ClassLibrary
                 };
                 participants.Add(participant);
             }
+
             return obj == null ? null : new SpectatorData(participants);
         }
 
@@ -66,8 +79,8 @@ namespace LeagueAPI_ClassLibrary
             string responseMessage = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode) return responseMessage;
 
-            int responseStatusCode = (int)response.StatusCode;
-            if (responseStatusCode >= 400 && responseStatusCode != (int)HttpStatusCode.Forbidden) return null;
+            int responseStatusCode = (int) response.StatusCode;
+            if (responseStatusCode >= 400 && responseStatusCode != (int) HttpStatusCode.Forbidden) return null;
             throw new InvalidOperationException(
                 $"The request was not successful.{Environment.NewLine}" +
                 $"URI: {uri}.{Environment.NewLine}" +
@@ -84,7 +97,7 @@ namespace LeagueAPI_ClassLibrary
                 try
                 {
                     HttpResponseMessage response = await Client.SendRequest(message);
-                    while (response.StatusCode == HttpStatusCode.TooManyRequests || (int)response.StatusCode >= 500)
+                    while (response.StatusCode == HttpStatusCode.TooManyRequests || (int) response.StatusCode >= 500)
                     {
                         double millisecondsToWait = 1000;
                         if (response.StatusCode == HttpStatusCode.TooManyRequests)
@@ -93,7 +106,9 @@ namespace LeagueAPI_ClassLibrary
                             {
                                 millisecondsToWait = response.Headers.RetryAfter.Delta.Value.TotalMilliseconds;
                             }
-                            catch (Exception) { }
+                            catch (Exception)
+                            {
+                            }
                         }
 
                         Logger.Log($"Last request failed due to status code {response.StatusCode}.");
@@ -102,6 +117,7 @@ namespace LeagueAPI_ClassLibrary
                         message = GetMessageReadyWithToken(uri);
                         response = await Client.SendRequest(message);
                     }
+
                     return response;
                 }
                 catch (Exception ex)
@@ -117,7 +133,9 @@ namespace LeagueAPI_ClassLibrary
 
         private void LogTimeToWaitBeforeRetrying(double timeToWaitInSeconds)
         {
-            Logger.Log($"Waiting {timeToWaitInSeconds} seconds before retrying (at {DateTime.Now.AddSeconds(timeToWaitInSeconds)}).");
+            Logger.Log(
+                $"Waiting {timeToWaitInSeconds} seconds before retrying (at {DateTime.Now.AddSeconds(timeToWaitInSeconds)})."
+            );
         }
 
         private HttpRequestMessage GetMessageReadyWithToken(string uri)
@@ -129,7 +147,8 @@ namespace LeagueAPI_ClassLibrary
 
         public async Task<List<string>> GetMatchIds(string puuid, int queueId = 0)
         {
-            string uri = $"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count=100";
+            string uri =
+                $"https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count=100";
             if (queueId > 0) uri += $"&queue={queueId}";
             JArray array = await GetJArrayFromResponse(uri);
             List<string> ids = new();
@@ -139,58 +158,73 @@ namespace LeagueAPI_ClassLibrary
 
         public async Task<LeagueMatch> GetMatch(string matchId)
         {
-            JObject obj = await GetJObjectFromResponse($"https://europe.api.riotgames.com/lol/match/v5/matches/{matchId}");
+            JObject obj =
+                await GetJObjectFromResponse($"https://europe.api.riotgames.com/lol/match/v5/matches/{matchId}");
             if (obj == null) return null;
-            LeagueMatch match = new();
-            match.gameVersion = obj["info"]["gameVersion"].ToString();
-            match.matchId = obj["metadata"]["matchId"].ToString();
-            match.mapId = int.Parse(obj["info"]["mapId"].ToString());
-            match.queueId = int.Parse(obj["info"]["queueId"].ToString());
-
-            long duration = long.Parse(obj["info"]["gameDuration"].ToString());
-            match.duration = obj["info"]["gameEndTimestamp"] == null ? TimeSpan.FromMilliseconds(duration) : TimeSpan.FromSeconds(duration);
-
-            List<Participant> participants = new();
-            JToken arr = obj["info"]["participants"];
-            foreach (JToken p in arr)
+            try
             {
-                Participant participant = new()
+                LeagueMatch match = new()
                 {
-                    championId = int.Parse(p["championId"].ToString()),
-                    puuid = p["puuid"].ToString(),
-                    physicalDamageDealtToChampions = int.Parse(p["physicalDamageDealtToChampions"].ToString()),
-                    magicDamageDealtToChampions = int.Parse(p["magicDamageDealtToChampions"].ToString()),
-                    item0 = int.Parse(p["item0"].ToString()),
-                    item1 = int.Parse(p["item1"].ToString()),
-                    item2 = int.Parse(p["item2"].ToString()),
-                    item3 = int.Parse(p["item3"].ToString()),
-                    item4 = int.Parse(p["item4"].ToString()),
-                    item5 = int.Parse(p["item5"].ToString()),
-                    item6 = int.Parse(p["item6"].ToString()),
-                    perk1_1 = int.Parse(p["perks"]["styles"][0]["selections"][0]["perk"].ToString()),
-                    perk1_2 = int.Parse(p["perks"]["styles"][0]["selections"][1]["perk"].ToString()),
-                    perk1_3 = int.Parse(p["perks"]["styles"][0]["selections"][2]["perk"].ToString()),
-                    perk1_4 = int.Parse(p["perks"]["styles"][0]["selections"][3]["perk"].ToString()),
-                    perk2_1 = int.Parse(p["perks"]["styles"][1]["selections"][0]["perk"].ToString()),
-                    perk2_2 = int.Parse(p["perks"]["styles"][1]["selections"][1]["perk"].ToString()),
-                    perkTree_1 = int.Parse(p["perks"]["styles"][0]["style"].ToString()),
-                    perkTree_2 = int.Parse(p["perks"]["styles"][1]["style"].ToString()),
-                    statPerkDefense = int.Parse(p["perks"]["statPerks"]["defense"].ToString()),
-                    statPerkFlex = int.Parse(p["perks"]["statPerks"]["flex"].ToString()),
-                    statPerkOffense = int.Parse(p["perks"]["statPerks"]["offense"].ToString()),
-                    summoner1Id = int.Parse(p["summoner1Id"].ToString()),
-                    summoner2Id = int.Parse(p["summoner2Id"].ToString()),
-                    win = bool.Parse(p["win"].ToString())
+                    gameVersion = obj["info"]["gameVersion"].ToString(),
+                    matchId = obj["metadata"]["matchId"].ToString(),
+                    mapId = int.Parse(obj["info"]["mapId"].ToString()),
+                    queueId = int.Parse(obj["info"]["queueId"].ToString())
                 };
-                participants.Add(participant);
+
+                long duration = long.Parse(obj["info"]["gameDuration"].ToString());
+                match.duration = obj["info"]["gameEndTimestamp"] == null
+                    ? TimeSpan.FromMilliseconds(duration)
+                    : TimeSpan.FromSeconds(duration);
+
+                List<Participant> participants = new();
+                JToken arr = obj["info"]["participants"];
+                foreach (JToken p in arr)
+                {
+                    Participant participant = new()
+                    {
+                        championId = int.Parse(p["championId"].ToString()),
+                        puuid = p["puuid"].ToString(),
+                        physicalDamageDealtToChampions = int.Parse(p["physicalDamageDealtToChampions"].ToString()),
+                        magicDamageDealtToChampions = int.Parse(p["magicDamageDealtToChampions"].ToString()),
+                        item0 = int.Parse(p["item0"].ToString()),
+                        item1 = int.Parse(p["item1"].ToString()),
+                        item2 = int.Parse(p["item2"].ToString()),
+                        item3 = int.Parse(p["item3"].ToString()),
+                        item4 = int.Parse(p["item4"].ToString()),
+                        item5 = int.Parse(p["item5"].ToString()),
+                        item6 = int.Parse(p["item6"].ToString()),
+                        perk1_1 = int.Parse(p["perks"]["styles"][0]["selections"][0]["perk"].ToString()),
+                        perk1_2 = int.Parse(p["perks"]["styles"][0]["selections"][1]["perk"].ToString()),
+                        perk1_3 = int.Parse(p["perks"]["styles"][0]["selections"][2]["perk"].ToString()),
+                        perk1_4 = int.Parse(p["perks"]["styles"][0]["selections"][3]["perk"].ToString()),
+                        perk2_1 = int.Parse(p["perks"]["styles"][1]["selections"][0]["perk"].ToString()),
+                        perk2_2 = int.Parse(p["perks"]["styles"][1]["selections"][1]["perk"].ToString()),
+                        perkTree_1 = int.Parse(p["perks"]["styles"][0]["style"].ToString()),
+                        perkTree_2 = int.Parse(p["perks"]["styles"][1]["style"].ToString()),
+                        statPerkDefense = int.Parse(p["perks"]["statPerks"]["defense"].ToString()),
+                        statPerkFlex = int.Parse(p["perks"]["statPerks"]["flex"].ToString()),
+                        statPerkOffense = int.Parse(p["perks"]["statPerks"]["offense"].ToString()),
+                        summoner1Id = int.Parse(p["summoner1Id"].ToString()),
+                        summoner2Id = int.Parse(p["summoner2Id"].ToString()),
+                        win = bool.Parse(p["win"].ToString())
+                    };
+                    participants.Add(participant);
+                }
+
+                match.participants = participants;
+                return match;
             }
-            match.participants = participants;
-            return match;
+            catch (Exception e)
+            {
+                Logger.Log($"There was an error parsing match {matchId}. Details: {e.Message}");
+                return null;
+            }
         }
 
         public async Task<List<string>> GetLatestVersions()
         {
-            return (await GetJArrayFromResponse("https://ddragon.leagueoflegends.com/api/versions.json")).ToObject<List<string>>();
+            return (await GetJArrayFromResponse("https://ddragon.leagueoflegends.com/api/versions.json"))
+                .ToObject<List<string>>();
         }
 
         public async Task<List<string>> GetParsedListOfVersions(List<string> unparsedVersions)
@@ -204,6 +238,7 @@ namespace LeagueAPI_ClassLibrary
                 string parsedVersion = versionsJson[unparsedVersionUpdatedIndex].ToString();
                 parsedVersions.Add(parsedVersion);
             }
+
             return parsedVersions;
         }
 
@@ -212,8 +247,9 @@ namespace LeagueAPI_ClassLibrary
             JArray queues = await GetJArrayFromResponse("https://static.developer.riotgames.com/docs/lol/queues.json");
             foreach (JToken queue in queues)
             {
-                if ((int)queue["queueId"] == queueId) return (string)queue["map"];
+                if ((int) queue["queueId"] == queueId) return (string) queue["map"];
             }
+
             return "";
         }
     }

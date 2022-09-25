@@ -7,8 +7,8 @@ namespace LeagueAPI_ClassLibrary
     {
         public string matchId { get; set; }
         public string gameVersion { get; set; }
-        public int? mapId { get; set; }
-        public int? queueId { get; set; }
+        public int mapId { get; set; }
+        public int queueId { get; set; }
         public TimeSpan duration { get; set; }
         public List<Participant> participants { get; set; }
         public bool GameIsShorterThanOrEqualToMinutes(int minutes)

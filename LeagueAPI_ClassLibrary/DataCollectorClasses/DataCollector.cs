@@ -28,8 +28,8 @@ namespace LeagueAPI_ClassLibrary
                 
                 foreach (Participant participant in match.participants)
                 {
-                    bool win = participant.win.Value;
-                    int champId = participant.championId.Value;
+                    bool win = participant.win;
+                    int champId = participant.championId;
                     AddChampion(champId, win);
                     Champion champ = repository.GetChampion(champId);
                     List<Champion> champList = win ? winners : losers;
@@ -37,13 +37,13 @@ namespace LeagueAPI_ClassLibrary
 
                     foreach (int id in new List<int>
                     {
-                        participant.item0.Value,
-                        participant.item1.Value,
-                        participant.item2.Value,
-                        participant.item3.Value,
-                        participant.item4.Value,
-                        participant.item5.Value,
-                        participant.item6.Value,
+                        participant.item0,
+                        participant.item1,
+                        participant.item2,
+                        participant.item3,
+                        participant.item4,
+                        participant.item5,
+                        participant.item6,
                     })
                     {
                         AddItem(id, win);
@@ -51,12 +51,12 @@ namespace LeagueAPI_ClassLibrary
 
                     foreach (int id in new List<int>
                     {
-                        participant.perk1_1.Value,
-                        participant.perk1_2.Value,
-                        participant.perk1_3.Value,
-                        participant.perk1_4.Value,
-                        participant.perk2_1.Value,
-                        participant.perk2_2.Value,
+                        participant.perk1_1,
+                        participant.perk1_2,
+                        participant.perk1_3,
+                        participant.perk1_4,
+                        participant.perk2_1,
+                        participant.perk2_2,
                     })
                     {
                         AddRune(id, win);
@@ -64,9 +64,9 @@ namespace LeagueAPI_ClassLibrary
                     
                     foreach (int id in new List<int>
                     {
-                        participant.statPerkDefense.Value,
-                        participant.statPerkFlex.Value,
-                        participant.statPerkOffense.Value,
+                        participant.statPerkDefense,
+                        participant.statPerkFlex,
+                        participant.statPerkOffense,
                     })
                     {
                         AddStatPerk(id, win);
@@ -74,8 +74,8 @@ namespace LeagueAPI_ClassLibrary
                     
                     foreach (int id in new List<int>
                     {
-                        participant.summoner1Id.Value,
-                        participant.summoner2Id.Value
+                        participant.summoner1Id,
+                        participant.summoner2Id
                     })
                     {
                         AddSpell(id, win);

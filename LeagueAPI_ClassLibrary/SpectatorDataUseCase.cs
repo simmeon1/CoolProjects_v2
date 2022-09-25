@@ -78,7 +78,7 @@ namespace LeagueAPI_ClassLibrary
 
         private void AddParticipantData(Participant participant)
         {
-            int champId = participant.championId.GetValueOrDefault();
+            int champId = participant.championId;
             DamageDealt dmg = new(participant.physicalDamageDealtToChampions, participant.magicDamageDealtToChampions);
             if (champsAndDamage.ContainsKey(champId))
             {
