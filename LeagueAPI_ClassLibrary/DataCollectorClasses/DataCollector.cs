@@ -8,8 +8,7 @@ namespace LeagueAPI_ClassLibrary
     public class DataCollector
     {
         private readonly IDDragonRepository repository;
-        private Dictionary<ITableEntry, TableEntryAndWinLossData<ITableEntry>> entriesDict = new();
-        private Dictionary<string, ITableEntry> compsDict = new();
+        private readonly Dictionary<string, ITableEntryWithWinLossData> entriesDict = new();
 
         public DataCollector(IDDragonRepository repository)
         {
@@ -18,8 +17,7 @@ namespace LeagueAPI_ClassLibrary
 
         public DataCollectorResults GetData(List<LeagueMatch> leagueMatches)
         {
-            entriesDict = new Dictionary<ITableEntry, TableEntryAndWinLossData<ITableEntry>>();
-            compsDict = new Dictionary<string, ITableEntry>();
+            entriesDict.Clear();
 
             foreach (LeagueMatch match in leagueMatches)
             {
@@ -30,10 +28,10 @@ namespace LeagueAPI_ClassLibrary
                 {
                     bool win = participant.win;
                     int champId = participant.championId;
-                    AddChampion(champId, win);
                     Champion champ = repository.GetChampion(champId);
                     List<Champion> champList = win ? winners : losers;
                     champList.Add(champ);
+                    AddChampion(champId, win);
 
                     foreach (int id in new List<int>
                     {
@@ -88,80 +86,61 @@ namespace LeagueAPI_ClassLibrary
             return new DataCollectorResults(GetSortedEntries());
         }
 
-        private void AddCompToDict(List<Champion> champs, bool win)
-        {
-            string comp = GetCompFromChampionList(champs);
-            if (!compsDict.ContainsKey(comp))
-            {
-                compsDict.Add(comp, new TeamComposition(comp));
-            }
-            AddOrUpdateEntry(win, compsDict[comp]);
-        }
-
-        private static string GetCompFromChampionList(List<Champion> champs)
+        private void AddCompToDict(IEnumerable<Champion> champs, bool win)
         {
             IEnumerable<string> roles = champs.Select(champ => champ.GetFirstTag()).ToList().OrderBy(r => r);
-            return roles.ConcatenateListOfStringsToCommaAndSpaceString();
+            string compFromChampionList = roles.ConcatenateListOfStringsToCommaAndSpaceString();
+            TeamComposition tc = new(compFromChampionList);
+            AddOrUpdateEntry(win, tc);
         }
 
-        private List<TableEntryAndWinLossData<ITableEntry>> GetSortedEntries()
+        private List<ITableEntry> GetSortedEntries()
         {
-            List<TableEntryAndWinLossData<ITableEntry>> entries = entriesDict.Values.ToList();
-            List<TableEntryAndWinLossData<ITableEntry>> sortedEntries = new();
+            List<ITableEntryWithWinLossData> entries = entriesDict.Values.ToList();
+            List<ITableEntry> sortedEntries = new();
 
-            List<TableEntryAndWinLossData<Champion>> champs = new();
-            List<TableEntryAndWinLossData<Item>> items = new();
-            List<TableEntryAndWinLossData<Rune>> runes = new();
-            List<TableEntryAndWinLossData<StatPerk>> statPerks = new();
-            List<TableEntryAndWinLossData<Spell>> spells = new();
-            List<TableEntryAndWinLossData<TeamComposition>> comps = new();
-            foreach (TableEntryAndWinLossData<ITableEntry> x in entries)
+            List<TableEntry<Champion>> champs = new();
+            List<TableEntry<Item>> items = new();
+            List<TableEntry<Rune>> runes = new();
+            List<TableEntry<StatPerk>> statPerks = new();
+            List<TableEntry<Spell>> spells = new();
+            List<TableEntry<TeamComposition>> comps = new();
+            foreach (ITableEntryWithWinLossData entry in entries)
             {
-                ITableEntry entry = x.GetEntry();
-                WinLossData winLossData = x.GetWinLossData();
-                if (entry is Champion c) champs.Add(new TableEntryAndWinLossData<Champion>(c, winLossData));
-                else if (entry is Item i) items.Add(new TableEntryAndWinLossData<Item>(i, winLossData));
-                else if (entry is Rune r) runes.Add(new TableEntryAndWinLossData<Rune>(r, winLossData));
-                else if (entry is StatPerk p) statPerks.Add(new TableEntryAndWinLossData<StatPerk>(p, winLossData));
-                else if (entry is Spell s) spells.Add(new TableEntryAndWinLossData<Spell>(s, winLossData));
-                else if (entry is TeamComposition tc) comps.Add(new TableEntryAndWinLossData<TeamComposition>(tc, winLossData));
+                if (entry is TableEntry<Champion> c) champs.Add(c);
+                else if (entry is TableEntry<Item> i) items.Add(i);
+                else if (entry is TableEntry<Rune> r) runes.Add(r);
+                else if (entry is TableEntry<StatPerk> p) statPerks.Add(p);
+                else if (entry is TableEntry<Spell> s) spells.Add(s);
+                else if (entry is TableEntry<TeamComposition> tc) comps.Add(tc);
             }
 
-            champs = champs.OrderBy(c => c.GetEntry().Name).ToList();
-            items = items
-                .OrderByDescending(c => c.GetEntry().IsMythic())
-                .ThenByDescending(c => c.GetEntry().IsFinished())
-                .ThenByDescending(c => c.GetEntry().IsMoreThan2000G())
-                .ThenByDescending(c => c.GetWinLossData().GetWinRate())
-                .ToList();
-            runes = runes
-                .OrderBy(c => c.GetEntry().GetTree())
-                .ThenBy(c => c.GetEntry().GetSlot())
-                .ThenByDescending(c => c.GetWinLossData().GetWinRate())
-                .ToList();
-            statPerks = statPerks.OrderByDescending(c => c.GetWinLossData().GetWinRate()).ToList();
-            spells = spells.OrderByDescending(c => c.GetWinLossData().GetWinRate()).ToList();
-            comps = comps.OrderByDescending(c => c.GetWinLossData().GetWinRate()).ToList();
-
-            AddEntriesToSortedEntries(champs, sortedEntries);
-            AddEntriesToSortedEntries(items, sortedEntries);
-            AddEntriesToSortedEntries(runes, sortedEntries);
-            AddEntriesToSortedEntries(statPerks, sortedEntries);
-            AddEntriesToSortedEntries(spells, sortedEntries);
-            AddEntriesToSortedEntries(comps, sortedEntries);
+            List<IEnumerable<ITableEntry>> lists = new()
+            {
+                champs.OrderBy(c => c.GetEntry().Name).ToList(),
+                items
+                    .OrderByDescending(c => c.GetEntry().IsMythic())
+                    .ThenByDescending(c => c.GetEntry().IsFinished())
+                    .ThenByDescending(c => c.GetEntry().IsMoreThan2000G())
+                    .ThenByDescending(c => c.GetWinLossData().GetWinRate())
+                    .ToList(),
+                runes
+                    .OrderBy(c => c.GetEntry().GetTree())
+                    .ThenBy(c => c.GetEntry().GetSlot())
+                    .ThenByDescending(c => c.GetWinLossData().GetWinRate())
+                    .ToList(),
+                statPerks.OrderByDescending(c => c.GetWinLossData().GetWinRate()).ToList(),
+                spells.OrderByDescending(c => c.GetWinLossData().GetWinRate()).ToList(),
+                comps.OrderByDescending(c => c.GetWinLossData().GetWinRate()).ToList()
+            };
+            
+            
+            foreach (IEnumerable<ITableEntry> list in lists)
+            {
+                sortedEntries.AddRange(list);
+            }
 
             return sortedEntries;
-        }
-
-        private static void AddEntriesToSortedEntries<T>(
-            IEnumerable<TableEntryAndWinLossData<T>> entries,
-            ICollection<TableEntryAndWinLossData<ITableEntry>> sortedEntries
-        ) where T : ITableEntry
-        {
-            foreach (TableEntryAndWinLossData<T> e in entries)
-            {
-                sortedEntries.Add(new TableEntryAndWinLossData<ITableEntry>(e.GetEntry(), e.GetWinLossData()));
-            }
         }
 
         private void AddItem(int id, bool win)
@@ -189,26 +168,27 @@ namespace LeagueAPI_ClassLibrary
             AddEntryUsingFunc(id, (x) => repository.GetStatPerk(x), win);
         }
 
-        private void AddEntryUsingFunc(
+        private void AddEntryUsingFunc<T>(
             int id,
-            Func<int, ITableEntry> entryRetrieveFunc,
+            Func<int, T> entryRetrieveFunc,
             bool win
-        )
+        ) where T: ITableEntry
         {
             if (id == 0) return;
-            ITableEntry entry = entryRetrieveFunc.Invoke(id);
+            T entry = entryRetrieveFunc.Invoke(id);
             if (entry == null) return;
             AddOrUpdateEntry(win, entry);
         }
 
-        private void AddOrUpdateEntry(bool win, ITableEntry entry)
+        private void AddOrUpdateEntry<T>(bool win, T entry) where T: ITableEntry
         {
-            if (!entriesDict.ContainsKey(entry))
+            string entryId = entry.GetIdentifier();
+            if (!entriesDict.ContainsKey(entryId))
             {
-                entriesDict.Add(entry, new TableEntryAndWinLossData<ITableEntry>(entry, new WinLossData()));
+                entriesDict.Add(entryId, new TableEntry<T>(entry, new WinLossData()));
             }
 
-            TableEntryAndWinLossData<ITableEntry> dictEntry = entriesDict[entry];
+            ITableEntryWithWinLossData dictEntry = entriesDict[entryId];
             WinLossData winLossData = dictEntry.GetWinLossData();
             if (win) winLossData.AddWin();
             else winLossData.AddLoss();

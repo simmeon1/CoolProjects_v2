@@ -4,23 +4,23 @@ namespace LeagueAPI_ClassLibrary
 {
     public class DataCollectorResults
     {
-        private List<TableEntryAndWinLossData<ITableEntry>> entries;
-        public DataCollectorResults(List<TableEntryAndWinLossData<ITableEntry>> entries)
+        private readonly List<ITableEntry> entries;
+        public DataCollectorResults(List<ITableEntry> entries)
         {
             this.entries = entries;
         }
 
-        public List<TableEntryAndWinLossData<ITableEntry>> GetEntries()
+        public List<ITableEntry> GetEntries()
         {
             return entries;
         }
         
-        public List<TableEntryAndWinLossData<Item>> GetItemData()
+        public List<TableEntry<Item>> GetItemData()
         {
-            List<TableEntryAndWinLossData<Item>> items = new();
-            foreach (TableEntryAndWinLossData<ITableEntry> x in entries)
+            List<TableEntry<Item>> items = new();
+            foreach (ITableEntry entry in entries)
             {
-                if (x.GetEntry() is Item i) items.Add(new TableEntryAndWinLossData<Item>(i, x.GetWinLossData()));
+                if (entry is TableEntry<Item> i) items.Add(i);
             }
             return items;
         }

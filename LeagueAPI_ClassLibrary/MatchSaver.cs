@@ -95,7 +95,7 @@ namespace LeagueAPI_ClassLibrary
             // }
             
                 DataCollectorResults resultData = allMatchesData;
-                List<TableEntryAndWinLossData<Item>> itemData = resultData.GetItemData();
+                List<TableEntry<Item>> itemData = resultData.GetItemData();
                 string itemSetFileName = itemSetFilePath;
                 string itemSetJson = exporter.GetItemSet(itemData, Path.GetFileNameWithoutExtension(itemSetFileName));
                 fileIo.WriteAllText(itemSetFileName, itemSetJson);

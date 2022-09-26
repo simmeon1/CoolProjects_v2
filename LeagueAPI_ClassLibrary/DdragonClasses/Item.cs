@@ -66,6 +66,11 @@ namespace LeagueAPI_ClassLibrary
             return match.Success ? match.Groups[1].Value.ToString() : "";
         }
 
+        public string GetIdentifier()
+        {
+            return Name;
+        }
+
         public string GetCategory()
         {
             return "Items";

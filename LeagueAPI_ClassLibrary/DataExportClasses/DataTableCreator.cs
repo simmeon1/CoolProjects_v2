@@ -6,13 +6,13 @@ namespace LeagueAPI_ClassLibrary
 {
     public class DataTableCreator
     {
-        public List<DataTable> GetTables(List<TableEntryAndWinLossData<ITableEntry>> entries)
+        public List<DataTable> GetTables(List<ITableEntry> entries)
         {
             Dictionary<string, DataTable> tables = new();
-            foreach (TableEntryAndWinLossData<ITableEntry> x in entries)
+            foreach (ITableEntry entry in entries)
             {
-                string category = x.GetEntry().GetCategory();
-                List<KeyValuePair<string, object>> entryProps = x.GetProperties();
+                string category = entry.GetCategory();
+                List<KeyValuePair<string, object>> entryProps = entry.GetProperties();
                 if (!tables.ContainsKey(category))
                 {
                     DataTable newTable = new(category);

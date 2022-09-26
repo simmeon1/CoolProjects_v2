@@ -11,6 +11,11 @@ namespace LeagueAPI_ClassLibrary
             this.description = description;
         }
 
+        public string GetIdentifier()
+        {
+            return description;
+        }
+
         public string GetCategory()
         {
             return "Stat Perks";

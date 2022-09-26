@@ -27,6 +27,11 @@ namespace LeagueAPI_ClassLibrary
             return slot;
         }
 
+        public string GetIdentifier()
+        {
+            return name;
+        }
+
         public string GetCategory()
         {
             return "Runes";

@@ -8,6 +8,11 @@ namespace LeagueAPI_ClassLibrary
         public string Name { get; set; } = "";
         public string Description { get; set; } = "";
         public int Cooldown { get; set; }
+        public string GetIdentifier()
+        {
+            return Name;
+        }
+
         public string GetCategory()
         {
             return "Spells";

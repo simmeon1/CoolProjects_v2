@@ -61,7 +61,7 @@ namespace LeagueAPI_ClassLibrary
             Repository = repository;
         }
 
-        public string GetItemSet(List<TableEntryAndWinLossData<Item>> itemData, string itemSetName)
+        public string GetItemSet(List<TableEntry<Item>> itemData, string itemSetName)
         {
             List<ItemEntry> guardianJsonArray = new();
             List<ItemEntry> bootsJsonArray = new();
@@ -70,9 +70,9 @@ namespace LeagueAPI_ClassLibrary
             List<ItemEntry> legendariesJsonArray = new();
 
             Item tear = null;
-            List<TableEntryAndWinLossData<Item>> sortedList =
+            List<TableEntry<Item>> sortedList =
                 itemData.OrderByDescending(x => x.GetWinLossData().GetWinRate()).ToList();
-            foreach (TableEntryAndWinLossData<Item> entry in sortedList)
+            foreach (TableEntry<Item> entry in sortedList)
             {
                 double winRate = entry.GetWinLossData().GetWinRate();
                 Item item = entry.GetEntry();
@@ -108,7 +108,7 @@ namespace LeagueAPI_ClassLibrary
         }
 
         private List<ItemEntry> GetLegendariesWithAmendedTearItemPositioning(
-            List<TableEntryAndWinLossData<Item>> itemData,
+            List<TableEntry<Item>> itemData,
             List<ItemEntry> legendariesJsonArray,
             Item tear
         )

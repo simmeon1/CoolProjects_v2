@@ -13,6 +13,12 @@ namespace LeagueAPI_ClassLibrary
         {
             return Tags[0];
         }
+
+        public string GetIdentifier()
+        {
+            return Name;
+        }
+
         public string GetCategory()
         {
             return "Champions";

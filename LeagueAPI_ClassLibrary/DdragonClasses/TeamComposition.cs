@@ -11,6 +11,11 @@ namespace LeagueAPI_ClassLibrary
             this.roles = roles;
         }
 
+        public string GetIdentifier()
+        {
+            return roles;
+        }
+
         public string GetCategory()
         {
             return "Team Compositions";

@@ -2,12 +2,13 @@
 
 namespace LeagueAPI_ClassLibrary
 {
-    public class TableEntryAndWinLossData<T> where T: ITableEntry
+    public class TableEntry<T>: ITableEntryWithWinLossData
+    where T: ITableEntry
     {
         private readonly T entry;
         private readonly WinLossData winLossData;
 
-        public TableEntryAndWinLossData(T entry, WinLossData winLossData)
+        public TableEntry(T entry, WinLossData winLossData)
         {
             this.entry = entry;
             this.winLossData = winLossData;
@@ -22,7 +23,17 @@ namespace LeagueAPI_ClassLibrary
         {
             return winLossData;
         }
-        
+
+        public string GetIdentifier()
+        {
+            return $"{entry.GetIdentifier()} with Win Loss Data";
+        }
+
+        public string GetCategory()
+        {
+            return entry.GetCategory();
+        }
+
         public List<KeyValuePair<string, object>> GetProperties()
         {
             List<KeyValuePair<string, object>> list = new();
