@@ -29,8 +29,7 @@ namespace LeagueAPI_ClassLibrary
                     bool win = participant.win;
                     int champId = participant.championId;
                     Champion champ = repository.GetChampion(champId);
-                    List<Champion> champList = win ? winners : losers;
-                    champList.Add(champ);
+                    if (champ != null) (win ? winners : losers).Add(champ);
                     AddChampion(champId, win);
 
                     foreach (int id in new List<int>
@@ -90,6 +89,7 @@ namespace LeagueAPI_ClassLibrary
         {
             IEnumerable<string> roles = champs.Select(champ => champ.GetFirstTag()).ToList().OrderBy(r => r);
             string compFromChampionList = roles.ConcatenateListOfStringsToCommaAndSpaceString();
+            if (compFromChampionList.IsNullOrEmpty()) return;
             TeamComposition tc = new(compFromChampionList);
             AddOrUpdateEntry(win, tc);
         }
@@ -123,15 +123,26 @@ namespace LeagueAPI_ClassLibrary
                     .ThenByDescending(c => c.GetEntry().IsFinished())
                     .ThenByDescending(c => c.GetEntry().IsMoreThan2000G())
                     .ThenByDescending(c => c.GetWinLossData().GetWinRate())
+                    .ThenBy(c => c.GetEntry().GetIdentifier())
                     .ToList(),
                 runes
                     .OrderBy(c => c.GetEntry().GetTree())
                     .ThenBy(c => c.GetEntry().GetSlot())
                     .ThenByDescending(c => c.GetWinLossData().GetWinRate())
+                    .ThenBy(c => c.GetEntry().GetIdentifier())
                     .ToList(),
-                statPerks.OrderByDescending(c => c.GetWinLossData().GetWinRate()).ToList(),
-                spells.OrderByDescending(c => c.GetWinLossData().GetWinRate()).ToList(),
-                comps.OrderByDescending(c => c.GetWinLossData().GetWinRate()).ToList()
+                statPerks
+                    .OrderByDescending(c => c.GetWinLossData().GetWinRate())
+                    .ThenBy(c => c.GetEntry().GetIdentifier())
+                    .ToList(),
+                spells
+                    .OrderByDescending(c => c.GetWinLossData().GetWinRate())
+                    .ThenBy(c => c.GetEntry().GetIdentifier())
+                    .ToList(),
+                comps
+                    .OrderByDescending(c => c.GetWinLossData().GetWinRate())
+                    .ThenBy(c => c.GetEntry().GetIdentifier())
+                    .ToList()
             };
             
             

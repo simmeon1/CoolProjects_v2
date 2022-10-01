@@ -1,133 +1,328 @@
-// using Common_ClassLibrary;
-// using LeagueAPI_ClassLibrary;
-// using Microsoft.VisualStudio.TestTools.UnitTesting;
-// using Moq;
-// using System.Collections.Generic;
-// using System.Threading.Tasks;
-//
-// namespace LeagueAPI_Tests.UnitTests
-// {
-//     [TestClass]
-//     public class DataCollector_UnitTests
-//     {
-//         private LeagueMatch Match { get; set; }
-//         private Participant P1 { get; set; }
-//         private Participant P2 { get; set; }
-//         private DataCollectorResults Results { get; set; }
-//
-//         [TestInitialize]
-//         public void TestInitialize()
-//         {
-//             P1 = new();
-//             P2 = new();
-//             P1.championId = 1000;
-//             P1.item0 = 1;
-//             P1.item1 = 2;
-//             P1.item2 = 3;
-//             P1.item3 = 4;
-//             P1.item4 = 5;
-//             P1.item5 = 6;
-//             P1.item6 = 7;
-//             P1.perk1_1 = 9;
-//             P1.perk1_2 = 10;
-//             P1.perk1_3 = 11;
-//             P1.perk1_4 = 12;
-//             P1.perk2_1 = 13;
-//             P1.perk2_2 = 14;
-//             P1.perkTree_1 = 111;
-//             P1.perkTree_2 = 222;
-//             P1.statPerkDefense = 15;
-//             P1.statPerkFlex = 16;
-//             P1.statPerkOffense = 17;
-//             P1.summoner1Id = 18;
-//             P1.summoner2Id = 19;
-//             P1.win = true;
-//
-//             P2 = P1.CloneObject();
-//             P2.championId = 2000;
-//             P2.perk1_1 = 90;
-//             P2.perk1_2 = 100;
-//             P2.perk1_3 = 110;
-//             P2.perk1_4 = 120;
-//             P2.perk2_1 = 130;
-//             P2.perk2_2 = 140;
-//             P2.perkTree_1 = 333;
-//             P2.perkTree_2 = 444;
-//             P2.win = false;
-//             List<Participant> participants = new() { P1, P2 };
-//             Match = new();
-//             Match.participants = participants;
-//
-//             DataCollector dataCollector = new();
-//             Results = dataCollector.GetData(new List<LeagueMatch>() { Match });
-//         }
-//
-//         [TestMethod]
-//         public void CollectData_ExpectedData_ChampionData()
-//         {
-//             Dictionary<int, WinLossData> championData = Results.GetChampionData();
-//             Assert.IsTrue(championData.Count == 2);
-//             Assert.IsTrue(championData[P1.championId.Value].GetWinRate() == 100);
-//             Assert.IsTrue(championData[P2.championId.Value].GetWinRate() == 0);
-//
-//             Dictionary<int, WinLossData> itemData = Results.GetItemData();
-//             Assert.IsTrue(itemData.Count == 7);
-//             Assert.IsTrue(itemData[P1.item0.Value].GetWinRate() == 50);
-//             Assert.IsTrue(itemData[P1.item1.Value].GetWinRate() == 50);
-//             Assert.IsTrue(itemData[P1.item2.Value].GetWinRate() == 50);
-//             Assert.IsTrue(itemData[P1.item3.Value].GetWinRate() == 50);
-//             Assert.IsTrue(itemData[P1.item4.Value].GetWinRate() == 50);
-//             Assert.IsTrue(itemData[P1.item5.Value].GetWinRate() == 50);
-//             Assert.IsTrue(itemData[P1.item6.Value].GetWinRate() == 50);
-//         }
-//
-//         [TestMethod]
-//         public void CollectData_ExpectedData_RuneData()
-//         {
-//             Dictionary<int, WinLossData> runeData = Results.GetRuneData();
-//             Assert.IsTrue(runeData.Count == 12);
-//             Assert.IsTrue(runeData[P1.perk1_1.Value].GetWinRate() == 100);
-//             Assert.IsTrue(runeData[P1.perk1_2.Value].GetWinRate() == 100);
-//             Assert.IsTrue(runeData[P1.perk1_3.Value].GetWinRate() == 100);
-//             Assert.IsTrue(runeData[P1.perk1_4.Value].GetWinRate() == 100);
-//             Assert.IsTrue(runeData[P1.perk2_1.Value].GetWinRate() == 100);
-//             Assert.IsTrue(runeData[P1.perk2_2.Value].GetWinRate() == 100);
-//             Assert.IsTrue(runeData[P2.perk1_1.Value].GetWinRate() == 0);
-//             Assert.IsTrue(runeData[P2.perk1_2.Value].GetWinRate() == 0);
-//             Assert.IsTrue(runeData[P2.perk1_3.Value].GetWinRate() == 0);
-//             Assert.IsTrue(runeData[P2.perk1_4.Value].GetWinRate() == 0);
-//             Assert.IsTrue(runeData[P2.perk2_1.Value].GetWinRate() == 0);
-//             Assert.IsTrue(runeData[P2.perk2_2.Value].GetWinRate() == 0);
-//         }
-//
-//         [TestMethod]
-//         public void CollectData_ExpectedData_RuneTreeData()
-//         {
-//             Dictionary<int, WinLossData> runeTreeData = Results.GetRuneTreeData();
-//             Assert.IsTrue(runeTreeData.Count == 4);
-//             Assert.IsTrue(runeTreeData[P1.perkTree_1.Value].GetWinRate() == 100);
-//             Assert.IsTrue(runeTreeData[P1.perkTree_2.Value].GetWinRate() == 100);
-//             Assert.IsTrue(runeTreeData[P2.perkTree_1.Value].GetWinRate() == 0);
-//             Assert.IsTrue(runeTreeData[P2.perkTree_2.Value].GetWinRate() == 0);
-//         }
-//
-//         [TestMethod]
-//         public void CollectData_ExpectedData_RuneSpellData()
-//         {
-//             Dictionary<int, WinLossData> spellData = Results.GetSpellData();
-//             Assert.IsTrue(spellData.Count == 2);
-//             Assert.IsTrue(spellData[P1.summoner1Id.Value].GetWinRate() == 50);
-//             Assert.IsTrue(spellData[P1.summoner2Id.Value].GetWinRate() == 50);
-//         }
-//
-//         [TestMethod]
-//         public void CollectData_ExpectedData_StatPerkData()
-//         {
-//             Dictionary<int, WinLossData> statPerkData = Results.GetStatPerkData();
-//             Assert.IsTrue(statPerkData.Count == 3);
-//             Assert.IsTrue(statPerkData[P1.statPerkDefense.Value].GetWinRate() == 50);
-//             Assert.IsTrue(statPerkData[P1.statPerkFlex.Value].GetWinRate() == 50);
-//             Assert.IsTrue(statPerkData[P1.statPerkOffense.Value].GetWinRate() == 50);
-//         }
-//     }
-// }
+using Common_ClassLibrary;
+using LeagueAPI_ClassLibrary;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace LeagueAPI_Tests.UnitTests
+{
+    [TestClass]
+    public class DataCollector_UnitTests
+    {
+        private Mock<IDDragonRepository> repo;
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            repo = new Mock<IDDragonRepository>();
+        }
+        
+        [TestMethod]
+        public void ChampionsAreCorrectlySorted()
+        {
+            Champion champ1 = SetUpChamp(1, "champb", new List<string> {"tagf"});
+            Champion champ2 = SetUpChamp(2, "champa", new List<string> {"tagc"});
+            LeagueMatch match = new();
+            Participant p1 = new()
+            {
+                championId = 1,
+                win = true,
+            };
+            Participant p2 = new()
+            {
+                championId = 2,
+                win = false
+            };
+            match.participants = new List<Participant> { p1, p2 };
+            List<LeagueMatch> matches = new() { match };
+            List<ITableEntry> tableEntries = GetEntries(matches);
+            Assert.AreEqual(4, tableEntries.Count);
+            AssertTableEntryMatchesObject(tableEntries[0], champ2, false);
+            AssertTableEntryMatchesObject(tableEntries[1], champ1, true);
+            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[2], "tagf", true);
+            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[3], "tagc", false);
+        }
+
+        [TestMethod]
+        public void TeamCompositionsAreCorrectlySorted()
+        {
+            Champion champ1 = SetUpChamp(1, "champa", new List<string> {"taga"});
+            Champion champ2 = SetUpChamp(2, "champb", new List<string> {"tagb"});
+            Champion champ3 = SetUpChamp(3, "champc", new List<string> {"tagd"});
+            Champion champ4 = SetUpChamp(4, "champd", new List<string> {"tage"});
+            Champion champ5 = SetUpChamp(5, "champe", new List<string> {"tagc"});
+            LeagueMatch match1 = new();
+            LeagueMatch match2 = new();
+            Participant p1 = new()
+            {
+                championId = 1,
+                win = true,
+            };
+            Participant p2 = new()
+            {
+                championId = 2,
+                win = true
+            };
+            Participant p3 = new()
+            {
+                championId = 3,
+                win = false
+            };
+            Participant p4 = new()
+            {
+                championId = 4,
+                win = false
+            };
+            Participant p5 = new()
+            {
+                championId = 5,
+                win = false
+            };
+            match1.participants = new List<Participant> { p1, p2, p3, p4 };
+            match2.participants = new List<Participant> { p5 };
+            List<LeagueMatch> matches = new() { match1, match2 };
+            List<ITableEntry> tableEntries = GetEntries(matches);
+            Assert.AreEqual(8, tableEntries.Count);
+            AssertTableEntryMatchesObject(tableEntries[0], champ1, true);
+            AssertTableEntryMatchesObject(tableEntries[1], champ2, true);
+            AssertTableEntryMatchesObject(tableEntries[2], champ3, false);
+            AssertTableEntryMatchesObject(tableEntries[3], champ4, false);
+            AssertTableEntryMatchesObject(tableEntries[4], champ5, false);
+            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[5], "taga, tagb", true);
+            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[6], "tagc", false);
+            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[7], "tagd, tage", false);
+        }
+
+        [TestMethod]
+        public void SpellsAreCorrectlySorted()
+        {
+            Spell spell1 = SetUpSpell(1, "spellb");
+            Spell spell2 = SetUpSpell(2, "spella");
+            Spell spell3 = SetUpSpell(3, "spelld");
+            Spell spell4 = SetUpSpell(4, "spellc");
+            LeagueMatch match = new();
+            Participant p1 = new()
+            {
+                win = true,
+                summoner1Id = 1,
+                summoner2Id = 2,
+            };
+            Participant p2 = new()
+            {
+                win = false,
+                summoner1Id = 3,
+                summoner2Id = 4,
+            };
+            match.participants = new List<Participant> { p1, p2 };
+            List<LeagueMatch> matches = new() { match };
+            List<ITableEntry> tableEntries = GetEntries(matches);
+            Assert.AreEqual(4, tableEntries.Count);
+            
+            AssertTableEntryMatchesObject(tableEntries[0], spell2, true);
+            AssertTableEntryMatchesObject(tableEntries[1], spell1, true);
+            AssertTableEntryMatchesObject(tableEntries[2], spell4, false);
+            AssertTableEntryMatchesObject(tableEntries[3], spell3, false);
+        }
+        
+        [TestMethod]
+        public void NullEntryNotAdded()
+        {
+            repo.Setup(r => r.GetSpell(1)).Returns((Spell) null);
+            LeagueMatch match = new();
+            Participant p1 = new()
+            {
+                win = true,
+                summoner1Id = 1,
+            };
+            match.participants = new List<Participant> { p1 };
+            List<LeagueMatch> matches = new() { match };
+            List<ITableEntry> tableEntries = GetEntries(matches);
+            Assert.AreEqual(0, tableEntries.Count);
+        }
+        
+        [TestMethod]
+        public void StatPerksAreCorrectlySorted()
+        {
+            StatPerk perk1 = SetUpStatPerk(1, "perkf");
+            StatPerk perk2 = SetUpStatPerk(2, "perke");
+            StatPerk perk3 = SetUpStatPerk(3, "perkd");
+            StatPerk perk4 = SetUpStatPerk(4, "perkc");
+            StatPerk perk5 = SetUpStatPerk(5, "perkb");
+            StatPerk perk6 = SetUpStatPerk(6, "perka");
+            LeagueMatch match = new();
+            Participant p1 = new()
+            {
+                win = true,
+                statPerkDefense = 1,
+                statPerkFlex = 2,
+                statPerkOffense = 3,
+            };
+            Participant p2 = new()
+            {
+                win = false,
+                statPerkDefense = 4,
+                statPerkFlex = 5,
+                statPerkOffense = 6,
+            };
+            match.participants = new List<Participant> { p1, p2 };
+            List<LeagueMatch> matches = new() { match };
+            List<ITableEntry> tableEntries = GetEntries(matches);
+            Assert.AreEqual(6, tableEntries.Count);
+            AssertTableEntryMatchesObject(tableEntries[0], perk3, true);
+            AssertTableEntryMatchesObject(tableEntries[1], perk2, true);
+            AssertTableEntryMatchesObject(tableEntries[2], perk1, true);
+            AssertTableEntryMatchesObject(tableEntries[3], perk6, false);
+            AssertTableEntryMatchesObject(tableEntries[4], perk5, false);
+            AssertTableEntryMatchesObject(tableEntries[5], perk4, false);
+        }
+        
+        [TestMethod]
+        public void ItemsAreCorrectlySorted()
+        {
+            Item item1 = SetUpItem(1, "itemh", false, false, false);
+            Item item2 = SetUpItem(2, "itemg", false, false, false);
+            Item item3 = SetUpItem(3, "itemf", false, false, false);
+            Item item4 = SetUpItem(4, "iteme", false, false, false);
+            Item item5 = SetUpItem(5, "itemd", false, false, false);
+            Item item6 = SetUpItem(6, "itemc", false, true, true);
+            Item item7 = SetUpItem(7, "itemb", true, true, true);
+            Item item8 = SetUpItem(8, "itema", false, false, false);
+            LeagueMatch match = new();
+            Participant p1 = new()
+            {
+                win = true,
+                item0 = 1,
+                item1 = 2,
+                item2 = 3,
+                item3 = 4,
+                item4 = 5,
+                item5 = 6,
+                item6 = 7,
+            };
+            Participant p2 = new()
+            {
+                win = false,
+                item0 = 8,
+            };
+            match.participants = new List<Participant> { p1, p2 };
+            List<LeagueMatch> matches = new() { match };
+            List<ITableEntry> tableEntries = GetEntries(matches);
+            Assert.AreEqual(8, tableEntries.Count);
+            AssertTableEntryMatchesObject(tableEntries[0], item7, true);
+            AssertTableEntryMatchesObject(tableEntries[1], item6, true);
+            AssertTableEntryMatchesObject(tableEntries[2], item5, true);
+            AssertTableEntryMatchesObject(tableEntries[3], item4, true);
+            AssertTableEntryMatchesObject(tableEntries[4], item3, true);
+            AssertTableEntryMatchesObject(tableEntries[5], item2, true);
+            AssertTableEntryMatchesObject(tableEntries[6], item1, true);
+            AssertTableEntryMatchesObject(tableEntries[7], item8, false);
+        }
+        
+        [TestMethod]
+        public void RunesAreCorrectlySorted()
+        {
+            Rune rune1 = SetUpRune(1, "runeg", "treeb", 1);
+            Rune rune2 = SetUpRune(2, "runef", "treeb", 1);
+            Rune rune3 = SetUpRune(3, "runee", "treeb", 1);
+            Rune rune4 = SetUpRune(4, "runed", "treeb", 0);
+            Rune rune5 = SetUpRune(5, "runec", "treea", 1);
+            Rune rune6 = SetUpRune(6, "runeb", "treea", 0);
+            Rune rune7 = SetUpRune(7, "runea", "treeb", 1);
+            LeagueMatch match = new();
+            Participant p1 = new()
+            {
+                win = true,
+                perk1_1 = 1,
+                perk1_2 = 2,
+                perk1_3 = 3,
+                perk1_4 = 4,
+                perk2_1 = 5,
+                perk2_2 = 6,
+            };
+            Participant p2 = new()
+            {
+                win = false,
+                perk1_1 = 7,
+            };
+            match.participants = new List<Participant> { p1, p2 };
+            List<LeagueMatch> matches = new() { match };
+            List<ITableEntry> tableEntries = GetEntries(matches);
+            Assert.AreEqual(7, tableEntries.Count);
+            AssertTableEntryMatchesObject(tableEntries[0], rune6, true);
+            AssertTableEntryMatchesObject(tableEntries[1], rune5, true);
+            AssertTableEntryMatchesObject(tableEntries[2], rune4, true);
+            AssertTableEntryMatchesObject(tableEntries[3], rune3, true);
+            AssertTableEntryMatchesObject(tableEntries[4], rune2, true);
+            AssertTableEntryMatchesObject(tableEntries[5], rune1, true);
+            AssertTableEntryMatchesObject(tableEntries[6], rune7, false);
+        }
+
+        private static void AssertTableEntryMatchesObject<T>(ITableEntry tableEntry, T obj, bool win) where T: ITableEntry
+        {
+            Assert.AreEqual(true, tableEntry is TableEntry<T>);
+            TableEntry<T> entry = tableEntry as TableEntry<T>;
+            Assert.AreEqual(obj, entry.GetEntry());
+            Assert.AreEqual(win ? 1 : 0, entry.GetWinLossData().GetWins());
+            Assert.AreEqual(win ? 0 : 1, entry.GetWinLossData().GetLosses());
+        }
+        
+        private static void AssertTableEntryMatchesIdentifier<T>(ITableEntry tableEntry, string id, bool win) where T: ITableEntry
+        {
+            Assert.AreEqual(true, tableEntry is TableEntry<T>);
+            TableEntry<T> entry = tableEntry as TableEntry<T>;
+            Assert.AreEqual(id, entry.GetEntry().GetIdentifier());
+            Assert.AreEqual(win ? 1 : 0, entry.GetWinLossData().GetWins());
+            Assert.AreEqual(win ? 0 : 1, entry.GetWinLossData().GetLosses());
+        }
+        
+        private Champion SetUpChamp(int id, string name, List<string> tags)
+        {
+            Champion champ = new() {Name = name, Tags = tags};
+            repo.Setup(r => r.GetChampion(id)).Returns(champ);
+            return champ;
+        }
+        
+        private Spell SetUpSpell(int id, string name)
+        {
+            Spell spell = new() {Name = name};
+            repo.Setup(r => r.GetSpell(id)).Returns(spell);
+            return spell;
+        }
+        
+        private StatPerk SetUpStatPerk(int id, string name)
+        {
+            StatPerk perk = new(name);
+            repo.Setup(r => r.GetStatPerk(id)).Returns(perk);
+            return perk;
+        }
+        
+        private Rune SetUpRune(int id, string name, string tree, int slot)
+        {
+            Rune rune = new(name, tree, "", slot);
+            repo.Setup(r => r.GetRune(id)).Returns(rune);
+            return rune;
+        }
+        
+        private Item SetUpItem(int id, string name, bool isMythic, bool isFinished, bool isMoreThan2000G)
+        {
+            Item item = new()
+            {
+                Name = name,
+                Description = isMythic ? "rarityMythic" : "",
+                BuildsInto = isFinished ? null : new List<string>(){ "10" },
+                Gold = isMoreThan2000G ? 2001 : 1
+            };
+            repo.Setup(r => r.GetItem(id)).Returns(item);
+            return item;
+        }
+        
+        private List<ITableEntry> GetEntries(List<LeagueMatch> matches)
+        {
+            DataCollector collector = new(repo.Object);
+            DataCollectorResults data = collector.GetData(matches);
+            List<ITableEntry> tableEntries = data.GetEntries();
+            return tableEntries;
+        }
+    }
+}
