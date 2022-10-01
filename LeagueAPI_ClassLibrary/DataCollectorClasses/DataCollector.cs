@@ -31,6 +31,7 @@ namespace LeagueAPI_ClassLibrary
                     Champion champ = repository.GetChampion(champId);
                     if (champ != null) (win ? winners : losers).Add(champ);
                     AddChampion(champId, win);
+                    AddRole(champ, win);
 
                     foreach (int id in new List<int>
                     {
@@ -93,6 +94,12 @@ namespace LeagueAPI_ClassLibrary
             TeamComposition tc = new(compFromChampionList);
             AddOrUpdateEntry(win, tc);
         }
+        
+        private void AddRole(Champion champ, bool win)
+        {
+            if (champ == null) return;
+            AddOrUpdateEntry(win, new Role(champ.GetFirstTag()));
+        }
 
         private List<ITableEntry> GetSortedEntries()
         {
@@ -105,6 +112,7 @@ namespace LeagueAPI_ClassLibrary
             List<TableEntry<StatPerk>> statPerks = new();
             List<TableEntry<Spell>> spells = new();
             List<TableEntry<TeamComposition>> comps = new();
+            List<TableEntry<Role>> roles = new();
             foreach (ITableEntryWithWinLossData entry in entries)
             {
                 if (entry is TableEntry<Champion> c) champs.Add(c);
@@ -113,6 +121,7 @@ namespace LeagueAPI_ClassLibrary
                 else if (entry is TableEntry<StatPerk> p) statPerks.Add(p);
                 else if (entry is TableEntry<Spell> s) spells.Add(s);
                 else if (entry is TableEntry<TeamComposition> tc) comps.Add(tc);
+                else if (entry is TableEntry<Role> ro) roles.Add(ro);
             }
 
             List<IEnumerable<ITableEntry>> lists = new()
@@ -142,7 +151,11 @@ namespace LeagueAPI_ClassLibrary
                 comps
                     .OrderByDescending(c => c.GetWinLossData().GetWinRate())
                     .ThenBy(c => c.GetEntry().GetIdentifier())
-                    .ToList()
+                    .ToList(),
+                roles
+                .OrderByDescending(c => c.GetWinLossData().GetWinRate())
+                .ThenBy(c => c.GetEntry().GetIdentifier())
+                .ToList()
             };
             
             

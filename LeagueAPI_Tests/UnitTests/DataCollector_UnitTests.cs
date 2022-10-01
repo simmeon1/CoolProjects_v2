@@ -21,8 +21,10 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public void ChampionsAreCorrectlySorted()
         {
-            Champion champ1 = SetUpChamp(1, "champb", new List<string> {"tagf"});
-            Champion champ2 = SetUpChamp(2, "champa", new List<string> {"tagc"});
+            Champion champ1 = SetUpChamp(1, "champd", new List<string> {"tagd"});
+            Champion champ2 = SetUpChamp(2, "champc", new List<string> {"tagc"});
+            Champion champ3 = SetUpChamp(3, "champb", new List<string> {"tagb"});
+            Champion champ4 = SetUpChamp(4, "champa", new List<string> {"taga"});
             LeagueMatch match = new();
             Participant p1 = new()
             {
@@ -34,24 +36,41 @@ namespace LeagueAPI_Tests.UnitTests
                 championId = 2,
                 win = false
             };
-            match.participants = new List<Participant> { p1, p2 };
+            Participant p3 = new()
+            {
+                championId = 3,
+                win = true,
+            };
+            Participant p4 = new()
+            {
+                championId = 4,
+                win = false
+            };
+            match.participants = new List<Participant> { p1, p2, p3, p4 };
             List<LeagueMatch> matches = new() { match };
             List<ITableEntry> tableEntries = GetEntries(matches);
-            Assert.AreEqual(4, tableEntries.Count);
-            AssertTableEntryMatchesObject(tableEntries[0], champ2, false);
-            AssertTableEntryMatchesObject(tableEntries[1], champ1, true);
-            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[2], "tagf", true);
-            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[3], "tagc", false);
+            Assert.AreEqual(10, tableEntries.Count);
+            AssertTableEntryMatchesObject(tableEntries[0], champ4, false);
+            AssertTableEntryMatchesObject(tableEntries[1], champ3, true);
+            AssertTableEntryMatchesObject(tableEntries[2], champ2, false);
+            AssertTableEntryMatchesObject(tableEntries[3], champ1, true);
+            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[4], "tagb, tagd", true);
+            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[5], "taga, tagc", false);
+            AssertTableEntryMatchesIdentifier<Role>(tableEntries[6], "tagb", true);
+            AssertTableEntryMatchesIdentifier<Role>(tableEntries[7], "tagd", true);
+            AssertTableEntryMatchesIdentifier<Role>(tableEntries[8], "taga", false);
+            AssertTableEntryMatchesIdentifier<Role>(tableEntries[9], "tagc", false);
         }
 
         [TestMethod]
-        public void TeamCompositionsAreCorrectlySorted()
+        public void TeamCompositionsAndRolesAreCorrectlySorted()
         {
             Champion champ1 = SetUpChamp(1, "champa", new List<string> {"taga"});
             Champion champ2 = SetUpChamp(2, "champb", new List<string> {"tagb"});
             Champion champ3 = SetUpChamp(3, "champc", new List<string> {"tagd"});
             Champion champ4 = SetUpChamp(4, "champd", new List<string> {"tage"});
             Champion champ5 = SetUpChamp(5, "champe", new List<string> {"tagc"});
+            Champion champ6 = SetUpChamp(6, "champf", new List<string> {"tagh"});
             LeagueMatch match1 = new();
             LeagueMatch match2 = new();
             Participant p1 = new()
@@ -79,19 +98,31 @@ namespace LeagueAPI_Tests.UnitTests
                 championId = 5,
                 win = false
             };
+            Participant p6 = new()
+            {
+                championId = 6,
+                win = false
+            };
             match1.participants = new List<Participant> { p1, p2, p3, p4 };
-            match2.participants = new List<Participant> { p5 };
+            match2.participants = new List<Participant> { p5, p6 };
             List<LeagueMatch> matches = new() { match1, match2 };
             List<ITableEntry> tableEntries = GetEntries(matches);
-            Assert.AreEqual(8, tableEntries.Count);
+            Assert.AreEqual(15, tableEntries.Count);
             AssertTableEntryMatchesObject(tableEntries[0], champ1, true);
             AssertTableEntryMatchesObject(tableEntries[1], champ2, true);
             AssertTableEntryMatchesObject(tableEntries[2], champ3, false);
             AssertTableEntryMatchesObject(tableEntries[3], champ4, false);
             AssertTableEntryMatchesObject(tableEntries[4], champ5, false);
-            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[5], "taga, tagb", true);
-            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[6], "tagc", false);
-            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[7], "tagd, tage", false);
+            AssertTableEntryMatchesObject(tableEntries[5], champ6, false);
+            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[6], "taga, tagb", true);
+            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[7], "tagc, tagh", false);
+            AssertTableEntryMatchesIdentifier<TeamComposition>(tableEntries[8], "tagd, tage", false);
+            AssertTableEntryMatchesIdentifier<Role>(tableEntries[9], "taga", true);
+            AssertTableEntryMatchesIdentifier<Role>(tableEntries[10], "tagb", true);
+            AssertTableEntryMatchesIdentifier<Role>(tableEntries[11], "tagc", false);
+            AssertTableEntryMatchesIdentifier<Role>(tableEntries[12], "tagd", false);
+            AssertTableEntryMatchesIdentifier<Role>(tableEntries[13], "tage", false);
+            AssertTableEntryMatchesIdentifier<Role>(tableEntries[14], "tagh", false);
         }
 
         [TestMethod]
