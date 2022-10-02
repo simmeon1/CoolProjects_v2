@@ -88,10 +88,9 @@ namespace LeagueAPI_ClassLibrary
 
         private void AddCompToDict(IEnumerable<Champion> champs, bool win)
         {
-            IEnumerable<string> roles = champs.Select(champ => champ.GetFirstTag()).ToList().OrderBy(r => r);
-            string compFromChampionList = roles.ConcatenateListOfStringsToCommaAndSpaceString();
-            if (compFromChampionList.IsNullOrEmpty()) return;
-            TeamComposition tc = new(compFromChampionList);
+            List<string> roles = champs.Select(champ => champ.GetFirstTag()).ToList().OrderBy(r => r).ToList();
+            if (!roles.Any()) return;
+            TeamComposition tc = new(roles);
             AddOrUpdateEntry(win, tc);
         }
         

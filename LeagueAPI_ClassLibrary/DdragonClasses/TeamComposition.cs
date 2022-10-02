@@ -1,14 +1,18 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using Common_ClassLibrary;
 
 namespace LeagueAPI_ClassLibrary
 {
     public class TeamComposition: ITableEntry
     {
-        private string roles;
+        private readonly string roles;
+        private readonly int uniqueRoles;
 
-        public TeamComposition(string roles)
+        public TeamComposition(List<string> roles)
         {
-            this.roles = roles;
+            this.roles = roles.ConcatenateListOfStringsToCommaAndSpaceString();
+            uniqueRoles = roles.Distinct().Count();
         }
 
         public string GetIdentifier()
@@ -26,6 +30,7 @@ namespace LeagueAPI_ClassLibrary
             return new List<KeyValuePair<string, object>>
             {
                 new("Name", roles),
+                new("Variety", uniqueRoles),
             };
         }
     }

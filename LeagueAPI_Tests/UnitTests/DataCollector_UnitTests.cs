@@ -173,6 +173,29 @@ namespace LeagueAPI_Tests.UnitTests
         }
         
         [TestMethod]
+        public void DuplicateEntryHasTwoWins()
+        {
+            Spell spell = new();
+            repo.Setup(r => r.GetSpell(1)).Returns(spell);
+            LeagueMatch match = new();
+            Participant p1 = new()
+            {
+                win = true,
+                summoner1Id = 1,
+                summoner2Id = 1,
+            };
+            match.participants = new List<Participant> { p1 };
+            List<LeagueMatch> matches = new() { match };
+            List<ITableEntry> tableEntries = GetEntries(matches);
+            Assert.AreEqual(1, tableEntries.Count);
+            Assert.AreEqual(true, tableEntries[0] is TableEntry<Spell>);
+            TableEntry<Spell> e = tableEntries[0] as TableEntry<Spell>;
+            Assert.AreEqual(true, spell == e.GetEntry());
+            Assert.AreEqual(2, e.GetWinLossData().GetWins());
+            Assert.AreEqual(0, e.GetWinLossData().GetLosses());
+        }
+        
+        [TestMethod]
         public void StatPerksAreCorrectlySorted()
         {
             StatPerk perk1 = SetUpStatPerk(1, "perkf");
