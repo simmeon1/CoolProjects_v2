@@ -44,5 +44,10 @@ namespace Common_ClassLibrary
             GetCursorPos(ref cursor);
             return cursor;
         }
+        
+        public Color GetColorAtCursor()
+        {
+            return GetColorAtLocation(GetCursorLocation());
+        }
     }
 }
