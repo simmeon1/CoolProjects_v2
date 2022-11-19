@@ -47,41 +47,65 @@ namespace JourneyPlanner_ClassLibrary.Workers
 
         public IWebElement FindElement(FindElementParameters p)
         {
-            int fails = 0;
-            IWebElement element = WebDriverWaitProvider.Until(
+            return DoActionWithElement(() => FindEl(p));
+        }
+        
+        public ReadOnlyCollection<IWebElement> FindElements(FindElementParameters p)
+        {
+            return DoActionWithElement(() => (p.Container ?? Driver).FindElements(p.BySelector));
+        }
+
+        public IWebElement FindElementAndClickIt(FindElementParameters p)
+        {
+            return DoActionWithElement(
+                () =>
+                {
+                    IWebElement element = FindEl(p);
+                    element.Click();
+                    return element;
+                }
+            );
+        }
+
+        public IWebElement FindElementAndSendKeysToIt(FindElementParameters p, bool doClearFirst, string keys)
+        {
+            return DoActionWithElement(
+                () =>
+                {
+                    IWebElement element = FindEl(p);
+                    if (doClearFirst) element.Clear();
+                    element.SendKeys(keys);
+                    return element;
+                }
+            );
+        }
+
+        private IWebElement FindEl(FindElementParameters p)
+        {
+            return WebDriverWaitProvider.Until(
                 d =>
                 {
-                    try
+                    int index = 0;
+                    ReadOnlyCollection<IWebElement> webElements = (p.Container ?? d).FindElements(p.BySelector);
+                    foreach (IWebElement webElement in webElements)
                     {
-                        int index = 0;
-                        ReadOnlyCollection<IWebElement> webElements = (p.Container ?? d).FindElements(p.BySelector);
-                        foreach (IWebElement webElement in webElements)
-                        {
-                            if (p.Matcher != null && !p.Matcher.Invoke(webElement)) continue;
-                            if (index++ == p.Index) return webElement;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        HandleException(ex, ref fails, "Error with finding element.");
+                        if (p.Matcher != null && !p.Matcher.Invoke(webElement)) continue;
+                        if (index++ == p.Index) return webElement;
                     }
                     return null;
                 },
                 p.Seconds
             );
-            return element;
         }
-        
-        public IWebElement FindElementAndClickIt(FindElementParameters p)
+
+        private T DoActionWithElement<T>(Func<T> func)
         {
             int fails = 0;
             while (true)
             {
                 try
                 {
-                    IWebElement element = FindElement(p);
-                    element.Click();
-                    return element;
+                    return func.Invoke();
                 }
                 catch (Exception ex)
                 {
@@ -89,26 +113,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 }
             }
         }
-        
-        public void FindElementAndSendKeysToIt(FindElementParameters p, bool doClearFirst, string keys)
-        {
-            int fails = 0;
-            while (true)
-            {
-                try
-                {
-                    IWebElement element = FindElement(p);
-                    if (doClearFirst) element.Clear();
-                    element.SendKeys(keys);
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    HandleException(ex, ref fails, "Error clicking element.");
-                }
-            }
-        }
-        
+
         private void HandleException(Exception ex, ref int fails, string message)
         {
             if (ex is WebDriverTimeoutException) throw ex;

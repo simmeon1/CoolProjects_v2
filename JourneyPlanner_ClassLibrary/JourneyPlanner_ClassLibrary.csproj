@@ -13,4 +13,8 @@
     <ProjectReference Include="..\Common_ClassLibrary\Common_ClassLibrary.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="FlightRadar24.cs" />
+  </ItemGroup>
+
 </Project>

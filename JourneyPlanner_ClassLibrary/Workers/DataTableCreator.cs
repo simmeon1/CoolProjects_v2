@@ -303,8 +303,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     new("Is Flight", TypeBool),
                     new("Departing Time", TypeDateTime),
                     new("Arriving Time", TypeDateTime),
-                    new("Departing City", TypeString),
-                    new("Arriving City", TypeString),
+                    new("Departing Airport", TypeString),
+                    new("Arriving Airport", TypeString),
                     new("Departing Country", TypeString),
                     new("Arriving Country", TypeString),
                     new("Company", TypeString),
@@ -329,8 +329,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 row[index++] = journey.IsFlight();
                 row[index++] = GetShortDateTime(journey.Departing);
                 row[index++] = GetShortDateTime(journey.Arriving);
-                row[index++] = AirportDict[journey.GetDepartingLocation()].City;
-                row[index++] = AirportDict[journey.GetArrivingLocation()].City;
+                row[index++] = AirportDict[journey.GetDepartingLocation()].Name;
+                row[index++] = AirportDict[journey.GetArrivingLocation()].Name;
                 row[index++] = AirportDict[journey.GetDepartingLocation()].Country;
                 row[index++] = AirportDict[journey.GetArrivingLocation()].Country;
                 row[index++] = journey.Company;
