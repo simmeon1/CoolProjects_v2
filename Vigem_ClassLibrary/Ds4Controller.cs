@@ -20,6 +20,11 @@ namespace Vigem_ClassLibrary
         {
             controller.Connect();
         }
+        
+        public void Disconnect()
+        {
+            controller.Disconnect();
+        }
 
         public void SetDPadDirection(DualShock4DPadDirection direction)
         {

@@ -17,6 +17,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Vigem_ClassLibrary\Vigem_ClassLibrary.csproj" />
+      <ProjectReference Include="..\WindowsPixelReader\WindowsPixelReader.csproj" />
     </ItemGroup>
 
 </Project>

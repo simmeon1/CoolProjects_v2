@@ -9,17 +9,27 @@ namespace Vigem_ClassLibrary
     public class Ds4ControllerUser
     {
         private readonly IDualShock4ControllerWrapper controller;
-        private const int DefaultDelay = 200;
+        private int pressLength;
 
-        public Ds4ControllerUser(IDualShock4ControllerWrapper controllerWrapper)
+        public Ds4ControllerUser(IDualShock4ControllerWrapper controllerWrapper, int pressLength = 200)
         {
             controller = controllerWrapper;
+            this.pressLength = pressLength;
+        }
+
+        public void Connect()
+        {
             controller.Connect();
+        }
+        
+        public void Disconnect()
+        {
+            controller.Disconnect();
         }
 
         public async Task PressButton(ButtonMappings button, int? delay = null)
         {
-            delay ??= DefaultDelay;
+            delay ??= pressLength;
             HoldButton(button);
             await Task.Delay(delay.Value);
             ReleaseButton(button);
@@ -37,7 +47,7 @@ namespace Vigem_ClassLibrary
     
         public async Task PressDPad(DPadMappings direction, int? delay = null)
         {
-            delay ??= DefaultDelay;
+            delay ??= pressLength;
             HoldDPad(direction);
             await Task.Delay(delay.Value);
             ReleaseDPad();
@@ -55,7 +65,7 @@ namespace Vigem_ClassLibrary
     
         public async Task PressStick(AxisMappings axis, byte value, int? delay = null)
         {
-            delay ??= DefaultDelay;
+            delay ??= pressLength;
             HoldStick(axis, value);
             await Task.Delay(delay.Value);
             ReleaseStick(axis);

@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vigem_ClassLibrary", "Vigem
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vigem_Tests", "Vigem_Tests\Vigem_Tests.csproj", "{93BD8564-8A22-4735-A288-25F9EEC0664B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsPixelReader", "WindowsPixelReader\WindowsPixelReader.csproj", "{AC73C1DC-762C-44D1-B618-9F594EB1F381}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{93BD8564-8A22-4735-A288-25F9EEC0664B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93BD8564-8A22-4735-A288-25F9EEC0664B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93BD8564-8A22-4735-A288-25F9EEC0664B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC73C1DC-762C-44D1-B618-9F594EB1F381}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC73C1DC-762C-44D1-B618-9F594EB1F381}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC73C1DC-762C-44D1-B618-9F594EB1F381}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC73C1DC-762C-44D1-B618-9F594EB1F381}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
