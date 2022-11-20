@@ -10,17 +10,18 @@ namespace LeagueAPI_ClassLibrary
 {
     public class LeagueAPIClient : ILeagueAPIClient
     {
-        private IHttpClient Client { get; set; }
-        private string Token { get; set; }
-        private IDelayer Delayer { get; set; }
-        private ILogger Logger { get; set; }
+        private const string ddragonCdn = "http://ddragon.leagueoflegends.com/cdn/";
+        private readonly string token;
+        private readonly IHttpClient client;
+        private readonly IDelayer delayer;
+        private readonly ILogger logger;
 
         public LeagueAPIClient(IHttpClient client, string token, IDelayer delayer, ILogger logger)
         {
-            Client = client;
-            Token = token;
-            Delayer = delayer;
-            Logger = logger;
+            this.client = client;
+            this.token = token;
+            this.delayer = delayer;
+            this.logger = logger;
         }
 
         public async Task<Account> GetAccountBySummonerName(string summonerName)
@@ -96,7 +97,7 @@ namespace LeagueAPI_ClassLibrary
                 HttpRequestMessage message = GetMessageReadyWithToken(uri);
                 try
                 {
-                    HttpResponseMessage response = await Client.SendRequest(message);
+                    HttpResponseMessage response = await client.SendRequest(message);
                     while (response.StatusCode == HttpStatusCode.TooManyRequests || (int) response.StatusCode >= 500)
                     {
                         double millisecondsToWait = 1000;
@@ -111,29 +112,29 @@ namespace LeagueAPI_ClassLibrary
                             }
                         }
 
-                        Logger.Log($"Last request failed due to status code {response.StatusCode}.");
+                        logger.Log($"Last request failed due to status code {response.StatusCode}.");
                         LogTimeToWaitBeforeRetrying(TimeSpan.FromMilliseconds(millisecondsToWait).TotalSeconds);
-                        await Delayer.Delay(Convert.ToInt32(millisecondsToWait));
+                        await delayer.Delay(Convert.ToInt32(millisecondsToWait));
                         message = GetMessageReadyWithToken(uri);
-                        response = await Client.SendRequest(message);
+                        response = await client.SendRequest(message);
                     }
 
                     return response;
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log($"There was an error with sending request {uri}. Details:");
-                    Logger.Log(ex.Message);
+                    logger.Log($"There was an error with sending request {uri}. Details:");
+                    logger.Log(ex.Message);
                     double secondsToWait = 10;
                     LogTimeToWaitBeforeRetrying(secondsToWait);
-                    await Delayer.Delay(Convert.ToInt32(TimeSpan.FromSeconds(secondsToWait).TotalMilliseconds));
+                    await delayer.Delay(Convert.ToInt32(TimeSpan.FromSeconds(secondsToWait).TotalMilliseconds));
                 }
             }
         }
 
         private void LogTimeToWaitBeforeRetrying(double timeToWaitInSeconds)
         {
-            Logger.Log(
+            logger.Log(
                 $"Waiting {timeToWaitInSeconds} seconds before retrying (at {DateTime.Now.AddSeconds(timeToWaitInSeconds)})."
             );
         }
@@ -141,7 +142,7 @@ namespace LeagueAPI_ClassLibrary
         private HttpRequestMessage GetMessageReadyWithToken(string uri)
         {
             HttpRequestMessage message = new(HttpMethod.Get, uri);
-            message.Headers.Add("X-Riot-Token", Token);
+            message.Headers.Add("X-Riot-Token", token);
             return message;
         }
 
@@ -216,7 +217,7 @@ namespace LeagueAPI_ClassLibrary
             }
             catch (Exception e)
             {
-                Logger.Log($"There was an error parsing match {matchId}. Details: {e.Message}");
+                logger.Log($"There was an error parsing match {matchId}. Details: {e.Message}");
                 return null;
             }
         }
@@ -225,21 +226,6 @@ namespace LeagueAPI_ClassLibrary
         {
             return (await GetJArrayFromResponse("https://ddragon.leagueoflegends.com/api/versions.json"))
                 .ToObject<List<string>>();
-        }
-
-        public async Task<List<string>> GetParsedListOfVersions(List<string> unparsedVersions)
-        {
-            List<string> parsedVersions = new();
-            List<string> versionsJson = await GetLatestVersions();
-            foreach (string unparsedVersion in unparsedVersions)
-            {
-                int unparsedVersionIndex = int.Parse(unparsedVersion);
-                int unparsedVersionUpdatedIndex = unparsedVersionIndex * -1;
-                string parsedVersion = versionsJson[unparsedVersionUpdatedIndex].ToString();
-                parsedVersions.Add(parsedVersion);
-            }
-
-            return parsedVersions;
         }
 
         public async Task<string> GetNameOfQueue(int queueId)
@@ -251,6 +237,38 @@ namespace LeagueAPI_ClassLibrary
             }
 
             return "";
+        }
+
+        public async Task<string> GetDdragonChampions(string version)
+        {
+            return await GetResponse($"{ddragonCdn}{version}/data/en_US/champion.json");
+        }
+
+        public async Task<string> GetDdragonItems(string version)
+        {
+            return await GetResponse($"{ddragonCdn}{version}/data/en_US/item.json");
+        }
+
+        public async Task<string> GetDdragonRunes(string version)
+        {
+            return await GetResponse($"{ddragonCdn}{version}/data/en_US/runesReforged.json");
+        }
+
+        public async Task<string> GetDdragonStatPerks(string version)
+        {
+            return await Task.FromResult(@"{
+    '5008': '+9 Adaptive Force',
+    '5005': '+10% Attack Speed',
+    '5007': '+8 Ability Haste',
+    '5002': '+6 Armor',
+    '5003': '+8 Magic Resist',
+    '5001': '+15-140 Health (based on level)'
+  }");
+        }
+
+        public async Task<string> GetDdragonSpells(string version)
+        {
+            return await GetResponse($"{ddragonCdn}{version}/data/en_US/summoner.json");
         }
     }
 }

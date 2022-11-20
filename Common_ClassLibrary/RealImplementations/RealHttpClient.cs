@@ -5,16 +5,16 @@ namespace Common_ClassLibrary
 {
     public class RealHttpClient : IHttpClient
     {
-        private HttpClient Client { get; set; }
+        private HttpClient client;
 
         public RealHttpClient()
         {
-            Client = new();
+            client = new HttpClient();
         }
 
         public Task<HttpResponseMessage> SendRequest(HttpRequestMessage request)
         {
-            return Client.SendAsync(request);
+            return client.SendAsync(request);
         }
     }
 }

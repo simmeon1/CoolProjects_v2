@@ -23,33 +23,18 @@ namespace LeagueAPI_Console
             RealFileIO fileIo = new();
             RealHttpClient http = new();
             Logger_Console logger = new();
-            RealWebClient webClient = new(logger);
             RealDelayer delayer = new();
             LeagueAPIClient client = new(http, parameters.Token, delayer, logger);
-            DdragonRepository repo = new(fileIo, parameters.DdragonJsonFilesDirectoryPath);
-            ArchiveExtractor extractor = new();
-            DdragonRepositoryUpdater repoUpdater = new(
-                client,
-                webClient,
-                fileIo,
-                logger,
-                extractor,
-                parameters.DdragonJsonFilesDirectoryPath
-            );
+            DdragonRepository repo = new(client);
             RealDateTimeProvider dateTimeProvider = new();
             ExcelPrinter printer = new();
-
-            List<string> parsedTargetVersions = await client.GetParsedListOfVersions(parameters.RangeOfTargetVersions);
 
             MatchSaver matchSaver = new(
                 fileIo,
                 repo,
                 printer,
                 logger,
-                dateTimeProvider,
-                parameters.OutputDirectory,
-                parsedTargetVersions.ConcatenateListOfStringsToCommaString(),
-                parameters.IncludeWinRatesForMinutes
+                dateTimeProvider
             );
 
             MatchCollectorEventHandler matchCollectorEventHandler = new(fileIo, matchSaver, parameters.OutputDirectory);
@@ -59,11 +44,11 @@ namespace LeagueAPI_Console
                 repo,
                 fileIo,
                 logger,
-                repoUpdater,
                 collector,
-                matchSaver
+                matchSaver,
+                client
             );
-            await runner.DoFullRun(parameters, parsedTargetVersions);
+            await runner.DoFullRun(parameters);
 
             logger.Log("Press any key to exit.");
             Console.ReadKey();

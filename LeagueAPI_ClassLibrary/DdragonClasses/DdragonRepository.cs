@@ -11,31 +11,38 @@ namespace LeagueAPI_ClassLibrary
 {
     public class DdragonRepository : IDDragonRepository
     {
-        private readonly IFileIO fileIO;
-        private readonly string repoPath;
+        private readonly ILeagueAPIClient client;
         private readonly Dictionary<int, Champion> champions = new();
         private readonly Dictionary<int, Item> items = new();
         private readonly Dictionary<int, Rune> runes = new();
         private readonly Dictionary<int, StatPerk> statPerks = new();
         private readonly Dictionary<int, Spell> spells = new();
-        public DdragonRepository(IFileIO fileIO, string repoPath)
+        public DdragonRepository(ILeagueAPIClient client)
         {
-            this.fileIO = fileIO;
-            this.repoPath = repoPath;
+            this.client = client;
+        }
+        
+        public async Task RefreshData(string version)
+        {
+            Task<string> ddragonChampions = client.GetDdragonChampions(version);
+            Task<string> ddragonItems = client.GetDdragonItems(version);
+            Task<string> ddragonRunes = client.GetDdragonRunes(version);
+            Task<string> ddragonStatPerks = client.GetDdragonStatPerks(version);
+            Task<string> ddragonSpells = client.GetDdragonSpells(version);
+            List<Task<string>> tasks = new()
+                {ddragonChampions, ddragonItems, ddragonRunes, ddragonSpells, ddragonStatPerks};
+            await Task.WhenAll(tasks);
+
+            PopulateChampions(ddragonChampions.Result);
+            PopulateItems(ddragonItems.Result);
+            PopulateRunes(ddragonRunes.Result);
+            PopulateStatPerks(ddragonStatPerks.Result);
+            PopulateSpells(ddragonSpells.Result);
         }
 
-        public void RefreshData()
+        private void PopulateSpells(string spellsJson)
         {
-            PopulateChampions();
-            PopulateItems();
-            PopulateRunes();
-            PopulateStatPerks();
-            PopulateSpells();
-        }
-
-        private void PopulateSpells()
-        {
-            JObject spellJson = JObject.Parse(fileIO.ReadAllText(Path.Combine(repoPath, "summoner.json")));
+            JObject spellJson = JObject.Parse(spellsJson);
             foreach (JProperty entry in spellJson["data"])
             {
                 int id = int.Parse(entry.Value["key"].ToString());
@@ -49,9 +56,9 @@ namespace LeagueAPI_ClassLibrary
             }
         }
 
-        private void PopulateStatPerks()
+        private void PopulateStatPerks(string perks)
         {
-            JObject statPerkJson = JObject.Parse(fileIO.ReadAllText(Path.Combine(repoPath, "statPerks.json")));
+            JObject statPerkJson = JObject.Parse(perks);
             foreach (KeyValuePair<string, JToken> entry in statPerkJson)
             {
                 int id = int.Parse(entry.Key);
@@ -59,9 +66,9 @@ namespace LeagueAPI_ClassLibrary
             }
         }
 
-        private void PopulateRunes()
+        private void PopulateRunes(string runesJson)
         {
-            JArray runeJson = JArray.Parse(fileIO.ReadAllText(Path.Combine(repoPath, "runesReforged.json")));
+            JArray runeJson = JArray.Parse(runesJson);
             foreach (JToken treeEntry in runeJson)
             {
                 string tree = (string) treeEntry["name"];
@@ -77,14 +84,18 @@ namespace LeagueAPI_ClassLibrary
             }
         }
 
-        private void PopulateItems()
+        private void PopulateItems(string itemsJson)
         {
-            JObject itemJson = JObject.Parse(fileIO.ReadAllText(Path.Combine(repoPath, "item.json")));
+            JObject itemJson = JObject.Parse(itemsJson);
             foreach (JProperty itemEntry in itemJson["data"])
             {
+                int itemId = 0;
+                bool itemHasValidNumericId = int.TryParse(itemEntry.Name, out itemId);
+                if (!itemHasValidNumericId) continue;
+                
                 Item item = new()
                 {
-                    Id = int.Parse(itemEntry.Name),
+                    Id = itemId,
                     Name = itemEntry.Value["name"].ToString(),
                     Plaintext = itemEntry.Value["plaintext"].ToString(),
                     Description = itemEntry.Value["description"].ToString(),
@@ -104,10 +115,10 @@ namespace LeagueAPI_ClassLibrary
             }
         }
 
-        private void PopulateChampions()
+        private void PopulateChampions(string championsJson)
         {
-            JObject championJson = JObject.Parse(fileIO.ReadAllText(Path.Combine(repoPath, "champion.json")));
-            foreach (JProperty champ in championJson["data"])
+            JObject jObject = JObject.Parse(championsJson);
+            foreach (JProperty champ in jObject["data"])
             {
                 int id = int.Parse(champ.Value["key"].ToString());
                 Champion champion = new()

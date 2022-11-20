@@ -9,7 +9,11 @@ namespace LeagueAPI_ClassLibrary
         Task<LeagueMatch> GetMatch(string matchId);
         Task<List<string>> GetMatchIds(string puuid, int queueId = 0);
         Task<List<string>> GetLatestVersions();
-        Task<List<string>> GetParsedListOfVersions(List<string> unparsedVersions);
         Task<string> GetNameOfQueue(int queueId);
+        Task<string> GetDdragonChampions(string version);
+        Task<string> GetDdragonItems(string version);
+        Task<string> GetDdragonRunes(string version);
+        Task<string> GetDdragonStatPerks(string version);
+        Task<string> GetDdragonSpells(string version);
     }
 }

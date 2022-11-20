@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Common_ClassLibrary;
 
@@ -15,42 +13,45 @@ namespace LeagueAPI_ClassLibrary
         private readonly IExcelPrinter excelPrinter;
         private readonly ILogger logger;
         private readonly IDateTimeProvider dateTimeProvider;
-        private List<int> includeWinRatesForMinutes;
-        private readonly string outputDirectory;
-        private readonly string baseId;
+        private string outputDirectory;
+        private string versionStr;
 
         public MatchSaver(
             IFileIO fileIo,
             IDDragonRepository repository,
             IExcelPrinter excelPrinter,
             ILogger logger,
-            IDateTimeProvider dateTimeProvider,
-            string outputDirectory,
-            string versionsStr,
-            List<int> includeWinRatesForMinutes
-        ) {
+            IDateTimeProvider dateTimeProvider
+        )
+        {
             this.fileIo = fileIo;
             this.repository = repository;
             this.excelPrinter = excelPrinter;
             this.logger = logger;
-            this.includeWinRatesForMinutes = includeWinRatesForMinutes;
             this.dateTimeProvider = dateTimeProvider;
+        }
+        
+        public void SetOutputDetails(string outputDirectory, string versionStr)
+        {
             this.outputDirectory = outputDirectory;
-            baseId = $"{versionsStr}_";
+            this.versionStr = versionStr;
         }
 
-        public List<string> SaveMatches(List<LeagueMatch> matches) {
+        public List<string> SaveMatches(
+            List<LeagueMatch> matches
+        )
+        {
             List<string> createdFiles = new();
 
-            string idString = $"{baseId}{Globals.GetDateTimeFileNameFriendly(dateTimeProvider.Now())}";
-            string path = Path.Combine(outputDirectory, $"Results_{idString}");
-            string matchesFilePath = Path.Combine(path, $"Matches_{idString}.json");
-            string matchesLinesFilePath = Path.Combine(path, $"MatchesLines_{idString}.txt");
-            string itemSetFilePath = Path.Combine(path, $"ItemSet_All_{idString}.json");
-            string statsFilePath = Path.Combine(path, $"Stats_{idString}.xlsx");
-            string logFilePath = Path.Combine(path, $"Log_{idString}.txt");
+            string idString = $"_{versionStr}_{Globals.GetDateTimeFileNameFriendly(dateTimeProvider.Now())}";
+            string path = Path.Combine(outputDirectory, $"Results{idString}");
+            string matchesFilePath = Path.Combine(path, $"Matches{idString}.json");
+            string matchesLinesFilePath = Path.Combine(path, $"MatchesLines{idString}.txt");
+            string itemSetFilePath = Path.Combine(path, $"ItemSet_All{idString}.json");
+            string statsFilePath = Path.Combine(path, $"Stats{idString}.xlsx");
+            string logFilePath = Path.Combine(path, $"Log{idString}.txt");
             if (!fileIo.DirectoryExists(path)) fileIo.CreateDirectory(path);
-            
+
             fileIo.WriteAllText(matchesFilePath, matches.SerializeObject());
             createdFiles.Add(matchesFilePath);
 
@@ -59,69 +60,33 @@ namespace LeagueAPI_ClassLibrary
             {
                 sb.AppendLine(match.SerializeObject());
             }
+
             fileIo.WriteAllText(matchesLinesFilePath, sb.ToString());
             createdFiles.Add(matchesLinesFilePath);
-
-            includeWinRatesForMinutes ??= new List<int>();
+            
             DataCollector collector = new(repository);
 
             DataCollectorResults allMatchesData = collector.GetData(matches);
-            List<KeyValuePair<int, DataCollectorResults>> resultsList = new()
-            {
-                new KeyValuePair<int, DataCollectorResults>(0, allMatchesData)
-            };
-            
-            foreach (int minute in includeWinRatesForMinutes)
-            {
-                resultsList.Add(
-                    new KeyValuePair<int, DataCollectorResults>(
-                    minute,
-                    collector.GetData(matches.Where(m => m.GameIsShorterThanOrEqualToMinutes(minute)).ToList()))
-                );
-            }
 
             ItemSetExporter exporter = new(repository);
-            // for (int i = 0; i < resultsList.Count; i++)
-            // {
-            //     int resultMinute = resultsList[i].Key;
-            //     DataCollectorResults resultData = resultsList[i].Value;
-            //     Dictionary<int, WinLossData> itemData = resultData.GetItemData();
-            //     string itemSetFileName = resultMinute == 0
-            //         ? itemSetFilePath
-            //         : itemSetFilePath.Replace("All", $"Sub{resultMinute}");
-            //     string itemSetJson = exporter.GetItemSet(itemData, Path.GetFileNameWithoutExtension(itemSetFileName));
-            //     fileIo.WriteAllText(itemSetFileName, itemSetJson);
-            //     createdFiles.Add(itemSetFileName);
-            // }
-            
-                DataCollectorResults resultData = allMatchesData;
-                List<TableEntry<Item>> itemData = resultData.GetItemData();
-                string itemSetFileName = itemSetFilePath;
-                string itemSetJson = exporter.GetItemSet(itemData, Path.GetFileNameWithoutExtension(itemSetFileName));
-                fileIo.WriteAllText(itemSetFileName, itemSetJson);
-                createdFiles.Add(itemSetFileName);
+            DataCollectorResults resultData = allMatchesData;
+            List<TableEntry<Item>> itemData = resultData.GetItemData();
+            string itemSetFileName = itemSetFilePath;
+            string itemSetJson = exporter.GetItemSet(itemData, Path.GetFileNameWithoutExtension(itemSetFileName));
+            fileIo.WriteAllText(itemSetFileName, itemSetJson);
+            createdFiles.Add(itemSetFileName);
 
             DataTableCreator dataTableCreator = new();
             List<DataTable> dataTables = dataTableCreator.GetTables(allMatchesData.GetEntries());
 
             excelPrinter.PrintTablesToWorksheet(dataTables, statsFilePath);
             createdFiles.Add(statsFilePath);
-            
+
             fileIo.WriteAllText(logFilePath, logger.GetContent());
             createdFiles.Add(logFilePath);
-            
+
             logger.Log($"{createdFiles.Count} files written at {path}.");
             return createdFiles;
-        }
-
-        private static Dictionary<int, Dictionary<int, WinLossData>> GetResultsDict(List<KeyValuePair<int, DataCollectorResults>> pairs, Func<DataCollectorResults, Dictionary<int, WinLossData>> func)
-        {
-            Dictionary<int, Dictionary<int, WinLossData>> dict = new();
-            foreach (KeyValuePair<int, DataCollectorResults> pair in pairs)
-            {
-                dict.Add(pair.Key, func.Invoke(pair.Value));
-            }
-            return dict;
         }
     }
 }
