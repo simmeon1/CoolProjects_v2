@@ -27,7 +27,7 @@ namespace Vigem_Controllers
 
         public void SetAxisState(AxisMappings axis, byte value)
         {
-            controller.SetAxisValue(GetAxisFromMapping(axis), value);
+            controller.SetAxisValue(GetAxisFromMapping(axis), Convert.ToInt16((value - 128) * 256));
         }
 
         public void SetButtonState(ButtonMappings button, bool pressed)
@@ -36,7 +36,7 @@ namespace Vigem_Controllers
         }
 
 
-        public void SetDPadState(DPadStateMappings direction)
+        public void SetDPadState(DPadMappings direction)
         {
             Xbox360Button up = Xbox360Button.Up;
             Xbox360Button down = Xbox360Button.Down;
@@ -48,15 +48,15 @@ namespace Vigem_Controllers
                 controller.SetButtonState(dpadButton, false);
             }
 
-            if (direction == DPadStateMappings.Northwest) HoldButtons(up, left);
-            else if (direction == DPadStateMappings.West) HoldButtons(left);
-            else if (direction == DPadStateMappings.Southwest) HoldButtons(down, left);
-            else if (direction == DPadStateMappings.South) HoldButtons(down);
-            else if (direction == DPadStateMappings.Southeast) HoldButtons(down, right);
-            else if (direction == DPadStateMappings.East) HoldButtons(right);
-            else if (direction == DPadStateMappings.Northeast) HoldButtons(up, right);
-            else if (direction == DPadStateMappings.North) HoldButtons(up);
-            else if (direction == DPadStateMappings.None) { }
+            if (direction == DPadMappings.Northwest) HoldButtons(up, left);
+            else if (direction == DPadMappings.West) HoldButtons(left);
+            else if (direction == DPadMappings.Southwest) HoldButtons(down, left);
+            else if (direction == DPadMappings.South) HoldButtons(down);
+            else if (direction == DPadMappings.Southeast) HoldButtons(down, right);
+            else if (direction == DPadMappings.East) HoldButtons(right);
+            else if (direction == DPadMappings.Northeast) HoldButtons(up, right);
+            else if (direction == DPadMappings.North) HoldButtons(up);
+            else if (direction == DPadMappings.None) { }
             else throw new ArgumentException($"Dpad mapping {direction} not supported.");
         }
 

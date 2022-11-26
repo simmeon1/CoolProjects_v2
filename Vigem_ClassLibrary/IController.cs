@@ -6,7 +6,7 @@ namespace Vigem_ClassLibrary
     {
         void Connect();
         void Disconnect();
-        void SetDPadState(DPadStateMappings direction);
+        void SetDPadState(DPadMappings direction);
         void SetButtonState(ButtonMappings button, bool pressed);
         void SetAxisState(AxisMappings axis, byte value);
     }

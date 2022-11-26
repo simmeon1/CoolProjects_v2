@@ -2,6 +2,6 @@
 {
     public interface IDelayer
     {
-        Task Delay(int value);
+        Task Delay(int milliseconds);
     }
 }

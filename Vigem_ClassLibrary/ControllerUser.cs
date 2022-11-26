@@ -42,21 +42,21 @@ namespace Vigem_ClassLibrary
             SetButtonState(button, false);
         }
     
-        public async Task PressDPad(DPadStateMappings direction, int? delay = null)
+        public async Task PressDPad(DPadMappings direction, int? delay = null)
         {
             HoldDPad(direction);
             await Wait(delay);
             ReleaseDPad();
         }
 
-        public void HoldDPad(DPadStateMappings direction)
+        public void HoldDPad(DPadMappings direction)
         {
             SetDPadDirection(direction);
         }
 
         public void ReleaseDPad()
         {
-            SetDPadDirection(DPadStateMappings.None);
+            SetDPadDirection(DPadMappings.None);
         }
     
         public async Task PressStick(AxisMappings axis, byte value, int? delay = null)
@@ -76,7 +76,7 @@ namespace Vigem_ClassLibrary
             SetAxisValue(axis, 128);
         }
     
-        private void SetDPadDirection(DPadStateMappings direction)
+        private void SetDPadDirection(DPadMappings direction)
         {
             controller.SetDPadState(direction);
         }

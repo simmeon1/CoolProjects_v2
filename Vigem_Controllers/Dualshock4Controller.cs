@@ -36,7 +36,7 @@ namespace Vigem_Controllers
         }
 
 
-        public void SetDPadState(DPadStateMappings direction)
+        public void SetDPadState(DPadMappings direction)
         {
             controller.SetDPadDirection(GetDpadFromMapping(direction));
         }
@@ -73,19 +73,19 @@ namespace Vigem_Controllers
             };
         }
 
-        private static DualShock4DPadDirection GetDpadFromMapping(DPadStateMappings direction)
+        private static DualShock4DPadDirection GetDpadFromMapping(DPadMappings direction)
         {
             return direction switch
             {
-                DPadStateMappings.None => DualShock4DPadDirection.None,
-                DPadStateMappings.Northwest => DualShock4DPadDirection.Northwest,
-                DPadStateMappings.West => DualShock4DPadDirection.West,
-                DPadStateMappings.Southwest => DualShock4DPadDirection.Southwest,
-                DPadStateMappings.South => DualShock4DPadDirection.South,
-                DPadStateMappings.Southeast => DualShock4DPadDirection.Southeast,
-                DPadStateMappings.East => DualShock4DPadDirection.East,
-                DPadStateMappings.Northeast => DualShock4DPadDirection.Northeast,
-                DPadStateMappings.North => DualShock4DPadDirection.North,
+                DPadMappings.None => DualShock4DPadDirection.None,
+                DPadMappings.Northwest => DualShock4DPadDirection.Northwest,
+                DPadMappings.West => DualShock4DPadDirection.West,
+                DPadMappings.Southwest => DualShock4DPadDirection.Southwest,
+                DPadMappings.South => DualShock4DPadDirection.South,
+                DPadMappings.Southeast => DualShock4DPadDirection.Southeast,
+                DPadMappings.East => DualShock4DPadDirection.East,
+                DPadMappings.Northeast => DualShock4DPadDirection.Northeast,
+                DPadMappings.North => DualShock4DPadDirection.North,
                 _ => throw new ArgumentException($"Dpad mapping {direction} not supported."),
             };
         }

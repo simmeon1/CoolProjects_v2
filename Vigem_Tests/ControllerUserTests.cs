@@ -6,7 +6,7 @@ using Vigem_ClassLibrary.Mappings;
 namespace Vigem_Tests
 {
     [TestClass]
-    public class UnitTest1
+    public class ControllerUserTests
     {
         private Mock<IController> controller;
         private Mock<IDelayer> delayer;
@@ -64,16 +64,16 @@ namespace Vigem_Tests
         [TestMethod]
         public async Task DpadIsPressedFor300Seconds()
         {
-            await user.PressDPad(DPadStateMappings.Northwest, 300);
-            controller.Verify(c => c.SetDPadState(DPadStateMappings.Northwest), Times.Once);
+            await user.PressDPad(DPadMappings.Northwest, 300);
+            controller.Verify(c => c.SetDPadState(DPadMappings.Northwest), Times.Once);
             delayer.Verify(d => d.Delay(300), Times.Once);
-            controller.Verify(c => c.SetDPadState(DPadStateMappings.None), Times.Once);
+            controller.Verify(c => c.SetDPadState(DPadMappings.None), Times.Once);
         }
 
         [TestMethod]
         public void DpadIsHeld()
         {
-            DPadStateMappings mapping = DPadStateMappings.Northwest;
+            DPadMappings mapping = DPadMappings.Northwest;
             user.HoldDPad(mapping);
             controller.Verify(c => c.SetDPadState(mapping), Times.Once);
         }
@@ -82,7 +82,7 @@ namespace Vigem_Tests
         public void DpadIsReleased()
         {
             user.ReleaseDPad();
-            controller.Verify(c => c.SetDPadState(DPadStateMappings.None), Times.Once);
+            controller.Verify(c => c.SetDPadState(DPadMappings.None), Times.Once);
         }
 
         [TestMethod]
