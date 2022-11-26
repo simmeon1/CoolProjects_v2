@@ -1,5 +1,5 @@
 ﻿#0 - all, 1 - unit, 2 - integration
-param([String]$testProjectPath, [String]$testType=0)
+param([String]$testProjectPath, [String]$testType=0, [String]$runMutation=0)
 if ($testType -eq 0) {
     dotnet test --collect:"XPlat Code Coverage"
 } elseif ($testType -eq 1) {
@@ -22,3 +22,8 @@ reportgenerator $command1 $command2 -reporttypes:Html_Dark
 # Remove-Item $testResultsPath -Recurse
 $indexFile = $targetDir + "\index.html" 
 Invoke-Item $indexFile
+
+if ($runMutation -eq 1) {
+    $targetDir = $testResultsPath + "\StrykerOutput"
+    dotnet stryker --output $targetDir --open-report
+}
