@@ -1,4 +1,4 @@
-﻿namespace Vigem_ClassLibrary
+﻿namespace Vigem_ClassLibrary.Mappings
 {
     public enum AxisMappings
     {

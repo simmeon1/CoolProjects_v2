@@ -1,6 +1,6 @@
-﻿namespace Vigem_ClassLibrary
+﻿namespace Vigem_ClassLibrary.Mappings
 {
-    public enum DPadMappings
+    public enum DPadStateMappings
     {
         None,
         Northwest,

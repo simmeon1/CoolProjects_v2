@@ -1,43 +1,116 @@
-using System.Diagnostics;
-using System.Drawing;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Vigem_ClassLibrary;
-using WindowsPixelReader;
+using Vigem_ClassLibrary.Mappings;
 
 namespace Vigem_Tests
 {
     [TestClass]
     public class UnitTest1
     {
-        private readonly PixelReader pixelReader = new();
-        private readonly Ds4ControllerUser controllerUser = new(new Ds4Controller(), 500);
-        [TestMethod]
-        public async Task TestHaveCjSwimInCircles()
+        private Mock<IController> controller;
+        private Mock<IDelayer> delayer;
+        private ControllerUser user;
+        private const int defaultPressTime = 200;
+
+        [TestInitialize]
+        public void TestInitialize()
         {
-            controllerUser.Connect();
-            await controllerUser.PressButton(ButtonMappings.Options);
-            controllerUser.HoldDPad(DPadMappings.West);
-            controllerUser.HoldButton(ButtonMappings.Cross);
-            controllerUser.HoldStick(AxisMappings.LeftThumbX, byte.MaxValue);
-            while (true)
-            {
-                await Task.Delay(2000);
-                Color cursorColor = GetPixelDetails(pixelReader.GetCursorLocation(), "Cursor");
-                Color hardcodedColor = GetPixelDetails(new Point(2239, 889), "Hardcoded");
-                
-                if (hardcodedColor.GetBrightness() < 0.5) break;
-            }
-            await controllerUser.PressButton(ButtonMappings.Options);
-            controllerUser.Disconnect();
+            controller = new();
+            delayer = new();
+            user = new(controller.Object, delayer.Object, defaultPressTime);
         }
 
-        private Color GetPixelDetails(Point pos, string describer)
+        [TestMethod]
+        public void ControllerConnectsSuccessfully()
         {
-            Color color = pixelReader.GetColorAtLocation(pos);
-            float brightness = color.GetBrightness();
-            Debug.WriteLine(describer + " - " + pos.X + ", " + pos.Y + ", " + brightness);
-            return color;
+            user.Connect();
+            controller.Verify(c => c.Connect(), Times.Once);
+        }
+
+        [TestMethod]
+        public void ControllerDisconnectsSuccessfully()
+        {
+            user.Disconnect();
+            controller.Verify(c => c.Disconnect(), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task ButtonIsPressedFor200Seconds()
+        {
+            ButtonMappings button = ButtonMappings.ThumbLeft;
+            await user.PressButton(button);
+            controller.Verify(c => c.SetButtonState(button, true), Times.Once);
+            delayer.Verify(d => d.Delay(defaultPressTime), Times.Once);
+            controller.Verify(c => c.SetButtonState(button, false), Times.Once);
+        }
+
+        [TestMethod]
+        public void ButtonIsHeld()
+        {
+            ButtonMappings button = ButtonMappings.ThumbLeft;
+            user.HoldButton(button);
+            controller.Verify(c => c.SetButtonState(button, true), Times.Once);
+        }
+
+        [TestMethod]
+        public void ButtonIsReleased()
+        {
+            ButtonMappings button = ButtonMappings.ThumbLeft;
+            user.ReleaseButton(button);
+            controller.Verify(c => c.SetButtonState(button, false), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task DpadIsPressedFor300Seconds()
+        {
+            await user.PressDPad(DPadStateMappings.Northwest, 300);
+            controller.Verify(c => c.SetDPadState(DPadStateMappings.Northwest), Times.Once);
+            delayer.Verify(d => d.Delay(300), Times.Once);
+            controller.Verify(c => c.SetDPadState(DPadStateMappings.None), Times.Once);
+        }
+
+        [TestMethod]
+        public void DpadIsHeld()
+        {
+            DPadStateMappings mapping = DPadStateMappings.Northwest;
+            user.HoldDPad(mapping);
+            controller.Verify(c => c.SetDPadState(mapping), Times.Once);
+        }
+
+        [TestMethod]
+        public void DpadIsReleased()
+        {
+            user.ReleaseDPad();
+            controller.Verify(c => c.SetDPadState(DPadStateMappings.None), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task AxisIsMoved()
+        {
+            AxisMappings mapping = AxisMappings.LeftThumbX;
+            byte axisValue = byte.MaxValue;
+            await user.PressStick(mapping, axisValue, null);
+            controller.Verify(c => c.SetAxisState(mapping, axisValue), Times.Once);
+            delayer.Verify(d => d.Delay(defaultPressTime), Times.Once);
+            controller.Verify(c => c.SetAxisState(mapping, 128), Times.Once);
+        }
+
+        [TestMethod]
+        public void AxisIsHeld()
+        {
+            AxisMappings mapping = AxisMappings.LeftThumbX;
+            byte axisValue = byte.MaxValue;
+            user.HoldStick(mapping, axisValue);
+            controller.Verify(c => c.SetAxisState(mapping, axisValue), Times.Once);
+        }
+
+        [TestMethod]
+        public void AxisIsReleased()
+        {
+            AxisMappings mapping = AxisMappings.LeftThumbX;
+            user.ReleaseStick(mapping);
+            controller.Verify(c => c.SetAxisState(mapping, 128), Times.Once);
         }
     }
 }

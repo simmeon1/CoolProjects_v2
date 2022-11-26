@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31402.337
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JourneyPlanner_ClassLibrary", "JourneyPlanner_ClassLibrary\JourneyPlanner_ClassLibrary.csproj", "{8F782B66-8417-4846-9E77-3FB5C80E0D39}"
 EndProject
@@ -17,13 +17,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common_ClassLibrary", "Comm
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeagueAPI_Console", "LeagueAPI_Console\LeagueAPI_Console.csproj", "{4761BE14-9808-479E-BF41-55E20A50D9D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeagueGui", "LeagueGui\LeagueGui.csproj", "{820C82B0-C76A-4298-8BB4-46244315D5BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeagueGui", "LeagueGui\LeagueGui.csproj", "{820C82B0-C76A-4298-8BB4-46244315D5BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vigem_ClassLibrary", "Vigem_ClassLibrary\Vigem_ClassLibrary.csproj", "{0704D954-DCAB-4B43-BDF0-F2120F60708A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vigem_ClassLibrary", "Vigem_ClassLibrary\Vigem_ClassLibrary.csproj", "{0704D954-DCAB-4B43-BDF0-F2120F60708A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vigem_Tests", "Vigem_Tests\Vigem_Tests.csproj", "{93BD8564-8A22-4735-A288-25F9EEC0664B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vigem_Tests", "Vigem_Tests\Vigem_Tests.csproj", "{93BD8564-8A22-4735-A288-25F9EEC0664B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsPixelReader", "WindowsPixelReader\WindowsPixelReader.csproj", "{AC73C1DC-762C-44D1-B618-9F594EB1F381}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsPixelReader", "WindowsPixelReader\WindowsPixelReader.csproj", "{AC73C1DC-762C-44D1-B618-9F594EB1F381}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vigem_Controllers", "Vigem_Controllers\Vigem_Controllers.csproj", "{847F610E-5592-45E4-9227-0D04C1B6CCA0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +77,10 @@ Global
 		{AC73C1DC-762C-44D1-B618-9F594EB1F381}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC73C1DC-762C-44D1-B618-9F594EB1F381}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC73C1DC-762C-44D1-B618-9F594EB1F381}.Release|Any CPU.Build.0 = Release|Any CPU
+		{847F610E-5592-45E4-9227-0D04C1B6CCA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{847F610E-5592-45E4-9227-0D04C1B6CCA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{847F610E-5592-45E4-9227-0D04C1B6CCA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{847F610E-5592-45E4-9227-0D04C1B6CCA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
