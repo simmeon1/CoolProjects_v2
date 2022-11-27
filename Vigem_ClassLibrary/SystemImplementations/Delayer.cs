@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Vigem_ClassLibrary
+namespace Vigem_ClassLibrary.SystemImplementations
 {
     [ExcludeFromCodeCoverage]
     public class Delayer : IDelayer

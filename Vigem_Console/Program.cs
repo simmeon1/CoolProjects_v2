@@ -1,5 +1,6 @@
 ﻿using Vigem_ClassLibrary;
 using Vigem_ClassLibrary.Mappings;
+using Vigem_ClassLibrary.SystemImplementations;
 using Vigem_Controllers;
 
 namespace Vigem_Console
