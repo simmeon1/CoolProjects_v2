@@ -57,7 +57,7 @@ namespace Vigem_Tests
         [DataRow("b11", ButtonMappings.ThumbRight)]
         public void ButtonCommandsAreExecuted(string button, ButtonMappings mapping)
         {
-            GetMockParsedData(button);
+            ExecuteMockCommandFromButton(button);
             controllerMock.Verify(c => c.SetButtonState(mapping, true), Times.Once);
             controllerMock.Invocations.Clear();
         }
@@ -69,7 +69,7 @@ namespace Vigem_Tests
         [DataRow("b15", DPadMappings.East)]
         public void DpadCommandsAreExecuted(string button, DPadMappings mapping)
         {
-            GetMockParsedData(button);
+            ExecuteMockCommandFromButton(button);
             controllerMock.Verify(c => c.SetDPadState(mapping), Times.Once);
             controllerMock.Invocations.Clear();
         }
@@ -81,20 +81,42 @@ namespace Vigem_Tests
         [DataRow("a3", AxisMappings.RightThumbY)]
         public void AxisCommandsAreExecuted(string button, AxisMappings mapping)
         {
-            GetMockParsedData(button);
-            controllerMock.Verify(c => c.SetAxisState(mapping, 0), Times.Once);
+            ExecuteMockCommandFromButton(button);
+            controllerMock.Verify(c => c.SetAxisState(mapping, 255), Times.Once);
+            controllerMock.Invocations.Clear();
+        }
+        [DataTestMethod]
+        [DataRow("0", 128)]
+        [DataRow("1", 255)]
+        [DataRow("-1", 0)]
+        [DataRow("0.5", 192)]
+        [DataRow("0.55", 198)]
+        [DataRow("-0.5", 64)]
+        public void AxisValuesAreCorrectlyConverted(string value, int expected)
+        {
+            ExecuteMockCommandFromState($"a0:{value};t:1");
+            controllerMock.Verify(c => c.SetAxisState(AxisMappings.LeftThumbX, Convert.ToByte(expected)), Times.Once);
             controllerMock.Invocations.Clear();
         }
 
-        private void GetMockParsedData(string button)
+
+        private void ExecuteMockCommandFromButton(string button)
         {
-            string states = $"{button}:1;t:1";
+            ExecuteCommandFromMock($"{button}:1;t:1");
+        }
+
+        private void ExecuteMockCommandFromState(string state)
+        {
+            ExecuteCommandFromMock(state);
+        }
+
+        private void ExecuteCommandFromMock(string states)
+        {
             IDictionary<decimal, IEnumerable<IControllerCommand>> results = parser.GetStates(states);
             Assert.AreEqual(1, results.Count);
             List<IControllerCommand> entries = results[Convert.ToDecimal(1)].ToList();
             Assert.AreEqual(1, entries.Count);
             entries[0].ExecuteCommand(controller);
         }
-
     }
 }

@@ -106,9 +106,10 @@ namespace Vigem_ClassLibrary
 
         private static AxisCommand GetAxisCommand(AxisMappings mapping, string value)
         {
-            decimal val = decimal.Parse(value) + 1;
-            decimal val2 = val * Convert.ToDecimal(127.5) * -1;
-            return new AxisCommand(mapping, Convert.ToByte(val2));
+            byte defaultValue = 128;
+            double val = double.Parse(value);
+            byte result = Convert.ToByte(defaultValue + (val * (defaultValue - (val > 0 ? 1 : 0))));
+            return new AxisCommand(mapping, result);
         }
 
         private static DpadCommand GetDpadCommand(DPadMappings mapping)
