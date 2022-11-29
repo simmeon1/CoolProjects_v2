@@ -1,5 +1,6 @@
-﻿using Vigem_ClassLibrary.Mappings;
-using Vigem_ClassLibrary.SystemImplementations;
+﻿using Vigem_ClassLibrary.SystemImplementations;
+using Vigem_Common;
+using Vigem_Common.Mappings;
 
 namespace Vigem_ClassLibrary
 {

@@ -1,4 +1,6 @@
-﻿namespace Vigem_ClassLibrary.Commands
+﻿using Vigem_Common;
+
+namespace Vigem_ClassLibrary.Commands
 {
     public interface IControllerCommand
     {

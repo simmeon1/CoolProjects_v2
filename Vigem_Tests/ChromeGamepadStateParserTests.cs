@@ -2,7 +2,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Vigem_ClassLibrary;
 using Vigem_ClassLibrary.Commands;
-using Vigem_ClassLibrary.Mappings;
+using Vigem_Common;
+using Vigem_Common.Mappings;
 
 namespace Vigem_Tests
 {

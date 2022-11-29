@@ -1,4 +1,4 @@
-﻿namespace Vigem_ClassLibrary.Mappings
+﻿namespace Vigem_Common.Mappings
 {
     public enum ButtonMappings
     {

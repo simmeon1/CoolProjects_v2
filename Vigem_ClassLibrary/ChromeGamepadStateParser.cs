@@ -1,5 +1,5 @@
 ﻿using Vigem_ClassLibrary.Commands;
-using Vigem_ClassLibrary.Mappings;
+using Vigem_Common.Mappings;
 
 namespace Vigem_ClassLibrary
 {

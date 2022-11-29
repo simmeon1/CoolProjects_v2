@@ -1,19 +1,18 @@
 ﻿using Nefarius.ViGEm.Client;
 using Nefarius.ViGEm.Client.Targets;
 using Nefarius.ViGEm.Client.Targets.DualShock4;
-using Vigem_ClassLibrary;
-using Vigem_ClassLibrary.Mappings;
+using Vigem_Common;
+using Vigem_Common.Mappings;
 
-namespace Vigem_Controllers
+namespace VigemControllers_ClassLibrary
 {
     public class Dualshock4Controller : IController
     {
         private readonly IDualShock4Controller controller;
         private DualShock4DPadDirection dpadState = DualShock4DPadDirection.None;
-        public Dualshock4Controller()
+        public Dualshock4Controller(IDualShock4Controller controller)
         {
-            ViGEmClient client = new();
-            controller = client.CreateDualShock4Controller();
+            this.controller = controller;
         }
 
         public void Connect()
@@ -43,11 +42,6 @@ namespace Vigem_Controllers
             dpadState = newDpadState;
         }
 
-        private DualShock4DPadDirection GetDs4StateFromDpadAction(DPadMappings direction, bool pressed)
-        {
-            return GetDpadFromMapping(direction, pressed);
-        }
-
         private static DualShock4Axis GetAxisFromMapping(AxisMappings axis)
         {
             return axis switch
@@ -55,8 +49,7 @@ namespace Vigem_Controllers
                 AxisMappings.LeftThumbX => DualShock4Axis.LeftThumbX,
                 AxisMappings.LeftThumbY => DualShock4Axis.LeftThumbY,
                 AxisMappings.RightThumbX => DualShock4Axis.RightThumbX,
-                AxisMappings.RightThumbY => DualShock4Axis.RightThumbY,
-                _ => throw new ArgumentException($"Axis mapping {axis} not supported."),
+                _ => DualShock4Axis.RightThumbY
             };
         }
 
@@ -75,12 +68,11 @@ namespace Vigem_Controllers
                 ButtonMappings.Triangle => DualShock4Button.Triangle,
                 ButtonMappings.Circle => DualShock4Button.Circle,
                 ButtonMappings.Cross => DualShock4Button.Cross,
-                ButtonMappings.Square => DualShock4Button.Square,
-                _ => throw new ArgumentException($"Button mapping {button} not supported."),
+                _ => DualShock4Button.Square
             };
         }
 
-        private DualShock4DPadDirection GetDpadFromMapping(DPadMappings direction, bool pressed)
+        private DualShock4DPadDirection GetDs4StateFromDpadAction(DPadMappings direction, bool pressed)
         {
             switch (direction)
             {

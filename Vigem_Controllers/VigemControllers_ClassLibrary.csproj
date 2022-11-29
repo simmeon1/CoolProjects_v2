@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Vigem_ClassLibrary\Vigem_ClassLibrary.csproj" />
+    <ProjectReference Include="..\Vigem_Common\Vigem_Common.csproj" />
   </ItemGroup>
 
 </Project>

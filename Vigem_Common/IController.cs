@@ -1,6 +1,6 @@
-﻿using Vigem_ClassLibrary.Mappings;
+﻿using Vigem_Common.Mappings;
 
-namespace Vigem_ClassLibrary
+namespace Vigem_Common
 {
     public interface IController
     {

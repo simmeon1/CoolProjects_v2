@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
-using Vigem_ClassLibrary.Mappings;
+using Vigem_Common;
+using Vigem_Common.Mappings;
 
 namespace Vigem_ClassLibrary.Commands
 {

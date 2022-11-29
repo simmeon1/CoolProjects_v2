@@ -1,18 +1,16 @@
-﻿using Nefarius.ViGEm.Client;
-using Nefarius.ViGEm.Client.Targets;
+﻿using Nefarius.ViGEm.Client.Targets;
 using Nefarius.ViGEm.Client.Targets.Xbox360;
-using Vigem_ClassLibrary;
-using Vigem_ClassLibrary.Mappings;
+using Vigem_Common;
+using Vigem_Common.Mappings;
 
-namespace Vigem_Controllers
+namespace VigemControllers_ClassLibrary
 {
     public class Xbox360Controller : IController
     {
         private readonly IXbox360Controller controller;
-        public Xbox360Controller()
+        public Xbox360Controller(IXbox360Controller controller)
         {
-            ViGEmClient client = new();
-            controller = client.CreateXbox360Controller();
+            this.controller = controller;
         }
 
         public void Connect()
@@ -27,7 +25,11 @@ namespace Vigem_Controllers
 
         public void SetAxisState(AxisMappings axis, byte value)
         {
-            controller.SetAxisValue(GetAxisFromMapping(axis), Convert.ToInt16((value - 128) * 256));
+            int x = value - 128;
+            short v = 0;
+            if (x != 0)
+                v = x >= 1 ? Convert.ToInt16(short.MaxValue / 127.0 * x) : Convert.ToInt16(-(short.MinValue / 128.0 * x));
+            controller.SetAxisValue(GetAxisFromMapping(axis), v);
         }
 
         public void SetButtonState(ButtonMappings button, bool pressed)
@@ -43,19 +45,13 @@ namespace Vigem_Controllers
         private static Xbox360Button GetDpadFromMapping(DPadMappings mapping)
         {
 
-            switch (mapping)
+            return mapping switch
             {
-                case DPadMappings.Up:
-                    return Xbox360Button.Up;
-                case DPadMappings.Down:
-                    return Xbox360Button.Down;
-                case DPadMappings.Left:
-                    return Xbox360Button.Left;
-                case DPadMappings.Right:
-                    return Xbox360Button.Right;
-                default:
-                    throw new ArgumentException($"Dpad mapping {mapping} not supported.");
-            }
+                DPadMappings.Up => Xbox360Button.Up,
+                DPadMappings.Down => Xbox360Button.Down,
+                DPadMappings.Left => Xbox360Button.Left,
+                _ => Xbox360Button.Right,
+            };
         }
 
         private static Xbox360Axis GetAxisFromMapping(AxisMappings axis)
@@ -65,8 +61,7 @@ namespace Vigem_Controllers
                 AxisMappings.LeftThumbX => Xbox360Axis.LeftThumbX,
                 AxisMappings.LeftThumbY => Xbox360Axis.LeftThumbY,
                 AxisMappings.RightThumbX => Xbox360Axis.RightThumbX,
-                AxisMappings.RightThumbY => Xbox360Axis.RightThumbY,
-                _ => throw new ArgumentException($"Axis mapping {axis} not supported."),
+                _ => Xbox360Axis.RightThumbY
             };
         }
 
@@ -85,8 +80,7 @@ namespace Vigem_Controllers
                 ButtonMappings.Triangle => Xbox360Button.Y,
                 ButtonMappings.Circle => Xbox360Button.B,
                 ButtonMappings.Cross => Xbox360Button.A,
-                ButtonMappings.Square => Xbox360Button.X,
-                _ => throw new ArgumentException($"Button mapping {button} not supported."),
+                _ => Xbox360Button.X
             };
         }
     }
