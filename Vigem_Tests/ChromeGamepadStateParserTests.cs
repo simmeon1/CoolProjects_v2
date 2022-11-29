@@ -63,14 +63,14 @@ namespace Vigem_Tests
         }
 
         [DataTestMethod]
-        [DataRow("b12", DPadMappings.North)]
-        [DataRow("b13", DPadMappings.South)]
-        [DataRow("b14", DPadMappings.West)]
-        [DataRow("b15", DPadMappings.East)]
+        [DataRow("b12", DPadMappings.Up)]
+        [DataRow("b13", DPadMappings.Down)]
+        [DataRow("b14", DPadMappings.Left)]
+        [DataRow("b15", DPadMappings.Right)]
         public void DpadCommandsAreExecuted(string button, DPadMappings mapping)
         {
             ExecuteMockCommandFromButton(button);
-            controllerMock.Verify(c => c.SetDPadState(mapping), Times.Once);
+            controllerMock.Verify(c => c.SetDPadState(mapping, true), Times.Once);
             controllerMock.Invocations.Clear();
         }
 

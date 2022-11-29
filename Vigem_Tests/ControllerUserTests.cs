@@ -65,25 +65,26 @@ namespace Vigem_Tests
         [TestMethod]
         public async Task DpadIsPressedFor300Seconds()
         {
-            await user.PressDPad(DPadMappings.Northwest, 300);
-            controller.Verify(c => c.SetDPadState(DPadMappings.Northwest), Times.Once);
+            await user.PressDPad(DPadMappings.Up, 300);
+            controller.Verify(c => c.SetDPadState(DPadMappings.Up, true), Times.Once);
             delayer.Verify(d => d.Delay(300), Times.Once);
-            controller.Verify(c => c.SetDPadState(DPadMappings.None), Times.Once);
+            controller.Verify(c => c.SetDPadState(DPadMappings.Up, false), Times.Once);
         }
 
         [TestMethod]
         public void DpadIsHeld()
         {
-            DPadMappings mapping = DPadMappings.Northwest;
+            DPadMappings mapping = DPadMappings.Up;
             user.HoldDPad(mapping);
-            controller.Verify(c => c.SetDPadState(mapping), Times.Once);
+            controller.Verify(c => c.SetDPadState(mapping, true), Times.Once);
         }
 
         [TestMethod]
         public void DpadIsReleased()
         {
-            user.ReleaseDPad();
-            controller.Verify(c => c.SetDPadState(DPadMappings.None), Times.Once);
+            DPadMappings mapping = DPadMappings.Up;
+            user.ReleaseDPad(mapping);
+            controller.Verify(c => c.SetDPadState(mapping, false), Times.Once);
         }
 
         [TestMethod]

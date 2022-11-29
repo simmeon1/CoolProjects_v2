@@ -35,34 +35,27 @@ namespace Vigem_Controllers
             controller.SetButtonState(GetButtonFromMapping(button), pressed);
         }
 
-
-        public void SetDPadState(DPadMappings direction)
+        public void SetDPadState(DPadMappings mapping, bool pressed)
         {
-            Xbox360Button up = Xbox360Button.Up;
-            Xbox360Button down = Xbox360Button.Down;
-            Xbox360Button left = Xbox360Button.Left;
-            Xbox360Button right = Xbox360Button.Right;
-
-            foreach (Xbox360Button dpadButton in new[] { up, down, left, right })
-            {
-                controller.SetButtonState(dpadButton, false);
-            }
-
-            if (direction == DPadMappings.Northwest) HoldButtons(up, left);
-            else if (direction == DPadMappings.West) HoldButtons(left);
-            else if (direction == DPadMappings.Southwest) HoldButtons(down, left);
-            else if (direction == DPadMappings.South) HoldButtons(down);
-            else if (direction == DPadMappings.Southeast) HoldButtons(down, right);
-            else if (direction == DPadMappings.East) HoldButtons(right);
-            else if (direction == DPadMappings.Northeast) HoldButtons(up, right);
-            else if (direction == DPadMappings.North) HoldButtons(up);
-            else if (direction == DPadMappings.None) { }
-            else throw new ArgumentException($"Dpad mapping {direction} not supported.");
+            controller.SetButtonState(GetDpadFromMapping(mapping), pressed);
         }
 
-        private void HoldButtons(params Xbox360Button[] buttons)
+        private static Xbox360Button GetDpadFromMapping(DPadMappings mapping)
         {
-            foreach (Xbox360Button button in buttons) controller.SetButtonState(button, true);
+
+            switch (mapping)
+            {
+                case DPadMappings.Up:
+                    return Xbox360Button.Up;
+                case DPadMappings.Down:
+                    return Xbox360Button.Down;
+                case DPadMappings.Left:
+                    return Xbox360Button.Left;
+                case DPadMappings.Right:
+                    return Xbox360Button.Right;
+                default:
+                    throw new ArgumentException($"Dpad mapping {mapping} not supported.");
+            }
         }
 
         private static Xbox360Axis GetAxisFromMapping(AxisMappings axis)

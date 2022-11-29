@@ -60,16 +60,16 @@ namespace Vigem_ClassLibrary
                             commands.Add(GetButtonCommand(ButtonMappings.ThumbRight, value));
                             break;
                         case "b12":
-                            commands.Add(GetDpadCommand(DPadMappings.North));
+                            commands.Add(GetDpadCommand(DPadMappings.Up, value));
                             break;
                         case "b13":
-                            commands.Add(GetDpadCommand(DPadMappings.South));
+                            commands.Add(GetDpadCommand(DPadMappings.Down, value));
                             break;
                         case "b14":
-                            commands.Add(GetDpadCommand(DPadMappings.West));
+                            commands.Add(GetDpadCommand(DPadMappings.Left, value));
                             break;
                         case "b15":
-                            commands.Add(GetDpadCommand(DPadMappings.East));
+                            commands.Add(GetDpadCommand(DPadMappings.Right, value));
                             break;
                         case "b16":
                             ThrowKeyNotImpementedException(key);
@@ -112,14 +112,19 @@ namespace Vigem_ClassLibrary
             return new AxisCommand(mapping, result);
         }
 
-        private static DpadCommand GetDpadCommand(DPadMappings mapping)
+        private static DpadCommand GetDpadCommand(DPadMappings mapping, string value)
         {
-            return new DpadCommand(mapping);
+            return new DpadCommand(mapping, ValueIsNotZero(value));
         }
 
         private static ButtonCommand GetButtonCommand(ButtonMappings mapping, string value)
         {
-            return new ButtonCommand(mapping, value != "0");
+            return new ButtonCommand(mapping, ValueIsNotZero(value));
+        }
+
+        private static bool ValueIsNotZero(string value)
+        {
+            return value != "0";
         }
 
         private static string[] SplitString(char separator, string states)

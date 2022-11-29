@@ -9,6 +9,7 @@ namespace Vigem_Controllers
     public class Dualshock4Controller : IController
     {
         private readonly IDualShock4Controller controller;
+        private DualShock4DPadDirection dpadState = DualShock4DPadDirection.None;
         public Dualshock4Controller()
         {
             ViGEmClient client = new();
@@ -35,10 +36,16 @@ namespace Vigem_Controllers
             controller.SetButtonState(GetButtonFromMapping(button), pressed);
         }
 
-
-        public void SetDPadState(DPadMappings direction)
+        public void SetDPadState(DPadMappings direction, bool pressed)
         {
-            controller.SetDPadDirection(GetDpadFromMapping(direction));
+            DualShock4DPadDirection newDpadState = GetDs4StateFromDpadAction(direction, pressed);
+            controller.SetDPadDirection(newDpadState);
+            dpadState = newDpadState;
+        }
+
+        private DualShock4DPadDirection GetDs4StateFromDpadAction(DPadMappings direction, bool pressed)
+        {
+            return GetDpadFromMapping(direction, pressed);
         }
 
         private static DualShock4Axis GetAxisFromMapping(AxisMappings axis)
@@ -73,21 +80,58 @@ namespace Vigem_Controllers
             };
         }
 
-        private static DualShock4DPadDirection GetDpadFromMapping(DPadMappings direction)
+        private DualShock4DPadDirection GetDpadFromMapping(DPadMappings direction, bool pressed)
         {
-            return direction switch
+            switch (direction)
             {
-                DPadMappings.None => DualShock4DPadDirection.None,
-                DPadMappings.Northwest => DualShock4DPadDirection.Northwest,
-                DPadMappings.West => DualShock4DPadDirection.West,
-                DPadMappings.Southwest => DualShock4DPadDirection.Southwest,
-                DPadMappings.South => DualShock4DPadDirection.South,
-                DPadMappings.Southeast => DualShock4DPadDirection.Southeast,
-                DPadMappings.East => DualShock4DPadDirection.East,
-                DPadMappings.Northeast => DualShock4DPadDirection.Northeast,
-                DPadMappings.North => DualShock4DPadDirection.North,
-                _ => throw new ArgumentException($"Dpad mapping {direction} not supported."),
-            };
+                case DPadMappings.Up:
+                    return GetDs4DpadFromMapping(
+                        DualShock4DPadDirection.West, DualShock4DPadDirection.Northwest,
+                        DualShock4DPadDirection.East, DualShock4DPadDirection.Northeast,
+                        DualShock4DPadDirection.North, pressed
+                    );
+                case DPadMappings.Down:
+                    return GetDs4DpadFromMapping(
+                        DualShock4DPadDirection.West, DualShock4DPadDirection.Southwest,
+                        DualShock4DPadDirection.East, DualShock4DPadDirection.Southeast,
+                        DualShock4DPadDirection.South, pressed
+                    );
+                case DPadMappings.Left:
+                    return GetDs4DpadFromMapping(
+                        DualShock4DPadDirection.North, DualShock4DPadDirection.Northwest,
+                        DualShock4DPadDirection.South, DualShock4DPadDirection.Southwest,
+                        DualShock4DPadDirection.West, pressed
+                    );
+                default:
+                    return GetDs4DpadFromMapping(
+                        DualShock4DPadDirection.North, DualShock4DPadDirection.Northeast,
+                        DualShock4DPadDirection.South, DualShock4DPadDirection.Southeast,
+                        DualShock4DPadDirection.East, pressed
+                    );
+            }
+        }
+
+        private DualShock4DPadDirection GetDs4DpadFromMapping(
+            DualShock4DPadDirection ifPressed1,
+            DualShock4DPadDirection thenPressed1,
+            DualShock4DPadDirection ifPressed2,
+            DualShock4DPadDirection thenPressed2,
+            DualShock4DPadDirection elseIfPressed,
+            bool pressed
+        )
+        {
+            if (pressed)
+            {
+                if (dpadState == ifPressed1) return thenPressed1;
+                if (dpadState == ifPressed2) return thenPressed2;
+                return elseIfPressed;
+            }
+            else
+            {
+                if (dpadState == thenPressed1) return ifPressed1;
+                if (dpadState == thenPressed2) return ifPressed2;
+                return DualShock4DPadDirection.None;
+            }
         }
     }
 }

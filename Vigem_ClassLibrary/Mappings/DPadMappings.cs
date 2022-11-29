@@ -2,14 +2,9 @@
 {
     public enum DPadMappings
     {
-        None,
-        Northwest,
-        West,
-        Southwest,
-        South,
-        Southeast,
-        East,
-        Northeast,
-        North
+        Up,
+        Down,
+        Left,
+        Right
     }
 }

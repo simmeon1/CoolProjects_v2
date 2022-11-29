@@ -3,18 +3,21 @@ using Vigem_ClassLibrary.Mappings;
 
 namespace Vigem_ClassLibrary.Commands
 {
-    [DebuggerDisplay("{mapping}")]
+    [DebuggerDisplay("{mapping}, {value}")]
     public class DpadCommand : IControllerCommand
     {
         private readonly DPadMappings mapping;
-        public DpadCommand(DPadMappings mapping)
+        private readonly bool pressed;
+
+        public DpadCommand(DPadMappings mapping, bool pressed)
         {
             this.mapping = mapping;
+            this.pressed = pressed;
         }
 
         public void ExecuteCommand(IController controller)
         {
-            controller.SetDPadState(mapping);
+            controller.SetDPadState(mapping, pressed);
         }
     }
 }
