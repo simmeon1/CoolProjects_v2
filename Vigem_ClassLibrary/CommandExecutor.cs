@@ -20,12 +20,16 @@ namespace Vigem_ClassLibrary
             stopwatch.Start();
             foreach (double ts in orderedTimestamps)
             {
+                double elapsed = stopwatch.GetElapsedTotalMilliseconds();
                 IEnumerable<IControllerCommand> commands = tsAndCmds[ts];
-                while (ts > stopwatch.GetElapsedTotalMilliseconds()) {
-                    //Wait for timer
+
+                while (elapsed - ts < 0) {
+                    elapsed = stopwatch.GetElapsedTotalMilliseconds();
                 }
 
                 foreach (IControllerCommand command in commands) command.ExecuteCommand(controller);
+                double diff = stopwatch.GetElapsedTotalMilliseconds() - ts;
+                Console.WriteLine(diff);
             }
             stopwatch.Stop();
         }

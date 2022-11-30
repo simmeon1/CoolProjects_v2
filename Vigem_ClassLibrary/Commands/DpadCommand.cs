@@ -4,7 +4,7 @@ using Vigem_Common.Mappings;
 
 namespace Vigem_ClassLibrary.Commands
 {
-    [DebuggerDisplay("{mapping}, {value}")]
+    [DebuggerDisplay("{mapping}, {pressed}")]
     public class DpadCommand : IControllerCommand
     {
         private readonly DPadMappings mapping;

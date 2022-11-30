@@ -1,5 +1,6 @@
 ﻿using Nefarius.ViGEm.Client.Targets;
 using Vigem_ClassLibrary;
+using Vigem_ClassLibrary.Commands;
 using Vigem_ClassLibrary.SystemImplementations;
 using Vigem_Common.Mappings;
 using VigemControllers_ClassLibrary;
@@ -10,58 +11,40 @@ namespace Vigem_Console
     {
         static async Task Main(string[] args)
         {
-            Delayer delayer = new();
             ControllerCreator creator = new();
-
-            IXbox360Controller created360Controller = creator.GetXbox360Controller();
-            Xbox360Controller c360 = new(created360Controller);
 
             IDualShock4Controller createdDs4Controller = creator.GetDualShock4Controller();
             Dualshock4Controller cds4 = new(createdDs4Controller);
+            cds4.Connect();
 
-            ControllerUser user360 = new(c360, delayer, 500);
-            user360.Connect();
-            ControllerUser userDs4 = new(cds4, delayer, 500);
-            userDs4.Connect();
+            Delayer delayer = new();
+            //ControllerUser userDs4 = new(cds4, delayer, 500);
 
-            var x = 1;
             //await delayer.Delay(1000);
-            //foreach (ButtonMappings mapping in Enum.GetValues<ButtonMappings>())
-            //{
-            //    await controller.PressButton(mapping);
-            //}
+            //await userDs4.PressButton(ButtonMappings.Options);
 
-            //foreach (AxisMappings mapping in Enum.GetValues<AxisMappings>())
-            //{
-            //    await controller.PressStick(mapping, byte.MaxValue);
-            //}
-
-            //foreach (DPadMappings mapping in Enum.GetValues<DPadMappings>())
-            //{
-            //    await controller.PressDPad(mapping, byte.MaxValue);
-            //}
-            //controller.Disconnect();
-
-
-            //Delayer delayer = new();
-            //ControllerUser controller = new(new Dualshock4Controller(), delayer, 500);
-            //controller.Connect();
             //await delayer.Delay(1000);
-            //foreach (ButtonMappings mapping in Enum.GetValues<ButtonMappings>())
-            //{
-            //    await controller.PressButton(mapping);
-            //}
+            //await userDs4.PressDPad(DPadMappings.Left);
 
-            //foreach (AxisMappings mapping in Enum.GetValues<AxisMappings>())
-            //{
-            //    await controller.PressStick(mapping, byte.MaxValue);
-            //}
+            //await delayer.Delay(1000);
+            //await userDs4.PressDPad(DPadMappings.Right);
 
-            //foreach (DPadMappings mapping in Enum.GetValues<DPadMappings>())
-            //{
-            //    await controller.PressDPad(mapping, byte.MaxValue);
-            //}
-            //controller.Disconnect();
+            //await delayer.Delay(1000);
+            //await userDs4.PressButton(ButtonMappings.Cross);
+
+            await delayer.Delay(1000);
+            ChromeGamepadStateParser parser = new();
+            //IDictionary<double, IEnumerable<IControllerCommand>> states = parser.GetStates("b9:1;t:27877.79999999702~b9:0;t:28046.19999999553~b15:1;t:28458.60000000149~b15:0;t:28725.69999999553~b15:1;t:29041.79999999702~b15:0;t:29157.79999999702~b0:1;t:29342~b0:0;t:29573.79999999702~");
+            //IDictionary<double, IEnumerable<IControllerCommand>> states = parser.GetStates("b9:1;t:27877.79999999702~b9:0;t:28046.19999999553~b15:1;t:28458.60000000149~b15:0;t:28725.69999999553~b15:1;t:29041.79999999702~b15:0;t:29157.79999999702~b0:1;t:29342~b0:0;t:29573.79999999702~b15:1;t:29610.29999999702~b15:0;t:30458.5~b15:1;t:30809.69999999553~b15:0;t:30926.19999999553~b0:1;t:31277.69999999553~b0:0;t:31590~b15:1;t:31621.89999999851~b15:0;t:31993.89999999851~b15:1;t:32309.69999999553~b15:0;t:32442.19999999553~b0:1;t:32478~b0:0;t:32794.10000000149~b15:1;t:32825.69999999553~b15:0;t:33125.79999999702~b14:1;t:33437.89999999851~b14:0;t:33477.69999999553~b0:1;t:33609.89999999851~b14:1;t:33658.39999999851~b14:0;t:33889.79999999702~b0:0;t:33937.69999999553~b15:1;t:34846.19999999553~b15:0;t:34877.5~b0:1;t:35746.39999999851~b14:1;t:35925.60000000149~b0:0;t:36341.60000000149~b14:0;t:36642.5~b15:1;t:37061.79999999702~b15:0;t:37161.69999999553~b0:1;t:37494.89999999851~b0:0;t:37709.5~b15:1;t:38609.60000000149~b15:0;t:38994.29999999702~b9:1;t:39693.60000000149~b9:0;t:39822.19999999553~");
+            IDictionary<double, IEnumerable<IControllerCommand>> states = parser.GetStates("b9:1;t:3118196~b9:0;t:3118344~b15:1;t:3118516.5~b15:0;t:3118892.1000000015~b14:1;t:3119332.1999999955~b14:0;t:3119400.1000000015~b0:1;t:3119596.6000000015~b0:0;t:3119832.5~b15:1;t:3119868.3999999985~b15:0;t:3120480.5~b15:1;t:3120828.6999999955~b15:0;t:3120984.1000000015~b0:1;t:3121416.1999999955~b0:0;t:3121616.5~b15:1;t:3121632.6000000015~b15:0;t:3122049~b15:1;t:3122380.1000000015~b15:0;t:3122468.299999997~b0:1;t:3122676.1999999955~b0:0;t:3122900.299999997~b15:1;t:3122912.299999997~b15:0;t:3123445.299999997~b14:1;t:3123960.3999999985~b0:1;t:3124048.6000000015~b14:0;t:3124348.6000000015~b0:0;t:3124564.299999997~b0:1;t:3126028.3999999985~b14:1;t:3126232.1000000015~b0:0;t:3126633.6999999955~b14:0;t:3126832.1999999955~b15:1;t:3127064.3999999985~b15:0;t:3127149.1000000015~b14:1;t:3127380.1000000015~b14:0;t:3127532.6000000015~b0:1;t:3127732.799999997~b0:0;t:3127881~b15:1;t:3128064.6999999955~b0:1;t:3128612.1000000015~b0:0;t:3128816.1999999955~b2:1;t:3129580.5~b2:0;t:3129764.5~b15:0;t:3130148.6999999955~b15:1;t:3130232~b0:1;t:3130332.5~b0:0;t:3130932.1999999955~b15:0;t:3131180.6000000015~b14:1;t:3131400.299999997~b14:0;t:3131680.1999999955~b15:1;t:3131860.299999997~b0:1;t:3132232.5~b0:0;t:3132316.6000000015~b15:0;t:3132900.1000000015~b15:1;t:3133148.6999999955~b0:1;t:3133196.1000000015~b0:0;t:3133748.1000000015~b0:1;t:3134016.6000000015~b0:0;t:3134148.3999999985~b0:1;t:3135532.1000000015~b0:0;t:3136064.5~b2:1;t:3137680.1000000015~b0:1;t:3137900.1000000015~b0:0;t:3138264.6000000015~b2:0;t:3138328~b15:0;t:3138848.8999999985~b15:1;t:3139029.5~b15:0;t:3139296.6000000015~b14:1;t:3139532.6000000015~b0:1;t:3139600.299999997~b14:0;t:3139716.799999997~b0:0;t:3139880.3999999985~b15:1;t:3139912~b15:0;t:3140564.3999999985~b14:1;t:3140964.5~b0:1;t:3141048.799999997~b0:0;t:3141681.1999999955~b14:0;t:3141900.1999999955~b15:1;t:3143044.5~b0:1;t:3143196.1999999955~b0:0;t:3143832.1000000015~b2:1;t:3143944.5~b0:1;t:3144596.799999997~b0:0;t:3144980.3999999985~b2:0;t:3145284.299999997~b0:1;t:3145516.3999999985~b0:0;t:3145816.299999997~b0:1;t:3146764.299999997~b0:0;t:3147360.8999999985~b0:1;t:3147800.299999997~b0:0;t:3147912.8999999985~b0:1;t:3148364.1999999955~b0:0;t:3148828.799999997~b2:1;t:3149160.6000000015~b2:0;t:3149428.799999997~b2:1;t:3149632.6000000015~b2:0;t:3149748~b2:1;t:3149864.1999999955~b2:0;t:3149964.6999999955~b2:1;t:3150100.1999999955~b2:0;t:3150196.299999997~b2:1;t:3150316.3999999985~b2:0;t:3150416.5~b2:1;t:3150528.799999997~b2:0;t:3150616.5~b0:1;t:3151980.3999999985~b0:0;t:3152529.5~b0:1;t:3152848~b0:0;t:3152896.5~b15:0;t:3153064.799999997~b15:1;t:3153276.5~b0:1;t:3153416.5~b0:0;t:3153844.6999999955~b2:1;t:3154032.1000000015~b2:0;t:3154096.3999999985~b2:1;t:3154248.6999999955~b2:0;t:3154340.1000000015~b2:1;t:3154480~b2:0;t:3154616.1000000015~b0:1;t:3155048.799999997~b0:0;t:3155496.299999997~b0:1;t:3156096.1000000015~b0:0;t:3156132~b0:1;t:3156684.5~b0:0;t:3157096.1999999955~b0:1;t:3158216.3999999985~b0:0;t:3158464.799999997~b0:1;t:3158896.5~b0:0;t:3159044~b0:1;t:3160415.8999999985~b0:0;t:3160544.1999999955~b0:1;t:3161516.1000000015~b0:0;t:3161644.299999997~b0:1;t:3162064.5~b0:0;t:3162596.799999997~b0:1;t:3162980.3999999985~b0:0;t:3163432.1000000015~b0:1;t:3164100~b0:0;t:3164212.1000000015~b2:1;t:3164676.3999999985~b0:1;t:3164764.3999999985~b0:0;t:3165964.6999999955~b2:0;t:3166000.1000000015~b15:0;t:3167031.8999999985~");
+            IDictionary<double, IEnumerable<IControllerCommand>> newStates = new Dictionary<double, IEnumerable<IControllerCommand>>();
+            foreach (var state in states)
+            {
+                newStates.Add(state.Key - 3118196, state.Value);
+            }
+
+            CommandExecutor executor = new(new RealStopwatch());
+            executor.ExecuteCommands(newStates, cds4);
         }
     }
 }
