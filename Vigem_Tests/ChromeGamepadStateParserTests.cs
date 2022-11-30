@@ -25,10 +25,10 @@ namespace Vigem_Tests
         public void ButtonsAndTimesAreCorrectlyGrouped()
         {
             string states = "b0:1;b1:1;t:1.2345~b1:0;t:2";
-            IDictionary<decimal, IEnumerable<IControllerCommand>> results = parser.GetStates(states);
+            IDictionary<double, IEnumerable<IControllerCommand>> results = parser.GetStates(states);
             Assert.AreEqual(2, results.Count);
             
-            List<IControllerCommand> entries = results[Convert.ToDecimal(1.2345)].ToList();
+            List<IControllerCommand> entries = results[1.2345].ToList();
             Assert.AreEqual(2, entries.Count);
 
             entries[0].ExecuteCommand(controller);
@@ -39,7 +39,7 @@ namespace Vigem_Tests
             controllerMock.Verify(c => c.SetButtonState(ButtonMappings.Circle, true), Times.Once);
             controllerMock.Invocations.Clear();
 
-            entries = results[Convert.ToDecimal(2)].ToList();
+            entries = results[2].ToList();
             entries[0].ExecuteCommand(controller);
             controllerMock.Verify(c => c.SetButtonState(ButtonMappings.Circle, false), Times.Once);
             controllerMock.Invocations.Clear();
@@ -113,9 +113,9 @@ namespace Vigem_Tests
 
         private void ExecuteCommandFromMock(string states)
         {
-            IDictionary<decimal, IEnumerable<IControllerCommand>> results = parser.GetStates(states);
+            IDictionary<double, IEnumerable<IControllerCommand>> results = parser.GetStates(states);
             Assert.AreEqual(1, results.Count);
-            List<IControllerCommand> entries = results[Convert.ToDecimal(1)].ToList();
+            List<IControllerCommand> entries = results[1].ToList();
             Assert.AreEqual(1, entries.Count);
             entries[0].ExecuteCommand(controller);
         }

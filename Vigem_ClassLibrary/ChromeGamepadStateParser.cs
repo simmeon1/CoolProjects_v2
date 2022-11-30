@@ -5,14 +5,14 @@ namespace Vigem_ClassLibrary
 {
     public class ChromeGamepadStateParser
     {
-        public IDictionary<decimal, IEnumerable<IControllerCommand>> GetStates(string states)
+        public IDictionary<double, IEnumerable<IControllerCommand>> GetStates(string states)
         {
-            Dictionary<decimal, IEnumerable<IControllerCommand>> result = new();
+            Dictionary<double, IEnumerable<IControllerCommand>> result = new();
 
             string[] timestamps = SplitString('~', states);
             foreach (string timestamp in timestamps)
             {
-                decimal ts = 0;
+                double ts = 0;
                 List<IControllerCommand> commands = new();
                 string[] fields = SplitString(';', timestamp);
                 foreach (string field in fields)
@@ -90,7 +90,7 @@ namespace Vigem_ClassLibrary
                             commands.Add(GetAxisCommand(AxisMappings.RightThumbY, value));
                             break;
                         case "t":
-                            ts = decimal.Parse(value);
+                            ts = double.Parse(value);
                             break;
                     }
                 }
