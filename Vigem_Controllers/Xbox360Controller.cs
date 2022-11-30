@@ -26,10 +26,18 @@ namespace VigemControllers_ClassLibrary
         public void SetAxisState(AxisMappings axis, byte value)
         {
             int x = value - 128;
-            short v = 0;
+            short result = 0;
             if (x != 0)
-                v = x >= 1 ? Convert.ToInt16(short.MaxValue / 127.0 * x) : Convert.ToInt16(-(short.MinValue / 128.0 * x));
-            controller.SetAxisValue(GetAxisFromMapping(axis), v);
+            {
+                bool byteIsPositive = x >= 1;
+                result = byteIsPositive ? Convert.ToInt16(short.MaxValue / 127.0 * x) : Convert.ToInt16(-(short.MinValue / 128.0 * x));
+                if (axis is AxisMappings.LeftThumbY or AxisMappings.RightThumbY)
+                {
+                    double multiplier = byteIsPositive ? (double)short.MinValue / short.MaxValue : (double)short.MaxValue / short.MinValue;
+                    result = Convert.ToInt16(result * multiplier);
+                }
+            }
+            controller.SetAxisValue(GetAxisFromMapping(axis), result);
         }
 
         public void SetButtonState(ButtonMappings button, bool pressed)

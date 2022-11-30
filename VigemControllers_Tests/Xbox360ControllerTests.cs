@@ -35,7 +35,7 @@ namespace VigemControllers_Tests
         }
 
         [TestMethod]
-        public void SetsLeftThumbXAxisValue()//32768
+        public void SetsLeftThumbXAxisValue()
         {
             c.SetAxisState(AxisMappings.LeftThumbX, 128);
             controllerMock.Verify(cl => cl.SetAxisValue(Xbox360Axis.LeftThumbX, 0), Times.Once);
@@ -45,28 +45,28 @@ namespace VigemControllers_Tests
         public void SetsLeftThumbYAxisValue()
         {
             c.SetAxisState(AxisMappings.LeftThumbY, byte.MaxValue);
-            controllerMock.Verify(cl => cl.SetAxisValue(Xbox360Axis.LeftThumbY, short.MaxValue), Times.Once);
+            controllerMock.Verify(cl => cl.SetAxisValue(Xbox360Axis.LeftThumbY, short.MinValue), Times.Once);
         }
 
         [TestMethod]
         public void SetsRightThumbXAxisValue()
         {
-            c.SetAxisState(AxisMappings.RightThumbX, byte.MinValue);
-            controllerMock.Verify(cl => cl.SetAxisValue(Xbox360Axis.RightThumbX, short.MinValue), Times.Once);
+            c.SetAxisState(AxisMappings.RightThumbX, 129);
+            controllerMock.Verify(cl => cl.SetAxisValue(Xbox360Axis.RightThumbX, 258), Times.Once);
         }
 
         [TestMethod]
         public void SetsRightThumbYAxisValueWithPositiveValue()
         {
-            c.SetAxisState(AxisMappings.RightThumbY, 129);
-            controllerMock.Verify(cl => cl.SetAxisValue(Xbox360Axis.RightThumbY, 258), Times.Once);
+            c.SetAxisState(AxisMappings.RightThumbY, byte.MinValue);
+            controllerMock.Verify(cl => cl.SetAxisValue(Xbox360Axis.RightThumbY, short.MaxValue), Times.Once);
         }
 
         [TestMethod]
         public void SetsRightThumbYAxisValueWithNegativeValue()
         {
             c.SetAxisState(AxisMappings.RightThumbY, 127);
-            controllerMock.Verify(cl => cl.SetAxisValue(Xbox360Axis.RightThumbY, -256), Times.Once);
+            controllerMock.Verify(cl => cl.SetAxisValue(Xbox360Axis.RightThumbY, 256), Times.Once);
         }
 
         [TestMethod]
