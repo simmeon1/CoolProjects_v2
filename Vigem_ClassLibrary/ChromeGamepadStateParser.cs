@@ -42,10 +42,10 @@ namespace Vigem_ClassLibrary
                             commands.Add(GetButtonCommand(ButtonMappings.ShoulderRight, value));
                             break;
                         case "b6":
-                            ThrowKeyNotImpementedException(key);
+                            commands.Add(GetTriggerCommand(TriggerMappings.LeftTrigger, value));
                             break;
                         case "b7":
-                            ThrowKeyNotImpementedException(key);
+                            commands.Add(GetTriggerCommand(TriggerMappings.RightTrigger, value));
                             break;
                         case "b8":
                             commands.Add(GetButtonCommand(ButtonMappings.Share, value));
@@ -97,6 +97,11 @@ namespace Vigem_ClassLibrary
                 result.Add(ts, commands);
             }
             return result;
+        }
+
+        private static IControllerCommand GetTriggerCommand(TriggerMappings mapping, string value)
+        {
+            return new TriggerCommand(mapping, Convert.ToByte(double.Parse(value) * 255));
         }
 
         private static void ThrowKeyNotImpementedException(string key)

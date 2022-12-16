@@ -42,6 +42,30 @@ namespace VigemControllers_ClassLibrary
             dpadState = newDpadState;
         }
 
+        public void SetTriggerState(TriggerMappings trigger, byte value)
+        {
+            //controller.SetSliderValue(GetTriggerFromMapping(trigger), value);
+            controller.SetButtonState(GetTriggerFromMapping(trigger), value > 0);
+        }
+
+        //private static DualShock4Slider GetTriggerFromMapping(TriggerMappings trigger)
+        //{
+        //    return trigger switch
+        //    {
+        //        TriggerMappings.LeftTrigger => DualShock4Slider.LeftTrigger,
+        //        _ => DualShock4Slider.RightTrigger
+        //    };
+        //}
+
+        private static DualShock4Button GetTriggerFromMapping(TriggerMappings trigger)
+        {
+            return trigger switch
+            {
+                TriggerMappings.LeftTrigger => DualShock4Button.TriggerLeft,
+                _ => DualShock4Button.TriggerRight
+            };
+        }
+
         private static DualShock4Axis GetAxisFromMapping(AxisMappings axis)
         {
             return axis switch

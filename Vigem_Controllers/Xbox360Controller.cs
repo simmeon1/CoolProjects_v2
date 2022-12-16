@@ -91,5 +91,10 @@ namespace VigemControllers_ClassLibrary
                 _ => Xbox360Button.X
             };
         }
+
+        public void SetTriggerState(TriggerMappings trigger, byte value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

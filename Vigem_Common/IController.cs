@@ -9,5 +9,6 @@ namespace Vigem_Common
         void SetDPadState(DPadMappings direction, bool pressed);
         void SetButtonState(ButtonMappings button, bool pressed);
         void SetAxisState(AxisMappings axis, byte value);
+        void SetTriggerState(TriggerMappings trigger, byte value);
     }
 }
