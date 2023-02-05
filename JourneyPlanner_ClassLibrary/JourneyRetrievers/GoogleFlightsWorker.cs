@@ -61,30 +61,9 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
         private void SetToOneWayTrip()
         {
             C.FindElementAndClickIt(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("[aria-label='Round trip, Change ticket type.']"),
-                }
+                GetFindElementParametersWithCssSelector("[aria-label='Round trip, Change ticket type.']")
             );
-            IWebElement list = C.FindElement(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("[aria-label='Select your ticket type.']"),
-                }
-            );
-
-            C.FindElementAndClickIt(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("li"),
-                    Matcher = x =>
-                    {
-                        string innerText = x.GetAttribute("innerText");
-                        return !innerText.IsNullOrEmpty() && innerText.Equals("One way");
-                    },
-                    Container = list
-                }
-            );
+            C.FindElementAndClickIt(GetFindElementParametersWithCssSelector("[data-value='2']"));
         }
 
         public Task<JourneyCollection> GetJourneysForDates(List<DirectPath> paths, List<DateTime> allDates)
@@ -95,9 +74,11 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             foreach (DirectPath path in paths)
             {
                 string origin = $"{path.GetStart()}";
-                int groupIndex = groupsAndDestinationsCounts.ContainsKey(origin) ? groupsAndDestinationsCounts[origin] / 7 : 0;
+                int groupIndex = groupsAndDestinationsCounts.ContainsKey(origin)
+                    ? groupsAndDestinationsCounts[origin] / 7
+                    : 0;
                 string originGroup = $"{origin}_{groupIndex}";
-                
+
                 if (!originAndTargetGroups.ContainsKey(originGroup))
                 {
                     originAndTargetGroups.Add(originGroup, new List<string>());
@@ -110,29 +91,36 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 originAndTargetGroups[originGroup].Add(path.GetEnd());
                 groupsAndDestinationsCounts[origin]++;
             }
-            
+
             List<Journey> results = new();
             int counter = 0;
             foreach ((string origin, List<string> targets) in originAndTargetGroups)
             {
+                C.Logger.Log($"Looking for {origin} to {targets.ConcatenateListOfStringsToCommaAndSpaceString()}");
                 int originalCount = results.Count;
                 for (int i = 0; i < allDates.Count; i++)
                 {
                     DateTime date = allDates[i];
+                    C.Logger.Log($"Date is {date.ToShortDateString()}");
                     if (i == 0) PopulateLocations(origin[..3], targets);
                     PopulateDateAndHitDone(date);
                     if (!StopsSet) SetStopsToNone();
                     GetFlightsForDate(date, results);
                 }
+
                 counter++;
-                C.Logger.Log($"Collected data for paths from {origin} ({results.Count - originalCount} journeys) ({Globals.GetPercentageAndCountString(counter, originAndTargetGroups.Count)})");
+                C.Logger.Log(
+                    $"Collected data for paths from {origin} ({results.Count - originalCount} journeys) ({Globals.GetPercentageAndCountString(counter, originAndTargetGroups.Count)})"
+                );
             }
+
             return Task.FromResult(new JourneyCollection(results.OrderBy(j => j.ToString()).ToList()));
         }
 
         private void GetFlightsForDate(DateTime date, List<Journey> results)
         {
-            ReadOnlyCollection<IWebElement> flights = C.Driver.FindElements(By.CssSelector("div[aria-label$='Select flight']"));
+            ReadOnlyCollection<IWebElement> flights =
+                C.Driver.FindElements(By.CssSelector("div[aria-label$='Select flight']"));
             foreach (IWebElement flight in flights)
             {
                 IWebElement parent = (IWebElement) C.JavaScriptExecutor.ExecuteScript(
@@ -206,13 +194,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 
         private void SetStopsToNone()
         {
-            C.FindElementAndClickIt(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("[aria-label='Stops, Not selected']")
-                }
-            );
-
+            C.FindElementAndClickIt(GetFindElementParametersWithCssSelector("[aria-label='Stops, Not selected']"));
             C.FindElementAndClickIt(
                 new FindElementParameters
                 {
@@ -225,12 +207,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 }
             );
 
-            C.FindElementAndClickIt(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("header")
-                }
-            );
+            C.FindElementAndClickIt(GetFindElementParametersWithCssSelector("header"));
             StopsSet = true;
             WaitForProgressBarToBeGone();
         }
@@ -241,13 +218,8 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
         )
         {
             C.FindElementAndClickIt(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("[role='combobox'][aria-autocomplete='inline']"),
-                    Index = 0
-                }
+                GetFindElementParametersWithCssSelector("[role='combobox'][aria-autocomplete='inline']")
             );
-
             Sleep();
 
             C.FindElementAndSendKeysToIt(
@@ -259,7 +231,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 true,
                 JourneyRetrieverData.GetTranslation(origin) + Keys.Return
             );
-            
+
             Sleep();
 
             C.FindElementAndClickIt(
@@ -269,15 +241,12 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     Index = 1
                 }
             );
-            
+
             IWebElement addButton = C.FindElement(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("[aria-label='Destination, Select multiple airports']")
-                }
+                GetFindElementParametersWithCssSelector("[aria-label='Destination, Select multiple airports']")
             );
             if (addButton.Displayed) addButton.Click();
-            
+
             while (C.Driver.FindElements(By.CssSelector("div[data-code]")).Any(x => x.Displayed))
             {
                 C.FindElementAndSendKeysToIt(
@@ -290,7 +259,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     Keys.Backspace
                 );
             }
-            
+
             foreach (string destination in destinations)
             {
                 string destTranslation = JourneyRetrieverData.GetTranslation(destination);
@@ -305,11 +274,9 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 );
 
                 C.FindElementAndClickIt(
-                    new FindElementParameters
-                    {
-                        BySelector = By.CssSelector($"[data-code='{destTranslation}'] input"),
-                    }
+                    GetFindElementParametersWithCssSelector($"[data-code='{destTranslation}'] input")
                 );
+                Sleep();
             }
 
             C.FindElementAndClickIt(
@@ -319,28 +286,22 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     Index = 1
                 }
             );
-            
+
             Sleep();
         }
 
         private void PopulateDateAndHitDone(DateTime date)
         {
             const string format = "ddd, MMM dd";
-            By selector = By.CssSelector("[aria-label='Departure']");
 
-            C.FindElementAndClickIt(
-                new FindElementParameters
-                {
-                    BySelector = selector,
-                }
-            );
+            C.FindElementAndClickIt(GetFindElementParametersWithCssSelector("[aria-label='Departure']"));
 
             Sleep();
 
             C.FindElementAndSendKeysToIt(
                 new FindElementParameters
                 {
-                    BySelector = selector,
+                    BySelector = By.CssSelector("[aria-label='Departure']"),
                     Index = 1
                 },
                 false,
@@ -348,10 +309,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             );
 
             C.FindElementAndClickIt(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("[aria-label^='Done. Search for one-way flights']"),
-                }
+                GetFindElementParametersWithCssSelector("[aria-label^='Done. Search for one-way flights']")
             );
             WaitForProgressBarToBeGone();
         }
@@ -359,6 +317,11 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
         private void Sleep()
         {
             C.Delayer.Sleep(200);
+        }
+
+        private static FindElementParameters GetFindElementParametersWithCssSelector(string cssSelector)
+        {
+            return FindElementParameters.WithSelector(By.CssSelector(cssSelector));
         }
     }
 }

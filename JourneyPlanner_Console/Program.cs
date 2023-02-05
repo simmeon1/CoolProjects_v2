@@ -76,7 +76,7 @@ namespace JourneyPlanner_Console
             {
                 if ((success || parameters.Headless) && driver != null) driver.Quit();
                 Console.WriteLine("Run finished. Press any key to continue");
-                Console.ReadKey();
+                // Console.ReadKey();
             }
         }
     }
