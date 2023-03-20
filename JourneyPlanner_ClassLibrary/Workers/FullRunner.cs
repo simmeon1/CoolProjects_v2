@@ -99,7 +99,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             JourneyRetrieverDataToLocalLinksConverter localLinksConverter = new();
             Dictionary<string, HashSet<string>> localLinks = localLinksConverter.DoConversion(existingData);
 
-            Components.Logger.Log($"Generating paths...");
+            Components.Log($"Generating paths...");
             AirportPathGenerator generator = new(filteredAirportsAndDestinations, localLinks);
             List<Path> paths = generator.GeneratePaths(
                 Parameters.Origins,
@@ -186,7 +186,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 ),
                 $"{runResultsPath}\\{runId}_results.xlsx"
             );
-            Components.Logger.Log($"Saved files to {runResultsPath}");
+            Components.Log($"Saved files to {runResultsPath}");
             SaveLogAndQuitDriver(runId, runResultsPath);
         }
 
@@ -194,7 +194,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
         {
             FileIO.WriteAllText(
                 $"{runResultsPath}\\{runId}_log.txt",
-                Components.Logger.GetContent().SerializeObject(Formatting.Indented)
+                Components.GetLoggerContent().SerializeObject(Formatting.Indented)
             );
         }
     }

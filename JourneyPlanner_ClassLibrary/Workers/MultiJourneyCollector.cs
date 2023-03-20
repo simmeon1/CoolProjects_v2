@@ -76,8 +76,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 }
                 catch (Exception ex)
                 {
-                    c.Logger.Log("An exception was thrown while collecting flights and the results have been returned early.");
-                    c.Logger.Log($"Exception details: {ex}");
+                    c.Log("An exception was thrown while collecting flights and the results have been returned early.");
+                    c.Log($"Exception details: {ex}");
                     return new MultiJourneyCollectorResults(progress, allJourneys);
                 }
             }

@@ -42,7 +42,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                                  JourneyRetrieverData.GetTranslation(destination) + "&departureDate=" +
                                  date.ToString("yyyy-MM-dd") + "&totalPassengers=1&concessionCount=0&nusCount=0&otherDisabilityCount=0&wheelchairSeated=0&pcaCount=0&days=1";
                     HttpRequestMessage request = new(HttpMethod.Get, uri);
-                    Task<HttpResponseMessage> responseTask = C.HttpClient.SendRequest(request);
+                    Task<HttpResponseMessage> responseTask = C.SendRequest(request);
                     tasks.Add(responseTask);
                 }
 

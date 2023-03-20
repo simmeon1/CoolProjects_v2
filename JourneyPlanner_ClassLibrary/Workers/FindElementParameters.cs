@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using OpenQA.Selenium;
 
 namespace JourneyPlanner_ClassLibrary.Workers
@@ -17,6 +18,17 @@ namespace JourneyPlanner_ClassLibrary.Workers
             {
                 BySelector = by
             };
+        }
+
+        public string GetDescription()
+        {
+            StringBuilder sb = new();
+            sb.AppendLine(BySelector.ToString());
+            sb.AppendLine($"Index: {Index}");
+            sb.AppendLine($"Has container: {Container != null}");
+            sb.AppendLine($"Has matcher: {Matcher != null}");
+            sb.AppendLine($"Seconds: {Seconds}");
+            return sb.ToString();
         }
     }
 }
