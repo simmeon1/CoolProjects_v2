@@ -27,6 +27,11 @@ public class SpotifyClient
         this.callback = callback;
         this.credentials = credentials;
     }
+    
+    public async Task Initialise()
+    {
+        await SetAccessTokenFromRefreshToken();
+    }
 
     public async Task<string> GetIdOfFirstResultOfSearch(string query)
     {
@@ -101,8 +106,7 @@ public class SpotifyClient
         );
     }
 
-
-    public async Task SetAccessTokenFromRefreshToken()
+    private async Task SetAccessTokenFromRefreshToken()
     {
         HttpRequestMessage request = new(HttpMethod.Post, "https://accounts.spotify.com/api/token");
         request.Headers.TryAddWithoutValidation("Authorization", $"Basic {SpotifyAuthorizationHelper.GetBase64EncodedString(clientId, clientSecret)}");

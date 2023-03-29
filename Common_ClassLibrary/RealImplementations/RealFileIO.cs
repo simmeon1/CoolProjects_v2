@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Common_ClassLibrary
@@ -18,6 +19,11 @@ namespace Common_ClassLibrary
         public FileStream CreateFile(string fileName)
         {
             return File.Create(fileName);
+        }
+
+        public IEnumerable<string> ReadLines(string filePath)
+        {
+            return File.ReadLines(filePath);
         }
 
         public bool DirectoryExists(string path)

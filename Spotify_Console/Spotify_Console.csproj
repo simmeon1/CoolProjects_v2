@@ -11,4 +11,8 @@
       <ProjectReference Include="..\Spotify_ClassLibrary\Spotify_ClassLibrary.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
+    </ItemGroup>
+
 </Project>

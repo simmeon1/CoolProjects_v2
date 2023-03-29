@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Common_ClassLibrary
@@ -15,5 +16,6 @@ namespace Common_ClassLibrary
         void DeleteFolder(string path);
         void Copy(string path, string destFileName, bool overwrite);
         FileStream CreateFile(string fileName);
+        IEnumerable<string> ReadLines(string filePath);
     }
 }

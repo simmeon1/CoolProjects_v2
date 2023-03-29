@@ -5,7 +5,7 @@ namespace Common_ClassLibrary
 {
     public class RealHttpClient : IHttpClient
     {
-        private HttpClient client;
+        private readonly HttpClient client;
 
         public RealHttpClient()
         {
