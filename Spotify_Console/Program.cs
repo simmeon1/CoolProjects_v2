@@ -16,7 +16,7 @@ SpotifyClient client = GetClientFromCredentialFiles(credentialFilePath);
 
 switch (dict["command"])
 {
-    case "ukradiolive-add-radio":
+    case "uk-radio-live-add-radio":
     {
         UkRadioLiveAddRadioUseCase useCase = new(fileIo, logger, delayer, client, GetChromeDriver());
         await useCase.AddRadio(dict["--script-file"], dict["--radio-name"], dict["--max-songs"]);

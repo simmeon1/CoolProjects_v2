@@ -9,7 +9,7 @@ public class SpotifyMergePlaylistsUseCase
         this.client = client;
     }
 
-    public async Task MergePlaylists(string[] playlists, string finalPlaylist)
+    public async Task MergePlaylists(IEnumerable<string> playlists, string finalPlaylist)
     {
         List<string> playlistTracks = new();
         foreach (string playlist in playlists)
