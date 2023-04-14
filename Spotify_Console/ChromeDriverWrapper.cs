@@ -15,7 +15,12 @@ public class ChromeDriverWrapper : IWebDriverWrapper
     {
         driver.Navigate().GoToUrl(url);
     }
-    
+
+    public void Quit()
+    {
+        driver.Quit();
+    }
+
     public object ExecuteAsyncScript(string script, params object[] args)
     {
         return driver.ExecuteAsyncScript(script, args);

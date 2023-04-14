@@ -3,21 +3,21 @@ using Common_ClassLibrary;
 
 namespace Spotify_ClassLibrary;
 
-public class AddRadioUseCase
+public class UkRadioLiveAddRadioUseCase
 {
     private readonly IFileIO fileIo;
     private readonly ILogger logger;
     private readonly IDelayer delayer;
     private readonly SpotifyClient client;
-    private readonly IWebDriverWrapper webDriverWrapper;
+    private readonly IWebDriverWrapper driver;
 
-    public AddRadioUseCase(IFileIO fileIo, ILogger logger, IDelayer delayer, SpotifyClient client, IWebDriverWrapper webDriverWrapper)
+    public UkRadioLiveAddRadioUseCase(IFileIO fileIo, ILogger logger, IDelayer delayer, SpotifyClient client, IWebDriverWrapper driver)
     {
         this.fileIo = fileIo;
         this.logger = logger;
         this.delayer = delayer;
         this.client = client;
-        this.webDriverWrapper = webDriverWrapper;
+        this.driver = driver;
     }
 
     public async Task AddRadio(
@@ -27,10 +27,10 @@ public class AddRadioUseCase
     )
     {
         string script = fileIo.ReadAllText(scriptFilePath);
-        webDriverWrapper.GoToUrl("https://ukradiolive.com/playlists");
+        driver.GoToUrl("https://ukradiolive.com/playlists");
         await delayer.Delay(2000);
         ReadOnlyCollection<object> songs =
-            (ReadOnlyCollection<object>) webDriverWrapper.ExecuteAsyncScript(script, radioName, maxSongs);
+            (ReadOnlyCollection<object>) driver.ExecuteAsyncScript(script, radioName, maxSongs);
 
         await client.Initialise();
         List<string> songIds = new();
@@ -47,5 +47,6 @@ public class AddRadioUseCase
         string playlistId = await client.CreatePlaylist(radioName + "-" + DateTime.Now, userId);
         await client.AddSongsToPlaylist(playlistId, songIds);
         logger.Log("Radio playlist added.");
+        driver.Quit();
     }
 }

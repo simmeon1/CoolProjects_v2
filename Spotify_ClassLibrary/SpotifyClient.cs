@@ -165,7 +165,9 @@ public class SpotifyClient
     private async Task<HttpResponseMessage> ResendRequest(HttpRequestMessage originalRequest)
     {
         string contentStr = await originalRequest.Content.ReadAsStringAsync();
-        Dictionary<string, object>? content = JsonSerializer.Deserialize<Dictionary<string, object>>(contentStr);
+        Dictionary<string, object>? content = contentStr.IsNullOrEmpty() 
+            ? null 
+            : JsonSerializer.Deserialize<Dictionary<string, object>>(contentStr);
         
         HttpRequestMessage clonedRequest = CreateRequestMessage(
             originalRequest.Method,
@@ -190,5 +192,28 @@ public class SpotifyClient
         $"{credentials.TokenType} {credentials.AccessToken}"
         );
         return requestMessage;
+    }
+
+    public async Task<List<string>> GetPlaylistTracks(string playlist)
+    {
+        List<string> result = new();
+        int offset = 0;
+        int limit = 100;
+
+        while (true)
+        {
+            JObject responseJson = await GetJObjectFromRequestResponse(
+                HttpMethod.Get,
+                $"{Root}playlists/{playlist}/tracks?fields=items(track(id))&limit={limit}&offset={offset}"
+            );
+            JToken items = responseJson["items"];
+            if (!items.Any()) return result;
+
+            foreach (JToken item in items)
+            {
+                result.Add(item["track"]["id"].ToString());
+            }
+            offset += limit;
+        }
     }
 }
