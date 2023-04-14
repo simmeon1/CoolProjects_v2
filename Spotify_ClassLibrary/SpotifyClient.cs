@@ -82,6 +82,29 @@ public class SpotifyClient
         }
     }
     
+    public async Task<List<string>> GetPlaylistTracks(string playlist)
+    {
+        List<string> result = new();
+        int offset = 0;
+        int limit = 100;
+
+        while (true)
+        {
+            JObject responseJson = await GetJObjectFromRequestResponse(
+                HttpMethod.Get,
+                $"{Root}playlists/{playlist}/tracks?fields=items(track(id))&limit={limit}&offset={offset}"
+            );
+            JToken items = responseJson["items"];
+            if (!items.Any()) return result;
+
+            foreach (JToken item in items)
+            {
+                result.Add(item["track"]["id"].ToString());
+            }
+            offset += limit;
+        }
+    }
+
     public async Task SetAccessTokenFromAuthorizeCode(string authorizeCode)
     {
         HttpRequestMessage request = new(HttpMethod.Post, "https://accounts.spotify.com/api/token");
@@ -192,28 +215,5 @@ public class SpotifyClient
         $"{credentials.TokenType} {credentials.AccessToken}"
         );
         return requestMessage;
-    }
-
-    public async Task<List<string>> GetPlaylistTracks(string playlist)
-    {
-        List<string> result = new();
-        int offset = 0;
-        int limit = 100;
-
-        while (true)
-        {
-            JObject responseJson = await GetJObjectFromRequestResponse(
-                HttpMethod.Get,
-                $"{Root}playlists/{playlist}/tracks?fields=items(track(id))&limit={limit}&offset={offset}"
-            );
-            JToken items = responseJson["items"];
-            if (!items.Any()) return result;
-
-            foreach (JToken item in items)
-            {
-                result.Add(item["track"]["id"].ToString());
-            }
-            offset += limit;
-        }
     }
 }
