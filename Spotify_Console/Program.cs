@@ -5,33 +5,38 @@ using OpenQA.Selenium.Chrome;
 using Spotify_ClassLibrary;
 using Spotify_Console;
 
-
 IFileIO fileIo = new RealFileIO();
 IDelayer delayer = new RealDelayer();
 IHttpClient http = new RealHttpClient();
 ILogger logger = new Logger_Console();
-Dictionary<string, string> dict = GetCommandAndValuesDictionary(args);
-string credentialFilePath = dict["--credentials-file"];
-SpotifyClient client = GetClientFromCredentialFiles(credentialFilePath);
-
-switch (dict["command"])
+try
 {
-    case "uk-radio-live-add-radio":
+    Dictionary<string, string> dict = GetCommandAndValuesDictionary(args);
+    string credentialFilePath = dict["--credentials-file"];
+    SpotifyClient client = GetClientFromCredentialFiles(credentialFilePath);
+
+    switch (dict["command"])
     {
-        UkRadioLiveAddRadioUseCase useCase = new(fileIo, logger, delayer, client, GetChromeDriver());
-        await useCase.AddRadio(dict["--script-file"], dict["--radio-name"], dict["--max-songs"]);
-        break;
-    }
-    case "spotify-merge-playlists":
-    {
-        SpotifyMergePlaylistsUseCase useCase = new(client);
-        string[] playlists = dict["--playlists"].Split(",", StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-        string finalPlaylist = dict["--final-playlist"];
-        await useCase.MergePlaylists(playlists, finalPlaylist);
-        break;
+        case "uk-radio-live-add-radio":
+        {
+            UkRadioLiveAddRadioUseCase useCase = new(fileIo, logger, delayer, client, GetChromeDriver());
+            await useCase.AddRadio(dict["--script-file"], dict["--radio-name"], dict["--max-songs"]);
+            break;
+        }
+        case "spotify-merge-playlists":
+        {
+            SpotifyMergePlaylistsUseCase useCase = new(client);
+            string[] playlists = dict["--playlists"].Split(",", StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+            string finalPlaylist = dict["--final-playlist"];
+            await useCase.MergePlaylists(playlists, finalPlaylist);
+            break;
+        }
     }
 }
-
+catch (Exception ex)
+{
+    logger.Log(ex.ToString());
+}
 Console.WriteLine("Press any key to finish...");
 Console.ReadKey();
 

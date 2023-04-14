@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 using System.Web;
 using Common_ClassLibrary;
@@ -66,6 +65,7 @@ public class SpotifyClient
 
     public async Task AddSongsToPlaylist(string playlistId, List<string> songIds)
     {
+        songIds = songIds.Distinct().Where(s => !s.IsNullOrEmpty()).ToList();
         List<string> partOfSongIds = new();
         while (songIds.Any())
         {
@@ -166,15 +166,14 @@ public class SpotifyClient
     private async Task<string> SendRequest(HttpRequestMessage request)
     {
         HttpResponseMessage response = await http.SendRequest(request);
-        HttpStatusCode responseStatusCode = response.StatusCode;
-        
-        if (responseStatusCode == HttpStatusCode.Unauthorized)
+
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
         {
             await SetAccessTokenFromRefreshToken();
             response = await ResendRequest(request);
         }
         
-        if (responseStatusCode == HttpStatusCode.TooManyRequests)
+        if (response.StatusCode == HttpStatusCode.TooManyRequests)
         {
             await delayer.Delay(response.Headers.RetryAfter.Delta.Value);
             response = await ResendRequest(request);

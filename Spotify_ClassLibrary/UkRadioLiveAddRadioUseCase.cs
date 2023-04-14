@@ -31,6 +31,7 @@ public class UkRadioLiveAddRadioUseCase
         await delayer.Delay(2000);
         ReadOnlyCollection<object> songs =
             (ReadOnlyCollection<object>) driver.ExecuteAsyncScript(script, radioName, maxSongs);
+        driver.Quit();
 
         await client.Initialise();
         List<string> songIds = new();
@@ -42,11 +43,10 @@ public class UkRadioLiveAddRadioUseCase
             songIds.Add(await client.GetIdOfFirstResultOfSearch(search));
             logger.Log($"Retrieved {i + 1} out of {songs.Count} song ids ({search})");
         }
-
+        
         string userId = await client.GetUserId();
         string playlistId = await client.CreatePlaylist(radioName + "-" + DateTime.Now, userId);
         await client.AddSongsToPlaylist(playlistId, songIds);
         logger.Log("Radio playlist added.");
-        driver.Quit();
     }
 }
