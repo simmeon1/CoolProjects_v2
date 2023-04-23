@@ -4,6 +4,7 @@
     {
         double GetElapsedTotalMilliseconds();
         void Reset();
+        void Restart();
         void Start();
         void Stop();
     }

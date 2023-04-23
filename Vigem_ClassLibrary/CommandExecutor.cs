@@ -17,16 +17,27 @@ namespace Vigem_ClassLibrary
             IEnumerable<double> orderedTimestamps = tsAndCmds.Keys.OrderBy(t => t);
             double firstStateTsReduction = orderedTimestamps.First() - firstStateTs;
 
-            stopwatch.Reset();
-            stopwatch.Start();
+            Dictionary<double, IEnumerable<IControllerCommand>> updatedTsAndCmds = new();
+            foreach ((double ts, IEnumerable<IControllerCommand> commands) in tsAndCmds)
+            {
+                updatedTsAndCmds.Add(ts - firstStateTsReduction, commands);
+            }
+            orderedTimestamps = updatedTsAndCmds.Keys.OrderBy(t => t);
+            stopwatch.Restart();
+
             foreach (double ts in orderedTimestamps)
             {
-                while (stopwatch.GetElapsedTotalMilliseconds() - (ts - firstStateTsReduction) < 0) {
+                IEnumerable<IControllerCommand> commands = updatedTsAndCmds[ts];
+                while (stopwatch.GetElapsedTotalMilliseconds() < ts) {
                     //continue until it's time
                 }
 
-                IEnumerable<IControllerCommand> commands = tsAndCmds[ts];
+                // double elapsedTotalMilliseconds = stopwatch.GetElapsedTotalMilliseconds();
+                // Console.WriteLine($"Commands: {commands.Count()} {elapsedTotalMilliseconds} - {ts} = {elapsedTotalMilliseconds - ts}");
+
+                // double elapsedTotalMilliseconds = stopwatch.GetElapsedTotalMilliseconds();
                 foreach (IControllerCommand command in commands) command.ExecuteCommand(controller);
+                // Console.WriteLine($"Commands exec time: {stopwatch.GetElapsedTotalMilliseconds() - elapsedTotalMilliseconds}");
             }
             stopwatch.Stop();
         }

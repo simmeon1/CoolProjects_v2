@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net7.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Vigem_ClassLibrary\Vigem_ClassLibrary.csproj" />
+      <ProjectReference Include="..\Vigem_Controllers\VigemControllers_ClassLibrary.csproj" />
+    </ItemGroup>
+
+</Project>

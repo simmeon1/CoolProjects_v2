@@ -23,6 +23,11 @@ namespace Vigem_ClassLibrary.SystemImplementations
             stopwatch.Reset();
         }
 
+        public void Restart()
+        {
+            stopwatch.Restart();
+        }
+
         public void Start()
         {
             stopwatch.Start();
