@@ -1,8 +1,11 @@
-﻿using Nefarius.ViGEm.Client.Targets;
+﻿using System.Drawing;
+using System.Text.RegularExpressions;
+using Nefarius.ViGEm.Client.Targets;
 using Vigem_ClassLibrary;
 using Vigem_ClassLibrary.Commands;
 using Vigem_ClassLibrary.SystemImplementations;
 using VigemControllers_ClassLibrary;
+using WindowsPixelReader;
 
 namespace Vigem_Console
 {
@@ -10,27 +13,54 @@ namespace Vigem_Console
     {
         public static void Main(string[] args)
         {
-            Dictionary<string, string> dict = GetCommandAndValuesDictionary(args);
-            switch (dict["command"])
+            Dictionary<string, string> dict = GetArgs(args);
+            if (dict["command"] == "dark-souls-run")
             {
-                case "make-run":
+                string runFile = dict["run-file"];
+                string run = File.ReadAllText(runFile);
+                bool runTypeIsPixelRead = dict["pixel-read"] == "true";
+                
+                Dualshock4Controller cds4 = GetConnectedDs4Controller();
+                RealStopwatch executorStopWatch = new();
+                CommandExecutor executor = new(executorStopWatch, cds4);
+                ChromeGamepadStateParser parser = new();
+                PixelReader pixelReader = new();
+                RealStopwatch localStopwatch = new();
+                
+                IDictionary<double, IEnumerable<IControllerCommand>> states = parser.GetStates(run);
+                localStopwatch.Restart();
+                while (true)
                 {
-                    string runFile = dict["--run-file"];
-                    string run = File.ReadAllText(runFile);
-                    double repeatAfter = double.Parse(dict["--repeat-after"]);
-                    Dualshock4Controller cds4 = GetConnectedDs4Controller();
-                    RealStopwatch executorStopWatch = new();
-                    CommandExecutor executor = new(executorStopWatch, cds4);
-                    ChromeGamepadStateParser parser = new();
-                    IDictionary<double, IEnumerable<IControllerCommand>> states = parser.GetStates(run);
-                    RealStopwatch localStopwatch = new();
-                    localStopwatch.Restart();
-                    while (true)
+                    Point point = new(0, 0);
+                    if (runTypeIsPixelRead)
                     {
-                        executor.ExecuteCommands(states);
-                        localStopwatch.Wait(repeatAfter);
+                        point = new Point( int.Parse(dict["X"]), int.Parse(dict["Y"]));
+                        localStopwatch.WaitUntilTrue(() => pixelReader.GetPixelAtLocation(point).PixelColor.GetBrightness() != 0);
+                        localStopwatch.Wait(2000);
                     }
-                    break;
+                    
+                    executor.ExecuteCommands(states);
+
+                    if (runTypeIsPixelRead)
+                    {
+                        localStopwatch.WaitUntilTrue(() => pixelReader.GetPixelAtLocation(point).PixelColor.GetBrightness() == 0);
+                    }
+                    else
+                    {
+                        localStopwatch.Wait(int.Parse(dict["repeat-delay"]));
+                    }
+
+                }
+            }
+            else if (dict["command"] == "log-cursor")
+            {
+                PixelReader pr = new();
+                RealStopwatch localStopwatch = new();
+                localStopwatch.Restart();
+                while (true)
+                {
+                    Console.WriteLine(pr.GetPixelAtCursor());
+                    localStopwatch.Wait(1000);
                 }
             }
         }
@@ -44,23 +74,16 @@ namespace Vigem_Console
             return cds4;
         }
 
-        private static Dictionary<string, string> GetCommandAndValuesDictionary(string[] strings)
+        private static Dictionary<string, string> GetArgs(string[] args)
         {
-            Dictionary<string, string> commandsAndValues = new();
-            for (int i = 0; i < strings.Length; i++)
+            Dictionary<string, string> result = new();
+            foreach (string arg in args)
             {
-                string arg = strings[i];
-                if (i == 0)
-                {
-                    commandsAndValues.Add("command", arg);
-                } 
-                else if (arg.StartsWith("--"))
-                {
-                    commandsAndValues.Add(arg, strings[i + 1]);
-                }
+                MatchCollection matches = Regex.Matches(arg, "--(.*?)=(.*)");
+                Match match = matches[0];
+                result.Add(match.Groups[1].ToString(), match.Groups[2].ToString());
             }
-            return commandsAndValues;
+            return result;
         }
-
     }
 }

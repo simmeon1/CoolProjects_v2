@@ -25,14 +25,17 @@ namespace Vigem_ClassLibrary.SystemImplementations
 
         public void WaitUntilTimestampReached(double ts)
         {
-            while (GetElapsedTotalMilliseconds() < ts) {
-                //continue until it's time
-            }
+            WaitUntilTrue(() => GetElapsedTotalMilliseconds() >= ts);
         }
         
         public void Wait(double milliseconds)
         {
             WaitUntilTimestampReached(GetElapsedTotalMilliseconds() + milliseconds);
+        }
+        
+        public void WaitUntilTrue(Func<bool> action)
+        {
+            while (!action.Invoke()) {}
         }
         
         private double GetElapsedTotalMilliseconds()

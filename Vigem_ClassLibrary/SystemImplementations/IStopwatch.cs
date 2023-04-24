@@ -5,5 +5,6 @@
         void Restart();
         void Stop();
         void WaitUntilTimestampReached(double ts);
+        void WaitUntilTrue(Func<bool> action);
     }
 }

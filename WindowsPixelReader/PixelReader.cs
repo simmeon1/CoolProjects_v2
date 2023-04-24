@@ -8,7 +8,16 @@ namespace WindowsPixelReader
     public class PixelReader
     {
         private readonly Bitmap screenPixel = new(1, 1, PixelFormat.Format32bppArgb);
-
+        public Pixel GetPixelAtCursor()
+        {
+            return GetPixelAtLocation(GetCursorLocation());
+        }
+        
+        public Pixel GetPixelAtLocation(int x, int y)
+        {
+            return GetPixelAtLocation(new Point(x, y));
+        }
+        
         [DllImport("gdi32.dll", CharSet = CharSet.Auto, SetLastError = true, ExactSpelling = true)]
         private static extern int BitBlt(
             IntPtr hDc,
@@ -21,11 +30,8 @@ namespace WindowsPixelReader
             int ySrc,
             int dwRop
         );
-
-        [DllImport("user32.dll")]
-        private static extern bool GetCursorPos(ref Point lpPoint);
-
-        public Color GetColorAtLocation(Point location)
+        
+        public Pixel GetPixelAtLocation(Point location)
         {
             using Graphics gdest = Graphics.FromImage(screenPixel);
             using Graphics gsrc = Graphics.FromHwnd(IntPtr.Zero);
@@ -34,19 +40,17 @@ namespace WindowsPixelReader
             int retval = BitBlt(hDc, 0, 0, 1, 1, hSrcDc, location.X, location.Y, (int) CopyPixelOperation.SourceCopy);
             gdest.ReleaseHdc();
             gsrc.ReleaseHdc();
-            return screenPixel.GetPixel(0, 0);
+            return new Pixel(location.X, location.Y, screenPixel.GetPixel(0, 0));
         }
 
-        public Point GetCursorLocation()
+        [DllImport("user32.dll")]
+        private static extern bool GetCursorPos(ref Point lpPoint);
+        
+        private static Point GetCursorLocation()
         {
             Point cursor = new();
             GetCursorPos(ref cursor);
             return cursor;
-        }
-
-        public Color GetColorAtCursor()
-        {
-            return GetColorAtLocation(GetCursorLocation());
         }
     }
 }
