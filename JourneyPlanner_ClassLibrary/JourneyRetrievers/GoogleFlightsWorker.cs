@@ -274,6 +274,13 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             c.FindElementAndClickIt(
                 GetFindElementParametersWithCssSelector("[aria-label^='Done. Search for one-way flights']")
             );
+
+            if (!stopsSet)
+            {
+                c.FindElementAndClickIt(
+                    GetFindElementParametersWithCssSelector("[aria-label='Search']")
+                );
+            }
             WaitForProgressBarToBeGone();
         }
 
