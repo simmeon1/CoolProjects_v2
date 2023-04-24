@@ -2,10 +2,8 @@
 {
     public interface IStopwatch
     {
-        double GetElapsedTotalMilliseconds();
-        void Reset();
         void Restart();
-        void Start();
         void Stop();
+        void WaitUntilTimestampReached(double ts);
     }
 }

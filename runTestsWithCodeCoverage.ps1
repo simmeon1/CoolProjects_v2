@@ -1,5 +1,13 @@
-﻿#0 - all, 1 - unit, 2 - integration
-param([String]$testProjectPath, [String]$testType=0, [String]$runMutation=0)
+﻿#For use with Rider Powershell plugin
+#0 - all, 1 - unit, 2 - integration
+param([String]$testType=0, [String]$runMutation=0)
+
+# Get project folder
+$testProjectPath = Get-Location
+$testProjectPath -match '.*\w+_Tests'
+$testProjectPath = $Matches[0]
+Set-Location -Path $testProjectPath
+
 if ($testType -eq 0) {
     dotnet test --collect:"XPlat Code Coverage"
 } elseif ($testType -eq 1) {
@@ -10,7 +18,7 @@ if ($testType -eq 0) {
 # $testResultsPath = $PSScriptRoot + "\TestResults"
 $testResultsPath = $testProjectPath + "\TestResults"
 $latestResults = gci $testResultsPath | ? { $_.PSIsContainer } | sort CreationTime -desc | select -f 1
-$reportXml = "$($testResultsPath)\$($latestResults)\coverage.cobertura.xml"
+$reportXml = "$($latestResults)\coverage.cobertura.xml"
 # $path = $env:USERPROFILE + "\.nuget\packages\reportgenerator\4.8.12\tools\net5.0\ReportGenerator.dll" 
 # $targetDir = $PSScriptRoot + "\CodeCoverageReport"
 $targetDir = $testResultsPath + "\CodeCoverageReport"
@@ -21,7 +29,7 @@ $command2 = "-targetdir:" + $targetDir
 reportgenerator $command1 $command2 -reporttypes:Html_Dark
 # Remove-Item $testResultsPath -Recurse
 $indexFile = $targetDir + "\index.html" 
-Invoke-Item $indexFile
+Write-Host $indexFile
 
 if ($runMutation -eq 1) {
     $targetDir = $testResultsPath + "\StrykerOutput"

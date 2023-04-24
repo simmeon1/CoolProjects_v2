@@ -10,32 +10,34 @@ namespace Vigem_ClassLibrary.SystemImplementations
 
         public RealStopwatch()
         {
-            stopwatch = new();
+            stopwatch = new Stopwatch();
         }
-
-        public double GetElapsedTotalMilliseconds()
-        {
-            return stopwatch.Elapsed.TotalMilliseconds;
-        }
-
-        public void Reset()
-        {
-            stopwatch.Reset();
-        }
-
+        
         public void Restart()
         {
             stopwatch.Restart();
         }
-
-        public void Start()
-        {
-            stopwatch.Start();
-        }
-
+        
         public void Stop()
         {
             stopwatch.Stop();
+        }
+
+        public void WaitUntilTimestampReached(double ts)
+        {
+            while (GetElapsedTotalMilliseconds() < ts) {
+                //continue until it's time
+            }
+        }
+        
+        public void Wait(double milliseconds)
+        {
+            WaitUntilTimestampReached(GetElapsedTotalMilliseconds() + milliseconds);
+        }
+        
+        private double GetElapsedTotalMilliseconds()
+        {
+            return stopwatch.Elapsed.TotalMilliseconds;
         }
     }
 }

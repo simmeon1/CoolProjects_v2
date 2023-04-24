@@ -7,15 +7,18 @@ namespace Vigem_ClassLibrary
     public class CommandExecutor
     {
         private readonly IStopwatch stopwatch;
-        public CommandExecutor(IStopwatch stopwatch)
+        private readonly IController controller;
+
+        public CommandExecutor(IStopwatch stopwatch, IController controller)
         {
             this.stopwatch = stopwatch;
+            this.controller = controller;
         }
 
-        public void ExecuteCommands(IDictionary<double, IEnumerable<IControllerCommand>> tsAndCmds, IController controller, double firstStateTs)
+        public void ExecuteCommands(IDictionary<double, IEnumerable<IControllerCommand>> tsAndCmds)
         {
             IEnumerable<double> orderedTimestamps = tsAndCmds.Keys.OrderBy(t => t);
-            double firstStateTsReduction = orderedTimestamps.First() - firstStateTs;
+            double firstStateTsReduction = orderedTimestamps.First();
 
             Dictionary<double, IEnumerable<IControllerCommand>> updatedTsAndCmds = new();
             foreach ((double ts, IEnumerable<IControllerCommand> commands) in tsAndCmds)
@@ -23,21 +26,13 @@ namespace Vigem_ClassLibrary
                 updatedTsAndCmds.Add(ts - firstStateTsReduction, commands);
             }
             orderedTimestamps = updatedTsAndCmds.Keys.OrderBy(t => t);
-            stopwatch.Restart();
 
+            stopwatch.Restart();
             foreach (double ts in orderedTimestamps)
             {
                 IEnumerable<IControllerCommand> commands = updatedTsAndCmds[ts];
-                while (stopwatch.GetElapsedTotalMilliseconds() < ts) {
-                    //continue until it's time
-                }
-
-                // double elapsedTotalMilliseconds = stopwatch.GetElapsedTotalMilliseconds();
-                // Console.WriteLine($"Commands: {commands.Count()} {elapsedTotalMilliseconds} - {ts} = {elapsedTotalMilliseconds - ts}");
-
-                // double elapsedTotalMilliseconds = stopwatch.GetElapsedTotalMilliseconds();
+                stopwatch.WaitUntilTimestampReached(ts);
                 foreach (IControllerCommand command in commands) command.ExecuteCommand(controller);
-                // Console.WriteLine($"Commands exec time: {stopwatch.GetElapsedTotalMilliseconds() - elapsedTotalMilliseconds}");
             }
             stopwatch.Stop();
         }
