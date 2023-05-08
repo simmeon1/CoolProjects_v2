@@ -38,7 +38,7 @@ namespace Vigem_ClassLibrary.SystemImplementations
             while (!action.Invoke()) {}
         }
         
-        private double GetElapsedTotalMilliseconds()
+        public double GetElapsedTotalMilliseconds()
         {
             return stopwatch.Elapsed.TotalMilliseconds;
         }

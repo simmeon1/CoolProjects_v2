@@ -4,13 +4,13 @@ using Vigem_Common.Mappings;
 
 namespace Vigem_ClassLibrary
 {
-    public class ControllerUser
+    public class DelayerControllerUser
     {
         private readonly IController controller;
         private readonly IDelayer delayer;
         private readonly int pressLength;
 
-        public ControllerUser(IController controller, IDelayer delayer, int pressLength)
+        public DelayerControllerUser(IController controller, IDelayer delayer, int pressLength)
         {
             this.controller = controller;
             this.delayer = delayer;

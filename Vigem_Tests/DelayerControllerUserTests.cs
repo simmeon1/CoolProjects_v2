@@ -8,11 +8,11 @@ using Vigem_Common.Mappings;
 namespace Vigem_Tests
 {
     [TestClass]
-    public class ControllerUserTests
+    public class DelayerControllerUserTests
     {
         private Mock<IController> controller;
         private Mock<IDelayer> delayer;
-        private ControllerUser user;
+        private DelayerControllerUser user;
         private const int defaultPressTime = 200;
 
         [TestInitialize]

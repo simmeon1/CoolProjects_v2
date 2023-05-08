@@ -17,7 +17,7 @@ namespace WindowsPixelReader
 
         public override string ToString()
         {
-            return $"X - {X}, Y - {Y}, ARGB - {PixelColor.ToString()}, Brightness - {PixelColor.GetBrightness()}";
+            return $"X - {X}, Y - {Y}, ARGB - {PixelColor.ToString()}, Brightness - {PixelColor.GetBrightness()}, ToArgb - {PixelColor.ToArgb()}";
         }
     }
 }

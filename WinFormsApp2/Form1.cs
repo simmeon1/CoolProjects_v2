@@ -34,7 +34,7 @@ public partial class Form1 : Form
     private const string RightStickUp = "RightStickUp";
     private const string RightStickDown = "RightStickDown";
     
-    private readonly ControllerUser userDs4;
+    private readonly DelayerControllerUser userDs4;
     private readonly Stopwatch stopwatch = new();
     private readonly Dictionary<string, Keys> commandsToKeys;
     private readonly Dictionary<Keys, string> keysToCommands;
@@ -52,7 +52,7 @@ public partial class Form1 : Form
         IDualShock4Controller createdDs4Controller = creator.GetDualShock4Controller();
         Dualshock4Controller cds4 = new(createdDs4Controller);
         Delayer delayer = new();
-        userDs4 = new ControllerUser(cds4, delayer, 500);
+        userDs4 = new DelayerControllerUser(cds4, delayer, 500);
         cds4.Connect();
         stopwatch.Start();
         
