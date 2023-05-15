@@ -2,27 +2,39 @@ namespace ImageViewer;
 
 public partial class Form1 : Form
 {
-    private readonly string directory = "C:\\D\\Apps\\Vigem\\Recordings\\2023-05-15--14-27-58";
-    private int currentIndex = 3114;
-    private readonly int maxIndex;
+    private string directory;
+    private int currentIndex;
+    private int maxIndex;
     private readonly Dictionary<int, string> mappedData = new();
     
     public Form1()
     {
         InitializeComponent();
+        PopulateDialog();
+    }
 
+    private void PopulateDialog()
+    {
+        OpenFileDialog dialog = new();
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+
+        string imageFile = dialog.FileName;
+        directory = Path.GetDirectoryName(imageFile);
+        currentIndex = int.Parse(Path.GetFileNameWithoutExtension(imageFile));
+        
         List<string> data = File.ReadAllText($"{directory}\\data.txt").Trim().Split(
             Environment.NewLine,
             StringSplitOptions.RemoveEmptyEntries
         ).ToList();
         maxIndex = data.Count;
 
+        mappedData.Clear();
         foreach (string s in data)
         {
             int id = int.Parse(GetValueFromData(s, "id"));
             mappedData.Add(id, s);
         }
-        
+
         string rowData = mappedData[currentIndex];
         int x = int.Parse(GetValueFromData(rowData, "x"));
         int y = int.Parse(GetValueFromData(rowData, "y"));
@@ -57,6 +69,7 @@ public partial class Form1 : Form
         
         if (e.KeyCode == Keys.Right) LoadImageFromIndex(currentIndex + 1);
         if (e.KeyCode == Keys.Left) LoadImageFromIndex(currentIndex - 1);
+        if (e.KeyCode == Keys.O) PopulateDialog();
     }
     
     private void LoadImageFromIndex(int index)
