@@ -2,8 +2,8 @@ namespace ImageViewer;
 
 public partial class Form1 : Form
 {
-    private readonly string directory = "C:\\D\\Apps\\Vigem\\Recordings\\2023-05-15--11-13-09";
-    private int currentIndex;
+    private readonly string directory = "C:\\D\\Apps\\Vigem\\Recordings\\2023-05-15--13-29-10";
+    private int currentIndex = 1;
     private readonly int maxIndex;
     private readonly Dictionary<int, string> mappedData = new();
     
@@ -23,14 +23,13 @@ public partial class Form1 : Form
             mappedData.Add(id, s);
         }
         
-        int index = 1;
-        string rowData = mappedData[index];
+        string rowData = mappedData[currentIndex];
         int x = int.Parse(GetValueFromData(rowData, "x"));
         int y = int.Parse(GetValueFromData(rowData, "y"));
         StartPosition = FormStartPosition.Manual;
         Location = new Point(x, y);
 
-        LoadImageFromIndex(index);
+        LoadImageFromIndex(currentIndex);
         Image image = pictureBox1.Image;
         ClientSize = new Size(image.Width, image.Height);
     }
@@ -63,8 +62,10 @@ public partial class Form1 : Form
     private void LoadImageFromIndex(int index)
     {
         if (index <= 0 || index > maxIndex) return;
-        
-        Image image = Image.FromFile($"{directory}\\{index}.jpg");
+
+        string[] files =  Directory.GetFiles(directory);
+        string file = files.First(f => Path.GetFileNameWithoutExtension(f) == index.ToString());
+        Image image = Image.FromFile(file);
         pictureBox1.Image = image;
         currentIndex = index;
     }

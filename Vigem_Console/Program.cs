@@ -16,27 +16,13 @@ namespace Vigem_Console
         public static void Main(string[] args)
         {
             Dictionary<string, string> dict = GetArgs(args);
-            if (dict["command"] == "dark-souls-run")
-            {
-                doDarkSoulsRun(dict);
-            }
-            else if (dict["command"] == "ffix-jump-rope")
-            {
-                doFf9JumpRope(dict);
-            }
-            else if (dict["command"] == "log-cursor")
-            {
-                doLogCursor(dict);
-            }
-
-            if (dict["command"] == "record")
-            {
-                doRecord(dict);
-            }
-            else if (dict["command"] == "ffvi-auto-battle")
-            {
-                doFf6AutoBattle();
-            }
+            string command = dict["command"];
+            if (command == "dark-souls-run") doDarkSoulsRun(dict);
+            else if (command == "ffix-jump-rope") doFf9JumpRope(dict);
+            else if (command == "log-cursor") doLogCursor(dict);
+            else if (command == "record") doRecord(dict);
+            else if (command == "ffvi-auto-battle") doFf6AutoBattle();
+            else if (command == "log-screen") doLogScreen(dict);
         }
 
         private static void doFf6AutoBattle()
@@ -70,6 +56,35 @@ namespace Vigem_Console
                         ? pr.GetPixelAtLocation(int.Parse(dict["X"]), int.Parse(dict["Y"]))
                         : pr.GetPixelAtCursor()
                 );
+
+                // Console.WriteLine(pr.GetPixelAtLocation(3307, 3327));
+                // Console.WriteLine(pr.GetPixelAtLocation1(3307, 3327));
+                localStopwatch.Wait(int.Parse(dict["speed"]));
+            }
+        }
+
+        private static void doLogScreen(Dictionary<string, string> dict)
+        {
+            // int x1 = 3307;
+            // int x2 = 3327;
+            // int y1 = 506;
+            // int y2 = 526;
+            int x1 = int.Parse(dict["X1"]);
+            int x2 = int.Parse(dict["X2"]);
+            int y1 = int.Parse(dict["Y1"]);
+            int y2 = int.Parse(dict["Y2"]);
+            
+            int width = x2 - x1;
+            int height = y2 - y1;
+            
+            PixelReader pr = new();
+            RealStopwatch localStopwatch = new();
+            localStopwatch.Restart();
+            while (true)
+            {
+                Color c = pr.GetScreenAverageColor(x1, y1, width, height);
+                Console.WriteLine(new Pixel(x1, y1, c));
+                // pr.SaveScreen(x1, y1, width, height, "C:\\D\\test.jpg");
                 localStopwatch.Wait(int.Parse(dict["speed"]));
             }
         }
@@ -102,8 +117,8 @@ namespace Vigem_Console
                 int rectY = rect.Y;
                 int rectWidth = rect.Width - rectX;
                 int rectHeight = rect.Height - rectY;
-                string fileName = $"{directory}\\{counter}.jpg";
-                pr.SaveWindowRect(rectX, rectY, rectWidth, rectHeight, fileName);
+                string fileName = $"{directory}\\{counter}.png";
+                pr.SaveScreen(rectX, rectY, rectWidth, rectHeight, fileName);
                 File.AppendAllText(
                     dataFilePath,
                     $"id={counter};x={rectX};y={rectY};width={rectWidth};height={rectHeight};ts={localStopwatch.GetElapsedTotalMilliseconds()}{Environment.NewLine}"
@@ -149,7 +164,7 @@ namespace Vigem_Console
                 localStopwatch.WaitUntilTrue(
                     () =>
                     {
-                        b = pixelReader.GetPixelAtLocation(p).PixelColor.B;
+                        b = pixelReader.GetPixelAtLocation(p.X, p.Y).PixelColor.B;
                         // Console.WriteLine(counter + "+" + b);
                         return b == speechBubble;
                     }
@@ -167,7 +182,7 @@ namespace Vigem_Console
                 localStopwatch.WaitUntilTrue(
                     () =>
                     {
-                        b = pixelReader.GetPixelAtLocation(p).PixelColor.B;
+                        b = pixelReader.GetPixelAtLocation(p.X, p.Y).PixelColor.B;
                         // Console.WriteLine(counter + "+" + b);
                         return b != speechBubble;
                     }
@@ -197,7 +212,7 @@ namespace Vigem_Console
                 {
                     point = new Point(int.Parse(dict["X"]), int.Parse(dict["Y"]));
                     localStopwatch.WaitUntilTrue(
-                        () => pixelReader.GetPixelAtLocation(point).PixelColor.GetBrightness() != 0
+                        () => pixelReader.GetPixelAtLocation(point.X, point.Y).PixelColor.GetBrightness() != 0
                     );
                     localStopwatch.Wait(2000);
                 }
@@ -207,7 +222,7 @@ namespace Vigem_Console
                 if (runTypeIsPixelRead)
                 {
                     localStopwatch.WaitUntilTrue(
-                        () => pixelReader.GetPixelAtLocation(point).PixelColor.GetBrightness() == 0
+                        () => pixelReader.GetPixelAtLocation(point.X, point.Y).PixelColor.GetBrightness() == 0
                     );
                 }
                 else
