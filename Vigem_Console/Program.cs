@@ -73,10 +73,10 @@ namespace Vigem_Console
             int x2 = int.Parse(dict["X2"]);
             int y1 = int.Parse(dict["Y1"]);
             int y2 = int.Parse(dict["Y2"]);
-            
+
             int width = x2 - x1;
             int height = y2 - y1;
-            
+
             PixelReader pr = new();
             RealStopwatch localStopwatch = new();
             localStopwatch.Restart();
@@ -94,8 +94,10 @@ namespace Vigem_Console
             string processName = dict["processName"];
             int countParam = int.Parse(dict["count"]);
             double durationParam = double.Parse(dict["duration"]);
-            Console.WriteLine($"ProcessName param - {processName}, count param - {countParam}, duration param - {durationParam}");
-            
+            Console.WriteLine(
+                $"ProcessName param - {processName}, count param - {countParam}, duration param - {durationParam}"
+            );
+
             PixelReader pr = new();
             Process[] processes = Process.GetProcessesByName(processName);
             Process process = processes.First();
@@ -106,7 +108,6 @@ namespace Vigem_Console
             string directory = $"C:\\D\\Apps\\Vigem\\Recordings\\{DateTime.Now:yyyy-MM-dd--HH-mm-ss}";
             Directory.CreateDirectory(directory);
             string dataFilePath = $"{directory}\\data.txt";
-            File.WriteAllText(dataFilePath, "");
 
             int counter = 1;
             RealStopwatch localStopwatch = new();
@@ -124,6 +125,12 @@ namespace Vigem_Console
                     $"id={counter};x={rectX};y={rectY};width={rectWidth};height={rectHeight};ts={localStopwatch.GetElapsedTotalMilliseconds()}{Environment.NewLine}"
                 );
 
+                // if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.C)
+                // {
+                //     
+                //     File.WriteAllText(dataFilePath, "");
+                // }
+
                 if (
                     (countParam != 0 && counter >= countParam)
                     || (durationParam != 0 && localStopwatch.GetElapsedTotalMilliseconds() >= durationParam)
@@ -131,8 +138,10 @@ namespace Vigem_Console
                 {
                     break;
                 }
+
                 counter++;
             }
+
             Console.WriteLine("Done");
         }
 
@@ -146,7 +155,8 @@ namespace Vigem_Console
             DelayerControllerUser user = new(cds4, null, 0);
             PixelReader pixelReader = new();
             RealStopwatch localStopwatch = new();
-            Point p = new(x, y);
+            // Point p = new(x, y);
+            Func<int> getB = () => pixelReader.GetPixelAtLocation(x, y).PixelColor.B;
             localStopwatch.Restart();
             localStopwatch.Wait(1000);
             int counter = 0;
@@ -164,8 +174,8 @@ namespace Vigem_Console
                 localStopwatch.WaitUntilTrue(
                     () =>
                     {
-                        b = pixelReader.GetPixelAtLocation(p.X, p.Y).PixelColor.B;
-                        // Console.WriteLine(counter + "+" + b);
+                        b = getB.Invoke();
+                        Console.WriteLine(counter + "+" + b);
                         return b == speechBubble;
                     }
                 );
@@ -182,8 +192,8 @@ namespace Vigem_Console
                 localStopwatch.WaitUntilTrue(
                     () =>
                     {
-                        b = pixelReader.GetPixelAtLocation(p.X, p.Y).PixelColor.B;
-                        // Console.WriteLine(counter + "+" + b);
+                        b = getB.Invoke();
+                        Console.WriteLine(counter + "+" + b);
                         return b != speechBubble;
                     }
                 );

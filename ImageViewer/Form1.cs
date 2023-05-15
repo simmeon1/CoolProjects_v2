@@ -2,8 +2,8 @@ namespace ImageViewer;
 
 public partial class Form1 : Form
 {
-    private readonly string directory = "C:\\D\\Apps\\Vigem\\Recordings\\2023-05-15--13-29-10";
-    private int currentIndex = 1;
+    private readonly string directory = "C:\\D\\Apps\\Vigem\\Recordings\\2023-05-15--14-27-58";
+    private int currentIndex = 3114;
     private readonly int maxIndex;
     private readonly Dictionary<int, string> mappedData = new();
     
