@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics;
+using System.Drawing;
 using System.Text.RegularExpressions;
 using Nefarius.ViGEm.Client.Targets;
 using Vigem_ClassLibrary;
@@ -27,6 +28,11 @@ namespace Vigem_Console
             {
                 doLogCursor(dict);
             }
+
+            if (dict["command"] == "record")
+            {
+                doRecord(dict);
+            }
             else if (dict["command"] == "ffvi-auto-battle")
             {
                 doFf6AutoBattle();
@@ -42,14 +48,15 @@ namespace Vigem_Console
             DPadMappings lastPressedDpad = DPadMappings.Left;
             while (true)
             {
-                DPadMappings dpadToPress = lastPressedDpad == DPadMappings.Left ? DPadMappings.Right : DPadMappings.Left;
+                DPadMappings dpadToPress =
+                    lastPressedDpad == DPadMappings.Left ? DPadMappings.Right : DPadMappings.Left;
                 user.PressDPad(dpadToPress);
                 lastPressedDpad = dpadToPress;
                 //Uncomment to walk in same two spaces. Leave to walk from one wall to another.
                 //localStopwatch.Wait(300);
             }
         }
-        
+
         private static void doLogCursor(Dictionary<string, string> dict)
         {
             PixelReader pr = new();
@@ -65,6 +72,53 @@ namespace Vigem_Console
                 );
                 localStopwatch.Wait(int.Parse(dict["speed"]));
             }
+        }
+
+        private static void doRecord(Dictionary<string, string> dict)
+        {
+            string processName = dict["processName"];
+            int countParam = int.Parse(dict["count"]);
+            double durationParam = double.Parse(dict["duration"]);
+            Console.WriteLine($"ProcessName param - {processName}, count param - {countParam}, duration param - {durationParam}");
+            
+            PixelReader pr = new();
+            Process[] processes = Process.GetProcessesByName(processName);
+            Process process = processes.First();
+            nint handle = process.MainWindowHandle;
+
+            Rectangle rect = pr.GetWindowRect(handle);
+
+            string directory = $"C:\\D\\Apps\\Vigem\\Recordings\\{DateTime.Now:yyyy-MM-dd--HH-mm-ss}";
+            Directory.CreateDirectory(directory);
+            string dataFilePath = $"{directory}\\data.txt";
+            File.WriteAllText(dataFilePath, "");
+
+            int counter = 1;
+            RealStopwatch localStopwatch = new();
+            localStopwatch.Restart();
+            while (true)
+            {
+                int rectX = rect.X;
+                int rectY = rect.Y;
+                int rectWidth = rect.Width - rectX;
+                int rectHeight = rect.Height - rectY;
+                string fileName = $"{directory}\\{counter}.jpg";
+                pr.SaveWindowRect(rectX, rectY, rectWidth, rectHeight, fileName);
+                File.AppendAllText(
+                    dataFilePath,
+                    $"id={counter};x={rectX};y={rectY};width={rectWidth};height={rectHeight};ts={localStopwatch.GetElapsedTotalMilliseconds()}{Environment.NewLine}"
+                );
+
+                if (
+                    (countParam != 0 && counter >= countParam)
+                    || (durationParam != 0 && localStopwatch.GetElapsedTotalMilliseconds() >= durationParam)
+                )
+                {
+                    break;
+                }
+                counter++;
+            }
+            Console.WriteLine("Done");
         }
 
         private static void doFf9JumpRope(Dictionary<string, string> dict)
