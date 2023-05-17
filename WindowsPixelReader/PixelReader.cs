@@ -24,16 +24,7 @@ namespace WindowsPixelReader
                 y,
                 width,
                 height,
-                bitmap =>
-                {
-                    ImageFormat imageFormat = ImageFormat.Jpeg;
-                    string extension = Path.GetExtension(path).ToUpper();
-                    if (extension is ".JPG" or ".JPEG") imageFormat = ImageFormat.Jpeg;
-                    else if (extension == ".BMP") imageFormat = ImageFormat.Bmp;
-                    else if (extension == ".PNG") imageFormat = ImageFormat.Png;
-                    else throw new Exception("Could not determine image format");
-                    bitmap.Save(path, imageFormat);
-                }
+                bitmap => bitmap.Save(path, GetImageFormatFromPath(path))
             );
         }
         
@@ -63,13 +54,55 @@ namespace WindowsPixelReader
         [DllImport("user32.dll")]
         static extern bool GetCursorPos(ref Point lpPoint);
 
-        private static Point GetCursorLocation()
+        public Point GetCursorLocation()
         {
             Point cursor = new();
             GetCursorPos(ref cursor);
             return cursor;
         }
+
+        [DllImport("user32.dll")]
+        static extern bool ClientToScreen(IntPtr hWnd, ref Point point);
+
+        public Point GetClientToScreen(IntPtr hWnd, ref Point p)
+        {
+            ClientToScreen(hWnd, ref p);
+            return p;
+        }
         
+        [DllImport("user32.dll")]
+        static extern bool ScreenToClient(IntPtr hWnd, ref Point point);
+
+        public Point GetScreenToClient(IntPtr hWnd, ref Point point)
+        {
+            ScreenToClient(hWnd, ref point);
+            return point;
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        static extern bool GetClientRect(IntPtr hWnd, ref Rectangle rect);
+
+        public Rectangle GetClientRect(IntPtr hWnd)
+        {
+            Rectangle r = new(0, 0, 0, 0);
+            GetClientRect(hWnd, ref r);
+            return r;
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
+
+        public void SaveClient(Rectangle clientRect, Point clientPoint, string path)
+        {
+            using Bitmap clientBitmap = new(clientRect.Width, clientRect.Height);
+            using (Graphics g = Graphics.FromImage(clientBitmap))
+            {
+                g.CopyFromScreen(clientPoint, Point.Empty, new Size(clientBitmap.Width, clientBitmap.Height));
+            }
+            clientBitmap.Save(path, GetImageFormatFromPath(path));
+        }
+
         private static void DoActionWithBitmap(int x, int y, int width, int height, Action<Bitmap> action)
         {
             using (Bitmap bitmap = new(width, height))
@@ -120,7 +153,19 @@ namespace WindowsPixelReader
             int avgR = totals[2] / (width * height);
             int avgG = totals[1] / (width * height);
             int avgB = totals[0] / (width * height);
-            return Color.FromArgb( avgR, avgG, avgB);
+            return Color.FromArgb(avgR, avgG, avgB);
         }
+        
+        private static ImageFormat GetImageFormatFromPath(string path)
+        {
+            ImageFormat imageFormat = ImageFormat.Jpeg;
+            string extension = Path.GetExtension(path).ToUpper();
+            if (extension is ".JPG" or ".JPEG") imageFormat = ImageFormat.Jpeg;
+            else if (extension == ".BMP") imageFormat = ImageFormat.Bmp;
+            else if (extension == ".PNG") imageFormat = ImageFormat.Png;
+            else throw new Exception("Could not determine image format");
+            return imageFormat;
+        }
+
     }
 }

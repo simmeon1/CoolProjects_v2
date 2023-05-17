@@ -5,8 +5,7 @@ public partial class Form1 : Form
     private string directory;
     private int currentIndex;
     private int maxIndex;
-    private readonly Dictionary<int, string> mappedData = new();
-    
+
     public Form1()
     {
         InitializeComponent();
@@ -21,55 +20,21 @@ public partial class Form1 : Form
         string imageFile = dialog.FileName;
         directory = Path.GetDirectoryName(imageFile);
         currentIndex = int.Parse(Path.GetFileNameWithoutExtension(imageFile));
-        
-        List<string> data = File.ReadAllText($"{directory}\\data.txt").Trim().Split(
-            Environment.NewLine,
-            StringSplitOptions.RemoveEmptyEntries
-        ).ToList();
-        maxIndex = data.Count;
-
-        mappedData.Clear();
-        foreach (string s in data)
-        {
-            int id = int.Parse(GetValueFromData(s, "id"));
-            mappedData.Add(id, s);
-        }
-
-        string rowData = mappedData[currentIndex];
-        int x = int.Parse(GetValueFromData(rowData, "x"));
-        int y = int.Parse(GetValueFromData(rowData, "y"));
-        StartPosition = FormStartPosition.Manual;
-        Location = new Point(x, y);
-
+        maxIndex = Directory.GetFiles(directory).Length;
         LoadImageFromIndex(currentIndex);
-        Image image = pictureBox1.Image;
-        ClientSize = new Size(image.Width, image.Height);
     }
-
-    private string GetValueFromData(string s, string prop)
-    {
-        string[] properties = s.Split(";", StringSplitOptions.RemoveEmptyEntries);
-        foreach (string property in properties)
-        {
-            string[] propAndValue = property.Split("=", StringSplitOptions.RemoveEmptyEntries);
-            if (propAndValue[0] == prop)
-            {
-                return propAndValue[1];
-            }
-        }
-        return "";
-    }
-
+    
     private void Form1_KeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.KeyCode == Keys.F)
+        Keys key = e.KeyCode;
+        if (key == Keys.F)
         {
             FormBorderStyle = FormBorderStyle == FormBorderStyle.None ? FormBorderStyle.Sizable : FormBorderStyle.None;
         }
         
-        if (e.KeyCode == Keys.Right) LoadImageFromIndex(currentIndex + 1);
-        if (e.KeyCode == Keys.Left) LoadImageFromIndex(currentIndex - 1);
-        if (e.KeyCode == Keys.O) PopulateDialog();
+        if (key == Keys.Right) LoadImageFromIndex(currentIndex + 1);
+        if (key == Keys.Left) LoadImageFromIndex(currentIndex - 1);
+        if (key == Keys.O) PopulateDialog();
     }
     
     private void LoadImageFromIndex(int index)
@@ -78,7 +43,11 @@ public partial class Form1 : Form
 
         string[] files =  Directory.GetFiles(directory);
         string file = files.First(f => Path.GetFileNameWithoutExtension(f) == index.ToString());
+        string fileName = Path.GetFileName(file);
         Image image = Image.FromFile(file);
+        ClientSize = new Size(image.Width, image.Height);
+        Text = fileName;
+        if (pictureBox1.Image != null) pictureBox1.Image.Dispose();
         pictureBox1.Image = image;
         currentIndex = index;
     }

@@ -23,6 +23,48 @@ namespace Vigem_Console
             else if (command == "record") doRecord(dict);
             else if (command == "ffvi-auto-battle") doFf6AutoBattle();
             else if (command == "log-screen") doLogScreen(dict);
+            else if (command == "test") doTest(dict);
+        }
+
+        private static void doTest(Dictionary<string, string> dict)
+        {
+            RealStopwatch s = new();
+            Dualshock4Controller cds4 = GetConnectedDs4Controller();
+            StopwatchControllerUser user = new(cds4, s, 100);
+            nint handle = GetProcessHandle("chiaki");
+            PixelReader pr = new();
+            s.Restart();
+
+            bool lastIsLeft = !true;
+            while (true)
+            {
+                user.PressDPad(lastIsLeft ? DPadMappings.Right : DPadMappings.Left);
+                lastIsLeft = !lastIsLeft;
+                double ts = s.GetElapsedTotalMilliseconds();
+                while (s.GetElapsedTotalMilliseconds() - ts < 300)
+                {
+                    Point point = new(483, 141);
+                    Point screenPoint = pr.GetClientToScreen(handle, ref point);
+                    Pixel pixel = pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y);
+                    if (pixel.PixelColor.GetBrightness() < 0.2) continue;
+                    
+                    s.Wait(1000);
+                    int clientX = 144;
+                    int clientY = 275;
+                    Point point2 = new(clientX, clientY);
+                    Point screenPoint2 = pr.GetClientToScreen(handle, ref point2);
+                    pr.SaveScreen(screenPoint2.X, screenPoint2.Y, 196 - clientX, 286 - clientY, "C:\\D\\test2.jpg");
+                    Color color = pr.GetScreenAverageColor(screenPoint2.X, screenPoint2.Y, 196 - clientX, 286 - clientY);
+                    if (color is {R: 54, G: 55, B: 90})
+                    {
+                        user.PressButton(ButtonMappings.Options);
+                    }
+                }
+                
+                //484
+                //135
+                //0.1
+            }
         }
 
         private static void doFf6AutoBattle()
@@ -50,25 +92,37 @@ namespace Vigem_Console
             localStopwatch.Restart();
             while (true)
             {
+                Point point = new(0, 0);
                 bool hasCoordinates = dict.ContainsKey("X") && dict.ContainsKey("Y");
-                Console.WriteLine(
-                    hasCoordinates
-                        ? pr.GetPixelAtLocation(int.Parse(dict["X"]), int.Parse(dict["Y"]))
-                        : pr.GetPixelAtCursor()
-                );
+                
+                if (hasCoordinates)
+                {
+                    //Don't think this works, gotta update
+                    point.X = int.Parse(dict["X"]);
+                    point.Y = int.Parse(dict["Y"]);
+                }
+                else
+                {
+                    Point cursorPos = pr.GetCursorLocation();
+                    point.X = cursorPos.X;
+                    point.Y = cursorPos.Y;
+                }
 
-                // Console.WriteLine(pr.GetPixelAtLocation(3307, 3327));
-                // Console.WriteLine(pr.GetPixelAtLocation1(3307, 3327));
+                string message = pr.GetPixelAtLocation(point.X, point.Y).ToString();
+                if (dict.ContainsKey("client"))
+                {
+                    nint handle = GetProcessHandle(dict["client"]);
+                    Point clientPoint = pr.GetScreenToClient(handle, ref point);
+                    message += $" Client coordinates = {clientPoint}";
+                }
+                
+                Console.WriteLine(message);
                 localStopwatch.Wait(int.Parse(dict["speed"]));
             }
         }
 
         private static void doLogScreen(Dictionary<string, string> dict)
         {
-            // int x1 = 3307;
-            // int x2 = 3327;
-            // int y1 = 506;
-            // int y2 = 526;
             int x1 = int.Parse(dict["X1"]);
             int x2 = int.Parse(dict["X2"]);
             int y1 = int.Parse(dict["Y1"]);
@@ -78,13 +132,22 @@ namespace Vigem_Console
             int height = y2 - y1;
 
             PixelReader pr = new();
+            Point point = new(x1, y1);
+            if (dict.ContainsKey("client"))
+            {
+                nint handle = GetProcessHandle(dict["client"]);
+                Point screenPoint = pr.GetClientToScreen(handle, ref point);
+                x1 = screenPoint.X;
+                y1 = screenPoint.Y;
+            }
+
             RealStopwatch localStopwatch = new();
             localStopwatch.Restart();
             while (true)
             {
                 Color c = pr.GetScreenAverageColor(x1, y1, width, height);
                 Console.WriteLine(new Pixel(x1, y1, c));
-                // pr.SaveScreen(x1, y1, width, height, "C:\\D\\test.jpg");
+                pr.SaveScreen(x1, y1, width, height, "C:\\D\\test.jpg");
                 localStopwatch.Wait(int.Parse(dict["speed"]));
             }
         }
@@ -99,32 +162,22 @@ namespace Vigem_Console
             );
 
             PixelReader pr = new();
-            Process[] processes = Process.GetProcessesByName(processName);
-            Process process = processes.First();
-            nint handle = process.MainWindowHandle;
-
-            Rectangle rect = pr.GetWindowRect(handle);
+            nint handle = GetProcessHandle(processName);
+            Rectangle clientRect = pr.GetClientRect(handle);
+            Point clientPoint = new(0, 0);
+            Point screenPoint = pr.GetClientToScreen(handle, ref clientPoint);
 
             string directory = $"C:\\D\\Apps\\Vigem\\Recordings\\{DateTime.Now:yyyy-MM-dd--HH-mm-ss}";
             Directory.CreateDirectory(directory);
-            string dataFilePath = $"{directory}\\data.txt";
 
             int counter = 1;
             RealStopwatch localStopwatch = new();
             localStopwatch.Restart();
             while (true)
             {
-                int rectX = rect.X;
-                int rectY = rect.Y;
-                int rectWidth = rect.Width - rectX;
-                int rectHeight = rect.Height - rectY;
-                string fileName = $"{directory}\\{counter}.png";
-                pr.SaveScreen(rectX, rectY, rectWidth, rectHeight, fileName);
-                File.AppendAllText(
-                    dataFilePath,
-                    $"id={counter};x={rectX};y={rectY};width={rectWidth};height={rectHeight};ts={localStopwatch.GetElapsedTotalMilliseconds()}{Environment.NewLine}"
-                );
 
+                string filePath = $"{directory}\\{counter}.png";
+                pr.SaveClient(clientRect, screenPoint, filePath);
                 // if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.C)
                 // {
                 //     
@@ -141,22 +194,43 @@ namespace Vigem_Console
 
                 counter++;
             }
-
             Console.WriteLine("Done");
+        }
+
+        private static nint GetProcessHandle(string processName)
+        {
+            Process[] processes = Process.GetProcessesByName(processName);
+            Process process = processes.First();
+            nint handle = process.MainWindowHandle;
+            return handle;
         }
 
         private static void doFf9JumpRope(Dictionary<string, string> dict)
         {
-            int x = int.Parse(dict["X"]);
-            int y = int.Parse(dict["Y"]);
-            int speechBubble = int.Parse(dict["speechBubble"]);
 
             Dualshock4Controller cds4 = GetConnectedDs4Controller();
             DelayerControllerUser user = new(cds4, null, 0);
-            PixelReader pixelReader = new();
+            PixelReader pr = new();
             RealStopwatch localStopwatch = new();
             // Point p = new(x, y);
-            Func<int> getB = () => pixelReader.GetPixelAtLocation(x, y).PixelColor.B;
+
+            
+            string client = dict["client"];
+            int clientX = int.Parse(dict["X"]);
+            int clientY = int.Parse(dict["Y"]);
+            int speechBubble = int.Parse(dict["speechBubble"]);
+            nint process = GetProcessHandle(client);
+            Point clientPoint = new(clientX, clientY);
+            Point screenPoint = pr.GetClientToScreen(process, ref clientPoint);
+
+            // while (true)
+            // {
+            //     Pixel pixelAtLocation = pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y);
+            //     Console.WriteLine(pixelAtLocation);
+            // }
+            
+            
+            Func<int> getB = () => pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y).PixelColor.B;
             localStopwatch.Restart();
             localStopwatch.Wait(1000);
             int counter = 0;
