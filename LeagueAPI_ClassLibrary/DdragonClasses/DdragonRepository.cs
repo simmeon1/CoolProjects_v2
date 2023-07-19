@@ -49,7 +49,7 @@ namespace LeagueAPI_ClassLibrary
                 Spell spell = new()
                 {
                     Name = entry.Value["name"].ToString(),
-                    Cooldown = int.Parse(entry.Value["cooldown"][0].ToString()),
+                    Cooldown = entry.Value["cooldown"][0].ToString(),
                     Description = entry.Value["description"].ToString()
                 };
                 spells.Add(id, spell);

@@ -2,7 +2,7 @@
   "profiles": {
     "LeagueAPI_Console": {
       "commandName": "Project",
-      "commandLineArgs": "parametersPath-C:\\D\\LeagueAPI\\leagueAPIParameters.json"
+      "commandLineArgs": "parametersPath-C:\\D\\Apps\\LeagueAPI\\leagueAPIParameters.json"
     }
   }
 }
