@@ -31,58 +31,58 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 
         public Task<JourneyCollection> GetJourneysForDates(List<DirectPath> paths, List<DateTime> allDates)
         {
-            Dictionary<string, List<string>> originAndTargetGroups = new();
-            Dictionary<string, int> groupsAndDestinationsCounts = new();
+            var results = new List<Journey>();
+            var originalResultsCount = results.Count;
+            var remainingPaths = paths.Select(x => x).ToList();
 
-            foreach (DirectPath path in paths)
+            while (remainingPaths.Any())
             {
-                string origin = $"{path.GetStart()}";
-                if (!groupsAndDestinationsCounts.ContainsKey(origin))
-                {
-                    groupsAndDestinationsCounts.Add(origin, 0);
-                }
+                var origins = remainingPaths.Select(x => x.GetStart()).Distinct().Take(7).ToList();
+                var destinations = remainingPaths.Select(x => x.GetEnd()).Distinct().Take(7).ToList();
 
-                int groupIndex = groupsAndDestinationsCounts[origin] / 7;
-                string originGroup = $"{origin}_{groupIndex}";
+                c.Log(
+                    $"Looking for {origins.ConcatenateListOfStringsToCommaAndSpaceString()} to {destinations.ConcatenateListOfStringsToCommaAndSpaceString()}"
+                );
 
-                if (!originAndTargetGroups.ContainsKey(originGroup))
-                {
-                    originAndTargetGroups.Add(originGroup, new List<string>());
-                }
-
-                originAndTargetGroups[originGroup].Add(path.GetEnd());
-                groupsAndDestinationsCounts[origin]++;
-            }
-
-            List<Journey> results = new();
-            int counter = 0;
-            foreach ((string origin, List<string> targets) in originAndTargetGroups)
-            {
-                c.Log($"Looking for {origin} to {targets.ConcatenateListOfStringsToCommaAndSpaceString()}");
-                int originalCount = results.Count;
                 for (int i = 0; i < allDates.Count; i++)
                 {
                     DateTime date = allDates[i];
                     c.Log($"Date is {date.ToShortDateString()}");
-                    if (i == 0) PopulateLocations(origin[..3], targets);
+                    if (i == 0)
+                    {
+                        PopulateSearchField(origins, "Origin");
+                        PopulateSearchField(destinations, "Destination");
+                    }
+
                     PopulateDateAndHitDone(date);
                     if (!stopsSet) SetStopsToNone();
-                    GetFlightsForDate(date, results);
+                    List<Journey> flightsForDate = GetFlightsForDate(date);
+                    results.AddRange(flightsForDate.Where(x => paths.Any(y => y.ToString() == x.Path.ToString())));
                 }
 
-                counter++;
+                foreach (string origin in origins)
+                {
+                    foreach (var destination in destinations)
+                    {
+                        var path = new DirectPath(origin, destination);
+                        remainingPaths = remainingPaths.Where(x => x.ToString() != path.ToString()).ToList();
+                    }
+                }
+
                 c.Log(
-                    $"Collected data for paths from {origin} ({results.Count - originalCount} journeys) ({Globals.GetPercentageAndCountString(counter, originAndTargetGroups.Count)})"
+                    $"Collected data for paths from {origins.ConcatenateListOfStringsToCommaAndSpaceString()} ({results.Count - originalResultsCount} journeys) ({Globals.GetPercentageAndCountString(paths.Count - remainingPaths.Count, paths.Count)})"
                 );
             }
 
             return Task.FromResult(new JourneyCollection(results.OrderBy(j => j.ToString()).ToList()));
         }
 
-        private void GetFlightsForDate(DateTime date, List<Journey> results)
+        private List<Journey> GetFlightsForDate(DateTime date)
         {
+            var results = new List<Journey>();
+
             ReadOnlyCollection<IWebElement> flights = c.FindElements(
-                GetFindElementParametersWithCssSelector("div[aria-label$='Select flight']")
+                GetCssSelectorParam("div[aria-label$='Select flight']")
             );
             foreach (IWebElement flight in flights)
             {
@@ -96,6 +96,8 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 Journey item = GetJourneyFromText(date, flightText);
                 results.Add(item);
             }
+
+            return results;
         }
 
         private static Journey GetJourneyFromText(DateTime date, string[] flightText)
@@ -136,18 +138,11 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 
         private void WaitForProgressBarToBeGone()
         {
-            IWebElement loadingBar = c.FindElement(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("[data-buffervalue='1']"),
-                    Matcher = x => x.GetProperty("clientHeight").Equals("4")
-                }
-            );
-
+            IWebElement loadingBar = c.FindElement(GetCssSelectorParam("[data-buffervalue='1']"));
             try
             {
-                c.Until(d => loadingBar.GetAttribute("aria-hidden") == null, 1);
-                c.Until(d => loadingBar.GetAttribute("aria-hidden") != null);
+                c.Until(_ => loadingBar.GetAttribute("aria-hidden") == null, 1);
+                c.Until(_ => loadingBar.GetAttribute("aria-hidden") != null);
             }
             catch (Exception)
             {
@@ -157,98 +152,64 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 
         private void SetStopsToNone()
         {
-            c.FindElementAndClickIt(GetFindElementParametersWithCssSelector("[aria-label='Stops, Not selected']"));
-            c.FindElementAndClickIt(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("label"),
-                    Matcher = x =>
-                    {
-                        string innerText = x.GetAttribute("innerText");
-                        return !innerText.IsNullOrEmpty() && innerText.Equals("Nonstop only");
-                    }
-                }
-            );
+            c.FindElementAndClickIt(GetCssSelectorParam("[aria-label='Stops, Not selected']"));
+            Sleep(500);
+            c.FindElementAndClickIt(GetCssSelectorParam("[aria-label*='Nonstop only']"));
+            Sleep();
 
-            c.FindElementAndClickIt(GetFindElementParametersWithCssSelector("header"));
+            c.FindElementAndClickIt(GetCssSelectorParam("[data-filtertype*='10'] [aria-label*='Close dialog']"));
             stopsSet = true;
             WaitForProgressBarToBeGone();
         }
 
-        private void PopulateLocations(
-            string origin,
-            List<string> destinations
-        )
+        private void PopulateSearchField(IEnumerable<string> locations, string keyword)
         {
-            c.FindElementAndClickIt(
-                GetFindElementParametersWithCssSelector("[role='combobox'][aria-autocomplete='inline']")
-            );
+            var keywordLower = keyword.ToLower();
+
+            c.FindElementAndClickIt(GetCssSelectorParam($"[aria-placeholder*='Where {(keyword == "Origin" ? "from" : "to")}'] input"));
             Sleep();
 
-            c.FindElementAndSendKeysToIt(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("[role='combobox'][aria-autocomplete='both']"),
-                    Index = 1
-                },
-                true,
-                journeyRetrieverData.GetTranslation(origin) + Keys.Return
-            );
-
-            Sleep();
-
-            c.FindElementAndClickIt(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("[role='combobox'][aria-autocomplete='inline']"),
-                    Index = 1
-                }
-            );
-
-            IWebElement addButton = c.FindElement(
-                GetFindElementParametersWithCssSelector("[aria-label='Destination, Select multiple airports']")
-            );
-            if (addButton.Displayed) addButton.Click();
-
-            while (c.FindElements(GetFindElementParametersWithCssSelector("div[data-code]")).Any(x => x.Displayed))
+            FindElementParameters checkmarkDoneButtonParam = GetCssSelectorParam($"[aria-label*='Enter your {keywordLower}'] [aria-label*='Done']");
+            var el = c.FindElement(checkmarkDoneButtonParam);
+            el = (IWebElement) c.ExecuteScript("return arguments[0].parentElement.parentElement", el);
+            var displayStyle = (string) c.ExecuteScript("return arguments[0].style.display", el);
+            if (displayStyle == "none")
+            {
+                c.FindElementAndClickIt(GetCssSelectorParam($"[aria-label='{keyword}, Select multiple airports']"));
+            }
+            else
             {
                 c.FindElementAndSendKeysToIt(
-                    new FindElementParameters
-                    {
-                        BySelector = By.CssSelector("[role='combobox'][aria-autocomplete='both']"),
-                        Index = 1
-                    },
+                    GetCssSelectorParam($"[aria-label*='Enter your {keywordLower}'] input"),
+                    true,
+                    Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace +
+                    Keys.Backspace + Keys.Backspace
+                );
+            }
+
+            while (c.FindElements(GetCssSelectorParam("div[data-code]")).Any(x => x.Displayed))
+            {
+                c.FindElementAndSendKeysToIt(
+                    GetCssSelectorParam($"[aria-label*='Enter your {keywordLower}'] input"),
                     false,
                     Keys.Backspace
                 );
             }
 
-            foreach (string destination in destinations)
+            foreach (string location in locations)
             {
-                string destTranslation = journeyRetrieverData.GetTranslation(destination);
+                string destTranslation = journeyRetrieverData.GetTranslation(location);
                 c.FindElementAndSendKeysToIt(
-                    new FindElementParameters
-                    {
-                        BySelector = By.CssSelector("[role='combobox'][aria-autocomplete='both']"),
-                        Index = 1
-                    },
+                    GetCssSelectorParam($"[aria-label*='Enter your {keywordLower}'] input"),
                     false,
                     destTranslation
                 );
 
-                c.FindElementAndClickIt(
-                    GetFindElementParametersWithCssSelector($"[data-code='{destTranslation}'] input")
-                );
+                c.FindElementAndClickIt(GetCssSelectorParam($"[data-code='{destTranslation}'] input"));
                 Sleep();
             }
 
-            c.FindElementAndClickIt(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector($"[aria-label='Done']"),
-                    Index = 1
-                }
-            );
+            c.FindElementAndClickIt(checkmarkDoneButtonParam);
 
             Sleep();
         }
@@ -257,39 +218,36 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
         {
             const string format = "ddd, MMM dd";
 
-            c.FindElementAndClickIt(GetFindElementParametersWithCssSelector("[aria-label='Departure']"));
+            c.FindElementAndClickIt(GetCssSelectorParam("[aria-label='Departure']"));
 
             Sleep();
 
             c.FindElementAndSendKeysToIt(
-                new FindElementParameters
-                {
-                    BySelector = By.CssSelector("[aria-label='Departure']"),
-                    Index = 1
-                },
+                GetCssSelectorParam("[data-same-day-selection] [aria-label='Departure']"),
                 false,
                 date.ToString(format) + Keys.Return
             );
 
             c.FindElementAndClickIt(
-                GetFindElementParametersWithCssSelector("[aria-label^='Done. Search for one-way flights']")
+                GetCssSelectorParam("[aria-label^='Done. Search for one-way flights']")
             );
 
             if (!stopsSet)
             {
                 c.FindElementAndClickIt(
-                    GetFindElementParametersWithCssSelector("[aria-label='Search']")
+                    GetCssSelectorParam("[aria-label='Search']")
                 );
             }
+
             WaitForProgressBarToBeGone();
         }
 
-        private void Sleep()
+        private void Sleep(int milliseconds = 200)
         {
-            c.Sleep(200);
+            c.Sleep(milliseconds);
         }
 
-        private static FindElementParameters GetFindElementParametersWithCssSelector(string cssSelector)
+        private static FindElementParameters GetCssSelectorParam(string cssSelector)
         {
             return FindElementParameters.WithSelector(By.CssSelector(cssSelector));
         }
@@ -321,10 +279,12 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 
         private void SetToOneWayTrip()
         {
-            c.FindElementAndClickIt(
-                GetFindElementParametersWithCssSelector("[aria-label='Round trip, Change ticket type.']")
-            );
-            c.FindElementAndClickIt(GetFindElementParametersWithCssSelector("[data-value='2']"));
+            FindElementParameters param = GetCssSelectorParam("[aria-label*='Change ticket type']");
+            IWebElement el = c.FindElement(param);
+            IWebElement parentEl = (IWebElement) c.ExecuteScript("return arguments[0].parentElement", el);
+            parentEl.Click();
+
+            c.FindElementAndClickIt(GetCssSelectorParam("[aria-label*='Select your ticket type'] [data-value='2']"));
         }
     }
 }
