@@ -104,22 +104,19 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
         {
             string departingText = flightText[0].Replace(" ", "").Trim();
             string arrivingText = flightText[2].Replace(" ", "").Trim();
-
-            bool arrivesNextDay = false;
-            if (arrivingText.Contains("+1"))
-            {
-                arrivesNextDay = true;
-                arrivingText = arrivingText.Replace("+1", "").Trim();
-            }
-
             string airlineText = flightText[3].Trim();
 
             string durationText = flightText[4];
-            durationText = Regex.Match(durationText, "(\\d+)\\D+(\\d+).*").Success
-                ? Regex.Replace(durationText, "(\\d+).*?(\\d+).*", "$1:$2").Trim()
-                : Regex.Match(durationText, "(\\d+).*hr").Success
-                    ? Regex.Replace(durationText, "(\\d+).*", "$1:00").Trim()
-                    : Regex.Replace(durationText, "(\\d+).*", "0:$1").Trim();
+            var arrivesAfterDays = 0;
+            var regexMatches = Regex.Matches(durationText, "\\+(\\d)");
+            if (regexMatches.Any())
+            {
+                arrivesAfterDays = int.Parse(regexMatches[0].Groups[1].Value);
+                arrivingText = arrivingText.Replace(regexMatches[0].Groups[0].Value, "").Trim();
+            }
+
+            int hours = ParseTimeUnit(durationText, "hr");
+            int minutes = ParseTimeUnit(durationText, "min");
 
             Match pathMatch = Regex.Match(flightText[5].Trim(), @"(\w+)\W+(\w+)");
             string pathText = $"{pathMatch.Groups[1].Value}-{pathMatch.Groups[2].Value}";
@@ -127,13 +124,19 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             double.TryParse(costText, out double cost);
             Journey item = new(
                 DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {departingText}"),
-                DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {arrivingText}").AddDays(arrivesNextDay ? 1 : 0),
+                DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {arrivingText}").AddDays(arrivesAfterDays),
                 airlineText,
-                TimeSpan.Parse(durationText),
+                new TimeSpan(hours, minutes, 0),
                 pathText,
                 cost
             );
             return item;
+        }
+
+        private static int ParseTimeUnit(string durationText, string unitType)
+        {
+            var regexMatches = Regex.Matches(durationText, @$"(\d+) {unitType}");
+            return regexMatches.Any() ? int.Parse(regexMatches[0].Groups[1].Value) : 0;
         }
 
         private void WaitForProgressBarToBeGone()
