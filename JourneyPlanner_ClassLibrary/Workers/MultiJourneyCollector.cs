@@ -4,18 +4,12 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Common_ClassLibrary;
 using JourneyPlanner_ClassLibrary.Classes;
-using JourneyPlanner_ClassLibrary.Interfaces;
+using JourneyPlanner_ClassLibrary.JourneyRetrievers;
 
 namespace JourneyPlanner_ClassLibrary.Workers
 {
-    public class MultiJourneyCollector : IMultiJourneyCollector
+    public class MultiJourneyCollector
     {
-        private IJourneyRetrieverInstanceCreator InstanceCreator { get; set; }
-        public MultiJourneyCollector(IJourneyRetrieverInstanceCreator instanceCreator)
-        {
-            InstanceCreator = instanceCreator;
-        }
-
         public async Task<MultiJourneyCollectorResults> GetJourneys(
             JourneyRetrieverComponents c,
             Dictionary<string, JourneyRetrieverData> retrieversAndData,
@@ -48,8 +42,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 RemoveAlreadyCompletedPathsForRetriever(retrieverData, retrieverName, progress);
                 if (retrieverData.GetCountOfDirectPaths() == 0) continue;
 
-                string fullClassName = $"{Assembly.GetExecutingAssembly().GetName().Name}.JourneyRetrievers.{retrieverName}";
-                IJourneyRetriever retriever = InstanceCreator.CreateInstance(fullClassName, c);
+                var retriever = new GoogleFlightsWorker(c);
                 try
                 {
                     retriever.Initialise(retrieverData);

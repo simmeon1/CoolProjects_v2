@@ -6,13 +6,12 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Common_ClassLibrary;
 using JourneyPlanner_ClassLibrary.Classes;
-using JourneyPlanner_ClassLibrary.Interfaces;
 using JourneyPlanner_ClassLibrary.Workers;
 using OpenQA.Selenium;
 
 namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 {
-    public class GoogleFlightsWorker : IJourneyRetriever
+    public class GoogleFlightsWorker
     {
         private JourneyRetrieverComponents c;
         private JourneyRetrieverData journeyRetrieverData;

@@ -18,7 +18,6 @@ namespace JourneyPlanner_ClassLibrary.Workers
         public IFlightConnectionsDotComWorkerAirportCollector AirportCollector { get; set; }
         public IFlightConnectionsDotComWorkerAirportPopulator AirportPopulator { get; set; }
         public IDateTimeProvider DateTimeProvider { get; set; }
-        public IMultiJourneyCollector MultiJourneyCollector { get; set; }
 
         public FullRunner(
             JourneyRetrieverComponents components,
@@ -26,8 +25,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             IDateTimeProvider dateTimeProvider,
             IExcelPrinter printer,
             IFlightConnectionsDotComWorkerAirportCollector airportCollector,
-            IFlightConnectionsDotComWorkerAirportPopulator airportPopulator,
-            IMultiJourneyCollector multiJourneyCollector
+            IFlightConnectionsDotComWorkerAirportPopulator airportPopulator
         )
         {
             FileIO = fileIO;
@@ -36,7 +34,6 @@ namespace JourneyPlanner_ClassLibrary.Workers
             AirportPopulator = airportPopulator;
             DateTimeProvider = dateTimeProvider;
             Components = components;
-            MultiJourneyCollector = multiJourneyCollector;
         }
 
         public async Task DoRun(Parameters paramss)
@@ -140,7 +137,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     .DeserializeObject<MultiJourneyCollectorResults>();
             }
 
-            MultiJourneyCollectorResults journeyCollectorResults = await MultiJourneyCollector.GetJourneys(
+            MultiJourneyCollectorResults journeyCollectorResults = await new MultiJourneyCollector().GetJourneys(
                 Components,
                 workersAndData,
                 Parameters.DateFrom,

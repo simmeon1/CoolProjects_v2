@@ -7,11 +7,11 @@ namespace JourneyPlanner_ClassLibrary.Workers
 {
     public class AirportListFilterer
     {
-        public List<Airport> Airports { get; set; }
+        private readonly List<Airport> airports;
 
         public AirportListFilterer(List<Airport> airports)
         {
-            Airports = airports;
+            this.airports = airports;
         }
 
         public Dictionary<string, HashSet<string>> FilterAirports(Dictionary<string, HashSet<string>> fullAirportsAndDestinations, IAirportFilterer filterer)
@@ -19,15 +19,15 @@ namespace JourneyPlanner_ClassLibrary.Workers
             if (filterer == null) filterer = new NoFilterer();
             Dictionary<string, HashSet<string>> filteredList = new();
 
-            Dictionary<string, Airport> airportsDictionary = Airports.ToDictionary(a => a.Code, a => a);
+            Dictionary<string, Airport> airportsDictionary = airports.ToDictionary(a => a.Code, a => a);
             foreach (KeyValuePair<string, HashSet<string>> airportAndDestinations in fullAirportsAndDestinations)
             {
-                Airport airport = airportsDictionary.ContainsKey(airportAndDestinations.Key) ? airportsDictionary[airportAndDestinations.Key] : null;
+                Airport airport = airportsDictionary.TryGetValue(airportAndDestinations.Key, out Airport value) ? value : null;
                 if (airport == null || !filterer.AirportMeetsCondition(airport)) continue;
                 filteredList.Add(airport.Code, new HashSet<string>());
                 foreach (string destination in airportAndDestinations.Value)
                 {
-                    Airport airport2 = airportsDictionary.ContainsKey(destination) ? airportsDictionary[destination] : null;
+                    Airport airport2 = airportsDictionary.TryGetValue(destination, out Airport value1) ? value1 : null;
                     if (airport2 != null && filterer.AirportMeetsCondition(airport2)) filteredList[airport.Code].Add(airport2.Code);
                 }
             }

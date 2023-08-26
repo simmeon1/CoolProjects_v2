@@ -43,7 +43,7 @@ namespace JourneyPlanner_Console
             FlightConnectionsDotComWorker worker = new(logger, driver, webDriverWait);
             RealHttpClient httpClient = new();
 
-            MultiJourneyCollector multiJourneyCollector = new(new JourneyRetrieverInstanceCreator());
+            MultiJourneyCollector multiJourneyCollector = new();
             JourneyRetrieverComponents components = new(
                 driver,
                 logger,
@@ -58,8 +58,8 @@ namespace JourneyPlanner_Console
                 dateTimeProvider: new RealDateTimeProvider(),
                 printer: new ExcelPrinter(),
                 airportCollector: new FlightConnectionsDotComWorkerAirportCollector(worker),
-                airportPopulator: new FlightConnectionsDotComWorkerAirportPopulator(worker),
-                multiJourneyCollector);
+                airportPopulator: new FlightConnectionsDotComWorkerAirportPopulator(worker)
+            );
 
             bool success = false;
             try
