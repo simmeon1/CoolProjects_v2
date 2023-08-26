@@ -53,7 +53,7 @@ namespace Vigem_Console
                     int clientY = 275;
                     Point point2 = new(clientX, clientY);
                     Point screenPoint2 = pr.GetClientToScreen(handle, ref point2);
-                    pr.SaveScreen(screenPoint2.X, screenPoint2.Y, 196 - clientX, 286 - clientY, "C:\\D\\test2.jpg");
+                    pr.SaveScreen(screenPoint2.X, screenPoint2.Y, 196 - clientX, 286 - clientY, "C:\\D\\test2.png");
                     Color color = pr.GetScreenAverageColor(screenPoint2.X, screenPoint2.Y, 196 - clientX, 286 - clientY);
                     if (color is {R: 54, G: 55, B: 90})
                     {
@@ -147,7 +147,7 @@ namespace Vigem_Console
             {
                 Color c = pr.GetScreenAverageColor(x1, y1, width, height);
                 Console.WriteLine(new Pixel(x1, y1, c));
-                pr.SaveScreen(x1, y1, width, height, "C:\\D\\test.jpg");
+                pr.SaveScreen(x1, y1, width, height, "C:\\D\\test.png");
                 localStopwatch.Wait(int.Parse(dict["speed"]));
             }
         }
