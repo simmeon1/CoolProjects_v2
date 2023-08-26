@@ -14,7 +14,6 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
     public class GoogleFlightsWorker
     {
         private JourneyRetrieverComponents c;
-        private JourneyRetrieverData journeyRetrieverData;
         private bool stopsSet;
 
         public GoogleFlightsWorker(JourneyRetrieverComponents c)
@@ -22,25 +21,29 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             this.c = c;
         }
 
-        public void Initialise(JourneyRetrieverData data)
+        public void Initialise()
         {
-            journeyRetrieverData = data;
             SetUpSearch();
         }
 
         public Task<JourneyCollection> GetJourneysForDates(List<DirectPath> paths, List<DateTime> allDates)
         {
             var results = new List<Journey>();
-            var originalResultsCount = results.Count;
+            var lastResultCount = 0;
             var remainingPaths = paths.Select(x => x).ToList();
 
             while (remainingPaths.Any())
             {
-                var origins = remainingPaths.Select(x => x.GetStart()).Distinct().Take(7).ToList();
-                var destinations = remainingPaths.Select(x => x.GetEnd()).Distinct().Take(7).ToList();
+                //Origin must be done in singles, otherwise it repeating in both search fields will wipe it from destination
+                var groups = remainingPaths.GroupBy(x => x.GetStart(), y => y.GetEnd());
+                var firstGroup = groups.First();
+                
+                var origins = new [] { firstGroup.Key };
+                var destinations = firstGroup.Take(7).ToList();
 
+                var searchDesc = $"{origins.ConcatenateListOfStringsToCommaAndSpaceString()} to {destinations.ConcatenateListOfStringsToCommaAndSpaceString()}";
                 c.Log(
-                    $"Looking for {origins.ConcatenateListOfStringsToCommaAndSpaceString()} to {destinations.ConcatenateListOfStringsToCommaAndSpaceString()}"
+                    $"Looking for {searchDesc}"
                 );
 
                 for (int i = 0; i < allDates.Count; i++)
@@ -56,7 +59,9 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     PopulateDateAndHitDone(date);
                     if (!stopsSet) SetStopsToNone();
                     List<Journey> flightsForDate = GetFlightsForDate(date);
-                    results.AddRange(flightsForDate.Where(x => paths.Any(y => y.ToString() == x.Path.ToString())));
+                    //Uncomment if doing multiple origins
+                    // results.AddRange(flightsForDate.Where(x => paths.Any(y => y.ToString() == x.Path.ToString())));
+                    results.AddRange(flightsForDate);
                 }
 
                 foreach (string origin in origins)
@@ -69,8 +74,9 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 }
 
                 c.Log(
-                    $"Collected data for paths from {origins.ConcatenateListOfStringsToCommaAndSpaceString()} ({results.Count - originalResultsCount} journeys) ({Globals.GetPercentageAndCountString(paths.Count - remainingPaths.Count, paths.Count)})"
+                    $"Collected data for paths from {searchDesc} ({results.Count - lastResultCount} journeys) ({Globals.GetPercentageAndCountString(paths.Count - remainingPaths.Count, paths.Count)})"
                 );
+                lastResultCount = results.Count;
             }
 
             return Task.FromResult(new JourneyCollection(results.OrderBy(j => j.ToString()).ToList()));
@@ -200,14 +206,13 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 
             foreach (string location in locations)
             {
-                string destTranslation = journeyRetrieverData.GetTranslation(location);
                 c.FindElementAndSendKeysToIt(
                     GetCssSelectorParam($"[aria-label*='Enter your {keywordLower}'] input"),
                     false,
-                    destTranslation
+                    location
                 );
 
-                c.FindElementAndClickIt(GetCssSelectorParam($"[data-code='{destTranslation}'] input"));
+                c.FindElementAndClickIt(GetCssSelectorParam($"[data-code='{location}'] input"));
                 Sleep();
             }
 

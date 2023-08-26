@@ -5,7 +5,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
 {
     public class Path
     {
-        public List<string> Entries { get; set; }        
+        private List<string> Entries { get; set; }        
         public Path()
         {
         }
@@ -17,20 +17,14 @@ namespace JourneyPlanner_ClassLibrary.Classes
 
         public string this[int index]
         {
-            get
-            {
-                return Entries[index];
-            }
+            get => Entries[index];
 
-            set
-            {
-                Entries[index] = value;
-            }
+            set => Entries[index] = value;
         }
 
         public override string ToString()
         {
-            return Extensions.ConcatenateListOfStringsToDashString(Entries);
+            return Entries.ConcatenateListOfStringsToDashString();
         }
         
         public int Count()
@@ -40,18 +34,18 @@ namespace JourneyPlanner_ClassLibrary.Classes
         
         public string GetSummarisedPath()
         {
-            return Extensions.ConcatenateListOfStringsToDashString(new List<string>() { Entries[0], Entries[Count() - 1] });
+            return new List<string>() { Entries[0], Entries[Count() - 1] }.ConcatenateListOfStringsToDashString();
         }
         
         public List<DirectPath> GetDirectPaths()
         {
-            if (Entries.Count < 2) return new();
+            if (Entries.Count < 2) return new List<DirectPath>();
 
             List<DirectPath> directPaths = new();
             string previousEntry = Entries[0];
             for (int i = 1; i < Entries.Count; i++)
             {
-                directPaths.Add(new(previousEntry, Entries[i]));
+                directPaths.Add(new DirectPath(previousEntry, Entries[i]));
                 previousEntry = Entries[i];
             }
             return directPaths;

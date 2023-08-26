@@ -5,26 +5,19 @@ namespace JourneyPlanner_ClassLibrary.Classes
 {
     public class JourneyRetrieverData
     {
-        public List<DirectPath> DirectPaths { get; set; }
-        public Dictionary<string, string> Translations { get; set; }
+        public List<DirectPath> DirectPaths { get; private set; }
         public JourneyRetrieverData()
         {
         }
         
-        public JourneyRetrieverData(List<DirectPath> directPaths, Dictionary<string, string> translations = null)
+        public JourneyRetrieverData(List<DirectPath> directPaths)
         {
             DirectPaths = directPaths;
-            Translations = translations ?? new Dictionary<string, string>();
         }
-
-        public string GetTranslation(string location)
-        {
-            return Translations.ContainsKey(location) ? Translations[location] : location;
-        }
-
+        
         public override string ToString()
         {
-            return $"{DirectPaths.Count} direct paths, {Translations.Count} translations.";
+            return $"{DirectPaths.Count} direct paths.";
         }
 
         public void RemovePath(string path)
@@ -35,15 +28,6 @@ namespace JourneyPlanner_ClassLibrary.Classes
         public int GetCountOfDirectPaths()
         {
             return DirectPaths.Count;
-        }
-
-        public string GetKeyFromTranslation(string translation)
-        {
-            foreach (KeyValuePair<string, string> pair in Translations)
-            {
-                if (pair.Value.Equals(translation)) return pair.Key;
-            }
-            return translation;
         }
     }
 }

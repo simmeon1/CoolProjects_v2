@@ -5,19 +5,20 @@ using Common_ClassLibrary;
 using JourneyPlanner_ClassLibrary.AirportFilterers;
 using JourneyPlanner_ClassLibrary.Classes;
 using JourneyPlanner_ClassLibrary.Interfaces;
+using JourneyPlanner_ClassLibrary.JourneyRetrievers;
 using Newtonsoft.Json;
 
 namespace JourneyPlanner_ClassLibrary.Workers
 {
     public class FullRunner
     {
-        public Parameters Parameters { get; set; }
-        public JourneyRetrieverComponents Components { get; set; }
-        public IFileIO FileIO { get; set; }
-        public IExcelPrinter Printer { get; set; }
-        public IFlightConnectionsDotComWorkerAirportCollector AirportCollector { get; set; }
-        public IFlightConnectionsDotComWorkerAirportPopulator AirportPopulator { get; set; }
-        public IDateTimeProvider DateTimeProvider { get; set; }
+        private Parameters Parameters { get; set; }
+        private JourneyRetrieverComponents Components { get; set; }
+        private IFileIO FileIO { get; set; }
+        private IExcelPrinter Printer { get; set; }
+        private IFlightConnectionsDotComWorkerAirportCollector AirportCollector { get; set; }
+        private IFlightConnectionsDotComWorkerAirportPopulator AirportPopulator { get; set; }
+        private IDateTimeProvider DateTimeProvider { get; set; }
 
         public FullRunner(
             JourneyRetrieverComponents components,
@@ -64,8 +65,6 @@ namespace JourneyPlanner_ClassLibrary.Workers
             }
 
             IAirportFilterer filterer = new NoFilterer();
-            if (Parameters.EuropeOnly) filterer = new EuropeFilterer();
-            else if (Parameters.UKAndBulgariaOnly) filterer = new UKBulgariaFilterer();
 
             Dictionary<string, HashSet<string>> airportsAndDestinations;
             if (!Parameters.AirportDestinationsFile.IsNullOrEmpty())
@@ -86,31 +85,21 @@ namespace JourneyPlanner_ClassLibrary.Workers
             Dictionary<string, HashSet<string>> filteredAirportsAndDestinations =
                 airportListFilterer.FilterAirports(airportsAndDestinations, filterer);
 
-            Dictionary<string, JourneyRetrieverData> existingData = new();
-            if (!Parameters.WorkerSetupFile.IsNullOrEmpty())
-            {
-                existingData = FileIO.ReadAllText(Parameters.WorkerSetupFile)
-                    .DeserializeObject<Dictionary<string, JourneyRetrieverData>>();
-            }
-
-            JourneyRetrieverDataToLocalLinksConverter localLinksConverter = new();
-            Dictionary<string, HashSet<string>> localLinks = localLinksConverter.DoConversion(existingData);
-
             Components.Log($"Generating paths...");
-            AirportPathGenerator generator = new(filteredAirportsAndDestinations, localLinks);
+            AirportPathGenerator generator = new(filteredAirportsAndDestinations);
             List<Path> paths = generator.GeneratePaths(
                 Parameters.Origins,
                 Parameters.Destinations,
-                Parameters.MaxFlights,
-                Parameters.MaxLocalLinks,
-                Parameters.OnlyIncludeShortestPaths
+                Parameters.MaxFlights
             );
             List<List<string>> pathsDetailed = new();
             foreach (Path path in paths)
             {
                 List<string> pathDetailed = new();
                 for (int i = 0; i < path.Count(); i++)
+                {
                     pathDetailed.Add(airportsList.FirstOrDefault(x => x.Code.Equals(path[i])).ToString());
+                }
                 pathsDetailed.Add(pathDetailed);
             }
 
@@ -118,32 +107,22 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 $"{runResultsPath}\\{runId}_latestPaths.json",
                 pathsDetailed.SerializeObject(Formatting.Indented)
             );
-
-            if (Parameters.OnlyPrintPaths)
-            {
-                SaveLogAndQuitDriver(runId, runResultsPath);
-                return;
-            }
-
-            PathsToDirectPathGroupsConverter converter = new();
-
-            Dictionary<string, JourneyRetrieverData> workersAndData =
-                converter.GetGroups(paths, existingData, filteredAirportsAndDestinations);
-
-            MultiJourneyCollectorResults existingResults = null;
-            if (!Parameters.ProgressFile.IsNullOrEmpty())
-            {
-                existingResults = FileIO.ReadAllText(Parameters.ProgressFile)
-                    .DeserializeObject<MultiJourneyCollectorResults>();
-            }
-
-            MultiJourneyCollectorResults journeyCollectorResults = await new MultiJourneyCollector().GetJourneys(
-                Components,
-                workersAndData,
-                Parameters.DateFrom,
-                Parameters.DateTo,
-                existingResults
+            
+            JourneyRetrieverData journeyRetrieverData = new(
+                paths.SelectMany(x => x.GetDirectPaths())
+                    .GroupBy(x => x.ToString())
+                    .Select(g => g.First())
+                    .OrderBy(x => x.ToString())
+                    .ToList()
             );
+
+            var journeyCollectorResults = await new MultiJourneyCollector().GetJourneys(
+                Components,
+                journeyRetrieverData,
+                Parameters.DateFrom,
+                Parameters.DateTo
+            );
+            
             FileIO.WriteAllText(
                 $"{runResultsPath}\\{runId}_journeyCollectorResults.json",
                 journeyCollectorResults.SerializeObject(Formatting.Indented)
@@ -153,7 +132,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
 
         private void PrintPathsAndJourneysAndFinish(
             List<Airport> airportsList,
-            MultiJourneyCollectorResults journeyCollectorResults,
+            JourneyCollection journeyCollectorResults,
             string runId,
             string runResultsPath,
             List<Path> paths
@@ -162,20 +141,13 @@ namespace JourneyPlanner_ClassLibrary.Workers
             SequentialJourneyCollectionBuilder builder = new();
             List<SequentialJourneyCollection> results = builder.GetFullPathCombinationOfJourneys(
                 paths,
-                journeyCollectorResults.JourneyCollection,
-                Parameters.SkipUndoableJourneys,
-                Parameters.SkipNotSameDayFinishJourneys,
+                journeyCollectorResults,
                 Parameters.NoLongerThan
             );
 
             DataTableCreator dtCreator = new();
             Printer.PrintTablesToWorksheet(
-                dtCreator.GetTables(
-                    airportsList,
-                    results,
-                    Parameters.SkipUndoableJourneys,
-                    Parameters.SkipNotSameDayFinishJourneys
-                ),
+                dtCreator.GetTables(airportsList, results),
                 $"{runResultsPath}\\{runId}_results.xlsx"
             );
             Components.Log($"Saved files to {runResultsPath}");

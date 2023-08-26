@@ -6,13 +6,9 @@ namespace JourneyPlanner_ClassLibrary.Workers
 {
     public class SequentialJourneyCollectionBuilder
     {
-        public bool SkipUndoableJourneys { get; set; }
-        public bool SkipNotSameDayFinishJourneys { get; set; }
-        public int NoLongerThan { get; set; }
-        public List<SequentialJourneyCollection> GetFullPathCombinationOfJourneys(List<Path> fullPaths, JourneyCollection journeyCollection, bool skipUndoableJourneys, bool skipNotSameDayFinishJourneys, int noLongerThan)
+        private int NoLongerThan { get; set; }
+        public List<SequentialJourneyCollection> GetFullPathCombinationOfJourneys(List<Path> fullPaths, JourneyCollection journeyCollection, int noLongerThan)
         {
-            SkipUndoableJourneys = skipUndoableJourneys;
-            SkipNotSameDayFinishJourneys = skipNotSameDayFinishJourneys;
             NoLongerThan = noLongerThan;
 
             Dictionary<string, JourneyCollection> collectionsByDirectPathDict = GetDictOfCollectionsGroupedByDirectPath(fullPaths, journeyCollection);
@@ -84,11 +80,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             {
                 currentStack.Push(col[i]);
                 SequentialJourneyCollection seq = new(new(currentStack.Reverse().ToList()));
-                if (
-                    (!SkipUndoableJourneys || seq.SequenceIsDoable()) &&
-                    (!SkipNotSameDayFinishJourneys || seq.StartsAndEndsOnSameDay()) &&
-                    (seq.GetLength().TotalHours <= NoLongerThan)
-                )
+                if (seq.SequenceIsDoable() && seq.GetLength().TotalHours <= NoLongerThan)
                 {
                     if (seq.Count() == journeyCollections.Count) results.Push(seq);
                     else BuildUpCombinationOfJourneys(index + 1, journeyCollections, currentStack, results);

@@ -18,23 +18,14 @@ namespace JourneyPlanner_ClassLibrary.Workers
         private double AvgInitialCost { get; set; }
         private double AvgAirlineCount { get; set; }
         private double AvgFlightCount { get; set; }
-        private bool SkipUndoableJourneys { get; set; }
-        private bool SkipNotSameDayFinishJourneys { get; set; }
         private Dictionary<string, Airport> AirportDict { get; set; }
 
         public List<DataTable> GetTables(
             List<Airport> airportList,
-            List<SequentialJourneyCollection> sequentialCollections,
-            bool skipUndoableJourneys,
-            bool skipNotSameDayFinishJourneys
+            List<SequentialJourneyCollection> sequentialCollections
         )
         {
-            InitialiseData(
-                airportList,
-                sequentialCollections,
-                skipUndoableJourneys,
-                skipNotSameDayFinishJourneys
-            );
+            InitialiseData(airportList, sequentialCollections);
             List<SequentialJourneyCollection> reducedAndOrderedList = GetReducedAndOrderedList(sequentialCollections);
             return GetPopulatedTables(reducedAndOrderedList);
         }
@@ -74,9 +65,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             row[index++] = seqCollection.GetFullPath();
             row[index++] = id;
             row[index++] = seqCollection.GetCountOfFlights();
-            row[index++] = seqCollection.GetCountOfBuses();
-            if (!SkipUndoableJourneys) row[index++] = seqCollection.SequenceIsDoable();
-            if (!SkipNotSameDayFinishJourneys) row[index++] = seqCollection.StartsAndEndsOnSameDay();
+            row[index++] = seqCollection.StartsAndEndsOnSameDay();
             row[index++] = GetShortDateTime(seqCollection.GetStartTime());
             row[index++] = GetShortDateTime(seqCollection.GetEndTime());
             row[index++] = GetShortTimeSpan(seqCollection.GetLength());
@@ -92,7 +81,6 @@ namespace JourneyPlanner_ClassLibrary.Workers
         private DataTable GetMainTable()
         {
             DataTable mainTable = new("Summary");
-            DataColumn doableColumn = new("Doable", TypeBool);
             DataColumn sameDayFinishColumn = new("Same Day Finish", TypeBool);
             mainTable.Columns.AddRange(
                 new List<DataColumn>
@@ -100,8 +88,6 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     new("Path", TypeString),
                     new("Id", TypeInt32),
                     new("Flights", TypeInt32),
-                    new("Buses", TypeInt32),
-                    doableColumn,
                     sameDayFinishColumn,
                     new("Start", TypeDateTime),
                     new("End", TypeDateTime),
@@ -114,8 +100,6 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     new("Has 0 Cost Journey", TypeBool)
                 }.ToArray()
             );
-            if (SkipUndoableJourneys) mainTable.Columns.Remove(doableColumn);
-            if (SkipNotSameDayFinishJourneys) mainTable.Columns.Remove(sameDayFinishColumn);
             return mainTable;
         }
 
@@ -136,12 +120,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 .ToList();
         }
 
-        private void InitialiseData(
-            List<Airport> airportList,
-            List<SequentialJourneyCollection> sequentialCollections,
-            bool skipUndoableJourneys,
-            bool skipNotSameDayFinishJourneys
-        )
+        private void InitialiseData(List<Airport> airportList, List<SequentialJourneyCollection> sequentialCollections)
         {
             AirportDict = GetAirportDict(airportList);
 
@@ -151,9 +130,6 @@ namespace JourneyPlanner_ClassLibrary.Workers
             AvgAirlineCount = GetAverage(sequentialCollections, x => x.GetCountOfAirlines());
             GetAverage(sequentialCollections, GetCountryChanges);
             AvgFlightCount = GetAverage(sequentialCollections, c => c.GetCountOfFlights());
-
-            SkipUndoableJourneys = skipUndoableJourneys;
-            SkipNotSameDayFinishJourneys = skipNotSameDayFinishJourneys;
         }
 
         private static double GetAverage(
@@ -222,7 +198,6 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     new("Path", TypeString),
                     new("Id", TypeInt32),
                     new("Journey #", TypeInt32),
-                    new("Is Flight", TypeBool),
                     new("Departing Time", TypeDateTime),
                     new("Arriving Time", TypeDateTime),
                     new("Departing Airport", TypeString),
@@ -248,7 +223,6 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 row[index++] = journey.Path;
                 row[index++] = id;
                 row[index++] = i + 1;
-                row[index++] = journey.IsFlight();
                 row[index++] = GetShortDateTime(journey.Departing);
                 row[index++] = GetShortDateTime(journey.Arriving);
                 row[index++] = AirportDict[journey.GetDepartingLocation()].Name;
@@ -265,7 +239,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             }
         }
 
-        public static string GetShortDateTime(DateTime? dt)
+        private static string GetShortDateTime(DateTime? dt)
         {
             return dt.Value.ToString("dd/MM/yyyy HH:mm:ss");
         }

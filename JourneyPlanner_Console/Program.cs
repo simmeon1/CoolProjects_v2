@@ -25,32 +25,25 @@ namespace JourneyPlanner_Console
             }
             Parameters parameters = System.IO.File.ReadAllText(parametersPath).DeserializeObject<Parameters>();
 
-            ChromeDriver driver = null;
-            if (parameters.AirportListFile.IsNullOrEmpty() ||
-                parameters.AirportDestinationsFile.IsNullOrEmpty() ||
-                !parameters.OnlyPrintPaths
-                )
-            {
-                ChromeOptions chromeOptions = new();
-                chromeOptions.AddArgument("--log-level=3");
-                chromeOptions.AddArgument("window-size=1280,800");
-                if (parameters.Headless) chromeOptions.AddArgument("headless");
-                driver = new(chromeOptions);
-            }
+            ChromeOptions chromeOptions = new();
+            chromeOptions.AddArgument("--log-level=3");
+            chromeOptions.AddArgument("window-size=1280,800");
+            if (parameters.Headless) chromeOptions.AddArgument("headless");
+            ChromeDriver driver = new(chromeOptions);
 
             Logger_Console logger = new();
             RealWebDriverWaitProvider webDriverWait = new(driver);
             FlightConnectionsDotComWorker worker = new(logger, driver, webDriverWait);
             RealHttpClient httpClient = new();
-
-            MultiJourneyCollector multiJourneyCollector = new();
+            
             JourneyRetrieverComponents components = new(
                 driver,
                 logger,
                 webDriverWait,
                 new RealDelayer(),
                 httpClient,
-                driver);
+                driver
+            );
 
             FullRunner runner = new(
                 components,
@@ -69,14 +62,14 @@ namespace JourneyPlanner_Console
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Exeption appeared during run. Details:");
+                Console.WriteLine("Exception appeared during run. Details:");
                 Console.WriteLine(ex.ToString());
             }
             finally
             {
                 if ((success || parameters.Headless) && driver != null) driver.Quit();
                 Console.WriteLine("Run finished. Press any key to continue");
-                // Console.ReadKey();
+                Console.ReadKey();
             }
         }
     }
