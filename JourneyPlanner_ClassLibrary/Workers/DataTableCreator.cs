@@ -9,53 +9,31 @@ namespace JourneyPlanner_ClassLibrary.Workers
 {
     public class DataTableCreator
     {
-        private Type TypeString { get; set; }
-        private Type TypeInt32 { get; set; }
-        private Type TypeDouble { get; set; }
-        private Type TypeBool { get; set; }
-        private Type TypeDateTime { get; set; }
+        private Type TypeString { get; set; } = Type.GetType("System.String");
+        private Type TypeInt32 { get; set; } = Type.GetType("System.Int32");
+        private Type TypeDouble { get; set; } = Type.GetType("System.Double");
+        private Type TypeBool { get; set; } = Type.GetType("System.Boolean");
+        private Type TypeDateTime { get; set; } = Type.GetType("System.DateTime");
         private double AvgLength { get; set; }
-        private double AvgFullCost { get; set; }
         private double AvgInitialCost { get; set; }
         private double AvgAirlineCount { get; set; }
         private double AvgFlightCount { get; set; }
-        private double AvgCountryChanges { get; set; }
         private bool SkipUndoableJourneys { get; set; }
         private bool SkipNotSameDayFinishJourneys { get; set; }
         private Dictionary<string, Airport> AirportDict { get; set; }
-        private Dictionary<SequentialJourneyCollection, double> JourneyExtraCosts { get; set; }
-
-        public DataTableCreator()
-        {
-            TypeString = Type.GetType("System.String");
-            TypeInt32 = Type.GetType("System.Int32");
-            TypeDouble = Type.GetType("System.Double");
-            TypeBool = Type.GetType("System.Boolean");
-            TypeDateTime = Type.GetType("System.DateTime");
-        }
 
         public List<DataTable> GetTables(
             List<Airport> airportList,
             List<SequentialJourneyCollection> sequentialCollections,
             bool skipUndoableJourneys,
-            bool skipNotSameDayFinishJourneys,
-            string home,
-            double transportFromHomeCost,
-            double extraCostPerFlight,
-            double hotelCost,
-            int earlyFlightHour
+            bool skipNotSameDayFinishJourneys
         )
         {
             InitialiseData(
                 airportList,
                 sequentialCollections,
-                home,
-                transportFromHomeCost,
-                extraCostPerFlight,
                 skipUndoableJourneys,
-                skipNotSameDayFinishJourneys,
-                hotelCost,
-                earlyFlightHour
+                skipNotSameDayFinishJourneys
             );
             List<SequentialJourneyCollection> reducedAndOrderedList = GetReducedAndOrderedList(sequentialCollections);
             return GetPopulatedTables(reducedAndOrderedList);
@@ -105,10 +83,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             row[index++] = seqCollection.GetCountOfAirlines();
             row[index++] = GetCountryChanges(seqCollection);
             row[index++] = seqCollection.GetCost();
-            row[index++] = JourneyExtraCosts[seqCollection];
-            row[index++] = GetFullCostForJourney(seqCollection);
-            row[index++] = GetBargainPercentageForInitialCost(seqCollection);
-            row[index++] = GetBargainPercentageForFullCost(seqCollection);
+            row[index++] = GetBargainPercentage(seqCollection);
             row[index++] = seqCollection.GetCompaniesString();
             row[index++] = seqCollection.HasJourneyWithZeroCost();
             mainTable.Rows.Add(row);
@@ -133,11 +108,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     new("Length", TypeString),
                     new("Airline Count", TypeInt32),
                     new("Country Changes", TypeInt32),
-                    new("Initial Cost £", TypeDouble),
-                    new("Extra Cost £", TypeDouble),
-                    new("Total Cost £", TypeDouble),
-                    new("Bargain % (Initial Cost)", TypeDouble),
-                    new("Bargain % (Full Cost)", TypeDouble),
+                    new("Cost £", TypeDouble),
+                    new("Bargain %", TypeDouble),
                     new("Companies", TypeString),
                     new("Has 0 Cost Journey", TypeBool)
                 }.ToArray()
@@ -157,9 +129,9 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 .ThenBy(c => c.GetCountOfFlights())
                 .ThenBy(GetCountryChanges)
                 .ThenBy(c => c.HasJourneyWithZeroCost())
-                .ThenByDescending(GetBargainPercentageForFullCost)
+                .ThenByDescending(GetBargainPercentage)
                 .ThenBy(c => c.GetLength())
-                .ThenBy(GetFullCostForJourney)
+                .ThenBy(c => c.GetCost())
                 .ThenBy(c => c.GetStartTime())
                 .ToList();
         }
@@ -167,30 +139,17 @@ namespace JourneyPlanner_ClassLibrary.Workers
         private void InitialiseData(
             List<Airport> airportList,
             List<SequentialJourneyCollection> sequentialCollections,
-            string home,
-            double transportFromHomeCost,
-            double extraCostPerFlight,
             bool skipUndoableJourneys,
-            bool skipNotSameDayFinishJourneys,
-            double hotelCost,
-            int earlyFlightHour
+            bool skipNotSameDayFinishJourneys
         )
         {
             AirportDict = GetAirportDict(airportList);
-            JourneyExtraCosts = GetExtraCostsForJourneys(
-                sequentialCollections,
-                home,
-                transportFromHomeCost,
-                extraCostPerFlight,
-                hotelCost,
-                earlyFlightHour
-            );
 
             AvgLength = GetAverage(sequentialCollections, x => x.GetLength().TotalMinutes);
-            AvgFullCost = GetAverage(sequentialCollections, GetFullCostForJourney);
+            GetAverage(sequentialCollections, c => c.GetCost());
             AvgInitialCost = GetAverage(sequentialCollections, x => x.GetCost());
             AvgAirlineCount = GetAverage(sequentialCollections, x => x.GetCountOfAirlines());
-            AvgCountryChanges = GetAverage(sequentialCollections, GetCountryChanges);
+            GetAverage(sequentialCollections, GetCountryChanges);
             AvgFlightCount = GetAverage(sequentialCollections, c => c.GetCountOfFlights());
 
             SkipUndoableJourneys = skipUndoableJourneys;
@@ -210,50 +169,13 @@ namespace JourneyPlanner_ClassLibrary.Workers
             Dictionary<string, Airport> airportDict = new();
             foreach (Airport airport in airportList)
             {
-                if (!airportDict.ContainsKey(airport.Code)) airportDict.Add(airport.Code, airport);
+                airportDict.TryAdd(airport.Code, airport);
             }
 
             return airportDict;
         }
-
-        private double GetFullCostForJourney(SequentialJourneyCollection x)
-        {
-            return x.GetCost() + JourneyExtraCosts[x];
-        }
-
-        private static Dictionary<SequentialJourneyCollection, double> GetExtraCostsForJourneys(
-            List<SequentialJourneyCollection> sequentialCollections,
-            string home,
-            double transportFromHomeCost,
-            double extraCostPerFlight,
-            double hotelCost,
-            int earlyFlightHour
-        )
-        {
-            Dictionary<SequentialJourneyCollection, double> journeyExtraCosts = new();
-            foreach (SequentialJourneyCollection col in sequentialCollections)
-            {
-                double extraCost = 0;
-                bool startsFromHome = col.GetDepartingLocation().Equals(home);
-                if (!startsFromHome)
-                {
-                    extraCost += transportFromHomeCost;
-                    if (col.GetStartTime().Value.Hour <= earlyFlightHour) extraCost += hotelCost;
-                }
-
-                extraCost += col.GetCountOfFlights() * extraCostPerFlight;
-                journeyExtraCosts.Add(col, extraCost);
-            }
-
-            return journeyExtraCosts;
-        }
-
-        private double GetBargainPercentageForFullCost(SequentialJourneyCollection seqCollection)
-        {
-            return GetBargainPercentage(seqCollection, GetFullCostForJourney(seqCollection), AvgFullCost);
-        }
-
-        private double GetBargainPercentageForInitialCost(SequentialJourneyCollection seqCollection)
+        
+        private double GetBargainPercentage(SequentialJourneyCollection seqCollection)
         {
             return GetBargainPercentage(seqCollection, seqCollection.GetCost(), AvgInitialCost);
         }
@@ -265,10 +187,10 @@ namespace JourneyPlanner_ClassLibrary.Workers
         )
         {
             return Math.Round(
-                (100 - ((seqCollection.GetLength().TotalMinutes / AvgLength) * 100)) +
-                (100 - ((journeyCost / avgCost) * 100)) +
-                (100 - ((seqCollection.GetCountOfFlights() / AvgFlightCount) * 100)) +
-                (100 - ((seqCollection.GetCountOfAirlines() / AvgAirlineCount) * 100)),
+                (100 - seqCollection.GetLength().TotalMinutes / AvgLength * 100) +
+                (100 - journeyCost / avgCost * 100) +
+                (100 - seqCollection.GetCountOfFlights() / AvgFlightCount * 100) +
+                (100 - seqCollection.GetCountOfAirlines() / AvgAirlineCount * 100),
                 2
             );
         }

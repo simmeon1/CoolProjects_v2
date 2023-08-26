@@ -174,12 +174,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     airportsList,
                     results,
                     Parameters.SkipUndoableJourneys,
-                    Parameters.SkipNotSameDayFinishJourneys,
-                    Parameters.Home,
-                    Parameters.TransportFromHomeCost,
-                    Parameters.ExtraCostPerFlight,
-                    Parameters.HotelCost,
-                    Parameters.EarlyFlightHour
+                    Parameters.SkipNotSameDayFinishJourneys
                 ),
                 $"{runResultsPath}\\{runId}_results.xlsx"
             );
