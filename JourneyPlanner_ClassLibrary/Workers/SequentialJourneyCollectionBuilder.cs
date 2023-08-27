@@ -49,10 +49,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
                         fullyConnectedPathJourneys.Clear();
                         break;
                     }
-                    else
-                    {
-                        fullyConnectedPathJourneys.Add(col);
-                    }
+
+                    fullyConnectedPathJourneys.Add(col);
                 }
                 if (fullyConnectedPathJourneys.Count > 0) journeyCollectionsGrouped.Add(fullyConnectedPathJourneys);
             }

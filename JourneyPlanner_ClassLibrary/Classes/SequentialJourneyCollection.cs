@@ -85,6 +85,21 @@ namespace JourneyPlanner_ClassLibrary.Classes
             }
             return true;
         }
+        
+        public TimeSpan GetShortestPause()
+        {
+            if (JourneyCollection.GetCount() == 1) return new TimeSpan();
+
+            var pauses = new List<TimeSpan>();
+            Journey previousJourney = JourneyCollection[0];
+            for (int i = 1; i < JourneyCollection.GetCount(); i++)
+            {
+                pauses.Add(JourneyCollection[i].Departing - previousJourney.Arriving);
+                previousJourney = JourneyCollection[i];
+            }
+            return pauses.Min();
+        }
+
 
         public double GetCost()
         {

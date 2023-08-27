@@ -66,6 +66,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             row[index++] = GetShortDateTime(seqCollection.GetStartTime());
             row[index++] = GetShortDateTime(seqCollection.GetEndTime());
             row[index++] = GetShortTimeSpan(seqCollection.GetLength());
+            row[index++] = GetShortTimeSpan(seqCollection.GetShortestPause());
             row[index++] = seqCollection.GetCountOfAirlines();
             row[index++] = GetCountryChanges(seqCollection);
             row[index++] = seqCollection.GetCost();
@@ -89,6 +90,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     new("Start", TypeDateTime),
                     new("End", TypeDateTime),
                     new("Length", TypeString),
+                    new("Shortest Pause", TypeString),
                     new("Airline Count", TypeInt32),
                     new("Country Changes", TypeInt32),
                     new("Cost £", TypeDouble),
@@ -196,7 +198,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 row[index++] = AirportDict[journey.GetArrivingLocation()].Country;
                 row[index++] = journey.Company;
                 row[index++] = GetShortTimeSpan(
-                    i == 0 ? new TimeSpan() : (journey.Departing - sequentialCollection[i - 1].Arriving)
+                    i == 0 ? new TimeSpan() : journey.Departing - sequentialCollection[i - 1].Arriving
                 );
                 row[index++] = GetShortTimeSpan(journey.Duration);
                 row[index++] = journey.Cost;
