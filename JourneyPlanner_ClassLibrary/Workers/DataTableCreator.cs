@@ -66,7 +66,9 @@ namespace JourneyPlanner_ClassLibrary.Workers
             row[index++] = GetShortDateTime(seqCollection.GetStartTime());
             row[index++] = GetShortDateTime(seqCollection.GetEndTime());
             row[index++] = GetShortTimeSpan(seqCollection.GetLength());
+            row[index++] = seqCollection.GetLength().TotalMinutes;
             row[index++] = GetShortTimeSpan(seqCollection.GetShortestPause());
+            row[index++] = seqCollection.GetShortestPause().TotalMinutes;
             row[index++] = seqCollection.GetCountOfAirlines();
             row[index++] = GetCountryChanges(seqCollection);
             row[index++] = seqCollection.GetCost();
@@ -75,7 +77,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             row[index++] = seqCollection.HasJourneyWithZeroCost();
             mainTable.Rows.Add(row);
         }
-
+        
         private DataTable GetMainTable()
         {
             DataTable mainTable = new("Summary");
@@ -90,7 +92,9 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     new("Start", TypeDateTime),
                     new("End", TypeDateTime),
                     new("Length", TypeString),
+                    new("Length Int", TypeInt32),
                     new("Shortest Pause", TypeString),
+                    new("Shortest Pause Int", TypeInt32),
                     new("Airline Count", TypeInt32),
                     new("Country Changes", TypeInt32),
                     new("Cost £", TypeDouble),
