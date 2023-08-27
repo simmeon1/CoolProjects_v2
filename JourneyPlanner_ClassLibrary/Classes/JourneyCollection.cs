@@ -39,16 +39,11 @@ namespace JourneyPlanner_ClassLibrary.Classes
             for (int i = 0; i < count; i++) Add(journeys[i]);
         }
 
-        public int GetCountOfFlights()
+        public int GetCountOfJourneys()
         {
-            return Journeys.Count(x => x.IsFlight());
+            return Journeys.Count;
         }
-
-        public int GetCountOfLocalLinks()
-        {
-            return Journeys.Count(x => !x.IsFlight());
-        }
-
+        
         public Journey GetFirst()
         {
             return Journeys[0];
@@ -67,17 +62,6 @@ namespace JourneyPlanner_ClassLibrary.Classes
         public JourneyCollection GetJourneysThatContainPath(string path)
         {
             return new JourneyCollection(Journeys.Where(j => j.Path.Equals(path)).ToList());
-        }
-
-        public void RemoveJourneysThatMatchPathAndRetriever(string retrieverName, string path)
-        {
-            List<Journey> newList = new();
-            foreach (Journey journey in Journeys)
-            {
-                if (journey.RetrievedWithWorker.Equals(retrieverName) && journey.Path.Equals(path)) continue;
-                newList.Add(journey);
-            }
-            Journeys = newList;
         }
         
         public bool AlreadyContainsJourney(Journey journey)

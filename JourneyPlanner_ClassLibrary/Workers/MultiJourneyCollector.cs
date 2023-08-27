@@ -11,7 +11,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
     {
         public async Task<JourneyCollection> GetJourneys(
             JourneyRetrieverComponents c,
-            JourneyRetrieverData retrieverData,
+            List<DirectPath> directPaths,
             DateTime dateFrom,
             DateTime dateTo
             )
@@ -19,7 +19,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             JourneyCollection allJourneys = new();
 
             int totalPathsCollected = 0;
-            int totalPathsToSearch = retrieverData.DirectPaths.Count;
+            int totalPathsToSearch = directPaths.Count;
             List<DateTime> allDates = GetAllDates(dateFrom, dateTo);
             
             c.Log($"Beginning search for {totalPathsToSearch} paths from {dateFrom.ToShortDateString()} to {dateTo.ToShortDateString()}");
@@ -28,7 +28,6 @@ namespace JourneyPlanner_ClassLibrary.Workers
             try
             {
                 retriever.Initialise();
-                List<DirectPath> directPaths = retrieverData.DirectPaths;
                 JourneyCollection journeys = await retriever.GetJourneysForDates(directPaths, allDates);
                 for (int i = 0; i < journeys.GetCount(); i++)
                 {

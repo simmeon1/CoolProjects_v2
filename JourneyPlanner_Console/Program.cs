@@ -47,7 +47,7 @@ namespace JourneyPlanner_Console
 
             FullRunner runner = new(
                 components,
-                fileIO: new RealFileIO(),
+                fileIo: new RealFileIO(),
                 dateTimeProvider: new RealDateTimeProvider(),
                 printer: new ExcelPrinter(),
                 airportCollector: new FlightConnectionsDotComWorkerAirportCollector(worker),

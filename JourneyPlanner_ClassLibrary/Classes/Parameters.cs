@@ -15,5 +15,6 @@ namespace JourneyPlanner_ClassLibrary.Classes
         public string AirportDestinationsFile { get; set; }
         public int NoLongerThan { get; set; }
         public bool Headless { get; set; }
+        public string ExistingResultsPath { get; set; }
     }
 }

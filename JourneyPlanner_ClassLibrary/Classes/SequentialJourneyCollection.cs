@@ -80,7 +80,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
             Journey previousJourney = JourneyCollection[0];
             for (int i = 1; i < JourneyCollection.GetCount(); i++)
             {
-                if ((JourneyCollection[i].Departing - previousJourney.Arriving).TotalMinutes < (JourneyCollection[i].IsFlight() ? 60 : 30)) return false;
+                if ((JourneyCollection[i].Departing - previousJourney.Arriving).TotalMinutes < 30) return false;
                 previousJourney = JourneyCollection[i];
             }
             return true;
@@ -105,14 +105,9 @@ namespace JourneyPlanner_ClassLibrary.Classes
 
         public int GetCountOfFlights()
         {
-            return JourneyCollection.GetCountOfFlights();
+            return JourneyCollection.GetCountOfJourneys();
         }
         
-        public int GetCountOfBuses()
-        {
-            return JourneyCollection.GetCountOfLocalLinks();
-        }
-
         public TimeSpan GetLength()
         {
             TimeSpan time = new();
@@ -143,28 +138,28 @@ namespace JourneyPlanner_ClassLibrary.Classes
 
         public int GetCountOfCompanies()
         {
-            return GetCompanies(j => true).Count;
+            return GetCompanies().Count;
         }
         
         public int GetCountOfAirlines()
         {
-            return GetCompanies(j => j.IsFlight()).Count;
+            return GetCompanies().Count;
         }
 
-        private HashSet<string> GetCompanies(Func<Journey, bool> journeyToIncludeFunc)
+        private HashSet<string> GetCompanies()
         {
             HashSet<string> companies = new();
             for (int i = 0; i < JourneyCollection.GetCount(); i++)
             {
                 Journey journey = JourneyCollection[i];
-                if (journeyToIncludeFunc.Invoke(journey)) companies.Add(journey.Company);
+                companies.Add(journey.Company);
             }
             return companies;
         }
 
         public string GetCompaniesString()
         {
-            return GetCompanies(j => true).ToList().ConcatenateListOfStringsToCommaAndSpaceString();
+            return GetCompanies().ToList().ConcatenateListOfStringsToCommaAndSpaceString();
         }
     }
 }
