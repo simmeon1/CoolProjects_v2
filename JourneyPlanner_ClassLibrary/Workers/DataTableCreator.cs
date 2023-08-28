@@ -88,6 +88,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             row[index++] = GetShortDateTime(GetPenalizedEndTimeTime(seqCollection, penalties));
             row[index++] = GetShortTimeSpan(GetPenalizedLength(seqCollection, penalties));
             row[index++] = GetPenalizedLength(seqCollection, penalties).TotalMinutes;
+            row[index++] = GetPenaltyTime(seqCollection, penalties).TotalMinutes;
 
             row[index++] = GetShortTimeSpan(seqCollection.GetShortestPause());
             row[index++] = seqCollection.GetShortestPause().TotalMinutes;
@@ -106,9 +107,13 @@ namespace JourneyPlanner_ClassLibrary.Workers
             Dictionary<string, int> penalties
         )
         {
-            return seqCollection.GetLength()
-                   + GetLocationPenalty(penalties, GetDepartingLocation(seqCollection)) 
-                   + GetLocationPenalty(penalties, GetArrivingLocation(seqCollection));
+            var penaltyTime = GetPenaltyTime(seqCollection, penalties);
+            return seqCollection.GetLength() + penaltyTime;
+        }
+
+        private static TimeSpan GetPenaltyTime(SequentialJourneyCollection seqCollection, Dictionary<string, int> penalties)
+        {
+            return GetLocationPenalty(penalties, GetDepartingLocation(seqCollection)) + GetLocationPenalty(penalties, GetArrivingLocation(seqCollection));
         }
 
         private static DateTime? GetPenalizedStartTime(
@@ -167,6 +172,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     new("End Penalized", TypeDateTime),
                     new("Length Penalized", TypeString),
                     new("Length Int Penalized", TypeInt32),
+                    new("Penalty Time", TypeInt32),
                     
                     new("Shortest Pause", TypeString),
                     new("Shortest Pause Int", TypeInt32),
