@@ -15,30 +15,40 @@ namespace JourneyPlanner_ClassLibrary.Workers
         private Type TypeBool { get; set; } = Type.GetType("System.Boolean");
         private Type TypeDateTime { get; set; } = Type.GetType("System.DateTime");
         private double AvgLength { get; set; }
+        private double AvgLengthPenalized { get; set; }
         private double AvgCost { get; set; }
         private Dictionary<string, Airport> AirportDict { get; set; }
 
         public List<DataTable> GetTables(
             List<Airport> airportList,
-            List<SequentialJourneyCollection> sequentialCollections
+            List<SequentialJourneyCollection> sequentialCollections,
+            Dictionary<string, int> penalties
         )
         {
-            InitialiseData(airportList, sequentialCollections);
-            return GetPopulatedTables(sequentialCollections.OrderByDescending(GetBargainPercentage).ToList());
+            penalties ??= new Dictionary<string, int>();
+            InitialiseData(airportList, sequentialCollections, penalties);
+            return GetPopulatedTables(
+                sequentialCollections.OrderByDescending(x => GetBargainPercentagePenalized(x, penalties)).ToList(),
+                penalties
+            );
         }
 
-        private List<DataTable> GetPopulatedTables(List<SequentialJourneyCollection> reducedAndOrderedList)
+        private List<DataTable> GetPopulatedTables(
+            List<SequentialJourneyCollection> list,
+            Dictionary<string, int> penalties
+        )
         {
             DataTable mainTable = GetMainTable();
             DataTable subTable = GetSubTable();
-            List<DataTable> tables = PopulateTables(reducedAndOrderedList, mainTable, subTable);
+            List<DataTable> tables = PopulateTables(list, mainTable, subTable, penalties);
             return tables;
         }
 
         private List<DataTable> PopulateTables(
             List<SequentialJourneyCollection> reducedAndOrderedList,
             DataTable mainTable,
-            DataTable subTable
+            DataTable subTable,
+            Dictionary<string, int> penalties
         )
         {
             List<DataTable> tables = new();
@@ -46,7 +56,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             {
                 SequentialJourneyCollection seqCollection = reducedAndOrderedList[i];
                 int id = i + 1;
-                AddRowToMainTable(seqCollection, id, mainTable);
+                AddRowToMainTable(seqCollection, id, mainTable, penalties);
                 AddRowsToSubTable(seqCollection, id, subTable);
             }
 
@@ -55,7 +65,12 @@ namespace JourneyPlanner_ClassLibrary.Workers
             return tables;
         }
 
-        private void AddRowToMainTable(SequentialJourneyCollection seqCollection, int id, DataTable mainTable)
+        private void AddRowToMainTable(
+            SequentialJourneyCollection seqCollection,
+            int id,
+            DataTable mainTable,
+            Dictionary<string, int> penalties
+        )
         {
             int index = 0;
             DataRow row = mainTable.NewRow();
@@ -67,17 +82,70 @@ namespace JourneyPlanner_ClassLibrary.Workers
             row[index++] = GetShortDateTime(seqCollection.GetEndTime());
             row[index++] = GetShortTimeSpan(seqCollection.GetLength());
             row[index++] = seqCollection.GetLength().TotalMinutes;
+
+            //Penalties
+            row[index++] = GetShortDateTime(GetPenalizedStartTime(seqCollection, penalties));
+            row[index++] = GetShortDateTime(GetPenalizedEndTimeTime(seqCollection, penalties));
+            row[index++] = GetShortTimeSpan(GetPenalizedLength(seqCollection, penalties));
+            row[index++] = GetPenalizedLength(seqCollection, penalties).TotalMinutes;
+
             row[index++] = GetShortTimeSpan(seqCollection.GetShortestPause());
             row[index++] = seqCollection.GetShortestPause().TotalMinutes;
             row[index++] = seqCollection.GetCountOfAirlines();
             row[index++] = GetCountryChanges(seqCollection);
             row[index++] = seqCollection.GetCost();
             row[index++] = GetBargainPercentage(seqCollection);
+            row[index++] = GetBargainPercentagePenalized(seqCollection, penalties);
             row[index++] = seqCollection.GetCompaniesString();
             row[index++] = seqCollection.HasJourneyWithZeroCost();
             mainTable.Rows.Add(row);
         }
-        
+
+        private static TimeSpan GetPenalizedLength(
+            SequentialJourneyCollection seqCollection,
+            Dictionary<string, int> penalties
+        )
+        {
+            return seqCollection.GetLength()
+                   + GetLocationPenalty(penalties, GetDepartingLocation(seqCollection)) 
+                   + GetLocationPenalty(penalties, GetArrivingLocation(seqCollection));
+        }
+
+        private static DateTime? GetPenalizedStartTime(
+            SequentialJourneyCollection seqCollection,
+            Dictionary<string, int> penalties
+        )
+        {
+            var location = GetDepartingLocation(seqCollection);
+            TimeSpan penalty = GetLocationPenalty(penalties, location);
+            return seqCollection.GetStartTime() - penalty;
+        }
+
+        private static string GetDepartingLocation(SequentialJourneyCollection seqCollection)
+        {
+            return seqCollection[0].GetDepartingLocation();
+        }
+
+        private DateTime? GetPenalizedEndTimeTime(
+            SequentialJourneyCollection seqCollection,
+            Dictionary<string, int> penalties
+        )
+        {
+            var location = GetArrivingLocation(seqCollection);
+            TimeSpan penalty = GetLocationPenalty(penalties, location);
+            return seqCollection.GetEndTime() + penalty;
+        }
+
+        private static string GetArrivingLocation(SequentialJourneyCollection seqCollection)
+        {
+            return seqCollection[seqCollection.Count() - 1].GetArrivingLocation();
+        }
+
+        private static TimeSpan GetLocationPenalty(Dictionary<string, int> penalties, string location)
+        {
+            return new TimeSpan(0, penalties.TryGetValue(location, out int startPenalty) ? startPenalty : 0, 0);
+        }
+
         private DataTable GetMainTable()
         {
             DataTable mainTable = new("Summary");
@@ -93,23 +161,36 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     new("End", TypeDateTime),
                     new("Length", TypeString),
                     new("Length Int", TypeInt32),
+                    
+                    //Penalties
+                    new("Start Penalized", TypeDateTime),
+                    new("End Penalized", TypeDateTime),
+                    new("Length Penalized", TypeString),
+                    new("Length Int Penalized", TypeInt32),
+                    
                     new("Shortest Pause", TypeString),
                     new("Shortest Pause Int", TypeInt32),
                     new("Airline Count", TypeInt32),
                     new("Country Changes", TypeInt32),
                     new("Cost £", TypeDouble),
                     new("Bargain %", TypeDouble),
+                    new("Bargain % Penalized", TypeDouble),
                     new("Companies", TypeString),
                     new("Has 0 Cost Journey", TypeBool)
                 }.ToArray()
             );
             return mainTable;
         }
-        
-        private void InitialiseData(List<Airport> airportList, List<SequentialJourneyCollection> sequentialCollections)
+
+        private void InitialiseData(
+            List<Airport> airportList,
+            List<SequentialJourneyCollection> sequentialCollections,
+            Dictionary<string, int> penalties
+        )
         {
             AirportDict = GetAirportDict(airportList);
             AvgLength = GetAverage(sequentialCollections, x => x.GetLength().TotalMinutes);
+            AvgLengthPenalized = GetAverage(sequentialCollections, x => GetPenalizedLength(x, penalties).TotalMinutes);
             AvgCost = GetAverage(sequentialCollections, x => x.GetCost());
         }
 
@@ -131,7 +212,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
 
             return airportDict;
         }
-        
+
         private double GetBargainPercentage(SequentialJourneyCollection seqCollection)
         {
             return Math.Round(
@@ -140,20 +221,36 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 2
             );
         }
-
+        
+        private double GetBargainPercentagePenalized(SequentialJourneyCollection seqCollection, Dictionary<string, int> penalties)
+        {
+            return Math.Round(
+                (100 - GetPenalizedLength(seqCollection, penalties).TotalMinutes / AvgLengthPenalized * 100) +
+                (100 - seqCollection.GetCost() / AvgCost * 100),
+                2
+            );
+        }
+        
 
         private double GetCountryChanges(SequentialJourneyCollection c)
         {
             int changes = 0;
-            Journey previousJourney = c.JourneyCollection[0];
+            Journey previousJourney = c[0];
             if (!AirportDict[previousJourney.GetDepartingLocation()].Country
-                .Equals(AirportDict[previousJourney.GetArrivingLocation()].Country)) changes++;
-
-            for (int i = 1; i < c.JourneyCollection.GetCount(); i++)
+                    .Equals(AirportDict[previousJourney.GetArrivingLocation()].Country))
             {
-                Journey currentJourney = c.JourneyCollection[i];
+                changes++;
+            }
+
+            for (int i = 1; i < c.Count(); i++)
+            {
+                Journey currentJourney = c[i];
                 if (!AirportDict[currentJourney.GetArrivingLocation()].Country
-                    .Equals(AirportDict[previousJourney.GetArrivingLocation()].Country)) changes++;
+                        .Equals(AirportDict[previousJourney.GetArrivingLocation()].Country))
+                {
+                    changes++;
+                }
+
                 previousJourney = currentJourney;
             }
 

@@ -8,7 +8,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
 {
     public class SequentialJourneyCollection
     {
-        public JourneyCollection JourneyCollection { get; }
+        private JourneyCollection JourneyCollection { get; }
         public SequentialJourneyCollection(JourneyCollection journeyCollection)
         {
             if (journeyCollection == null || journeyCollection.GetCount() == 0) throw new Exception("No journeys in collection.");
@@ -31,10 +31,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
 
         public Journey this[int index]
         {
-            get
-            {
-                return JourneyCollection[index];
-            }
+            get => JourneyCollection[index];
 
             set
             {

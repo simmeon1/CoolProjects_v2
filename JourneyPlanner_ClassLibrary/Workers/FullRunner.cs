@@ -99,31 +99,6 @@ namespace JourneyPlanner_ClassLibrary.Workers
             var maxFlights = results?.MaxFlights ?? paramss.MaxFlights;
             var existingJourneyCollection = results?.JourneyCollection;
 
-            await DoTheRest(
-                paramss,
-                generator,
-                origins,
-                destinations,
-                maxFlights,
-                airportsList,
-                runResultsPath,
-                runId,
-                existingJourneyCollection
-            );
-        }
-
-        private async Task DoTheRest(
-            Parameters paramss,
-            AirportPathGenerator generator,
-            List<string> origins,
-            List<string> destinations,
-            int maxFlights,
-            List<Airport> airportsList,
-            string runResultsPath,
-            string runId,
-            JourneyCollection existingJourneyCollection
-        )
-        {
             List<Path> paths = generator.GeneratePaths(
                 origins,
                 destinations,
@@ -159,13 +134,19 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 journeyCollectorResults.SerializeObject(Formatting.Indented)
             );
 
+            var penalties = 
+                !paramss.PenaltiesFile.IsNullOrEmpty() 
+                    ? FileIo.ReadAllText(paramss.PenaltiesFile).DeserializeObject<Dictionary<string,int>>() 
+                    : new Dictionary<string, int>();
+            
             PrintPathsAndJourneysAndFinish(
                 airportsList,
                 journeyCollection,
                 runId,
                 runResultsPath,
                 paths,
-                paramss.NoLongerThan
+                paramss.NoLongerThan,
+                penalties
             );
         }
 
@@ -195,7 +176,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
             string runId,
             string runResultsPath,
             List<Path> paths,
-            int noLongerThan
+            int noLongerThan,
+            Dictionary<string, int> penalties
         )
         {
             SequentialJourneyCollectionBuilder builder = new();
@@ -207,7 +189,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
 
             DataTableCreator dtCreator = new();
             Printer.PrintTablesToWorksheet(
-                dtCreator.GetTables(airportsList, results),
+                dtCreator.GetTables(airportsList, results, penalties),
                 $"{runResultsPath}\\{runId}_results.xlsx"
             );
 
