@@ -113,7 +113,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 
             string durationText = flightText[4];
             var arrivesAfterDays = 0;
-            var regexMatches = Regex.Matches(durationText, "\\+(\\d)");
+            var regexMatches = Regex.Matches(arrivingText, "\\+(\\d)");
             if (regexMatches.Any())
             {
                 arrivesAfterDays = int.Parse(regexMatches[0].Groups[1].Value);
