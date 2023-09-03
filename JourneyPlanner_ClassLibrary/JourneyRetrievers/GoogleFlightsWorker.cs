@@ -31,15 +31,27 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             var results = new List<Journey>();
             var lastResultCount = 0;
             var remainingPaths = paths.Select(x => x).ToList();
+            var destinations = new List<string>();
+            
+            //used to avoid matching up origin and destination which would break the search.
+            var skipFirstGroup = false;
 
             while (remainingPaths.Any())
             {
                 //Origin must be done in singles, otherwise it repeating in both search fields will wipe it from destination
                 var groups = remainingPaths.GroupBy(x => x.GetStart(), y => y.GetEnd());
-                var firstGroup = groups.First();
-                
+                var firstGroup = groups.ElementAt(!skipFirstGroup ? 0 : 1);
+                skipFirstGroup = false;
                 var origins = new [] { firstGroup.Key };
-                var destinations = firstGroup.Take(7).ToList();
+
+
+                if (destinations.Count == 1 && destinations[0] == origins[0])
+                {
+                    skipFirstGroup = true;
+                    continue;
+                }
+                
+                destinations = firstGroup.Take(7).ToList();
 
                 var searchDesc = $"{origins.ConcatenateListOfStringsToCommaAndSpaceString()} to {destinations.ConcatenateListOfStringsToCommaAndSpaceString()}";
                 c.Log(

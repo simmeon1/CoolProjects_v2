@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Common_ClassLibrary;
 using JourneyPlanner_ClassLibrary.Classes;
 
 namespace JourneyPlanner_ClassLibrary.Workers
@@ -10,9 +11,11 @@ namespace JourneyPlanner_ClassLibrary.Workers
         private LinkedList<string> CurrentPath { get; set; }
         private int MaxFlights { get; set; }
         private List<Path> Paths { get; set; }
+        private ILogger Logger { get; set; }
 
-        public AirportPathGenerator(Dictionary<string, HashSet<string>> airportsAndDestinations)
+        public AirportPathGenerator(ILogger logger, Dictionary<string, HashSet<string>> airportsAndDestinations)
         {
+            Logger = logger;
             AirportsAndDestinations = airportsAndDestinations;
         }
 
@@ -21,10 +24,14 @@ namespace JourneyPlanner_ClassLibrary.Workers
             Paths = new List<Path>();
             MaxFlights = maxFlights;
 
+            var total = origins.Count * targets.Count;
+            var counter = 0;
             foreach (string origin in origins)
             {
                 foreach (string target in targets)
                 {
+                    counter++;
+                    Logger.Log($"Generating paths from {origin} to {target} {Globals.GetPercentageAndCountString(counter, total)}");
                     CurrentPath = new LinkedList<string>();
                     UpdateCurrentPathAndScanItIfNeeded(origin, target);
                 }

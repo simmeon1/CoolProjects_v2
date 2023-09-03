@@ -6,21 +6,31 @@ using JourneyPlanner_ClassLibrary.AirportFilterers;
 using JourneyPlanner_ClassLibrary.Classes;
 using JourneyPlanner_ClassLibrary.Interfaces;
 using Newtonsoft.Json;
+using OpenQA.Selenium;
 
 namespace JourneyPlanner_ClassLibrary.Workers
 {
     public class FullRunner
     {
-        //private Parameters Parameters { get; set; }
-        private JourneyRetrieverComponents Components { get; set; }
-        private IFileIO FileIo { get; set; }
-        private IExcelPrinter Printer { get; set; }
-        private IFlightConnectionsDotComWorkerAirportCollector AirportCollector { get; set; }
-        private IFlightConnectionsDotComWorkerAirportPopulator AirportPopulator { get; set; }
-        private IDateTimeProvider DateTimeProvider { get; set; }
+        private readonly IWebDriver driver;
+        private readonly ILogger logger;
+        private readonly IWebDriverWaitProvider wait;
+        private readonly IDelayer delayer;
+        private readonly IHttpClient http;
+        private readonly IJavaScriptExecutor jsExecutor;
+        private readonly IFileIO fileIo;
+        private readonly IExcelPrinter printer;
+        private readonly IFlightConnectionsDotComWorkerAirportCollector airportCollector;
+        private readonly IFlightConnectionsDotComWorkerAirportPopulator airportPopulator;
+        private readonly IDateTimeProvider dateTimeProvider;
 
         public FullRunner(
-            JourneyRetrieverComponents components,
+            IWebDriver driver,
+            ILogger logger,
+            IWebDriverWaitProvider wait,
+            IDelayer delayer,
+            IHttpClient http,
+            IJavaScriptExecutor jsExecutor,
             IFileIO fileIo,
             IDateTimeProvider dateTimeProvider,
             IExcelPrinter printer,
@@ -28,37 +38,51 @@ namespace JourneyPlanner_ClassLibrary.Workers
             IFlightConnectionsDotComWorkerAirportPopulator airportPopulator
         )
         {
-            FileIo = fileIo;
-            Printer = printer;
-            AirportCollector = airportCollector;
-            AirportPopulator = airportPopulator;
-            DateTimeProvider = dateTimeProvider;
-            Components = components;
+            this.driver = driver;
+            this.logger = logger;
+            this.wait = wait;
+            this.delayer = delayer;
+            this.http = http;
+            this.jsExecutor = jsExecutor;
+            this.fileIo = fileIo;
+            this.printer = printer;
+            this.airportCollector = airportCollector;
+            this.airportPopulator = airportPopulator;
+            this.dateTimeProvider = dateTimeProvider;
         }
 
         public async Task DoRun(Parameters paramss)
         {
+            var components = new JourneyRetrieverComponents(
+                driver,
+                logger,
+                wait,
+                delayer,
+                http,
+                jsExecutor
+            );
+            
             string runSummary =
                 $"{paramss.Origins.ConcatenateListOfStringsToCommaAndSpaceString()} - {paramss.Destinations.ConcatenateListOfStringsToCommaAndSpaceString()}";
             runSummary += " - " + paramss.DateFrom.ToString("yyyy-MM-dd");
             runSummary += " - " + paramss.DateTo.ToString("yyyy-MM-dd");
             string runId =
-                Globals.GetDateTimeFileNameFriendlyConcatenatedWithString(DateTimeProvider.Now(), runSummary);
+                Globals.GetDateTimeFileNameFriendlyConcatenatedWithString(dateTimeProvider.Now(), runSummary);
             string runResultsPath = System.IO.Path.Combine(paramss.FileSavePath, runId);
-            if (!FileIo.DirectoryExists(runResultsPath))
+            if (!fileIo.DirectoryExists(runResultsPath))
             {
-                FileIo.CreateDirectory(runResultsPath);
+                fileIo.CreateDirectory(runResultsPath);
             }
 
             List<Airport> airportsList;
             if (!paramss.AirportListFile.IsNullOrEmpty())
             {
-                airportsList = FileIo.ReadAllText(paramss.AirportListFile).DeserializeObject<List<Airport>>();
+                airportsList = fileIo.ReadAllText(paramss.AirportListFile).DeserializeObject<List<Airport>>();
             }
             else
             {
-                airportsList = AirportCollector.CollectAirports();
-                FileIo.WriteAllText(
+                airportsList = airportCollector.CollectAirports();
+                fileIo.WriteAllText(
                     $"{runResultsPath}\\{runId}_airportList.json",
                     airportsList.SerializeObject(Formatting.Indented)
                 );
@@ -69,13 +93,13 @@ namespace JourneyPlanner_ClassLibrary.Workers
             Dictionary<string, HashSet<string>> airportsAndDestinations;
             if (!paramss.AirportDestinationsFile.IsNullOrEmpty())
             {
-                airportsAndDestinations = FileIo.ReadAllText(paramss.AirportDestinationsFile)
+                airportsAndDestinations = fileIo.ReadAllText(paramss.AirportDestinationsFile)
                     .DeserializeObject<Dictionary<string, HashSet<string>>>();
             }
             else
             {
-                airportsAndDestinations = AirportPopulator.PopulateAirports(airportsList, filterer);
-                FileIo.WriteAllText(
+                airportsAndDestinations = airportPopulator.PopulateAirports(airportsList, filterer);
+                fileIo.WriteAllText(
                     $"{runResultsPath}\\{runId}_airportDestinations.json",
                     airportsAndDestinations.SerializeObject(Formatting.Indented)
                 );
@@ -85,13 +109,13 @@ namespace JourneyPlanner_ClassLibrary.Workers
             Dictionary<string, HashSet<string>> filteredAirportsAndDestinations =
                 airportListFilterer.FilterAirports(airportsAndDestinations, filterer);
 
-            Components.Log($"Generating paths...");
+            components.Log($"Generating paths...");
 
 
-            AirportPathGenerator generator = new(filteredAirportsAndDestinations);
+            AirportPathGenerator generator = new(logger, filteredAirportsAndDestinations);
             JourneyCollectorResults results = paramss.ExistingResultsPath.IsNullOrEmpty()
                 ? null
-                : FileIo.ReadAllText(paramss.ExistingResultsPath)
+                : fileIo.ReadAllText(paramss.ExistingResultsPath)
                     .DeserializeObject<JourneyCollectorResults>();
 
             var origins = results?.Origins ?? paramss.Origins;
@@ -115,7 +139,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     .ToList();
 
             var journeyCollection = existingJourneyCollection ?? await new MultiJourneyCollector().GetJourneys(
-                Components,
+                components,
                 directPaths,
                 paramss.DateFrom,
                 paramss.DateTo
@@ -129,14 +153,14 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 JourneyCollection = journeyCollection
             };
 
-            FileIo.WriteAllText(
+            fileIo.WriteAllText(
                 $"{runResultsPath}\\{runId}_journeyCollectorResults.json",
                 journeyCollectorResults.SerializeObject(Formatting.Indented)
             );
 
             var penalties = 
                 !paramss.PenaltiesFile.IsNullOrEmpty() 
-                    ? FileIo.ReadAllText(paramss.PenaltiesFile).DeserializeObject<Dictionary<string,int>>() 
+                    ? fileIo.ReadAllText(paramss.PenaltiesFile).DeserializeObject<Dictionary<string,int>>() 
                     : new Dictionary<string, int>();
             
             PrintPathsAndJourneysAndFinish(
@@ -146,7 +170,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 runResultsPath,
                 paths,
                 paramss.NoLongerThan,
-                penalties
+                penalties,
+                components
             );
         }
 
@@ -164,7 +189,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 pathsDetailed.Add(pathDetailed);
             }
 
-            FileIo.WriteAllText(
+            fileIo.WriteAllText(
                 $"{runResultsPath}\\{runId}_latestPaths.json",
                 pathsDetailed.SerializeObject(Formatting.Indented)
             );
@@ -177,7 +202,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
             string runResultsPath,
             List<Path> paths,
             int noLongerThan,
-            Dictionary<string, int> penalties
+            Dictionary<string, int> penalties,
+            JourneyRetrieverComponents components
         )
         {
             SequentialJourneyCollectionBuilder builder = new();
@@ -188,15 +214,15 @@ namespace JourneyPlanner_ClassLibrary.Workers
             );
 
             DataTableCreator dtCreator = new();
-            Printer.PrintTablesToWorksheet(
+            printer.PrintTablesToWorksheet(
                 dtCreator.GetTables(airportsList, results, penalties),
                 $"{runResultsPath}\\{runId}_results.xlsx"
             );
 
-            Components.Log($"Saved files to {runResultsPath}");
-            FileIo.WriteAllText(
+            components.Log($"Saved files to {runResultsPath}");
+            fileIo.WriteAllText(
                 $"{runResultsPath}\\{runId}_log.txt",
-                Components.GetLoggerContent().SerializeObject(Formatting.Indented)
+                components.GetLoggerContent().SerializeObject(Formatting.Indented)
             );
         }
     }

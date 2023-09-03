@@ -46,7 +46,12 @@ namespace JourneyPlanner_Console
             );
 
             FullRunner runner = new(
-                components,
+                driver,
+                logger,
+                webDriverWait,
+                new RealDelayer(),
+                httpClient,
+                driver,
                 fileIo: new RealFileIO(),
                 dateTimeProvider: new RealDateTimeProvider(),
                 printer: new ExcelPrinter(),
