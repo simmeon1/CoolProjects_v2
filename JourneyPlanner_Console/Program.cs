@@ -27,7 +27,7 @@ namespace JourneyPlanner_Console
                 Match match = Regex.Match(arg, "parametersPath-(.*)");
                 if (match.Success) parametersPath = match.Groups[1].Value;
             }
-            Parameters parameters = (await System.IO.File.ReadAllTextAsync(parametersPath)).DeserializeObject<Parameters>();
+            Parameters parameters = (await File.ReadAllTextAsync(parametersPath)).DeserializeObject<Parameters>();
             
             RealHttpClient httpClient = new();
             Logger_Console logger = new();
@@ -50,15 +50,16 @@ namespace JourneyPlanner_Console
             }
             
             WebClient webClient = new();
-            await webClient.DownloadFileTaskAsync(new Uri(downloadLink), "chromedriver.zip");
-            Directory.Delete("chromeDriverFolder", true);
-            ZipFile.ExtractToDirectory("chromedriver.zip", "chromeDriverFolder");
+            string savePath = parameters.FileSavePath;
+            await webClient.DownloadFileTaskAsync(new Uri(downloadLink), $"{savePath}\\chromedriver.zip");
+            if (Directory.Exists($"{savePath}\\chromeDriverFolder"))  Directory.Delete($"{savePath}\\chromeDriverFolder", true);
+            ZipFile.ExtractToDirectory($"{savePath}\\chromedriver.zip", $"{savePath}\\chromeDriverFolder");
             
             ChromeOptions chromeOptions = new();
             chromeOptions.AddArgument("--log-level=3");
             chromeOptions.AddArgument("window-size=1280,800");
             if (parameters.Headless) chromeOptions.AddArgument("headless");
-            ChromeDriver driver = new(System.IO.Path.GetFullPath("chromeDriverFolder\\chromedriver-win64"), chromeOptions);
+            ChromeDriver driver = new($"{savePath}\\chromeDriverFolder\\chromedriver-win64", chromeOptions);
 
             RealWebDriverWaitProvider webDriverWait = new(driver);
             FlightConnectionsDotComWorker worker = new(logger, driver, webDriverWait);
