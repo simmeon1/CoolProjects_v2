@@ -16,5 +16,10 @@ namespace Common_ClassLibrary
         {
             return client.SendAsync(request);
         }
+        
+        public Task<HttpResponseMessage> GetAsync(string uri)
+        {
+            return client.GetAsync(uri);
+        }
     }
 }

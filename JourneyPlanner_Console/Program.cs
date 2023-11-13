@@ -4,12 +4,16 @@ using Newtonsoft.Json;
 using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using JourneyPlanner_ClassLibrary.Classes;
 using JourneyPlanner_ClassLibrary.FlightConnectionsDotCom;
 using JourneyPlanner_ClassLibrary.Workers;
+using Newtonsoft.Json.Linq;
 
 namespace JourneyPlanner_Console
 {
@@ -23,27 +27,41 @@ namespace JourneyPlanner_Console
                 Match match = Regex.Match(arg, "parametersPath-(.*)");
                 if (match.Success) parametersPath = match.Groups[1].Value;
             }
-            Parameters parameters = System.IO.File.ReadAllText(parametersPath).DeserializeObject<Parameters>();
-
+            Parameters parameters = (await System.IO.File.ReadAllTextAsync(parametersPath)).DeserializeObject<Parameters>();
+            
+            RealHttpClient httpClient = new();
+            Logger_Console logger = new();
+            
+            logger.Log("Getting latest chromedriver.");
+            
+            //Download latest web driver
+            var latestVersionsJson = await (await httpClient.GetAsync(
+                "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json"
+            )).Content.ReadAsStringAsync();
+            JToken latestStableVersionDownloads = JObject.Parse(latestVersionsJson)["channels"]["Stable"]["downloads"]["chromedriver"];
+            string downloadLink = "";
+            foreach (JToken download in latestStableVersionDownloads)
+            {
+                if (download["platform"].ToString() == "win64")
+                {
+                    downloadLink = download["url"].ToString();
+                    break;
+                }
+            }
+            
+            WebClient webClient = new();
+            await webClient.DownloadFileTaskAsync(new Uri(downloadLink), "chromedriver.zip");
+            Directory.Delete("chromeDriverFolder", true);
+            ZipFile.ExtractToDirectory("chromedriver.zip", "chromeDriverFolder");
+            
             ChromeOptions chromeOptions = new();
             chromeOptions.AddArgument("--log-level=3");
             chromeOptions.AddArgument("window-size=1280,800");
             if (parameters.Headless) chromeOptions.AddArgument("headless");
-            ChromeDriver driver = new(chromeOptions);
+            ChromeDriver driver = new(System.IO.Path.GetFullPath("chromeDriverFolder\\chromedriver-win64"), chromeOptions);
 
-            Logger_Console logger = new();
             RealWebDriverWaitProvider webDriverWait = new(driver);
             FlightConnectionsDotComWorker worker = new(logger, driver, webDriverWait);
-            RealHttpClient httpClient = new();
-            
-            JourneyRetrieverComponents components = new(
-                driver,
-                logger,
-                webDriverWait,
-                new RealDelayer(),
-                httpClient,
-                driver
-            );
 
             FullRunner runner = new(
                 driver,
@@ -72,7 +90,7 @@ namespace JourneyPlanner_Console
             }
             finally
             {
-                if ((success || parameters.Headless) && driver != null) driver.Quit();
+                if (success || parameters.Headless) driver.Quit();
                 Console.WriteLine("Run finished. Press any key to continue");
                 Console.ReadKey();
             }
