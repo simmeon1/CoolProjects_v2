@@ -24,6 +24,7 @@ namespace Vigem_Console
             else if (command == "ffvi-auto-battle") doFf6AutoBattle();
             else if (command == "log-screen") doLogScreen(dict);
             else if (command == "test") doTest(dict);
+            else if (command == "crisis-core") doCrisisCoreTest();
         }
 
         private static void doTest(Dictionary<string, string> dict)
@@ -82,6 +83,38 @@ namespace Vigem_Console
                 lastPressedDpad = dpadToPress;
                 //Uncomment to walk in same two spaces. Leave to walk from one wall to another.
                 //localStopwatch.Wait(300);
+            }
+        }
+        
+        private static void doCrisisCoreTest()
+        {
+            RealStopwatch localStopwatch = new();
+            Dualshock4Controller cds4 = GetConnectedDs4Controller();
+            StopwatchControllerUser user = new(cds4, localStopwatch, 100);
+            int delay = 100;
+            while (true)
+            {
+                // user.PressButton(ButtonMappings.ShoulderRight);
+                // localStopwatch.Wait(delay);
+                
+                user.PressButton(ButtonMappings.Square);
+                localStopwatch.Wait(delay);
+                user.PressButton(ButtonMappings.Triangle);
+                localStopwatch.Wait(delay);
+                user.PressButton(ButtonMappings.Circle);
+                localStopwatch.Wait(delay);;
+                user.HoldButton(ButtonMappings.ThumbLeft);
+                user.HoldButton(ButtonMappings.ThumbRight);
+                localStopwatch.Wait(delay);
+                user.ReleaseButton(ButtonMappings.ThumbLeft);
+                user.ReleaseButton(ButtonMappings.ThumbRight);
+                localStopwatch.Wait(delay);
+                
+                // user.PressDPad(DPadMappings.Down);
+                // localStopwatch.Wait(500);
+                // user.PressDPad(DPadMappings.Up);
+                // localStopwatch.Wait(500);
+                
             }
         }
 
