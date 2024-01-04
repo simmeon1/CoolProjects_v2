@@ -31,9 +31,12 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             var results = new List<Journey>();
             var lastResultCount = 0;
             var remainingPaths = paths.Select(x => x).ToList();
+            var collectedFlightsSet = new HashSet<string>();
 
             while (remainingPaths.Any())
             {
+                var remainingPathsSet = remainingPaths.Select(x => x.Path.ToString()).ToHashSet();
+                
                 //Origin must be done in singles, otherwise it repeating in both search fields will wipe it from destination
                 var groups = remainingPaths.GroupBy(x => x.GetStart(), y => y.GetEnd());
 
@@ -63,18 +66,17 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 for (int i = 0; i < allDates.Count; i++)
                 {
                     DateTime date = allDates[i];
-                    c.Log($"Date is {date.ToShortDateString()}");
                     if (i == 0)
                     {
+                        c.Log($"Populating locations...");
                         PopulateSearchField(origins, "Origin");
                         PopulateSearchField(destinations, "Destination");
                     }
 
+                    c.Log($"Date is {date.ToShortDateString()}");
                     PopulateDateAndHitDone(date);
                     if (!stopsSet) SetStopsToNone();
-                    List<Journey> flightsForDate = GetFlightsForDate(date);
-                    //Uncomment if doing multiple origins
-                    // results.AddRange(flightsForDate.Where(x => paths.Any(y => y.ToString() == x.Path.ToString())));
+                    List<Journey> flightsForDate = GetFlightsForDate(date, collectedFlightsSet, remainingPathsSet);
                     results.AddRange(flightsForDate);
                 }
 
@@ -96,7 +98,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             return Task.FromResult(new JourneyCollection(results.OrderBy(j => j.ToString()).ToList()));
         }
 
-        private List<Journey> GetFlightsForDate(DateTime date)
+        private List<Journey> GetFlightsForDate(DateTime date, HashSet<string> collectedFlightsSet, HashSet<string> remainingPathsSet)
         {
             var results = new List<Journey>();
 
@@ -113,7 +115,11 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 string[] flightText = text.Split("\n", StringSplitOptions.RemoveEmptyEntries);
                 if (!flightText[6].Trim().Equals("Nonstop")) continue;
                 Journey item = GetJourneyFromText(date, flightText);
-                results.Add(item);
+                if (remainingPathsSet.Contains(item.Path) && !collectedFlightsSet.Contains(item.ToString()))
+                {
+                    results.Add(item);
+                    collectedFlightsSet.Add(item.ToString());
+                }
             }
 
             return results;

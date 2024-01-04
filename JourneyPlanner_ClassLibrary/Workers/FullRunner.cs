@@ -214,6 +214,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
         )
         {
             SequentialJourneyCollectionBuilder builder = new();
+            components.Log($"Building full journeys...");
             List<SequentialJourneyCollection> results = builder.GetFullPathCombinationOfJourneys(
                 paths,
                 journeyCollectorResults,

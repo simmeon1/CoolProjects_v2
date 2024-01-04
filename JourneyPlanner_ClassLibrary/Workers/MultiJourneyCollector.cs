@@ -17,7 +17,6 @@ namespace JourneyPlanner_ClassLibrary.Workers
             )
         {
             JourneyCollection allJourneys = new();
-
             int totalPathsCollected = 0;
             int totalPathsToSearch = directPaths.Count;
             List<DateTime> allDates = GetAllDates(dateFrom, dateTo);
@@ -29,14 +28,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             {
                 retriever.Initialise();
                 JourneyCollection journeys = await retriever.GetJourneysForDates(directPaths, allDates);
-                for (int i = 0; i < journeys.GetCount(); i++)
-                {
-                    Journey journey = journeys[i];
-                    if (!allJourneys.AlreadyContainsJourney(journey))
-                    {
-                        allJourneys.Add(journey);
-                    }
-                }
+                allJourneys.AddRange(journeys);
 
                 totalPathsCollected += directPaths.Count;
 
