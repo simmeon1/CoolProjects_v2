@@ -11,10 +11,8 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
     public class SequentialJourneyCollectionUnitTests
     {
         private readonly Journey flight1 = new(new DateTime(2000, 11, 11, 10, 20, 30), new DateTime(2000, 11, 11, 11, 30, 40), "easyJet", new TimeSpan(1, 10, 10), "ABZ-EDI", 25);
-        private readonly Journey bus1 = new(new DateTime(2000, 11, 11, 07, 00, 00), new DateTime(2000, 11, 11, 13, 00, 00), "easyJet", new TimeSpan(4, 0, 0), "ABZ-EDI", 15, "busWorker");
         private readonly Journey flight2 = new(new DateTime(2000, 11, 11, 14, 0, 0), new DateTime(2000, 11, 11, 18, 0, 0), "wizz", new TimeSpan(2, 0, 0), "EDI-VAR", 50);
         private readonly Journey flight3 = new(new DateTime(2000, 11, 11, 21, 30, 0), new DateTime(2000, 11, 11, 23, 0, 0), "wizz", new TimeSpan(1, 30, 0), "VAR-BOJ", 10);
-        private readonly Journey bus3 = new(new DateTime(2000, 11, 11, 18, 40, 00), new DateTime(2000, 11, 11, 21, 00, 00), "easyJet", new TimeSpan(4, 0, 0), "VAR-BOJ", 15, "busWorker");
         private readonly Journey flight4 = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizz", new TimeSpan(3, 30, 0), "BOJ-LTN", 40);
         private readonly Journey flight4Copy = new(new DateTime(2000, 11, 11, 23, 30, 0), new DateTime(2000, 11, 12, 1, 0, 0), "wizzd", new TimeSpan(3, 30, 0), "BOJ-LTN", 40);
 
@@ -35,7 +33,7 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         [TestMethod]
         public void ToStringIsCorrectWithSomeFlights()
         {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2, flight3, flight4).ToString().Equals("ABZ-EDI-VAR-BOJ-LTN, Doable = False, Start = 11/11/2000 10:20:30, End = 12/11/2000 01:00:00, Cost = 125"));
+            Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2, flight3, flight4).ToString().Equals("ABZ-EDI-VAR-BOJ-LTN, Doable = True, Start = 11/11/2000 10:20:30, End = 12/11/2000 01:00:00, Cost = 125"));
         }
 
         [TestMethod]
@@ -73,15 +71,17 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         }
         
         [TestMethod]
-        public void SequenceIsValidAndDoableWithFlightAndBus()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(flight2, bus3).SequenceIsDoable());
-        }
-
-        [TestMethod]
         public void SequenceIsValidAndNotDoableWithMultipleFlights()
         {
-            Assert.IsFalse(CreateSeqCollectionWithFlights(flight3, flight4).SequenceIsDoable());
+            var flight4Modified = new Journey(
+                new DateTime(2000, 11, 11, 23, 29, 0),
+                new DateTime(2000, 11, 12, 1, 0, 0),
+                "wizz",
+                new TimeSpan(3, 30, 0),
+                "BOJ-LTN",
+                40
+            );
+            Assert.IsFalse(CreateSeqCollectionWithFlights(flight3, flight4Modified).SequenceIsDoable());
         }
 
         [TestMethod]
@@ -114,6 +114,13 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight1, flight2).StartsAndEndsOnSameDay());
         }
+        
+        [TestMethod]
+        public void GetShortestPauseIsCorrect()
+        {
+            Assert.AreEqual(0, CreateSeqCollectionWithFlights(flight1).GetShortestPause().TotalSeconds);
+            Assert.AreEqual(8960, CreateSeqCollectionWithFlights(flight1, flight2).GetShortestPause().TotalSeconds);
+        }
 
         [TestMethod]
         public void StartsAndEndsOnSameDayIsFalseIfNotTrue()
@@ -126,13 +133,7 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         {
             Assert.IsTrue(CreateSeqCollectionWithFlights(flight3, flight4).GetCountOfFlights() == 2);
         }
-
-        [TestMethod]
-        public void CountOfBusesIsCorrect()
-        {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(bus1, flight2).GetCountOfBuses() == 1);
-        }
-
+        
         [TestMethod]
         public void HasZeroCostIsCorrect()
         {
@@ -161,7 +162,7 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         [TestMethod]
         public void GetCountOfAirlinesIsCorrect()
         {
-            Assert.IsTrue(CreateSeqCollectionWithFlights(bus1, flight2).GetCountOfAirlines() == 1);
+            Assert.IsTrue(CreateSeqCollectionWithFlights(flight2).GetCountOfAirlines() == 1);
         }
         
         [TestMethod]

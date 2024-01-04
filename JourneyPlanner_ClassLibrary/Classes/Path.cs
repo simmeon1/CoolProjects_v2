@@ -5,7 +5,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
 {
     public class Path
     {
-        private List<string> Entries { get; set; }        
+        public List<string> Entries { get; set; }        
         public Path()
         {
         }

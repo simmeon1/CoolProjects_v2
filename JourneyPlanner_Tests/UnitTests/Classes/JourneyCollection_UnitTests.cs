@@ -44,16 +44,6 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
             string json = collection.SerializeObject();
             JourneyCollection collection2 = json.DeserializeObject<JourneyCollection>();
             Assert.IsTrue(collection.GetCount() == collection2.GetCount());
-
-            collection2.RemoveJourneysThatMatchPathAndRetriever(nameof(GoogleFlightsWorker), "ABZ-SOF");
-            Assert.IsTrue(collection2.GetCount() == 2);
-            
-            collection2.RemoveJourneysThatMatchPathAndRetriever("testWorker", "ABZ-EDI");
-            Assert.IsTrue(collection2.GetCount() == 2);
-            
-            collection2.RemoveJourneysThatMatchPathAndRetriever(nameof(GoogleFlightsWorker), "ABZ-EDI");
-            Assert.IsTrue(collection2.GetCount() == 1);
-            Assert.IsTrue(collection2[0].ToString().Contains("EDI-VAR"));
         }
         
         [TestMethod]

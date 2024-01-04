@@ -38,28 +38,7 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
             p.MaxFlights = 2;
             Assert.IsTrue(p.MaxFlights == 2);
         }
-
-        [TestMethod]
-        public void TransportFromHomeCostGetSetWorks()
-        {
-            p.TransportFromHomeCost = 2;
-            Assert.IsTrue(p.TransportFromHomeCost == 2);
-        }
         
-        [TestMethod]
-        public void ExtraCostPerFlightGetSetWorks()
-        {
-            p.ExtraCostPerFlight = 2;
-            Assert.IsTrue(p.ExtraCostPerFlight == 2);
-        }
-        
-        [TestMethod]
-        public void MaxLocalLinksGetSetWorks()
-        {
-            p.MaxLocalLinks = 2;
-            Assert.IsTrue(p.MaxLocalLinks == 2);
-        }
-
         [TestMethod]
         public void DateFromGetSetWorks()
         {
@@ -75,14 +54,7 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
             p.DateTo = date;
             Assert.IsTrue(p.DateTo == date);
         }
-
-        [TestMethod]
-        public void IncludeCheckedInBaggageGetSetWorks()
-        {
-            p.IncludeCheckedInBaggage = true;
-            Assert.IsTrue(p.IncludeCheckedInBaggage);
-        }
-
+        
         [TestMethod]
         public void AirportListFileGetSetWorks()
         {
@@ -96,42 +68,7 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
             p.AirportDestinationsFile = "asd";
             Assert.IsTrue(p.AirportDestinationsFile.Equals("asd"));
         }
-
-        [TestMethod]
-        public void ProgressFileGetSetWorks()
-        {
-            p.ProgressFile = "asd";
-            Assert.IsTrue(p.ProgressFile.Equals("asd"));
-        }
-
-        [TestMethod]
-        public void WorkerSetupFileGetSetWorks()
-        {
-            p.WorkerSetupFile = "asd";
-            Assert.IsTrue(p.WorkerSetupFile.Equals("asd"));
-        }
-
-        [TestMethod]
-        public void SkipUndoableJourneysGetSetWorks()
-        {
-            p.SkipUndoableJourneys = true;
-            Assert.IsTrue(p.SkipUndoableJourneys);
-        }
-
-        [TestMethod]
-        public void SkipNotSameDayFinishJourneysGetSetWorks()
-        {
-            p.SkipNotSameDayFinishJourneys = true;
-            Assert.IsTrue(p.SkipNotSameDayFinishJourneys);
-        }
-
-        [TestMethod]
-        public void OnlyPrintPathsGetSetWorks()
-        {
-            p.OnlyPrintPaths = true;
-            Assert.IsTrue(p.OnlyPrintPaths);
-        }
-
+        
         [TestMethod]
         public void FileSavePathGetSetWorks()
         {
@@ -140,33 +77,19 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         }
         
         [TestMethod]
-        public void HomeGetSetWorks()
+        public void ExistingResultsPathGetSetWorks()
         {
-            p.Home = "asd";
-            Assert.IsTrue(p.Home.Equals("asd"));
+            p.ExistingResultsPath = "asd";
+            Assert.IsTrue(p.ExistingResultsPath.Equals("asd"));
         }
-
+        
         [TestMethod]
-        public void EuropeOnlyGetSetWorks()
+        public void PenaltiesFileGetSetWorks()
         {
-            p.EuropeOnly = true;
-            Assert.IsTrue(p.EuropeOnly);
+            p.PenaltiesFile = "asd";
+            Assert.IsTrue(p.PenaltiesFile.Equals("asd"));
         }
-
-        [TestMethod]
-        public void UKAndBulgariaOnlyGetSetWorks()
-        {
-            p.UKAndBulgariaOnly = true;
-            Assert.IsTrue(p.UKAndBulgariaOnly);
-        }
-
-        [TestMethod]
-        public void DefaultDelayGetSetWorks()
-        {
-            p.DefaultDelay = 500;
-            Assert.IsTrue(p.DefaultDelay == 500);
-        }
-
+        
         [TestMethod]
         public void NoLongerThanGetSetWorks()
         {
@@ -174,27 +97,6 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
             Assert.IsTrue(p.NoLongerThan == 500);
         }
         
-        [TestMethod]
-        public void HotelCostGetSetWorks()
-        {
-            p.HotelCost = 500;
-            Assert.IsTrue(p.HotelCost == 500);
-        }
-
-        [TestMethod]
-        public void EarlyFlightHourGetSetWorks()
-        {
-            p.EarlyFlightHour = 500;
-            Assert.IsTrue(p.EarlyFlightHour == 500);
-        }
-        
-        [TestMethod]
-        public void OnlyIncludeShortestPathsGetSetWorks()
-        {
-            p.OnlyIncludeShortestPaths = true;
-            Assert.IsTrue(p.OnlyIncludeShortestPaths);
-        }
-
         [TestMethod]
         public void HeadlessGetSetWorks()
         {
