@@ -213,9 +213,11 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 noLongerThan
             );
 
-            DataTableCreator dtCreator = new();
+            TableEntryCreator tableEntryCreator = new();
+            var tableEntries = tableEntryCreator.GetTableEntries(airportsList, results, penalties);
+            var tables = new DataTableCreator().GetTables(tableEntries);
             printer.PrintTablesToWorksheet(
-                dtCreator.GetTables(airportsList, results, penalties),
+                tables,
                 $"{runResultsPath}\\{runId}_results.xlsx"
             );
 
