@@ -19,7 +19,7 @@ public partial class Form1 : Form
 
         string imageFile = dialog.FileName;
         directory = Path.GetDirectoryName(imageFile);
-        currentIndex = int.Parse(Path.GetFileNameWithoutExtension(imageFile));
+        currentIndex = int.Parse(Path.GetFileNameWithoutExtension(imageFile).Split("-", StringSplitOptions.RemoveEmptyEntries)[0]);
         maxIndex = Directory.GetFiles(directory).Length;
         LoadImageFromIndex(currentIndex);
     }
@@ -42,7 +42,7 @@ public partial class Form1 : Form
         if (index <= 0 || index > maxIndex) return;
 
         string[] files =  Directory.GetFiles(directory);
-        string file = files.First(f => Path.GetFileNameWithoutExtension(f) == index.ToString());
+        string file = files.First(f => Path.GetFileNameWithoutExtension(f).StartsWith($"{index}-"));
         string fileName = Path.GetFileName(file);
         Image image = Image.FromFile(file);
         ClientSize = new Size(image.Width, image.Height);

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using Nefarius.ViGEm.Client.Targets;
@@ -19,12 +20,15 @@ namespace Vigem_Console
             string command = dict["command"];
             if (command == "dark-souls-run") doDarkSoulsRun(dict);
             else if (command == "ffix-jump-rope") doFf9JumpRope(dict);
+            else if (command == "ffix-jump-rope-2") doFf9JumpRope2(dict);
             else if (command == "log-cursor") doLogCursor(dict);
             else if (command == "record") doRecord(dict);
             else if (command == "ffvi-auto-battle") doFf6AutoBattle();
             else if (command == "log-screen") doLogScreen(dict);
             else if (command == "test") doTest(dict);
             else if (command == "crisis-core") doCrisisCoreTest();
+            else if (command == "ffvii-super-dunk") doFf7SuperDunk();
+            else if (command == "ffvii-farm") doFf7Farm();
         }
 
         private static void doTest(Dictionary<string, string> dict)
@@ -94,11 +98,13 @@ namespace Vigem_Console
             int delay = 100;
             while (true)
             {
-                // user.PressButton(ButtonMappings.ShoulderRight);
+                // user.PressButton(ButtonMappings.Circle);
                 // localStopwatch.Wait(delay);
                 
                 user.PressButton(ButtonMappings.Square);
                 localStopwatch.Wait(delay);
+                // user.HoldButton(ButtonMappings.ShoulderRight);
+                
                 user.PressButton(ButtonMappings.Triangle);
                 localStopwatch.Wait(delay);
                 user.PressButton(ButtonMappings.Circle);
@@ -117,6 +123,61 @@ namespace Vigem_Console
                 
             }
         }
+        
+        private static void doFf7Farm()
+        {
+            RealStopwatch s = new();
+            Dualshock4Controller cds4 = GetConnectedDs4Controller();
+            StopwatchControllerUser user = new(cds4, s, 100);
+            
+            // user.HoldDPad(DPadMappings.Left);
+            // user.HoldButton(ButtonMappings.ShoulderLeft);
+            user.HoldDPad(DPadMappings.Down);
+            
+            while (true)
+            {
+                user.PressButton(ButtonMappings.Cross, 100);
+                s.Wait(100);
+            }
+        }
+        
+        private static void doFf7SuperDunk()
+        {
+            RealStopwatch s = new();
+            Dualshock4Controller cds4 = GetConnectedDs4Controller();
+            // int delay = 500;
+            StopwatchControllerUser user = new(cds4, s, 100);
+            //normal speed
+            
+            // user.PressButton(ButtonMappings.ThumbLeft);
+            while (true)
+            {
+                for (int i = 0; i < 15; i++)
+                {
+                    user.PressButton(ButtonMappings.Cross, 100);
+                    s.Wait(300);
+                }
+                
+                user.PressButton(ButtonMappings.Circle, 450);
+                // localStopwatch.Wait(delay);
+            }
+            
+            // user.PressButton(ButtonMappings.ThumbLeft);
+            
+            //at x3 but too fast and random, need pixel read?
+            // while (true)
+            // {
+            //     for (int i = 0; i < 20; i++)
+            //     {
+            //         user.PressButton(ButtonMappings.Cross, 50);
+            //         s.Wait(100);
+            //     }
+            //     
+            //     user.PressButton(ButtonMappings.Circle, 164);
+            //     // localStopwatch.Wait(delay);
+            // }
+        }
+
 
         private static void doLogCursor(Dictionary<string, string> dict)
         {
@@ -209,7 +270,7 @@ namespace Vigem_Console
             while (true)
             {
 
-                string filePath = $"{directory}\\{counter}.png";
+                string filePath = $"{directory}\\{counter}-{DateTime.Now:yyyy-MM-dd--HH-mm-ss.fff}.png";
                 pr.SaveClient(clientRect, screenPoint, filePath);
                 // if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.C)
                 // {
@@ -307,6 +368,61 @@ namespace Vigem_Console
                 Console.WriteLine("Light found");
             }
         }
+        
+        private static void doFf9JumpRope2(Dictionary<string, string> dict)
+        {
+
+            Dualshock4Controller cds4 = GetConnectedDs4Controller();
+            RealStopwatch localStopwatch = new();
+            StopwatchControllerUser user = new(cds4, localStopwatch, 50);
+            PixelReader pr = new();
+            
+            string client = dict["client"];
+            int clientX = int.Parse(dict["X"]);
+            int clientY = int.Parse(dict["Y"]);
+            int speechBubble = int.Parse(dict["speechBubble"]);
+            nint process = GetProcessHandle(client);
+            Point clientPoint = new(clientX, clientY);
+            Point screenPoint = pr.GetClientToScreen(process, ref clientPoint);
+            
+            // Func<float> getB = () => pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y).PixelColor.GetBrightness();
+            // Func<int> getB = () => pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y).PixelColor.B;
+            localStopwatch.Restart();
+            localStopwatch.Wait(1000);
+            int counter = 0;
+            
+            user.PressButton(ButtonMappings.Cross);
+            localStopwatch.Wait(2000);
+            user.PressButton(ButtonMappings.Cross);
+            localStopwatch.Wait(2000);
+            user.PressButton(ButtonMappings.Cross);
+            localStopwatch.Wait(2000);
+
+            Func<bool> pressCondition = () => pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y).PixelColor.GetBrightness() <= 0.2;
+            user.PressButton(ButtonMappings.Cross);
+            localStopwatch.Wait(500);
+            while (true)
+            {
+                // byte pixelColorB = pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y).PixelColor.B;
+                // Console.WriteLine(pixelColorB); 
+                while (!pressCondition.Invoke())
+                {
+                    // Console.WriteLine(counter + "+" + b); 
+                }
+                // localStopwatch.Wait( counter < 50 ? 100 : 10);
+                // localStopwatch.Wait(counter >= 100 ? 20 : 25);
+                // localStopwatch.Wait(50);
+                counter++;
+                Console.WriteLine($"Button press - {counter}");
+                user.PressButton(ButtonMappings.Cross, 150);
+                // localStopwatch.Wait(100);
+                while (pressCondition.Invoke())
+                {
+                    // Console.WriteLine(counter + "+" + b); 
+                }
+            }
+        }
+
 
         private static void doDarkSoulsRun(Dictionary<string, string> dict)
         {
