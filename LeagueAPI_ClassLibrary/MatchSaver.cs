@@ -66,18 +66,17 @@ namespace LeagueAPI_ClassLibrary
             
             DataCollector collector = new(repository);
 
-            DataCollectorResults allMatchesData = collector.GetData(matches);
+            var allMatchesData = collector.GetData(matches);
 
             ItemSetExporter exporter = new(repository);
-            DataCollectorResults resultData = allMatchesData;
-            List<TableEntry<Item>> itemData = resultData.GetItemData();
+            List<TableEntry<Item>> itemData = GetItemData(allMatchesData);
             string itemSetFileName = itemSetFilePath;
             string itemSetJson = exporter.GetItemSet(itemData, Path.GetFileNameWithoutExtension(itemSetFileName));
             fileIo.WriteAllText(itemSetFileName, itemSetJson);
             createdFiles.Add(itemSetFileName);
 
             DataTableCreator dataTableCreator = new();
-            List<DataTable> dataTables = dataTableCreator.GetTables(allMatchesData.GetEntries());
+            List<DataTable> dataTables = dataTableCreator.GetTables(allMatchesData);
 
             excelPrinter.PrintTablesToWorksheet(dataTables, statsFilePath);
             createdFiles.Add(statsFilePath);
@@ -88,5 +87,16 @@ namespace LeagueAPI_ClassLibrary
             logger.Log($"{createdFiles.Count} files written at {path}.");
             return createdFiles;
         }
+
+        private List<TableEntry<Item>> GetItemData(List<ITableEntry> entries)
+        {
+            List<TableEntry<Item>> items = new();
+            foreach (ITableEntry entry in entries)
+            {
+                if (entry is TableEntry<Item> i) items.Add(i);
+            }
+            return items;
+        }
+
     }
 }

@@ -1,10 +1,6 @@
-﻿using Common_ClassLibrary;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace LeagueAPI_ClassLibrary

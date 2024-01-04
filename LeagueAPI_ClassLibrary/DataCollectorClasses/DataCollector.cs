@@ -15,7 +15,7 @@ namespace LeagueAPI_ClassLibrary
             this.repository = repository;
         }
 
-        public DataCollectorResults GetData(List<LeagueMatch> leagueMatches)
+        public List<ITableEntry> GetData(List<LeagueMatch> leagueMatches)
         {
             entriesDict.Clear();
 
@@ -83,7 +83,7 @@ namespace LeagueAPI_ClassLibrary
                 AddCompToDict(losers, false);
             }
 
-            return new DataCollectorResults(GetSortedEntries());
+            return GetSortedEntries();
         }
 
         private void AddCompToDict(IEnumerable<Champion> champs, bool win)

@@ -2,7 +2,7 @@
 using System.Data;
 using System.Linq;
 
-namespace LeagueAPI_ClassLibrary
+namespace Common_ClassLibrary
 {
     public class DataTableCreator
     {

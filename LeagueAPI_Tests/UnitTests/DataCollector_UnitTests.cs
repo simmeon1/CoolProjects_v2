@@ -374,8 +374,7 @@ namespace LeagueAPI_Tests.UnitTests
         private List<ITableEntry> GetEntries(List<LeagueMatch> matches)
         {
             DataCollector collector = new(repo.Object);
-            DataCollectorResults data = collector.GetData(matches);
-            List<ITableEntry> tableEntries = data.GetEntries();
+            List<ITableEntry> tableEntries = collector.GetData(matches);
             return tableEntries;
         }
     }

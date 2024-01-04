@@ -207,11 +207,6 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(results.Count == 2);
             Assert.IsTrue(results[0].Equals("12.2"));
             Assert.IsTrue(results[1].Equals("12.1"));
-
-            List<string> parsedVersions = await client.GetParsedListOfVersions(new List<string>() { "0", "-1" });
-            Assert.IsTrue(parsedVersions.Count == 2);
-            Assert.IsTrue(parsedVersions[0].Equals("12.2"));
-            Assert.IsTrue(parsedVersions[1].Equals("12.1"));
         }
 
         [TestMethod]

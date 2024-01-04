@@ -13,10 +13,10 @@ namespace LeagueAPI_Tests.UnitTests
         private DdragonRepository Repo { get; set; }
 
         [TestInitialize]
-        public void TestInitialize()
+        public async Task TestInitialize()
         {
-            Mock<IFileIO> fileIOMock = new();
-            fileIOMock.Setup(x => x.ReadAllText("champion.json")).Returns(
+            Mock<ILeagueAPIClient> leagueApiMock = new();
+            leagueApiMock.Setup(x => x.GetDdragonChampions(It.IsAny<string>())).ReturnsAsync(
                 @"
 {
     'data': {
@@ -34,11 +34,11 @@ namespace LeagueAPI_Tests.UnitTests
     }
 }"
             );
-            fileIOMock.Setup(x => x.ReadAllText("item.json")).Returns(
+            leagueApiMock.Setup(x => x.GetDdragonItems(It.IsAny<string>())).ReturnsAsync(
                 @"{'data':{'1001':{'name':'Boots','description':'rarityMythic<asd>ornnBonus','plaintext':'plaintext','gold':{'total':300},
                             'tags':['Boots', 'b']},'3158':{'name':'s','description':'360 mana.*<raritylegendary>tearItem</raritylegendary>','plaintext':'s','gold':{'total':300},'tags':['Boots'], 'into':['Boots2', 'Boots3']}}}"
             );
-            fileIOMock.Setup(x => x.ReadAllText("runesReforged.json")).Returns(
+            leagueApiMock.Setup(x => x.GetDdragonRunes(It.IsAny<string>())).ReturnsAsync(
                 @"
 [
     {
@@ -77,15 +77,15 @@ namespace LeagueAPI_Tests.UnitTests
     }
 ]"
             );
-            fileIOMock.Setup(x => x.ReadAllText("statPerks.json")).Returns(@"
+            leagueApiMock.Setup(x => x.GetDdragonStatPerks(It.IsAny<string>())).ReturnsAsync(@"
 {
     '5008': '+9 Adaptive Force'
 }");
-            fileIOMock.Setup(x => x.ReadAllText("summoner.json")).Returns(
+            leagueApiMock.Setup(x => x.GetDdragonSpells(It.IsAny<string>())).ReturnsAsync(
                 @"{'data':{'SummonerBarrier':{'name':'name','key': '21','description':'desc','cooldown':[180]}}}"
             );
-            Repo = new DdragonRepository(fileIOMock.Object, "");
-            Repo.RefreshData();
+            Repo = new DdragonRepository(leagueApiMock.Object);
+            await Repo.RefreshData("11.24");
         }
 
         [TestMethod]
@@ -180,7 +180,7 @@ namespace LeagueAPI_Tests.UnitTests
             Assert.IsTrue(obj != null);
             Assert.IsTrue(obj.Name.Equals("name"));
             Assert.IsTrue(obj.Description.Equals("desc"));
-            Assert.IsTrue(obj.Cooldown.Equals(180));
+            Assert.IsTrue(obj.Cooldown.Equals("180"));
         }
 
         [TestMethod]

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace LeagueAPI_ClassLibrary
+namespace Common_ClassLibrary
 {
     public interface ITableEntry
     {
