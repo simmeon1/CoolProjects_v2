@@ -60,6 +60,7 @@ namespace JourneyPlanner_Console
             chromeOptions.AddArgument("window-size=1280,800");
             if (parameters.Headless) chromeOptions.AddArgument("headless");
             ChromeDriver driver = new($"{savePath}\\chromeDriverFolder\\chromedriver-win64", chromeOptions);
+            driver.Manage().Window.Maximize();
 
             RealWebDriverWaitProvider webDriverWait = new(driver);
             FlightConnectionsDotComWorker worker = new(logger, driver, webDriverWait);
