@@ -131,6 +131,7 @@ namespace LeagueAPI_ClassLibrary
                 else if (entry is TableEntry<StatPerk> p) statPerks.Add(p);
                 else if (entry is TableEntry<Spell> s) spells.Add(s);
                 else if (entry is TableEntry<TeamComposition> tc) comps.Add(tc);
+                else if (entry is TableEntry<Role> ro) roles.Add(ro);
                 else if (entry is TableEntry<ArenaAugment> aa) augments.Add(aa);
             }
 
