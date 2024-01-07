@@ -22,7 +22,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             penalties ??= new Dictionary<string, int>();
             InitialiseData(airportList, sequentialCollections, penalties);
             return GetPopulatedTables(
-                sequentialCollections.OrderByDescending(x => GetBargainPercentagePenalized(x, penalties)).ToList(),
+                sequentialCollections.OrderByDescending(x => GetBargainPercentage(x)).ToList(),
                 penalties
             );
         }
@@ -121,6 +121,15 @@ namespace JourneyPlanner_ClassLibrary.Workers
             }
 
             return airportDict;
+        }
+        
+        private double GetBargainPercentage(SequentialJourneyCollection seqCollection)
+        {
+            return Math.Round(
+                (100 - seqCollection.GetLength().TotalMinutes / AvgLength * 100) +
+                (100 - seqCollection.GetCost() / AvgCost * 100),
+                2
+            );
         }
         
         private double GetBargainPercentagePenalized(SequentialJourneyCollection seqCollection, Dictionary<string, int> penalties)

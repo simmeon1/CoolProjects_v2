@@ -78,6 +78,16 @@ namespace LeagueAPI_ClassLibrary
                     {
                         AddSpell(id, win);
                     }
+                    foreach (int id in new List<int>
+                    {
+                        participant.playerAugment1,
+                        participant.playerAugment2,
+                        participant.playerAugment3,
+                        participant.playerAugment4
+                    })
+                    {
+                        AddArenaAugment(id, win);
+                    }
                 }
                 AddCompToDict(winners, true);
                 AddCompToDict(losers, false);
@@ -112,6 +122,7 @@ namespace LeagueAPI_ClassLibrary
             List<TableEntry<Spell>> spells = new();
             List<TableEntry<TeamComposition>> comps = new();
             List<TableEntry<Role>> roles = new();
+            List<TableEntry<ArenaAugment>> augments = new();
             foreach (ITableEntryWithWinLossData entry in entries)
             {
                 if (entry is TableEntry<Champion> c) champs.Add(c);
@@ -120,7 +131,7 @@ namespace LeagueAPI_ClassLibrary
                 else if (entry is TableEntry<StatPerk> p) statPerks.Add(p);
                 else if (entry is TableEntry<Spell> s) spells.Add(s);
                 else if (entry is TableEntry<TeamComposition> tc) comps.Add(tc);
-                else if (entry is TableEntry<Role> ro) roles.Add(ro);
+                else if (entry is TableEntry<ArenaAugment> aa) augments.Add(aa);
             }
 
             List<IEnumerable<ITableEntry>> lists = new()
@@ -152,11 +163,14 @@ namespace LeagueAPI_ClassLibrary
                     .ThenBy(c => c.GetEntry().GetIdentifier())
                     .ToList(),
                 roles
-                .OrderByDescending(c => c.GetWinLossData().GetWinRate())
-                .ThenBy(c => c.GetEntry().GetIdentifier())
-                .ToList()
+                    .OrderByDescending(c => c.GetWinLossData().GetWinRate())
+                    .ThenBy(c => c.GetEntry().GetIdentifier())
+                    .ToList(),
+                augments
+                    .OrderByDescending(c => c.GetWinLossData().GetWinRate())
+                    .ThenBy(c => c.GetEntry().GetIdentifier())
+                    .ToList(),
             };
-            
             
             foreach (IEnumerable<ITableEntry> list in lists)
             {
@@ -189,6 +203,11 @@ namespace LeagueAPI_ClassLibrary
         private void AddStatPerk(int id, bool win)
         {
             AddEntryUsingFunc(id, (x) => repository.GetStatPerk(x), win);
+        }
+        
+        private void AddArenaAugment(int id, bool win)
+        {
+            AddEntryUsingFunc(id, (x) => repository.GetArenaAugment(x), win);
         }
 
         private void AddEntryUsingFunc<T>(

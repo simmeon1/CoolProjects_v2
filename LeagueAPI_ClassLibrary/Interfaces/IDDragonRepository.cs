@@ -11,5 +11,6 @@ namespace LeagueAPI_ClassLibrary
         StatPerk GetStatPerk(int id);
         Spell GetSpell(int id);
         Item GetItem(string itemName);
+        ArenaAugment GetArenaAugment(int id);
     }
 }

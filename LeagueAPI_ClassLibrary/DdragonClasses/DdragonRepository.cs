@@ -13,6 +13,7 @@ namespace LeagueAPI_ClassLibrary
         private readonly Dictionary<int, Rune> runes = new();
         private readonly Dictionary<int, StatPerk> statPerks = new();
         private readonly Dictionary<int, Spell> spells = new();
+        private readonly Dictionary<int, ArenaAugment> arenaAugments = new();
         public DdragonRepository(ILeagueAPIClient client)
         {
             this.client = client;
@@ -25,8 +26,9 @@ namespace LeagueAPI_ClassLibrary
             Task<string> ddragonRunes = client.GetDdragonRunes(version);
             Task<string> ddragonStatPerks = client.GetDdragonStatPerks(version);
             Task<string> ddragonSpells = client.GetDdragonSpells(version);
+            Task<string> ddragonArenaAugments = client.GetDdragonArenaAugments(version);
             List<Task<string>> tasks = new()
-                {ddragonChampions, ddragonItems, ddragonRunes, ddragonSpells, ddragonStatPerks};
+                {ddragonChampions, ddragonItems, ddragonRunes, ddragonStatPerks, ddragonSpells, ddragonArenaAugments};
             await Task.WhenAll(tasks);
 
             PopulateChampions(ddragonChampions.Result);
@@ -34,8 +36,9 @@ namespace LeagueAPI_ClassLibrary
             PopulateRunes(ddragonRunes.Result);
             PopulateStatPerks(ddragonStatPerks.Result);
             PopulateSpells(ddragonSpells.Result);
+            PopulateArenaAugments(ddragonArenaAugments.Result);
         }
-
+        
         private void PopulateSpells(string spellsJson)
         {
             JObject spellJson = JObject.Parse(spellsJson);
@@ -128,6 +131,26 @@ namespace LeagueAPI_ClassLibrary
                 champions.Add(id, champion);
             }
         }
+        
+        private void PopulateArenaAugments(string arenaAugmentsJson)
+        {
+            JObject jObject = JObject.Parse(arenaAugmentsJson);
+            foreach (JObject augment in jObject["augments"])
+            {
+                JObject dataValues = (JObject) augment["dataValues"];
+                
+                ArenaAugment aug = new()
+                {
+                    Id = int.Parse(augment["id"].ToString()),
+                    Name = augment["name"].ToString(),
+                    Rarity = int.Parse(augment["rarity"].ToString()),
+                    Description = augment["desc"].ToString(),
+                    Tooltip = augment["tooltip"].ToString(),
+                    DataValues = dataValues.ToObject<Dictionary<string, string>>()
+                };
+                arenaAugments.Add(aug.Id, aug);
+            }
+        }
 
         public Champion GetChampion(int id)
         {
@@ -167,6 +190,11 @@ namespace LeagueAPI_ClassLibrary
                 if (name.Equals(itemName)) return item;
             }
             return null;
+        }
+
+        public ArenaAugment GetArenaAugment(int id)
+        {
+            return GetEntryOrNullFromDict(id, arenaAugments);
         }
     }
 }

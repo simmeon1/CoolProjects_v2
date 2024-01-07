@@ -194,6 +194,10 @@ namespace LeagueAPI_ClassLibrary
                         item4 = int.Parse(p["item4"].ToString()),
                         item5 = int.Parse(p["item5"].ToString()),
                         item6 = int.Parse(p["item6"].ToString()),
+                        playerAugment1 = int.Parse(p["playerAugment1"].ToString()),
+                        playerAugment2 = int.Parse(p["playerAugment2"].ToString()),
+                        playerAugment3 = int.Parse(p["playerAugment3"].ToString()),
+                        playerAugment4 = int.Parse(p["playerAugment4"].ToString()),
                         perk1_1 = int.Parse(p["perks"]["styles"][0]["selections"][0]["perk"].ToString()),
                         perk1_2 = int.Parse(p["perks"]["styles"][0]["selections"][1]["perk"].ToString()),
                         perk1_3 = int.Parse(p["perks"]["styles"][0]["selections"][2]["perk"].ToString()),
@@ -269,6 +273,13 @@ namespace LeagueAPI_ClassLibrary
         public async Task<string> GetDdragonSpells(string version)
         {
             return await GetResponse($"{ddragonCdn}{version}/data/en_US/summoner.json");
+        }
+
+        public async Task<string> GetDdragonArenaAugments(string version)
+        {
+            //Trim third set of digits as they are not online
+            var digitSets = version.Split(".", StringSplitOptions.RemoveEmptyEntries);
+            return await GetResponse($"https://raw.communitydragon.org/{digitSets[0]}.{digitSets[1]}/cdragon/arena/en_us.json");
         }
     }
 }

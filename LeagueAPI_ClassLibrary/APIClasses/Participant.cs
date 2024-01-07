@@ -11,6 +11,10 @@
         public int item4 { get; set; }
         public int item5 { get; set; }
         public int item6 { get; set; }
+        public int playerAugment1 { get; set; }
+        public int playerAugment2 { get; set; }
+        public int playerAugment3 { get; set; }
+        public int playerAugment4 { get; set; }
         public int statPerkDefense { get; set; }
         public int statPerkFlex { get; set; }
         public int statPerkOffense { get; set; }

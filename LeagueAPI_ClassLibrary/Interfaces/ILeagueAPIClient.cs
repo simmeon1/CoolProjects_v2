@@ -15,5 +15,6 @@ namespace LeagueAPI_ClassLibrary
         Task<string> GetDdragonRunes(string version);
         Task<string> GetDdragonStatPerks(string version);
         Task<string> GetDdragonSpells(string version);
+        Task<string> GetDdragonArenaAugments(string version);
     }
 }
