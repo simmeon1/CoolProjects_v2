@@ -157,7 +157,7 @@ namespace LeagueAPI_ClassLibrary
             return GetEntryOrNullFromDict(id, champions);
         }
 
-        public Item GetItem(int id)
+        public Item GetItemById(int id)
         {
             return GetEntryOrNullFromDict(id, items);
         }
@@ -182,14 +182,15 @@ namespace LeagueAPI_ClassLibrary
             return dict.ContainsKey(id) ? dict[id] : default;
         }
 
-        public Item GetItem(string itemName)
+        public ICollection<Item> GetItemsByName(string itemName)
         {
+            var result = new List<Item>();
             foreach (Item item in items.Values.ToList())
             {
                 string name = item.Name;
-                if (name.Equals(itemName)) return item;
+                if (name.Equals(itemName)) result.Add(item);
             }
-            return null;
+            return result;
         }
 
         public ArenaAugment GetArenaAugment(int id)

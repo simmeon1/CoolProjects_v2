@@ -367,7 +367,7 @@ namespace LeagueAPI_Tests.UnitTests
                 BuildsInto = isFinished ? null : new List<string>(){ "10" },
                 Gold = isMoreThan2000G ? 2001 : 1
             };
-            repo.Setup(r => r.GetItem(id)).Returns(item);
+            repo.Setup(r => r.GetItemById(id)).Returns(item);
             return item;
         }
         

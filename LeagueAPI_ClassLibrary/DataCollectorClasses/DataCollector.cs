@@ -139,8 +139,7 @@ namespace LeagueAPI_ClassLibrary
             {
                 champs.OrderBy(c => c.GetEntry().Name).ToList(),
                 items
-                    .OrderByDescending(c => c.GetEntry().IsMythic())
-                    .ThenByDescending(c => c.GetEntry().IsFinished())
+                    .OrderByDescending(c => c.GetEntry().IsOrnnItem())
                     .ThenByDescending(c => c.GetEntry().IsMoreThan2000G())
                     .ThenByDescending(c => c.GetWinLossData().GetWinRate())
                     .ThenBy(c => c.GetEntry().GetIdentifier())
@@ -183,7 +182,7 @@ namespace LeagueAPI_ClassLibrary
 
         private void AddItem(int id, bool win)
         {
-            AddEntryUsingFunc(id, (x) => repository.GetItem(x), win);
+            AddEntryUsingFunc(id, (x) => repository.GetItemById(x), win);
         }
 
         private void AddChampion(int id, bool win)

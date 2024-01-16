@@ -107,7 +107,7 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public void GetItem_ExpectedValues()
         {
-            Item obj = Repo.GetItem(1001);
+            Item obj = Repo.GetItemById(1001);
             Assert.IsTrue(obj != null);
             Assert.IsTrue(obj.Name.Equals("Boots"));
             Assert.IsTrue(obj.Description.Equals("rarityMythic<asd>ornnBonus"));
@@ -127,7 +127,7 @@ namespace LeagueAPI_Tests.UnitTests
             Item obj3 = Repo.GetItem("blah");
             Assert.IsTrue(obj3 == null);
 
-            Item obj4 = Repo.GetItem(3158);
+            Item obj4 = Repo.GetItemById(3158);
             Assert.IsTrue(obj4.BuildsInto.Count == 2);
             Assert.IsTrue(obj4.BuildsInto[0].Equals("Boots2"));
             Assert.IsTrue(obj4.BuildsInto[1].Equals("Boots3"));
@@ -144,7 +144,7 @@ namespace LeagueAPI_Tests.UnitTests
         [TestMethod]
         public void GetItem_NotFound()
         {
-            Item obj = Repo.GetItem(0);
+            Item obj = Repo.GetItemById(0);
             Assert.IsTrue(obj == null);
         }
 

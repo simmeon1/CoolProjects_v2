@@ -15,11 +15,6 @@ namespace LeagueAPI_ClassLibrary
         public List<string> Tags { get; set; } = new();
         public List<string> BuildsInto { get; set; } = new();
 
-        public bool IsFinished()
-        {
-            return BuildsInto == null || BuildsInto.Count == 0;
-        }
-
         public string GetTagsString()
         {
             return Tags.ConcatenateListOfStringsToCommaAndSpaceString();
@@ -30,9 +25,9 @@ namespace LeagueAPI_ClassLibrary
             return Regex.Replace(Description, "<.*?>", "");
         }
         
-        public bool IsMythic()
+        public bool IsOrnnItem()
         {
-            return Description.Contains("rarityMythic");
+            return Description.Contains("ornnBonus");
         }
         
         public bool IsMoreThan2000G()
@@ -62,7 +57,7 @@ namespace LeagueAPI_ClassLibrary
 
         public string GetSecondFormNameForTearItem()
         {
-            Match match = Regex.Match(Description, "360 mana.*<raritylegendary>(.*?)</raritylegendary>", RegexOptions.IgnoreCase);
+            Match match = Regex.Match(Description, "transforms into <rarityLegendary>(.*?)</rarityLegendary>", RegexOptions.IgnoreCase);
             return match.Success ? match.Groups[1].Value.ToString() : "";
         }
 
@@ -83,8 +78,7 @@ namespace LeagueAPI_ClassLibrary
                 new("Name", Name),
                 new("Gold", Gold),
                 new("More than 2000G", IsMoreThan2000G()),
-                new("Is Mythic", IsMythic()),
-                new("Is Finished", IsFinished()),
+                new("Is Ornn Item", IsOrnnItem()),
                 new("Tags", GetTagsString()),
                 new("Plaintext", Plaintext),
                 new("Description", GetCleanDescription())

@@ -11,8 +11,6 @@ namespace LeagueAPI_ClassLibrary
         const string guardianJson = "guardianJson";
         const string bootsJson = "bootsJson";
         const string doranJson = "doranJson";
-        const string mythics50PlusJson = "mythics50PlusJson";
-        const string mythics50MinusJson = "mythics50MinusJson";
         const string legendaries50PlusJson = "legendaries50PlusJson";
         const string legendaries50MinusJson = "legendaries50MinusJson";
         private IDDragonRepository Repository { get; set; }
@@ -38,14 +36,6 @@ namespace LeagueAPI_ClassLibrary
               'type': 'Boots'
             },
             {
-              'items': " + mythics50PlusJson + @",
-              'type': 'Mythics 50+ WR'
-            },
-            {
-              'items': " + mythics50MinusJson + @",
-              'type': 'Mythics 50- WR'
-            },
-            {
               'items': " + legendaries50PlusJson + @",
               'type': 'Legendaries 50+ WR'
             },
@@ -66,7 +56,6 @@ namespace LeagueAPI_ClassLibrary
             List<ItemEntry> guardianJsonArray = new();
             List<ItemEntry> bootsJsonArray = new();
             List<ItemEntry> doranJsonArray = new();
-            List<ItemEntry> mythicsJsonArray = new();
             List<ItemEntry> legendariesJsonArray = new();
 
             Item tear = null;
@@ -82,8 +71,7 @@ namespace LeagueAPI_ClassLibrary
                 if (item.IsGuardian()) guardianJsonArray.Add(itemEntry);
                 else if (item.IsBoots()) bootsJsonArray.Add(itemEntry);
                 else if (item.IsDoran()) doranJsonArray.Add(itemEntry);
-                else if (item.IsMythic()) mythicsJsonArray.Add(itemEntry);
-                else if (item.IsFinished() && item.IsMoreThan2000G()) legendariesJsonArray.Add(itemEntry);
+                else if (!item.IsOrnnItem() && item.IsMoreThan2000G()) legendariesJsonArray.Add(itemEntry);
             }
 
             List<ItemEntry> legendariesAmendedJsonArray =
@@ -94,8 +82,6 @@ namespace LeagueAPI_ClassLibrary
                 .Replace(guardianJson, GetSerializedList(guardianJsonArray, (x => true)))
                 .Replace(bootsJson, GetSerializedList(bootsJsonArray, (x => true)))
                 .Replace(doranJson, GetSerializedList(doranJsonArray, (x => true)))
-                .Replace(mythics50PlusJson, GetSerializedList(mythicsJsonArray, (x => x.WinRateIsEqualOrAbove50())))
-                .Replace(mythics50MinusJson, GetSerializedList(mythicsJsonArray, (x => !x.WinRateIsEqualOrAbove50())))
                 .Replace(
                     legendaries50PlusJson,
                     GetSerializedList(legendariesAmendedJsonArray, (x => x.WinRateIsEqualOrAbove50()))
@@ -142,14 +128,15 @@ namespace LeagueAPI_ClassLibrary
             foreach (string firstFormId in tear.BuildsInto)
             {
                 int firstFormIdInt = int.Parse(firstFormId);
-                Item firstFormItem = Repository.GetItem(firstFormIdInt);
+                Item firstFormItem = Repository.GetItemById(firstFormIdInt);
                 string secondFormItemName = firstFormItem.GetSecondFormNameForTearItem();
                 if (secondFormItemName.IsNullOrEmpty()) continue;
 
-                Item secondFormItem = Repository.GetItem(secondFormItemName);
-                int secondFormIdInt = secondFormItem.Id;
-
-                secondFormIdAndFirstForm.Add(secondFormIdInt, firstFormItem);
+                var secondFormItems = Repository.GetItemsByName(secondFormItemName);
+                foreach (var secondFormItem in secondFormItems)
+                {
+                    secondFormIdAndFirstForm.Add(secondFormItem.Id, firstFormItem);
+                }
             }
             return secondFormIdAndFirstForm;
         }
