@@ -194,7 +194,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
         {
             var keywordLower = keyword.ToLower();
 
-            c.FindElementAndClickIt(GetCssSelectorParam($"[aria-placeholder*='Where {(keyword == "Origin" ? "from" : "to")}'] input"));
+            c.FindElementAndClickIt(GetCssSelectorParam($"[data-placeholder*='Where {(keyword == "Origin" ? "from" : "to")}'] input"));
             Sleep();
 
             FindElementParameters checkmarkDoneButtonParam = GetCssSelectorParam($"[aria-label*='Enter your {keywordLower}'] [aria-label*='Done']");
