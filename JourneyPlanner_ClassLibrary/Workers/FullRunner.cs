@@ -129,11 +129,12 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 maxFlights
             );
 
-            //Ukranian airports not available in google flights
+            //Airport not in google flights
             paths = paths.Where(x => 
                 !x.ToString().Contains("HRK")
                 && !x.ToString().Contains("LWO")
                 && !x.ToString().Contains("OZH")
+                && !x.ToString().Contains("KIV")
             ).ToList();
 
             SavePaths(paths, airportsList, runResultsPath, runId);
