@@ -10,14 +10,16 @@ public class UkRadioLiveAddRadioUseCase
     private readonly IDelayer delayer;
     private readonly SpotifyClient client;
     private readonly IWebDriverWrapper driver;
+    private readonly SpotifySearchUseCase searchUseCase;
 
-    public UkRadioLiveAddRadioUseCase(IFileIO fileIo, ILogger logger, IDelayer delayer, SpotifyClient client, IWebDriverWrapper driver)
+    public UkRadioLiveAddRadioUseCase(IFileIO fileIo, ILogger logger, IDelayer delayer, SpotifyClient client, IWebDriverWrapper driver, SpotifySearchUseCase searchUseCase)
     {
         this.fileIo = fileIo;
         this.logger = logger;
         this.delayer = delayer;
         this.client = client;
         this.driver = driver;
+        this.searchUseCase = searchUseCase;
     }
 
     public async Task AddRadio(
@@ -33,17 +35,11 @@ public class UkRadioLiveAddRadioUseCase
             (ReadOnlyCollection<object>) driver.ExecuteAsyncScript(script, radioName, maxSongs);
         driver.Quit();
 
-        await client.Initialise();
-        List<string> songIds = new();
-        for (int i = 0; i < songs.Count; i++)
-        {
-            object songObj = songs[i];
-            Dictionary<string, object> song = (Dictionary<string, object>) songObj;
-            string search = song["artist"] + " " + song["track"];
-            songIds.Add(await client.GetIdOfFirstResultOfSearch(search));
-            logger.Log($"Retrieved {i + 1} out of {songs.Count} song ids ({search})");
-        }
-        
+        var artistSongs = songs
+            .Select(x => (Dictionary<string, object>) x)
+            .Select(x => new ArtistSong() { artist = x["artist"].ToString(), song = x["track"].ToString() } );
+        List<string> songIds = await searchUseCase.GetSongIds(artistSongs.ToList());
+
         string userId = await client.GetUserId();
         string playlistId = await client.CreatePlaylist(radioName + "-" + DateTime.Now, userId);
         await client.AddSongsToPlaylist(playlistId, songIds);

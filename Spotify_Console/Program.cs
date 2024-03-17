@@ -14,12 +14,14 @@ try
     Dictionary<string, string> dict = GetCommandAndValuesDictionary(args);
     string credentialFilePath = dict["--credentials-file"];
     SpotifyClient client = GetClientFromCredentialFiles(credentialFilePath);
+    await client.Initialise();
+    var searchUseCase = new SpotifySearchUseCase(logger, client);
 
     switch (dict["command"])
     {
         case "uk-radio-live-add-radio":
         {
-            UkRadioLiveAddRadioUseCase useCase = new(fileIo, logger, delayer, client, GetChromeDriver());
+            UkRadioLiveAddRadioUseCase useCase = new(fileIo, logger, delayer, client, GetChromeDriver(), searchUseCase);
             await useCase.AddRadio(dict["--script-file"], dict["--radio-name"], dict["--max-songs"]);
             break;
         }
@@ -29,6 +31,12 @@ try
             string[] playlists = dict["--playlists"].Split(",", StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
             string finalPlaylist = dict["--final-playlist"];
             await useCase.MergePlaylists(playlists, finalPlaylist);
+            break;
+        }
+        case "billboard":
+        {
+            BillboardUseCase useCase = new(fileIo, logger, delayer, client, searchUseCase);
+            await useCase.DoWork(dict["--jsonPath"]);
             break;
         }
     }
