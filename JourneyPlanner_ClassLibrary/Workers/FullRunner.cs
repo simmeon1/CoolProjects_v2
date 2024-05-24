@@ -129,13 +129,11 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 maxFlights
             );
 
-            //Airport not in google flights
-            paths = paths.Where(x => 
-                !x.ToString().Contains("HRK")
-                && !x.ToString().Contains("LWO")
-                && !x.ToString().Contains("OZH")
-                && !x.ToString().Contains("KIV")
-            ).ToList();
+            var bannedAirports = fileIo.ReadAllText(p.BannedAirportsFile)
+                .DeserializeObject<List<string>>();
+
+            //Airport not in google flights or banned
+            paths = paths.Where(p => !bannedAirports.Any(x => p.ToString().Contains(x))).ToList();
 
             SavePaths(paths, airportsList, runResultsPath, runId);
 

@@ -10,6 +10,7 @@ namespace JourneyPlanner_ClassLibrary.Classes
         public string AirportDestinationsFile { get; set; }
         public string ExistingResultsPath { get; set; }
         public string PenaltiesFile { get; set; }
+        public string BannedAirportsFile { get; set; }
         public List<string> Origins { get; set; }
         public List<string> Destinations { get; set; }
         public int MaxFlights { get; set; }
