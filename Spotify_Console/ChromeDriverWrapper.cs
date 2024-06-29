@@ -20,6 +20,11 @@ public class ChromeDriverWrapper : IWebDriverWrapper
     {
         driver.Quit();
     }
+    
+    public object ExecuteScript(string script, params object[] args)
+    {
+        return driver.ExecuteScript(script, args);
+    }
 
     public object ExecuteAsyncScript(string script, params object[] args)
     {

@@ -20,8 +20,6 @@ public class SpotifySearchUseCase
         List<string> songIds = new();
         for (int i = 0; i < songs.Count; i++)
         {
-            // object songObj = songs[i];
-            // Dictionary<string, object> song = (Dictionary<string, object>) songObj;
             var song = songs[i];
             string search = song.artist + " " + song.song;
             songIds.Add(await client.GetIdOfFirstResultOfSearch(search));

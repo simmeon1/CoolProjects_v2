@@ -39,6 +39,12 @@ try
             await useCase.DoWork(dict["--jsonPath"]);
             break;
         }
+        case "ukSingles":
+        {
+            UkSinglesScrapperUseCase useCase = new(fileIo, logger, delayer, GetChromeDriver(), http);
+            await useCase.Scrap(dict["--jsonPath"]);
+            break;
+        }
     }
 }
 catch (Exception ex)
