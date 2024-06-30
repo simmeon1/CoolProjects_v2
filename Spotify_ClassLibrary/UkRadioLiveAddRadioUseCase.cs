@@ -38,7 +38,16 @@ public class UkRadioLiveAddRadioUseCase
         var artistSongs = songs
             .Select(x => (Dictionary<string, object>) x)
             .Select(x => new ArtistSong() { artist = x["artist"].ToString(), song = x["track"].ToString() } );
-        List<string> songIds = await searchUseCase.GetSongIds(artistSongs.ToList(), 0, Array.Empty<string>());
+        var artistSongTrackMaps = await searchUseCase.GetSongs(artistSongs.ToList());
+        var songIds = new List<string>();
+        foreach (var pair in artistSongTrackMaps)
+        {
+            var track = pair.Value;
+            if (track != null)
+            {
+                songIds.Add(pair.Key);
+            }
+        }
 
         string userId = await client.GetUserId();
         string playlistId = await client.CreatePlaylist(radioName + "-" + DateTime.Now, userId);

@@ -18,7 +18,14 @@ public class SpotifyClient
     private readonly string callback;
     private SpotifyCredentials credentials;
 
-    public SpotifyClient(IHttpClient http, IDelayer delayer, string clientId, string clientSecret, string callback, SpotifyCredentials credentials = null)
+    public SpotifyClient(
+        IHttpClient http,
+        IDelayer delayer,
+        string clientId,
+        string clientSecret,
+        string callback,
+        SpotifyCredentials credentials = null
+    )
     {
         this.http = http;
         this.delayer = delayer;
@@ -27,7 +34,7 @@ public class SpotifyClient
         this.callback = callback;
         this.credentials = credentials;
     }
-    
+
     public async Task Initialise()
     {
         await SetAccessTokenFromRefreshToken();
@@ -35,21 +42,34 @@ public class SpotifyClient
 
     public async Task<TrackObject?> GetFirstTrackResult(string query)
     {
-        var result = await GetSerializedObjectFromRequestResponse<SearchResult>(
+        var result = await GetDeserializedObjectFromRequestResponse<SearchResult>(
             HttpMethod.Get,
             $"{Root}search?q={HttpUtility.UrlEncode(query)}&type=track&limit=1"
         );
-        
+
         var items = result.tracks.items;
         return items.FirstOrDefault();
     }
-    
-    public async Task<FullArtistObject> GetArtist(string artistId)
+
+    public async Task<Dictionary<string, FullArtistObject>> GetArtists(List<string> artistIds)
     {
-        return await GetSerializedObjectFromRequestResponse<FullArtistObject>(
-            HttpMethod.Get,
-            $"{Root}artists/{artistId}"
-        );
+        Dictionary<string, FullArtistObject> result = new();
+        artistIds = artistIds.Distinct().ToList();
+        while (artistIds.Any())
+        {
+            var take = 50;
+            var response = await GetDeserializedObjectFromRequestResponse<GetSeveralArtistsResult>(
+                HttpMethod.Get,
+                $"{Root}artists?ids={artistIds.Take(take).ToList().ConcatenateListOfStringsToCommaString()}"
+            );
+            artistIds.RemoveRange(0, int.Min(take, artistIds.Count));
+            foreach (var artist in response.artists)
+            {
+                result.Add(artist.id, artist);
+            }
+        }
+
+        return result;
     }
 
     public async Task<string> GetUserId()
@@ -91,7 +111,7 @@ public class SpotifyClient
             );
         }
     }
-    
+
     public async Task<List<string>> GetPlaylistTracks(string playlist)
     {
         List<string> result = new();
@@ -111,6 +131,7 @@ public class SpotifyClient
             {
                 result.Add(item["track"]["id"].ToString());
             }
+
             offset += limit;
         }
     }
@@ -118,7 +139,10 @@ public class SpotifyClient
     public async Task SetAccessTokenFromAuthorizeCode(string authorizeCode)
     {
         HttpRequestMessage request = new(HttpMethod.Post, "https://accounts.spotify.com/api/token");
-        request.Headers.TryAddWithoutValidation("Authorization", $"Basic {SpotifyAuthorizationHelper.GetBase64EncodedString(clientId, clientSecret)}");
+        request.Headers.TryAddWithoutValidation(
+            "Authorization",
+            $"Basic {SpotifyAuthorizationHelper.GetBase64EncodedString(clientId, clientSecret)}"
+        );
         List<string> contentList = new()
         {
             "grant_type=authorization_code",
@@ -126,8 +150,8 @@ public class SpotifyClient
             $"redirect_uri={callback}"
         };
         request.Content = new StringContent(string.Join("&", contentList));
-        request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded"); 
-        
+        request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
+
         string responseText = await SendRequest(request);
         JObject tokenResponse = JObject.Parse(responseText);
         credentials = new SpotifyCredentials(
@@ -142,7 +166,10 @@ public class SpotifyClient
     private async Task SetAccessTokenFromRefreshToken()
     {
         HttpRequestMessage request = new(HttpMethod.Post, "https://accounts.spotify.com/api/token");
-        request.Headers.TryAddWithoutValidation("Authorization", $"Basic {SpotifyAuthorizationHelper.GetBase64EncodedString(clientId, clientSecret)}");
+        request.Headers.TryAddWithoutValidation(
+            "Authorization",
+            $"Basic {SpotifyAuthorizationHelper.GetBase64EncodedString(clientId, clientSecret)}"
+        );
 
         List<string> contentList = new()
         {
@@ -150,7 +177,7 @@ public class SpotifyClient
             $"refresh_token={credentials.RefreshToken}"
         };
         request.Content = new StringContent(string.Join("&", contentList));
-        request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded"); 
+        request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
         string responseText = await SendRequest(request);
         JObject tokenResponse = JObject.Parse(responseText);
         credentials = new SpotifyCredentials(
@@ -161,7 +188,7 @@ public class SpotifyClient
             tokenResponse["scope"].ToString()
         );
     }
-    
+
     private async Task<JObject> GetJObjectFromRequestResponse(
         HttpMethod httpMethod,
         string requestUri,
@@ -171,8 +198,8 @@ public class SpotifyClient
         string response = await SendRequest(httpMethod, requestUri, content);
         return JObject.Parse(response);
     }
-    
-    private async Task<T> GetSerializedObjectFromRequestResponse<T>(
+
+    private async Task<T> GetDeserializedObjectFromRequestResponse<T>(
         HttpMethod httpMethod,
         string requestUri,
         Dictionary<string, object>? content = null
@@ -182,7 +209,11 @@ public class SpotifyClient
         return JsonConvert.DeserializeObject<T>(response)!;
     }
 
-    private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, Dictionary<string, object>? content)
+    private async Task<string> SendRequest(
+        HttpMethod httpMethod,
+        string requestUri,
+        Dictionary<string, object>? content
+    )
     {
         HttpRequestMessage requestMessage = CreateRequestMessage(httpMethod, requestUri, content);
         return await SendRequest(requestMessage);
@@ -197,7 +228,7 @@ public class SpotifyClient
             await SetAccessTokenFromRefreshToken();
             response = await ResendRequest(request);
         }
-        
+
         if (response.StatusCode == HttpStatusCode.TooManyRequests)
         {
             await delayer.Delay(response.Headers.RetryAfter.Delta.Value);
@@ -212,10 +243,10 @@ public class SpotifyClient
     private async Task<HttpResponseMessage> ResendRequest(HttpRequestMessage originalRequest)
     {
         string contentStr = await originalRequest.Content.ReadAsStringAsync();
-        Dictionary<string, object>? content = contentStr.IsNullOrEmpty() 
-            ? null 
+        Dictionary<string, object>? content = contentStr.IsNullOrEmpty()
+            ? null
             : JsonSerializer.Deserialize<Dictionary<string, object>>(contentStr);
-        
+
         HttpRequestMessage clonedRequest = CreateRequestMessage(
             originalRequest.Method,
             originalRequest.RequestUri.ToString(),
@@ -235,8 +266,8 @@ public class SpotifyClient
         requestMessage.Content = new StringContent(contentStr);
         requestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         requestMessage.Headers.TryAddWithoutValidation(
-        "Authorization",
-        $"{credentials.TokenType} {credentials.AccessToken}"
+            "Authorization",
+            $"{credentials.TokenType} {credentials.AccessToken}"
         );
         return requestMessage;
     }

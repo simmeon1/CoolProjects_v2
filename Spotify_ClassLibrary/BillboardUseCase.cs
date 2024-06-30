@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 using Common_ClassLibrary;
 
@@ -98,7 +97,6 @@ public class BillboardUseCase
         //     { "202", 75 },
         // };
         //
-        int defaultCount = 150;
         // var artistSongs = new List<ArtistSong>();
         // foreach (var decade in new List<string> {"198", "199", "200", "201", "202"})
         // {
@@ -109,11 +107,40 @@ public class BillboardUseCase
         //     );
         // }
 
-        var artistSongs = bestSongs.Select(x => new ArtistSong {artist = x.artist, song = x.song}).ToList();
-        var songIds = await spotifySearchUseCase.GetSongIds(artistSongs, 1500, new[] {"rap"});
+        var artistSongs = bestSongs
+            // .Where(s => s.year > 1979)
+            .Select(x => new ArtistSong {artist = x.artist, song = x.song})
+            // .Take(1800)
+            .ToList();
+        var artistSongTrackMaps = await spotifySearchUseCase.GetSongs(artistSongs);
+
+        var mainArtistMap = new Dictionary<string, string>();
+        var filteredTracks = new Dictionary<string, TrackObject>();
+        foreach (var pair in artistSongTrackMaps)
+        {
+            var key = pair.Key;
+            var track = pair.Value;
+            if (track != null)
+            {
+                mainArtistMap.Add(key, track.artists.First().id);
+                filteredTracks.Add(key, track);
+            }
+        }
+        
+        var toAdd = new List<string>();
+        var artists =
+            await client.GetArtists(mainArtistMap.Select(x => x.Value).ToList());
+        foreach (var artistSong in artistSongs)
+        {
+            var toString = artistSong.ToString();
+            var track = filteredTracks[toString];
+            var genres = artists[mainArtistMap[toString]].genres;
+            if (!genres.Any(g => g.ToLower().Contains("rap"))) toAdd.Add(track.id);
+        }
+        
         string userId = await client.GetUserId();
-        string playlistId = await client.CreatePlaylist($"Billboard-{defaultCount}-{DateTime.Now}", userId);
-        await client.AddSongsToPlaylist(playlistId, songIds);
+        string playlistId = await client.CreatePlaylist($"Billboard-{DateTime.Now}", userId);
+        await client.AddSongsToPlaylist(playlistId, toAdd);
         logger.Log("Billboard playlist added.");
     }
 
