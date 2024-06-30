@@ -89,27 +89,28 @@ public class BillboardUseCase
             groups[key].Add(song);
         }
 
-        var toTake = new Dictionary<string, int>()
-        {
-            { "198", 280 },
-            { "199", 350 },
-            { "200", 350 },
-            { "201", 400 },
-            { "202", 75 },
-        };
-
+        // var toTake = new Dictionary<string, int>()
+        // {
+        //     { "198", 280 },
+        //     { "199", 350 },
+        //     { "200", 350 },
+        //     { "201", 400 },
+        //     { "202", 75 },
+        // };
+        //
         int defaultCount = 150;
-        var artistSongs = new List<ArtistSong>();
-        foreach (var decade in new List<string> {"198", "199", "200", "201", "202"})
-        {
-            var count = toTake.TryGetValue(decade, out int val) ? val : defaultCount;
-            artistSongs.AddRange(
-                groups[decade].Take(count)
-                    .Select(x => new ArtistSong {artist = x.artist, song = x.song})
-            );
-        }
+        // var artistSongs = new List<ArtistSong>();
+        // foreach (var decade in new List<string> {"198", "199", "200", "201", "202"})
+        // {
+        //     var count = toTake.TryGetValue(decade, out int val) ? val : defaultCount;
+        //     artistSongs.AddRange(
+        //         groups[decade].Take(count)
+        //             .Select(x => new ArtistSong {artist = x.artist, song = x.song})
+        //     );
+        // }
 
-        var songIds = await spotifySearchUseCase.GetSongIds(artistSongs);
+        var artistSongs = bestSongs.Select(x => new ArtistSong {artist = x.artist, song = x.song}).ToList();
+        var songIds = await spotifySearchUseCase.GetSongIds(artistSongs, 1500, new[] {"rap"});
         string userId = await client.GetUserId();
         string playlistId = await client.CreatePlaylist($"Billboard-{defaultCount}-{DateTime.Now}", userId);
         await client.AddSongsToPlaylist(playlistId, songIds);

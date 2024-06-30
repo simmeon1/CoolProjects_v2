@@ -1,9 +1,10 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Text.Json;
 using System.Web;
 using Common_ClassLibrary;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Spotify_ClassLibrary;
 
@@ -32,14 +33,23 @@ public class SpotifyClient
         await SetAccessTokenFromRefreshToken();
     }
 
-    public async Task<string> GetIdOfFirstResultOfSearch(string query)
+    public async Task<TrackObject?> GetFirstTrackResult(string query)
     {
-        JObject responseJson = await GetJObjectFromRequestResponse(
+        var result = await GetSerializedObjectFromRequestResponse<SearchResult>(
             HttpMethod.Get,
             $"{Root}search?q={HttpUtility.UrlEncode(query)}&type=track&limit=1"
         );
-        JToken items = responseJson["tracks"]["items"];
-        return !items.Any() ? "" : items[0]["id"].ToString();
+        
+        var items = result.tracks.items;
+        return items.FirstOrDefault();
+    }
+    
+    public async Task<FullArtistObject> GetArtist(string artistId)
+    {
+        return await GetSerializedObjectFromRequestResponse<FullArtistObject>(
+            HttpMethod.Get,
+            $"{Root}artists/{artistId}"
+        );
     }
 
     public async Task<string> GetUserId()
@@ -158,9 +168,24 @@ public class SpotifyClient
         Dictionary<string, object>? content = null
     )
     {
-        HttpRequestMessage requestMessage = CreateRequestMessage(httpMethod, requestUri, content);
-        string response = await SendRequest(requestMessage);
+        string response = await SendRequest(httpMethod, requestUri, content);
         return JObject.Parse(response);
+    }
+    
+    private async Task<T> GetSerializedObjectFromRequestResponse<T>(
+        HttpMethod httpMethod,
+        string requestUri,
+        Dictionary<string, object>? content = null
+    )
+    {
+        string response = await SendRequest(httpMethod, requestUri, content);
+        return JsonConvert.DeserializeObject<T>(response)!;
+    }
+
+    private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, Dictionary<string, object>? content)
+    {
+        HttpRequestMessage requestMessage = CreateRequestMessage(httpMethod, requestUri, content);
+        return await SendRequest(requestMessage);
     }
 
     private async Task<string> SendRequest(HttpRequestMessage request)
