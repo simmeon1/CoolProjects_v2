@@ -36,7 +36,7 @@ public class SpotifySearchUseCase
             }
             else
             {
-                return tracks;
+                // return tracks;
                 string search = song.artist + " " + song.song;
 
                 try

@@ -118,7 +118,13 @@ public class BillboardUseCase
             artistSongsMap.Add(artistSong.ToString(), artistSong);
         }
         
-        var artistSongTrackMaps = await spotifySearchUseCase.GetSongs(artistSongs, fileIo, jsonPath);
+        // var artistSongTrackMaps = await spotifySearchUseCase.GetSongs(artistSongs, fileIo, jsonPath);
+        var artistSongTrackMaps = 
+            JsonSerializer.Deserialize<Dictionary<string, TrackObject?>>(fileIo.ReadAllText(jsonPath + "\\cachedSearchesAndSong.json"));
+        
+        var artists =
+            // await client.GetArtists(mainArtistMap.Select(x => x.Value).ToList());
+        JsonSerializer.Deserialize<Dictionary<string, FullArtistObject>>(fileIo.ReadAllText(jsonPath + "\\cachedTrackArtistsMap.json"));
 
         var filteredTracks = new Dictionary<string, TrackObject>();
         var filteredArtistSongsMap = new Dictionary<string, ArtistSong>();
@@ -133,34 +139,46 @@ public class BillboardUseCase
             }
         }
 
-        var mainArtistMap = new Dictionary<string, string>();
+        // var mainArtistMap = new Dictionary<string, string>();
         var orderedArtistSongsKPs = filteredArtistSongsMap
+            .Where(x =>
+                {
+                    var genres = artists[filteredTracks[x.Key].artists.First().id].genres;
+                    bool any = !genres.Any(g => g.ToLower().Contains("rap") || g.ToLower().Contains("country"))
+                               && genres.Any(g => g.ToLower().Contains("rock") || g.ToLower().Contains("metal"));
+                    return any;
+
+                }
+            )
             .OrderByDescending(x => filteredTracks[x.Key].popularity)
             .ThenByDescending(x => bestSongsMap[x.Key].score)
-            .Take(2000)
+            .Take(1500)
             .ToList();
         
-        foreach (var pair in orderedArtistSongsKPs)
-        {
-            mainArtistMap.Add(pair.Key, filteredTracks[pair.Key].artists.First().id);
-        }
+        // foreach (var pair in orderedArtistSongsKPs)
+        // {
+        //     mainArtistMap.Add(pair.Key, filteredTracks[pair.Key].artists.First().id);
+        // }
         
-        var toAdd = new List<string>();
-        var artists =
-            await client.GetArtists(mainArtistMap.Select(x => x.Value).ToList());
+        // var toAdd = new List<string>();
+        // var artists =
+        //     await client.GetArtists(mainArtistMap.Select(x => x.Value).ToList());
+        // fileIo.WriteAllText(jsonPath + "\\cachedTrackArtistsMap.json", artists.SerializeObject());
         
-        foreach (var pair in orderedArtistSongsKPs)
-        {
-            var artistSong = pair.Value;
-            var toString = artistSong.ToString();
-            var track = filteredTracks[toString];
-            var genres = artists[mainArtistMap[toString]].genres;
-            if (!genres.Any(g => g.ToLower().Contains("rap") || g.ToLower().Contains("country"))) toAdd.Add(track.id);
-        }
+        // foreach (var pair in orderedArtistSongsKPs)
+        // {
+        //     var artistSong = pair.Value;
+        //     var toString = artistSong.ToString();
+        //     var track = filteredTracks[toString];
+        //     var genres = artists[mainArtistMap[toString]].genres;
+        // if (!genres.Any(g => g.ToLower().Contains("rap") || g.ToLower().Contains("country"))) toAdd.Add(track.id);
+        // }
         
         string userId = await client.GetUserId();
         string playlistId = await client.CreatePlaylist($"Billboard-{DateTime.Now}", userId);
-        await client.AddSongsToPlaylist(playlistId, toAdd);
+        await client.AddSongsToPlaylist(playlistId, orderedArtistSongsKPs.Select(
+            x => filteredTracks[x.Key].id).ToList()
+        );
         logger.Log("Billboard playlist added.");
     }
 

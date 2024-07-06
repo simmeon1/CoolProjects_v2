@@ -254,6 +254,7 @@ public class SpotifyClient
             originalRequest.RequestUri.ToString(),
             content
         );
+        // Change me to use SendRequest here
         return await http.SendRequest(clonedRequest);
     }
 
