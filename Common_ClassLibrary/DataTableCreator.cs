@@ -6,7 +6,7 @@ namespace Common_ClassLibrary
 {
     public class DataTableCreator
     {
-        public List<DataTable> GetTables(List<ITableEntry> entries)
+        public List<DataTable> GetTables(IEnumerable<ITableEntry> entries)
         {
             Dictionary<string, DataTable> tables = new();
             foreach (ITableEntry entry in entries)

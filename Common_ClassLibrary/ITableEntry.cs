@@ -4,8 +4,8 @@ namespace Common_ClassLibrary
 {
     public interface ITableEntry
     {
-        string GetCategory();
         string GetIdentifier();
+        string GetCategory();
         List<KeyValuePair<string, object>> GetProperties();
     }
 }
