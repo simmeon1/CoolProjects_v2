@@ -46,73 +46,72 @@ namespace Common_ClassLibrary
             using var connection = new SqliteConnection($"Data Source={fileName}");
             connection.Open();
 
-            foreach (var table in dataTables)
+            foreach (DataTable table in dataTables)
             {
-                var command = connection.CreateCommand();
-                var createTableColumns = new List<string>();
-                foreach (DataColumn column in table.Columns)
-                {
-                    var columnNameQuoted = "\"" + column.ColumnName + "\"";
-                    var type = "text";
-                    if (column.DataType == typeof(int) || column.DataType == typeof(bool))
-                    {
-                        type = "integer";
-                        if (column.DataType == typeof(bool))
-                        {
-                            type += $" CHECK ({columnNameQuoted} IN (0, 1))";
-                        }
-                    }
-                    else if (column.DataType == typeof(decimal) || column.DataType == typeof(double))
-                    {
-                        type = "real";
-                    }
+                var rowArray = new DataRow[table.Rows.Count];
+                table.Rows.CopyTo(rowArray, 0);
+                var rowList = rowArray.ToList();
 
-                    createTableColumns.Add(columnNameQuoted + " " + type);
+                var maxTake = 999 / table.Columns.Count;
+                var rowSets = new List<DataRow[]>();
+                while (rowList.Any())
+                {
+                    var dataRows = rowList.Take(maxTake).ToArray();
+                    rowSets.Add(dataRows);
+                    rowList.RemoveRange(0, dataRows.Length);
                 }
-                
-                var counter = 0;
-                var values = new List<string>();
-                var initial = counter;
-                foreach (DataRow dr in table.Rows)
+
+                foreach (DataRow[] rowSet in rowSets)
                 {
-                    for (int i = 0; i < dr.ItemArray.Length; i++)
+                    var values = new List<string>();
+                    var command = connection.CreateCommand();
+                    foreach (DataRow dr in rowSet)
                     {
-                        if (i == 0)
+                        var valueRow = new List<string>();
+                        foreach (object column in dr.ItemArray)
                         {
-                            initial = counter;
+                            var paramCount = command.Parameters.Count;
+                            command.Parameters.AddWithValue($"${paramCount}", column);
+                            valueRow.Add($"${paramCount}");
                         }
 
-                        object column = dr.ItemArray[i];
-                        command.Parameters.AddWithValue($"${counter}", column);
-                        counter++;
+                        var value = "(" + valueRow.ConcatenateListOfStringsToCommaString() + ")";
+                        values.Add(value);
                     }
                     
-                    var valueRow = new List<string>();
-                    for (int i = initial; i < counter; i++)
+                    var tableNameQuoted = "\"" + table.TableName + "\"";
+                    if (rowSet == rowSets[0])
                     {
-                        valueRow.Add($"${i}");
+                        var createTableColumns = new List<string>();
+                        for (int i = 0; i < table.Columns.Count; i++)
+                        {
+                            DataColumn column = table.Columns[i];
+                            var columnNameQuoted = "\"" + column.ColumnName + "\"";
+                            // This will break if a value is null along with DataTableCreator
+                            var type = command.Parameters[i].SqliteType.ToString();
+                            if (column.DataType == typeof(bool))
+                            {
+                                type += $" CHECK ({columnNameQuoted} IN (0, 1))";
+                            }
+                            createTableColumns.Add($"{columnNameQuoted} {type}");
+                        }
+
+                        var createTableCommand = connection.CreateCommand();
+                        createTableCommand.CommandText =
+                            $@"
+                         CREATE TABLE {tableNameQuoted} (
+                             {createTableColumns.ConcatenateListOfStringsToCommaString()}
+                         ) STRICT;
+                     ";
+                            createTableCommand.ExecuteNonQuery();
                     }
-                    var value = "(" + valueRow.ConcatenateListOfStringsToCommaString() + ")";
-                    values.Add(value);
+
+                    command.CommandText = $@"
+                    INSERT INTO {tableNameQuoted}
+                    VALUES {values.ConcatenateListOfStringsToCommaString()};
+";
+                    command.ExecuteNonQuery();
                 }
-
-                var tableNameQuoted = "\"" + table.TableName + "\"";
-                command.CommandText =
-                    $@"
-                        CREATE TABLE {tableNameQuoted} (
-                            {createTableColumns.ConcatenateListOfStringsToCommaString()}
-                        ) STRICT;
-
-                        INSERT INTO {tableNameQuoted}
-                        VALUES {values.ConcatenateListOfStringsToCommaString()};
-                    ";
-                
-                // string query = command.CommandText;
-                // foreach (SqliteParameter p in command.Parameters)
-                // {
-                //     query = query.Replace(p.ParameterName, p.Value.ToString());
-                // }
-                command.ExecuteNonQuery();
             }
         }
 
