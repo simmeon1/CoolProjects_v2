@@ -78,15 +78,15 @@ namespace Common_ClassLibrary
                         var value = "(" + valueRow.ConcatenateListOfStringsToCommaString() + ")";
                         values.Add(value);
                     }
-                    
-                    var tableNameQuoted = "\"" + table.TableName + "\"";
+
+                    var tableNameQuoted = GetQuotedString(table.TableName);
                     if (rowSet == rowSets[0])
                     {
                         var createTableColumns = new List<string>();
                         for (int i = 0; i < table.Columns.Count; i++)
                         {
                             DataColumn column = table.Columns[i];
-                            var columnNameQuoted = "\"" + column.ColumnName + "\"";
+                            var columnNameQuoted = GetQuotedString(column.ColumnName);
                             // This will break if a value is null along with DataTableCreator
                             var type = command.Parameters[i].SqliteType.ToString();
                             if (column.DataType == typeof(bool))
@@ -99,21 +99,23 @@ namespace Common_ClassLibrary
                         var createTableCommand = connection.CreateCommand();
                         createTableCommand.CommandText =
                             $@"
-                         CREATE TABLE {tableNameQuoted} (
-                             {createTableColumns.ConcatenateListOfStringsToCommaString()}
-                         ) STRICT;
-                     ";
+                                CREATE TABLE {tableNameQuoted} (
+                                 {createTableColumns.ConcatenateListOfStringsToCommaString()}
+                                ) STRICT;
+                             ";
                             createTableCommand.ExecuteNonQuery();
                     }
 
                     command.CommandText = $@"
-                    INSERT INTO {tableNameQuoted}
-                    VALUES {values.ConcatenateListOfStringsToCommaString()};
-";
+                        INSERT INTO {tableNameQuoted}
+                        VALUES {values.ConcatenateListOfStringsToCommaString()};
+                    ";
                     command.ExecuteNonQuery();
                 }
             }
         }
+
+        private static string GetQuotedString(string str) => "\"" + str + "\"";
 
         private static void WriteToCsvFile(DataTable dataTable, string filePath)
         {
@@ -133,12 +135,12 @@ namespace Common_ClassLibrary
                 {
                     if (column is string c)
                     {
-                        fileContent.Append("\"" + c + "\",");
+                        fileContent.Append($"{GetQuotedString(c)},");
                     }
                     else if (column is DateTime dt)
                     {
                         fileContent.Append(
-                            "\"" + dt.ToString("o", System.Globalization.CultureInfo.InvariantCulture) + "\","
+                            $"{GetQuotedString(dt.ToString("o", System.Globalization.CultureInfo.InvariantCulture))},"
                         );
                     }
                     else if (column is bool b)
