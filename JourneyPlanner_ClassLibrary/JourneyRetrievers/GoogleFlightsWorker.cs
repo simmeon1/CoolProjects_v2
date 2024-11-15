@@ -113,12 +113,20 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 );
                 string text = parent.GetAttribute("innerText");
                 string[] flightText = text.Split("\n", StringSplitOptions.RemoveEmptyEntries);
-                if (!flightText[6].Trim().Equals("Nonstop")) continue;
-                Journey item = GetJourneyFromText(date, flightText);
-                if (remainingPathsSet.Contains(item.Path) && !collectedFlightsSet.Contains(item.ToString()))
+                try
                 {
-                    results.Add(item);
-                    collectedFlightsSet.Add(item.ToString());
+                    // 14 flights on page but got 28, string is bad. Have to look into it.
+                    if (!flightText[6].Trim().Equals("Nonstop")) continue;
+                    Journey item = GetJourneyFromText(date, flightText);
+                    if (remainingPathsSet.Contains(item.Path) && !collectedFlightsSet.Contains(item.ToString()))
+                    {
+                        results.Add(item);
+                        collectedFlightsSet.Add(item.ToString());
+                    }
+                }
+                catch (Exception e)
+                {
+                    continue;
                 }
             }
 
