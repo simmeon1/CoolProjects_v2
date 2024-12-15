@@ -9,29 +9,35 @@ namespace JourneyPlanner_ClassLibrary.Workers
     {
         private readonly SequentialJourneyCollection seqCollection;
         private readonly int id;
-        private readonly Dictionary<string, int> penalties;
+        private readonly Dictionary<string, int> timePenalties;
+        private readonly Dictionary<string, int> costPenalties;
         private readonly Dictionary<string, Airport> airportDict;
         private readonly double avgLength;
         private readonly double avgCost;
         private readonly double avgLengthPenalized;
+        private readonly double avgCostPenalized;
 
         public SequentialJourneyCollectionItemEntry(
             SequentialJourneyCollection seqCollection,
             int id,
-            Dictionary<string, int> penalties,
+            Dictionary<string, int> timePenalties,
+            Dictionary<string, int> costPenalties,
             Dictionary<string, Airport> airportDict,
             double avgLength,
             double avgCost,
-            double avgLengthPenalized
+            double avgLengthPenalized,
+            double avgCostPenalized
         )
         {
             this.seqCollection = seqCollection;
             this.id = id;
-            this.penalties = penalties;
+            this.timePenalties = timePenalties;
+            this.costPenalties = costPenalties;
             this.airportDict = airportDict;
             this.avgLength = avgLength;
             this.avgCost = avgCost;
             this.avgLengthPenalized = avgLengthPenalized;
+            this.avgCostPenalized = avgCostPenalized;
         }
 
         public string GetIdentifier()
@@ -69,16 +75,18 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 new("Companies", seqCollection.GetCompaniesString()),
 
                 //Penalties
-                new("Start Penalized", GetPenalizedStartTime(seqCollection, penalties)),
-                new("End Penalized", GetPenalizedEndTimeTime(seqCollection, penalties)),
-                new("Length Penalized", GetShortTimeSpan(GetPenalizedLength(seqCollection, penalties))),
-                new("Penalty Time", GetPenaltyTime(seqCollection, penalties).TotalMinutes),
-                new("Bargain % Penalized", GetBargainPercentagePenalized(seqCollection, penalties)),
+                new("Start Penalized", GetPenalizedStartTime(seqCollection, timePenalties)),
+                new("End Penalized", GetPenalizedEndTimeTime(seqCollection, timePenalties)),
+                new("Length Penalized", GetShortTimeSpan(GetPenalizedLength(seqCollection, timePenalties))),
+                new("Cost Penalized", GetPenalizedCost(seqCollection, costPenalties)),
+                new("Penalty Time", GetPenaltyTime(seqCollection, timePenalties).TotalMinutes),
+                new("Penalty Cost", GetPenaltyCost(seqCollection, costPenalties)),
+                new("Bargain % Penalized", GetBargainPercentagePenalized(seqCollection, timePenalties, costPenalties)),
 
                 //Ints
                 new("Shortest Pause Int", seqCollection.GetShortestPause().TotalMinutes),
                 new("Length Int", seqCollection.GetLength().TotalMinutes),
-                new("Length Int Penalized", GetPenalizedLength(seqCollection, penalties).TotalMinutes),
+                new("Length Int Penalized", GetPenalizedLength(seqCollection, timePenalties).TotalMinutes),
             };
         }
 
@@ -94,20 +102,40 @@ namespace JourneyPlanner_ClassLibrary.Workers
 
         private static TimeSpan GetPenalizedLength(
             SequentialJourneyCollection seqCollection,
-            Dictionary<string, int> penalties
+            Dictionary<string, int> timePenalties
         )
         {
-            var penaltyTime = GetPenaltyTime(seqCollection, penalties);
+            var penaltyTime = GetPenaltyTime(seqCollection, timePenalties);
             return seqCollection.GetLength() + penaltyTime;
         }
-
-        private static TimeSpan GetPenaltyTime(
+        
+        private static double GetPenalizedCost(
             SequentialJourneyCollection seqCollection,
-            Dictionary<string, int> penalties
+            Dictionary<string, int> costPenalties
         )
         {
-            return GetLocationPenalty(penalties, GetDepartingLocation(seqCollection)) +
-                   GetLocationPenalty(penalties, GetArrivingLocation(seqCollection));
+            var penaltyCost = GetPenaltyCost(seqCollection, costPenalties);
+            return seqCollection.GetCost() + penaltyCost;
+        }
+
+        private static TimeSpan GetPenaltyTime(SequentialJourneyCollection seqCollection, Dictionary<string, int> penalties)
+        {
+            return GetLocationTimePenalty(penalties, GetDepartingLocation(seqCollection)) + GetLocationTimePenalty(penalties, GetArrivingLocation(seqCollection));
+        }
+        
+        private static int GetPenaltyCost(SequentialJourneyCollection seqCollection, Dictionary<string, int> penalties)
+        {
+            return GetLocationCostPenalty(penalties, GetDepartingLocation(seqCollection)) + GetLocationCostPenalty(penalties, GetArrivingLocation(seqCollection));
+        }
+        
+        private static TimeSpan GetLocationTimePenalty(Dictionary<string, int> penalties, string location)
+        {
+            return new TimeSpan(0, penalties.TryGetValue(location, out int startPenalty) ? startPenalty : 0, 0);
+        }
+        
+        private static int GetLocationCostPenalty(Dictionary<string, int> penalties, string location)
+        {
+            return penalties.TryGetValue(location, out int startPenalty) ? startPenalty : 0;
         }
 
         private static DateTime? GetPenalizedStartTime(
@@ -116,7 +144,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
         )
         {
             var location = GetDepartingLocation(seqCollection);
-            TimeSpan penalty = GetLocationPenalty(penalties, location);
+            TimeSpan penalty = GetLocationTimePenalty(penalties, location);
             return seqCollection.GetStartTime() - penalty;
         }
 
@@ -131,7 +159,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
         )
         {
             var location = GetArrivingLocation(seqCollection);
-            TimeSpan penalty = GetLocationPenalty(penalties, location);
+            TimeSpan penalty = GetLocationTimePenalty(penalties, location);
             return seqCollection.GetEndTime() + penalty;
         }
 
@@ -139,12 +167,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
         {
             return seqCollection[seqCollection.Count() - 1].GetArrivingLocation();
         }
-
-        private static TimeSpan GetLocationPenalty(Dictionary<string, int> penalties, string location)
-        {
-            return new TimeSpan(0, penalties.TryGetValue(location, out int startPenalty) ? startPenalty : 0, 0);
-        }
-
+        
         private double GetCountryChanges(SequentialJourneyCollection c)
         {
             int changes = 0;
@@ -181,12 +204,13 @@ namespace JourneyPlanner_ClassLibrary.Workers
 
         private double GetBargainPercentagePenalized(
             SequentialJourneyCollection seqCollection,
-            Dictionary<string, int> penalties
+            Dictionary<string, int> timePenalties,
+            Dictionary<string, int> costPenalties
         )
         {
             return Math.Round(
-                (100 - GetPenalizedLength(seqCollection, penalties).TotalMinutes / avgLengthPenalized * 100) +
-                (100 - seqCollection.GetCost() / avgCost * 100),
+                (100 - GetPenalizedLength(seqCollection, timePenalties).TotalMinutes / avgLengthPenalized * 100) +
+                (100 - GetPenalizedCost(seqCollection, costPenalties) / avgCostPenalized * 100),
                 2
             );
         }

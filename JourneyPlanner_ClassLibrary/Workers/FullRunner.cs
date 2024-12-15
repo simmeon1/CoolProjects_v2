@@ -164,9 +164,14 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 journeyCollectorResults.SerializeObject(Formatting.Indented)
             );
 
-            var penalties = 
-                !p.PenaltiesFile.IsNullOrEmpty() 
-                    ? fileIo.ReadAllText(p.PenaltiesFile).DeserializeObject<Dictionary<string,int>>() 
+            var timePenalties = 
+                !p.TimePenaltiesFile.IsNullOrEmpty() 
+                    ? fileIo.ReadAllText(p.TimePenaltiesFile).DeserializeObject<Dictionary<string,int>>() 
+                    : new Dictionary<string, int>();
+            
+            var costPenalties = 
+                !p.CostPenaltiesFile.IsNullOrEmpty() 
+                    ? fileIo.ReadAllText(p.CostPenaltiesFile).DeserializeObject<Dictionary<string,int>>() 
                     : new Dictionary<string, int>();
             
             PrintPathsAndJourneysAndFinish(
@@ -176,7 +181,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 runResultsPath,
                 paths,
                 p.NoLongerThan,
-                penalties,
+                timePenalties,
+                costPenalties,
                 components
             );
         }
@@ -208,7 +214,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
             string runResultsPath,
             List<Path> paths,
             int noLongerThan,
-            Dictionary<string, int> penalties,
+            Dictionary<string, int> timePenalties,
+            Dictionary<string, int> costPenalties,
             JourneyRetrieverComponents components
         )
         {
@@ -221,7 +228,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             );
 
             TableEntryCreator tableEntryCreator = new();
-            var tableEntries = tableEntryCreator.GetTableEntries(airportsList, results, penalties);
+            var tableEntries = tableEntryCreator.GetTableEntries(airportsList, results, timePenalties, costPenalties);
             var tables = new DataTableCreator().GetTables(tableEntries);
             printer.PrintTablesToWorksheet(
                 tables,

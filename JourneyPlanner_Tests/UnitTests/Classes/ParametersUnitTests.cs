@@ -86,8 +86,8 @@ namespace JourneyPlanner_Tests.UnitTests.Classes
         [TestMethod]
         public void PenaltiesFileGetSetWorks()
         {
-            p.PenaltiesFile = "asd";
-            Assert.IsTrue(p.PenaltiesFile.Equals("asd"));
+            p.TimePenaltiesFile = "asd";
+            Assert.IsTrue(p.TimePenaltiesFile.Equals("asd"));
         }
         
         [TestMethod]

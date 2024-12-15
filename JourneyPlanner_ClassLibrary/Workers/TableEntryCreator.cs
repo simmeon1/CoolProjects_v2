@@ -11,25 +11,29 @@ namespace JourneyPlanner_ClassLibrary.Workers
         private double AvgLength { get; set; }
         private double AvgLengthPenalized { get; set; }
         private double AvgCost { get; set; }
+        private double AvgCostPenalized { get; set; }
         private Dictionary<string, Airport> AirportDict { get; set; }
 
         public List<ITableEntry> GetTableEntries(
             List<Airport> airportList,
             List<SequentialJourneyCollection> sequentialCollections,
-            Dictionary<string, int> penalties
+            Dictionary<string, int> timePenalties,
+            Dictionary<string, int> costPenalties
         )
         {
-            penalties ??= new Dictionary<string, int>();
-            InitialiseData(airportList, sequentialCollections, penalties);
+            timePenalties ??= new Dictionary<string, int>();
+            costPenalties ??= new Dictionary<string, int>();
+            InitialiseData(airportList, sequentialCollections, timePenalties, costPenalties);
             return GetPopulatedTables(
-                sequentialCollections.OrderByDescending(x => GetBargainPercentage(x)).ToList(),
-                penalties
+                sequentialCollections.OrderByDescending(GetBargainPercentage).ToList(),
+                timePenalties, costPenalties
             );
         }
 
         private List<ITableEntry> GetPopulatedTables(
             List<SequentialJourneyCollection> list,
-            Dictionary<string, int> penalties
+            Dictionary<string, int> timePenalties,
+            Dictionary<string, int> costPenalties
         )
         {
             List<ITableEntry> result = new();
@@ -40,11 +44,13 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 result.Add(new SequentialJourneyCollectionItemEntry(
                     collection,
                     collectionId,
-                    penalties,
+                    timePenalties,
+                    costPenalties,
                     AirportDict,
                     AvgLength,
                     AvgCost,
-                    AvgLengthPenalized
+                    AvgLengthPenalized,
+                    AvgCostPenalized
                 ));
 
                 for (int j = 0; j < collection.Count(); j++)
@@ -65,16 +71,31 @@ namespace JourneyPlanner_ClassLibrary.Workers
         
         private static TimeSpan GetPenalizedLength(
             SequentialJourneyCollection seqCollection,
-            Dictionary<string, int> penalties
+            Dictionary<string, int> timePenalties
         )
         {
-            var penaltyTime = GetPenaltyTime(seqCollection, penalties);
+            var penaltyTime = GetPenaltyTime(seqCollection, timePenalties);
             return seqCollection.GetLength() + penaltyTime;
         }
+        
+        private static double GetPenalizedCost(
+            SequentialJourneyCollection seqCollection,
+            Dictionary<string, int> costPenalties
+        )
+        {
+            var penaltyCost = GetPenaltyCost(seqCollection, costPenalties);
+            return seqCollection.GetCost() + penaltyCost;
+        }
+
 
         private static TimeSpan GetPenaltyTime(SequentialJourneyCollection seqCollection, Dictionary<string, int> penalties)
         {
-            return GetLocationPenalty(penalties, GetDepartingLocation(seqCollection)) + GetLocationPenalty(penalties, GetArrivingLocation(seqCollection));
+            return GetLocationTimePenalty(penalties, GetDepartingLocation(seqCollection)) + GetLocationTimePenalty(penalties, GetArrivingLocation(seqCollection));
+        }
+        
+        private static int GetPenaltyCost(SequentialJourneyCollection seqCollection, Dictionary<string, int> penalties)
+        {
+            return GetLocationCostPenalty(penalties, GetDepartingLocation(seqCollection)) + GetLocationCostPenalty(penalties, GetArrivingLocation(seqCollection));
         }
         
         private static string GetDepartingLocation(SequentialJourneyCollection seqCollection)
@@ -87,21 +108,28 @@ namespace JourneyPlanner_ClassLibrary.Workers
             return seqCollection[seqCollection.Count() - 1].GetArrivingLocation();
         }
 
-        private static TimeSpan GetLocationPenalty(Dictionary<string, int> penalties, string location)
+        private static TimeSpan GetLocationTimePenalty(Dictionary<string, int> penalties, string location)
         {
             return new TimeSpan(0, penalties.TryGetValue(location, out int startPenalty) ? startPenalty : 0, 0);
+        }
+        
+        private static int GetLocationCostPenalty(Dictionary<string, int> penalties, string location)
+        {
+            return penalties.TryGetValue(location, out int startPenalty) ? startPenalty : 0;
         }
         
         private void InitialiseData(
             List<Airport> airportList,
             List<SequentialJourneyCollection> sequentialCollections,
-            Dictionary<string, int> penalties
+            Dictionary<string, int> timePenalties,
+            Dictionary<string, int> costPenalties
         )
         {
             AirportDict = GetAirportDict(airportList);
             AvgLength = GetAverage(sequentialCollections, x => x.GetLength().TotalMinutes);
-            AvgLengthPenalized = GetAverage(sequentialCollections, x => GetPenalizedLength(x, penalties).TotalMinutes);
+            AvgLengthPenalized = GetAverage(sequentialCollections, x => GetPenalizedLength(x, timePenalties).TotalMinutes);
             AvgCost = GetAverage(sequentialCollections, x => x.GetCost());
+            AvgCostPenalized = GetAverage(sequentialCollections, x => GetPenalizedCost(x, costPenalties));
         }
 
         private static double GetAverage(
@@ -136,7 +164,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
         {
             return Math.Round(
                 (100 - GetPenalizedLength(seqCollection, penalties).TotalMinutes / AvgLengthPenalized * 100) +
-                (100 - seqCollection.GetCost() / AvgCost * 100),
+                (100 - GetPenalizedCost(seqCollection, penalties) / AvgCostPenalized * 100),
                 2
             );
         }
