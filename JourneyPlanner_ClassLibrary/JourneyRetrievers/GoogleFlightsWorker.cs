@@ -177,7 +177,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             IWebElement loadingBar = c.FindElement(GetCssSelectorParam("[data-buffervalue='1']"));
             try
             {
-                c.Until(_ => loadingBar.GetAttribute("aria-hidden") == null, 1);
+                c.Until(_ => loadingBar.GetAttribute("aria-hidden") == null, 5);
                 c.Until(_ => loadingBar.GetAttribute("aria-hidden") != null);
             }
             catch (Exception)
