@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using Nefarius.ViGEm.Client.Targets;
-using Vigem_ClassLibrary;
-using Vigem_ClassLibrary.SystemImplementations;
-using Vigem_Common.Mappings;
-using VigemControllers_ClassLibrary;
+using VigemLibrary;
+using VigemLibrary.Controllers;
+using VigemLibrary.Mappings;
+using VigemLibrary.SystemImplementations;
 
 namespace WinFormsApp2;
 
@@ -34,7 +34,7 @@ public partial class Form1 : Form
     private const string RightStickUp = "RightStickUp";
     private const string RightStickDown = "RightStickDown";
     
-    private readonly DelayerControllerUser userDs4;
+    private readonly StopwatchControllerUser userDs4;
     private readonly Stopwatch stopwatch = new();
     private readonly Dictionary<string, Keys> commandsToKeys;
     private readonly Dictionary<Keys, string> keysToCommands;
@@ -51,8 +51,7 @@ public partial class Form1 : Form
         ControllerCreator creator = new();
         IDualShock4Controller createdDs4Controller = creator.GetDualShock4Controller();
         Dualshock4Controller cds4 = new(createdDs4Controller);
-        Delayer delayer = new();
-        userDs4 = new DelayerControllerUser(cds4, delayer, 500);
+        userDs4 = new StopwatchControllerUser(cds4, new RealStopwatch(), 500);
         cds4.Connect();
         stopwatch.Start();
         
