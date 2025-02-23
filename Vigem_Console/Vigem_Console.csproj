@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\VigemLibrary\VigemLibrary.csproj" />
-    <ProjectReference Include="..\WindowsPixelReader\WindowsPixelReader.csproj" />
+    <ProjectReference Include="..\WindowsScreenReading\WindowsScreenReading.csproj" />
   </ItemGroup>
 
 </Project>

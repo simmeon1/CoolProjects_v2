@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeagueGui", "LeagueGui\Leag
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VigemLibrary", "VigemLibrary\VigemLibrary.csproj", "{0704D954-DCAB-4B43-BDF0-F2120F60708A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsPixelReader", "WindowsPixelReader\WindowsPixelReader.csproj", "{AC73C1DC-762C-44D1-B618-9F594EB1F381}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsScreenReading", "WindowsScreenReading\WindowsScreenReading.csproj", "{AC73C1DC-762C-44D1-B618-9F594EB1F381}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Vigem", "Vigem", "{CAA8ACC2-CAF2-45E4-BFD7-FE960610C7B7}"
 EndProject
@@ -29,7 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "League", "League", "{3F2B5C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JourneyPlanner", "JourneyPlanner", "{CAA12D22-414B-4CAA-9BBC-A5DAE87B3513}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VigemConsole", "VigemConsole\VigemConsole.csproj", "{5F974D7C-FA87-49B4-9CD4-8294896C0948}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vigem_Console", "Vigem_Console\Vigem_Console.csproj", "{5F974D7C-FA87-49B4-9CD4-8294896C0948}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VigemLibraryTests", "VigemLibraryTests\VigemLibraryTests.csproj", "{24C17ACD-3360-414F-B527-573E08073597}"
 EndProject

@@ -7,9 +7,9 @@ using VigemLibrary.Commands;
 using VigemLibrary.Controllers;
 using VigemLibrary.Mappings;
 using VigemLibrary.SystemImplementations;
-using WindowsPixelReader;
+using WindowsScreenReading;
 
-namespace VigemConsole
+namespace Vigem_Console
 {
     public class Program
     {
@@ -28,6 +28,34 @@ namespace VigemConsole
             else if (command == "crisis-core") doCrisisCoreTest();
             else if (command == "ffvii-super-dunk") doFf7SuperDunk();
             else if (command == "ffvii-farm") doFf7Farm();
+            else if (command == "rebirth") doRebirth(dict);
+        }
+
+        // Spam Barret Overcharge in trial. When it ends, triangle to retry brings up prompt.
+        // When word Yes is located, move up to it and accept and repeat.
+        // Based on laptop screen coordinates.
+        private static void doRebirth(Dictionary<string, string> dict)
+        {
+            var tesseractUseCase = new TesseractUseCase();
+            RealStopwatch s = new();
+            Dualshock4Controller cds4 = GetConnectedDs4Controller();
+            StopwatchControllerUser user = new(cds4, s, 100);
+            while (true)
+            {
+                user.PressButton(ButtonMappings.Triangle);
+                if (tesseractUseCase.ClientContainsTextInRect(
+                    "chiaki",
+                    "Yes",
+                    932,
+                    610,
+                    988,
+                    633
+                ))
+                {
+                    for (int i = 0; i < 10; i++) user.PressDPad(DPadMappings.Up);
+                    for (int i = 0; i < 10; i++) user.PressButton(ButtonMappings.Cross);
+                }
+            }
         }
 
         private static void doTest(Dictionary<string, string> dict)
@@ -47,16 +75,16 @@ namespace VigemConsole
                 double ts = s.GetElapsedTotalMilliseconds();
                 while (s.GetElapsedTotalMilliseconds() - ts < 300)
                 {
-                    Point point = new(483, 141);
-                    Point screenPoint = pr.GetClientToScreen(handle, ref point);
+                    Point screenPoint = new(483, 141);
+                    User32.ClientToScreen(handle, ref screenPoint);
                     Pixel pixel = pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y);
                     if (pixel.PixelColor.GetBrightness() < 0.2) continue;
                     
                     s.Wait(1000);
                     int clientX = 144;
                     int clientY = 275;
-                    Point point2 = new(clientX, clientY);
-                    Point screenPoint2 = pr.GetClientToScreen(handle, ref point2);
+                    Point screenPoint2 = new(clientX, clientY);
+                    User32.ClientToScreen(handle, ref screenPoint2);
                     pr.SaveScreen(screenPoint2.X, screenPoint2.Y, 196 - clientX, 286 - clientY, "C:\\D\\test2.png");
                     Color color = pr.GetScreenAverageColor(screenPoint2.X, screenPoint2.Y, 196 - clientX, 286 - clientY);
                     if (color is {R: 54, G: 55, B: 90})
@@ -196,7 +224,7 @@ namespace VigemConsole
                 }
                 else
                 {
-                    Point cursorPos = pr.GetCursorLocation();
+                    Point cursorPos = User32.GetCursorPos();
                     point.X = cursorPos.X;
                     point.Y = cursorPos.Y;
                 }
@@ -205,8 +233,8 @@ namespace VigemConsole
                 if (dict.ContainsKey("client"))
                 {
                     nint handle = GetProcessHandle(dict["client"]);
-                    Point clientPoint = pr.GetScreenToClient(handle, ref point);
-                    message += $" Client coordinates = {clientPoint}";
+                    User32.ScreenToClient(handle, ref point);
+                    message += $" Client coordinates = {point}";
                 }
                 
                 Console.WriteLine(message);
@@ -229,9 +257,9 @@ namespace VigemConsole
             if (dict.ContainsKey("client"))
             {
                 nint handle = GetProcessHandle(dict["client"]);
-                Point screenPoint = pr.GetClientToScreen(handle, ref point);
-                x1 = screenPoint.X;
-                y1 = screenPoint.Y;
+                User32.ClientToScreen(handle, ref point);
+                x1 = point.X;
+                y1 = point.Y;
             }
 
             RealStopwatch localStopwatch = new();
@@ -256,9 +284,8 @@ namespace VigemConsole
 
             PixelReader pr = new();
             nint handle = GetProcessHandle(processName);
-            Rectangle clientRect = pr.GetClientRect(handle);
-            Point clientPoint = new(0, 0);
-            Point screenPoint = pr.GetClientToScreen(handle, ref clientPoint);
+            Rectangle clientRect = User32.GetClientRect(handle);
+            var clientPoint = User32.ClientToScreen(handle);
 
             string directory = $"C:\\D\\Apps\\Vigem\\Recordings\\{DateTime.Now:yyyy-MM-dd--HH-mm-ss}";
             Directory.CreateDirectory(directory);
@@ -270,7 +297,7 @@ namespace VigemConsole
             {
 
                 string filePath = $"{directory}\\{counter}-{DateTime.Now:yyyy-MM-dd--HH-mm-ss.fff}.png";
-                pr.SaveClient(clientRect, screenPoint, filePath);
+                pr.SaveClient(clientRect, clientPoint, filePath);
                 // if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.C)
                 // {
                 //     
@@ -314,7 +341,7 @@ namespace VigemConsole
             int speechBubble = int.Parse(dict["speechBubble"]);
             nint process = GetProcessHandle(client);
             Point clientPoint = new(clientX, clientY);
-            Point screenPoint = pr.GetClientToScreen(process, ref clientPoint);
+            User32.ClientToScreen(process, ref clientPoint);
 
             // while (true)
             // {
@@ -323,7 +350,7 @@ namespace VigemConsole
             // }
             
             
-            Func<int> getB = () => pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y).PixelColor.B;
+            Func<int> getB = () => pr.GetPixelAtLocation(clientPoint.X, clientPoint.Y).PixelColor.B;
             localStopwatch.Restart();
             localStopwatch.Wait(1000);
             int counter = 0;
@@ -382,7 +409,7 @@ namespace VigemConsole
             int speechBubble = int.Parse(dict["speechBubble"]);
             nint process = GetProcessHandle(client);
             Point clientPoint = new(clientX, clientY);
-            Point screenPoint = pr.GetClientToScreen(process, ref clientPoint);
+            User32.ClientToScreen(process, ref clientPoint);
             
             // Func<float> getB = () => pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y).PixelColor.GetBrightness();
             // Func<int> getB = () => pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y).PixelColor.B;
@@ -397,7 +424,7 @@ namespace VigemConsole
             user.PressButton(ButtonMappings.Cross);
             localStopwatch.Wait(2000);
 
-            Func<bool> pressCondition = () => pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y).PixelColor.GetBrightness() <= 0.2;
+            Func<bool> pressCondition = () => pr.GetPixelAtLocation(clientPoint.X, clientPoint.Y).PixelColor.GetBrightness() <= 0.2;
             user.PressButton(ButtonMappings.Cross);
             localStopwatch.Wait(500);
             while (true)

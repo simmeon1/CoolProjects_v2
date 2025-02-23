@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace WindowsPixelReader
+namespace WindowsScreenReading
 {
     public class Pixel
     {
