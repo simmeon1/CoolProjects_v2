@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace WindowsScreenReading
@@ -45,6 +46,13 @@ namespace WindowsScreenReading
             return p;
         }
         
+        public static Point ClientToScreen(string processName, ref Point p)
+        {
+            ClientToScreen(GetProcessHandle(processName), ref p);
+            return p;
+        }
+
+        
         [DllImport("user32.dll")]
         public static extern bool ScreenToClient(IntPtr hWnd, ref Point point);
         public static Point ScreenToClient(IntPtr hWnd)
@@ -53,5 +61,20 @@ namespace WindowsScreenReading
             ScreenToClient(hWnd, ref p);
             return p;
         }
+        
+        public static Point ScreenToClient(string processName, ref Point p)
+        {
+            ScreenToClient(GetProcessHandle(processName), ref p);
+            return p;
+        }
+        
+        private static nint GetProcessHandle(string processName)
+        {
+            Process[] processes = Process.GetProcessesByName(processName);
+            Process process = processes.First();
+            nint handle = process.MainWindowHandle;
+            return handle;
+        }
+
     }
 }

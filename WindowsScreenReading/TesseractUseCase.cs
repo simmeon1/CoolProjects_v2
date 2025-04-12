@@ -26,7 +26,6 @@ namespace WindowsScreenReading
             int clientEndY
         ) {
             return bw.ProcessBitmap(
-                processName,
                 clientStartX,
                 clientStartY,
                 clientEndX,
@@ -43,7 +42,8 @@ namespace WindowsScreenReading
                             return pageText.Contains(text);
                         }
                     }
-                }
+                },
+                processName
             );
         }
     }
