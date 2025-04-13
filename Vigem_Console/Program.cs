@@ -53,6 +53,7 @@ namespace Vigem_Console
             Dualshock4Controller cds4 = GetConnectedDs4Controller();
             StopwatchControllerUser user = new(cds4, s, 70);
             // Tip-ish of the hat, enough to satisfy 0 to 200
+            // Reached 301 with this and not changing anything.
             Point clPoint = new(245, 165);
             Point shadowPoint = new(260, 215);
             var treshold = 160;
@@ -67,6 +68,7 @@ namespace Vigem_Console
                 return color.R >= treshold && color.GetBrightness() < 0.7;
             }
 
+            // s.Wait(3000);
             while (true)
             {
                 // s.Wait(200);
