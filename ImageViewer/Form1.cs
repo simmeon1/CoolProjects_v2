@@ -2,10 +2,7 @@ namespace ImageViewer;
 
 public partial class Form1 : Form
 {
-    private string directory;
     private int currentIndex;
-    private int minIndex;
-    private int maxIndex;
     private string[] allFiles;
 
     public Form1()
@@ -21,10 +18,7 @@ public partial class Form1 : Form
 
         string imageFile = dialog.FileName;
         currentIndex = GetIndexFromFileName(imageFile);
-        directory = Path.GetDirectoryName(imageFile);
-        allFiles = Directory.GetFiles(directory).OrderBy(GetIndexFromFileName).ToArray();
-        minIndex = GetIndexFromFileName(allFiles.First());
-        maxIndex = GetIndexFromFileName(allFiles.Last());
+        allFiles = Directory.GetFiles(Path.GetDirectoryName(imageFile)).OrderBy(GetIndexFromFileName).ToArray();
         LoadImageFromIndex(currentIndex);
     }
 
@@ -52,6 +46,8 @@ public partial class Form1 : Form
     
     private void LoadImageFromIndex(int index)
     {
+        var minIndex = GetIndexFromFileName(allFiles.First());
+        var maxIndex = GetIndexFromFileName(allFiles.Last());
         if (index < minIndex)
         {
             index = minIndex;
