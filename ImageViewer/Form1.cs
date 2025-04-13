@@ -20,8 +20,6 @@ public partial class Form1 : Form
         if (dialog.ShowDialog() != DialogResult.OK) return;
 
         string imageFile = dialog.FileName;
-        int GetIndexFromFileName(string file) =>
-            int.Parse(Path.GetFileNameWithoutExtension(file).Split("-", StringSplitOptions.RemoveEmptyEntries)[0]);
         currentIndex = GetIndexFromFileName(imageFile);
         directory = Path.GetDirectoryName(imageFile);
         allFiles = Directory.GetFiles(directory).OrderBy(GetIndexFromFileName).ToArray();
@@ -29,7 +27,10 @@ public partial class Form1 : Form
         maxIndex = GetIndexFromFileName(allFiles.Last());
         LoadImageFromIndex(currentIndex);
     }
-    
+
+    private int GetIndexFromFileName(string file) =>
+        int.Parse(Path.GetFileNameWithoutExtension(file).Split("-", StringSplitOptions.RemoveEmptyEntries)[0]);
+
     private void Form1_KeyDown(object? sender, KeyEventArgs e)
     {
         Keys key = e.KeyCode;
@@ -37,17 +38,30 @@ public partial class Form1 : Form
         {
             FormBorderStyle = FormBorderStyle == FormBorderStyle.None ? FormBorderStyle.Sizable : FormBorderStyle.None;
         }
-        
-        if (key == Keys.Right) LoadImageFromIndex(currentIndex + 1);
-        if (key == Keys.Left) LoadImageFromIndex(currentIndex - 1);
+
+        var modifier = e.Modifiers switch
+        {
+            Keys.Shift => 10,
+            Keys.Control => 100,
+            _ => 1
+        };
+        if (key == Keys.Right) LoadImageFromIndex(currentIndex + modifier);
+        if (key == Keys.Left) LoadImageFromIndex(currentIndex - modifier);
         if (key == Keys.O) PopulateDialog();
     }
     
     private void LoadImageFromIndex(int index)
     {
-        if (index < minIndex || index > maxIndex) return;
+        if (index < minIndex)
+        {
+            index = minIndex;
+        }
+        if (index > maxIndex)
+        {
+            index = maxIndex;
+        }
 
-        string file = allFiles.First(f => Path.GetFileNameWithoutExtension(f).StartsWith($"{index}-"));
+        string file = allFiles.First(f => GetIndexFromFileName(f) == index);
         string fileName = Path.GetFileName(file);
         Image image = Image.FromFile(file);
         ClientSize = new Size(image.Width, image.Height);

@@ -57,22 +57,32 @@ namespace Vigem_Console
             var treshold = 180;
             BitmapWorker bw = new();
             var pressCounter = 0;
-            float GetColorValue() => bw.ProcessBitmap(
+            Color GetColor() => bw.ProcessBitmap(
                 clPoint.X, clPoint.Y, bm => bw.GetAverageColor(bm), "chiaki"
-            ).R;
-            bool TresholdMatched() => GetColorValue() >= treshold;
+            );
+            bool ShouldClick()
+            {
+                var color = GetColor();
+                return color.R >= treshold && color.GetBrightness() < 0.7;
+            }
 
             while (true)
             {
                 // s.Wait(200);
-                if (TresholdMatched())
+                if (ShouldClick())
                 {
                     // Console.WriteLine(GetBrightness());
                     // s.Wait(10);
                     Console.WriteLine($"press {++pressCounter} at {DateTime.Now:yyyy-MM-dd--HH-mm-ss.fff}");
                     user.PressButton(ButtonMappings.Cross);
+
+                    // if (pressCounter == 195)
+                    // {
+                    //     return;
+                    // }
+                    
                     // s.Wait(110);
-                    while (TresholdMatched())
+                    while (ShouldClick())
                     {
                         // Console.WriteLine("waitinig");
                     }
