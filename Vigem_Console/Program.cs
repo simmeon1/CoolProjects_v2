@@ -21,38 +21,64 @@ namespace Vigem_Console
             // else if (command == "ffix-jump-rope") doFf9JumpRope(dict);
             // else if (command == "ffix-jump-rope-2") doFf9JumpRope2(dict);
             if (command == "log-cursor") doLogCursor(dict);
-            // else if (command == "record") doRecord(dict);
+            if (command == "log-client-pos") doLogClientPos(dict);
+            else if (command == "record") doRecord(dict);
             else if (command == "ffvi-auto-battle") doFf6AutoBattle();
+            // else if (command == "save-client") doSaveClient();
             // else if (command == "log-screen") doLogScreen(dict);
             // else if (command == "test") doTest(dict);
             else if (command == "crisis-core") doCrisisCoreTest();
             else if (command == "ffvii-super-dunk") doFf7SuperDunk();
             else if (command == "ffvii-farm") doFf7Farm();
-            // else if (command == "rebirth") doFf9JumpRope3(dict);
+            else if (command == "rebirth") doFf9JumpRope3(dict);
         }
 
-        // private static void doFf9JumpRope3(Dictionary<string, string> dict)
+        // private static void doSaveClient()
         // {
-        //     RealStopwatch s = new();
-        //     Dualshock4Controller cds4 = GetConnectedDs4Controller();
-        //     StopwatchControllerUser user = new(cds4, s, 100);
-        //     PixelReader pr = new();
-        //     nint handle = GetProcessHandle("chiaki");
-        //     Point clientCoordinate = new(785, 433);
-        //     User32.ClientToScreen(handle, ref clientCoordinate);
-        //
-        //     while (true)
-        //     {
-        //         var pixel = pr.GetPixelAtLocation(clientCoordinate.X, clientCoordinate.Y);
-        //         if (pixel.PixelColor.GetBrightness() > 0.8)
+        //     BitmapWorker bw = new();
+        //     bw.ProcessBitmap(
+        //         "chiaki",
+        //         bm =>
         //         {
-        //             //846 466
-        //             s.Wait(50);
-        //             user.PressButton(ButtonMappings.Cross);
-        //             s.Wait(100);
+        //             var path = "test.png";
+        //             bm.Save(path, BitmapWorker.GetImageFormatFromPath(path));
+        //             return true;
         //         }
-        //     }
+        //     );
         // }
+
+        private static void doFf9JumpRope3(Dictionary<string, string> dict)
+        {
+            RealStopwatch s = new();
+            Dualshock4Controller cds4 = GetConnectedDs4Controller();
+            StopwatchControllerUser user = new(cds4, s, 70);
+            // Tip-ish of the hat, enough to satisfy 0 to 200
+            Point clPoint = new(245, 166);
+            var treshold = 180;
+            BitmapWorker bw = new();
+            var pressCounter = 0;
+            float GetColorValue() => bw.ProcessBitmap(
+                clPoint.X, clPoint.Y, bm => bw.GetAverageColor(bm), "chiaki"
+            ).R;
+            bool TresholdMatched() => GetColorValue() >= treshold;
+
+            while (true)
+            {
+                // s.Wait(200);
+                if (TresholdMatched())
+                {
+                    // Console.WriteLine(GetBrightness());
+                    // s.Wait(10);
+                    Console.WriteLine($"press {++pressCounter} at {DateTime.Now:yyyy-MM-dd--HH-mm-ss.fff}");
+                    user.PressButton(ButtonMappings.Cross);
+                    // s.Wait(110);
+                    while (TresholdMatched())
+                    {
+                        // Console.WriteLine("waitinig");
+                    }
+                }
+            }
+        }
 
         // Spam Barret Overcharge in trial. When it ends, triangle to retry brings up prompt.
         // When word Yes is located, move up to it and accept and repeat.
@@ -60,7 +86,7 @@ namespace Vigem_Console
         private static void doRebirth(Dictionary<string, string> dict)
         {
             var tesseractUseCase = new TesseractUseCase();
-            RealStopwatch s = new();
+            RealStopwatch s = new();    
             Dualshock4Controller cds4 = GetConnectedDs4Controller();
             StopwatchControllerUser user = new(cds4, s, 100);
             while (true)
@@ -227,7 +253,27 @@ namespace Vigem_Console
             //     // localStopwatch.Wait(delay);
             // }
         }
-
+        
+        private static void doLogClientPos(Dictionary<string, string> dict)
+        {
+            // PixelReader pr = new();
+            BitmapWorker bw = new();
+            RealStopwatch localStopwatch = new();
+            localStopwatch.Restart();
+            Point point = new(0, 0);
+            point.X = int.Parse(dict["X"]);
+            point.Y = int.Parse(dict["Y"]);
+            while (true)
+            {
+                string message = bw.ProcessBitmap(
+                    point.X, point.Y, bm => 
+                        new Pixel(point.X, point.Y, bw.GetAverageColor(bm)).ToString(), dict["client"]
+                );
+                
+                Console.WriteLine(message);
+                localStopwatch.Wait(int.Parse(dict["speed"]));
+            }
+        }
 
         private static void doLogCursor(Dictionary<string, string> dict)
         {
@@ -302,49 +348,55 @@ namespace Vigem_Console
         //     }
         // }
 
-        // private static void doRecord(Dictionary<string, string> dict)
-        // {
-        //     string processName = dict["processName"];
-        //     int countParam = int.Parse(dict["count"]);
-        //     double durationParam = double.Parse(dict["duration"]);
-        //     Console.WriteLine(
-        //         $"ProcessName param - {processName}, count param - {countParam}, duration param - {durationParam}"
-        //     );
-        //
-        //     PixelReader pr = new();
-        //     nint handle = GetProcessHandle(processName);
-        //     Rectangle clientRect = User32.GetClientRect(handle);
-        //     var clientPoint = User32.ClientToScreen(handle);
-        //
-        //     string directory = $"C:\\D\\Apps\\Vigem\\Recordings\\{DateTime.Now:yyyy-MM-dd--HH-mm-ss}";
-        //     Directory.CreateDirectory(directory);
-        //
-        //     int counter = 1;
-        //     RealStopwatch localStopwatch = new();
-        //     localStopwatch.Restart();
-        //     while (true)
-        //     {
-        //
-        //         string filePath = $"{directory}\\{counter}-{DateTime.Now:yyyy-MM-dd--HH-mm-ss.fff}.png";
-        //         pr.SaveClient(clientRect, clientPoint, filePath);
-        //         // if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.C)
-        //         // {
-        //         //     
-        //         //     File.WriteAllText(dataFilePath, "");
-        //         // }
-        //
-        //         if (
-        //             (countParam != 0 && counter >= countParam)
-        //             || (durationParam != 0 && localStopwatch.GetElapsedTotalMilliseconds() >= durationParam)
-        //         )
-        //         {
-        //             break;
-        //         }
-        //
-        //         counter++;
-        //     }
-        //     Console.WriteLine("Done");
-        // }
+        private static void doRecord(Dictionary<string, string> dict)
+        {
+            string processName = dict["processName"];
+            // string processName = "chiaki";
+            int countParam = int.Parse(dict["count"]);
+            // int countParam = 1;
+            double durationParam = double.Parse(dict["duration"]);
+            // double durationParam = 0;
+            Console.WriteLine(
+                $"ProcessName param - {processName}, count param - {countParam}, duration param - {durationParam}"
+            );
+        
+            string directory = $"C:\\D\\Apps\\Vigem\\Recordings\\{DateTime.Now:yyyy-MM-dd--HH-mm-ss}";
+            Directory.CreateDirectory(directory);
+        
+            int counter = 1;
+            RealStopwatch localStopwatch = new();
+            BitmapWorker bw = new();
+            localStopwatch.Restart();
+            while (true)
+            {
+                string filePath = $"{directory}\\{counter}-{DateTime.Now:yyyy-MM-dd--HH-mm-ss.fff}.png";
+                bw.ProcessBitmap(
+                    "chiaki",
+                    bm =>
+                    {
+                        bm.Save(filePath, BitmapWorker.GetImageFormatFromPath(filePath));
+                        return true;
+                    }
+                );
+        
+                // if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.C)
+                // {
+                //     
+                //     File.WriteAllText(dataFilePath, "");
+                // }
+        
+                if (
+                    (countParam != 0 && counter >= countParam)
+                    || (durationParam != 0 && localStopwatch.GetElapsedTotalMilliseconds() >= durationParam)
+                )
+                {
+                    break;
+                }
+        
+                counter++;
+            }
+            Console.WriteLine("Done");
+        }
 
         // private static nint GetProcessHandle(string processName)
         // {

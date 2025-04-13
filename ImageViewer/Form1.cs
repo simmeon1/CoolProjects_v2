@@ -4,7 +4,9 @@ public partial class Form1 : Form
 {
     private string directory;
     private int currentIndex;
+    private int minIndex;
     private int maxIndex;
+    private string[] allFiles;
 
     public Form1()
     {
@@ -18,9 +20,13 @@ public partial class Form1 : Form
         if (dialog.ShowDialog() != DialogResult.OK) return;
 
         string imageFile = dialog.FileName;
+        int GetIndexFromFileName(string file) =>
+            int.Parse(Path.GetFileNameWithoutExtension(file).Split("-", StringSplitOptions.RemoveEmptyEntries)[0]);
+        currentIndex = GetIndexFromFileName(imageFile);
         directory = Path.GetDirectoryName(imageFile);
-        currentIndex = int.Parse(Path.GetFileNameWithoutExtension(imageFile).Split("-", StringSplitOptions.RemoveEmptyEntries)[0]);
-        maxIndex = Directory.GetFiles(directory).Length;
+        allFiles = Directory.GetFiles(directory).OrderBy(GetIndexFromFileName).ToArray();
+        minIndex = GetIndexFromFileName(allFiles.First());
+        maxIndex = GetIndexFromFileName(allFiles.Last());
         LoadImageFromIndex(currentIndex);
     }
     
@@ -39,10 +45,9 @@ public partial class Form1 : Form
     
     private void LoadImageFromIndex(int index)
     {
-        if (index <= 0 || index > maxIndex) return;
+        if (index < minIndex || index > maxIndex) return;
 
-        string[] files =  Directory.GetFiles(directory);
-        string file = files.First(f => Path.GetFileNameWithoutExtension(f).StartsWith($"{index}-"));
+        string file = allFiles.First(f => Path.GetFileNameWithoutExtension(f).StartsWith($"{index}-"));
         string fileName = Path.GetFileName(file);
         Image image = Image.FromFile(file);
         ClientSize = new Size(image.Width, image.Height);

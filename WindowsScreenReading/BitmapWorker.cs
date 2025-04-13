@@ -33,8 +33,13 @@ namespace WindowsScreenReading
         
         public T ProcessBitmap<T>(int startX, int startY, Func<Bitmap, T> bitmapFn, string? clientName = null) =>
             ProcessBitmap(startX, startY, startX + 1, startY + 1, bitmapFn, clientName);
-
         
+        public T ProcessBitmap<T>(string clientName, Func<Bitmap, T> bitmapFn)
+        {
+            var rect = User32.GetClientRect(clientName);
+            return ProcessBitmap(rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height, bitmapFn, clientName);
+        }
+
         public Color GetAverageColor(Bitmap bm)
         {
             BitmapData srcData = bm.LockBits(
@@ -69,5 +74,15 @@ namespace WindowsScreenReading
             return Color.FromArgb(avgR, avgG, avgB);
         }
 
+        public static ImageFormat GetImageFormatFromPath(string path)
+        {
+            ImageFormat imageFormat = ImageFormat.Jpeg;
+            string extension = Path.GetExtension(path).ToUpper();
+            if (extension is ".JPG" or ".JPEG") imageFormat = ImageFormat.Jpeg;
+            else if (extension == ".BMP") imageFormat = ImageFormat.Bmp;
+            else if (extension == ".PNG") imageFormat = ImageFormat.Png;
+            else throw new Exception("Could not determine image format");
+            return imageFormat;
+        }
     }
 }
