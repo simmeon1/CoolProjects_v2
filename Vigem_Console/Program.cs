@@ -51,10 +51,10 @@ namespace Vigem_Console
         {
             RealStopwatch s = new();
             Dualshock4Controller cds4 = GetConnectedDs4Controller();
-            StopwatchControllerUser user = new(cds4, s, 70);
+            StopwatchControllerUser user = new(cds4, s, 100);
             // Tip-ish of the hat, enough to satisfy 0 to 200
             // Reached 301 with this and not changing anything.
-            Point clPoint = new(245, 165);
+            Point clPoint = new(245, 167);
             Point shadowPoint = new(260, 215);
             var treshold = 160;
             BitmapWorker bw = new();
@@ -76,7 +76,8 @@ namespace Vigem_Console
                 {
                     // Console.WriteLine(GetBrightness());
                     // s.Wait(10);
-                    Console.WriteLine($"press {++pressCounter} at {DateTime.Now:yyyy-MM-dd--HH-mm-ss.fff}");
+                    // Console.WriteLine($"press {++pressCounter} at {DateTime.Now:yyyy-MM-dd--HH-mm-ss.fff}");
+                    Console.WriteLine($"press {++pressCounter}");
                     user.PressButton(ButtonMappings.Cross);
 
                     // if (pressCounter == 195)
