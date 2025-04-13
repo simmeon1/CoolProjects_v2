@@ -49,11 +49,52 @@ namespace Vigem_Console
 
         private static void doFf9JumpRope3(Dictionary<string, string> dict)
         {
+            /*
+             * How I got to 2060+ jumps:
+             * 
+             * At first, resized chiaki down so that recording frames would be recorded faster.
+             * Final resolution was 634x371.
+             * 
+             * Found a better way eventually - downloaded a youtube video of the whole thing and used
+             * ffmpeg to extract its frames at the same resolution.
+             * Command akin to ffmpeg -i input.mp4 -vf "scale=634:371" output_%04d.png
+             * 
+             * Loaded images in ImageViewer which resizes itself to image resolution which is the same as chiaki
+             * and placed viewer on top of chiaki. The only difference between chiaki stream and video was that
+             * chiaki had black bars at top and bottom. Removed them by pressing Ctrl+O and selecting stretch option.
+             * With that, images and stream were like to like.
+             *
+             * Used viewer with the youtube images to pinpoint a pixel and a value that would satisfy all jump speeds.
+             * Pixel is top of Vivi's hat at height of his fastest jumps at 300+ jumps. His height is greater at slower
+             * speeds and that would not satisfy higher speeds.
+             * 
+             * Coordinates are client coordinates, not screen coordinates. Given that viewer
+             * and chiaki have the same size, client coordinates from viewer could be applied to chiaki.
+             *
+             * Spent a lot of time trying to jump by going by the white bubble but that was wrong - it would already
+             * be too late if the bubble was visible. Recording of manual play with chiaki and the usb controller
+             * buttons on top from control panel showed that buttons were pressed before the bubble and close to the
+             * height of jump.
+             *
+             * A source of frustation was multiple clicks at times. This was solved by looking at the pixel and its
+             * changes through the youtube images - it would change to a "must jump" state but not because of the hat
+             * position but because of the white bubble appearing. Ignoring the bubble (easy as it's very bright) solved
+             * this. Did shadow lookup attempts but there's more cases to code than above so gave up on it.
+             *
+             * A bit of luck was necessary as the same code that reached 2060 failed at 40 jumps. Suspicion is that chiaki
+             * hadn't fully rendered. Could decrease streaming resolution to help next time. 
+             *
+             * Release build were more consistently better. I was stuck at 200 jumps for a long time thinking I need
+             * a diffrent pixel but a random release build seemed to fix it (can't remember if I had done release builds)
+             * before. An attempt that failed at 762 jumps made me optimize more and removed console writes.
+             *
+             * Stacking image viewer on top of chiaki and youtube video worked right down to the pixel - approach is
+             * extremely reliable.
+             */
+            
             RealStopwatch s = new();
             Dualshock4Controller cds4 = GetConnectedDs4Controller();
             StopwatchControllerUser user = new(cds4, s, 100);
-            // Tip-ish of the hat, enough to satisfy 0 to 200
-            // Reached 301 with this and not changing anything.
             Point clPoint = new(245, 167);
             Point shadowPoint = new(260, 215);
             var treshold = 160;
@@ -68,28 +109,14 @@ namespace Vigem_Console
                 return color.R >= treshold && color.GetBrightness() < 0.7;
             }
 
-            // s.Wait(3000);
             while (true)
             {
-                // s.Wait(200);
                 if (ShouldClick())
                 {
-                    // Console.WriteLine(GetBrightness());
-                    // s.Wait(10);
                     // Console.WriteLine($"press {++pressCounter} at {DateTime.Now:yyyy-MM-dd--HH-mm-ss.fff}");
                     // Console.WriteLine($"press {++pressCounter}");
                     user.PressButton(ButtonMappings.Cross);
-
-                    // if (pressCounter == 195)
-                    // {
-                    //     return;
-                    // }
-                    
-                    // s.Wait(110);
-                    while (ShouldClick())
-                    {
-                        // Console.WriteLine("waitinig");
-                    }
+                    while (ShouldClick()) { }
                 }
             }
         }
