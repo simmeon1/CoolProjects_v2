@@ -77,7 +77,7 @@ namespace Vigem_Console
                     // Console.WriteLine(GetBrightness());
                     // s.Wait(10);
                     // Console.WriteLine($"press {++pressCounter} at {DateTime.Now:yyyy-MM-dd--HH-mm-ss.fff}");
-                    Console.WriteLine($"press {++pressCounter}");
+                    // Console.WriteLine($"press {++pressCounter}");
                     user.PressButton(ButtonMappings.Cross);
 
                     // if (pressCounter == 195)
