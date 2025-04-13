@@ -53,8 +53,9 @@ namespace Vigem_Console
             Dualshock4Controller cds4 = GetConnectedDs4Controller();
             StopwatchControllerUser user = new(cds4, s, 70);
             // Tip-ish of the hat, enough to satisfy 0 to 200
-            Point clPoint = new(245, 166);
-            var treshold = 180;
+            Point clPoint = new(245, 165);
+            Point shadowPoint = new(260, 215);
+            var treshold = 160;
             BitmapWorker bw = new();
             var pressCounter = 0;
             Color GetColor() => bw.ProcessBitmap(
