@@ -73,20 +73,40 @@ public class BillboardUseCase
             }
         }
 
-        var bestSongs = songFullSongMap
-            .OrderByDescending(x => x.Value.score)
-            .Select(x => x.Value)
+        var billboardSong2Col = songFullSongMap
+            .Select(x => x.Value).ToList();
+        
+        // Average out
+        // int GetGroup(int year) => year / 10;
+        // double GetAverage(ICollection<BillboardSong2> col) => col.Average(x => x.score);
+        // var average = GetAverage(billboardSong2Col);
+        // var groups = billboardSong2Col.Select(x => GetGroup(x.year)).Distinct().ToList();
+        // foreach (var g in groups)
+        // {
+        //     var groupSongs = billboardSong2Col.Where(x => GetGroup(x.year) == g).ToList();
+        //     var groupAverage = GetAverage(groupSongs.ToList());
+        //     var multiplier = average / groupAverage;
+        //     foreach (var s in groupSongs)
+        //     {
+        //         s.score = (int) Math.Ceiling(s.score * multiplier);
+        //     }
+        // }
+        // End of averaging
+        
+        var bestSongs = billboardSong2Col
+            .OrderByDescending(x => x.score)
             .ToList();
 
 
-        var groups = new Dictionary<string, List<BillboardSong2>> {{"all", bestSongs}};
+        // Take from multiple groups
+        // var groups = new Dictionary<string, List<BillboardSong2>> {{"all", bestSongs}};
 
-        foreach (var song in bestSongs)
-        {
-            string key = song.year.ToString()[..3];
-            groups.TryAdd(key, new List<BillboardSong2>());
-            groups[key].Add(song);
-        }
+        // foreach (var song in bestSongs)
+        // {
+        //     string key = song.year.ToString()[..3];
+        //     groups.TryAdd(key, new List<BillboardSong2>());
+        //     groups[key].Add(song);
+        // }
 
         // var toTake = new Dictionary<string, int>()
         // {

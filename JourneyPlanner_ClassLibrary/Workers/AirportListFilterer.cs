@@ -16,13 +16,11 @@ namespace JourneyPlanner_ClassLibrary.Workers
 
         public Dictionary<string, HashSet<string>> FilterAirports(Dictionary<string, HashSet<string>> fullAirportsAndDestinations, IAirportFilterer filterer)
         {
-            if (filterer == null) filterer = new NoFilterer();
             Dictionary<string, HashSet<string>> filteredList = new();
-
             Dictionary<string, Airport> airportsDictionary = airports.ToDictionary(a => a.Code, a => a);
             foreach (KeyValuePair<string, HashSet<string>> airportAndDestinations in fullAirportsAndDestinations)
             {
-                Airport airport = airportsDictionary.TryGetValue(airportAndDestinations.Key, out Airport value) ? value : null;
+                var airport = airportsDictionary.GetValueOrDefault(airportAndDestinations.Key);
                 if (airport == null || !filterer.AirportMeetsCondition(airport)) continue;
                 filteredList.Add(airport.Code, new HashSet<string>());
                 foreach (string destination in airportAndDestinations.Value)

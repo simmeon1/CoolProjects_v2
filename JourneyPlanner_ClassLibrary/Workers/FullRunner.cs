@@ -88,8 +88,8 @@ namespace JourneyPlanner_ClassLibrary.Workers
                 );
             }
 
-            IAirportFilterer filterer = new NoFilterer();
-
+            IAirportFilterer filterer = new EuropeFilterer();
+            airportsList = airportsList.Where(filterer.AirportMeetsCondition).ToList();
             Dictionary<string, HashSet<string>> airportsAndDestinations;
             if (!p.AirportDestinationsFile.IsNullOrEmpty())
             {
@@ -98,7 +98,7 @@ namespace JourneyPlanner_ClassLibrary.Workers
             }
             else
             {
-                airportsAndDestinations = airportPopulator.PopulateAirports(airportsList, filterer);
+                airportsAndDestinations = airportPopulator.PopulateAirports(airportsList);
                 fileIo.WriteAllText(
                     $"{runResultsPath}\\{runId}_airportDestinations.json",
                     airportsAndDestinations.SerializeObject(Formatting.Indented)

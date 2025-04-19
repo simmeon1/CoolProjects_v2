@@ -35,6 +35,12 @@ namespace JourneyPlanner_Console
             logger.Log("Getting latest chromedriver.");
             
             //Download latest web driver
+
+            // var x = await (await httpClient.GetAsync(
+            //     "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/all.json"
+            // )).Content.ReadAsStringAsync();
+            // File.WriteAllText($"billboard_new.json", x);
+            
             var latestVersionsJson = await (await httpClient.GetAsync(
                 "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json"
             )).Content.ReadAsStringAsync();

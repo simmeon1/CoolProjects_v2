@@ -6,6 +6,6 @@ namespace JourneyPlanner_ClassLibrary.Interfaces
 {
     public interface IFlightConnectionsDotComWorkerAirportPopulator
     {
-        Dictionary<string, HashSet<string>> PopulateAirports(List<Airport> airportsList, IAirportFilterer filterer = null);
+        Dictionary<string, HashSet<string>> PopulateAirports(List<Airport> airportsList);
     }
 }

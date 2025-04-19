@@ -42,7 +42,8 @@ namespace JourneyPlanner_ClassLibrary.AirportFilterers
                     country.Contains("Poland") ||
                     country.Contains("Portugal") ||
                     country.Contains("Romania") ||
-                    country.Contains("Russia") ||
+                    // Too many irrelevant airports
+                    // country.Contains("Russia") ||
                     country.Contains("San Marino") ||
                     country.Contains("Serbia") ||
                     country.Contains("Slovakia") ||
@@ -51,6 +52,8 @@ namespace JourneyPlanner_ClassLibrary.AirportFilterers
                     country.Contains("Sweden") ||
                     country.Contains("Switzerland") ||
                     country.Contains("Ukraine") ||
+                    // Technically not Europe but important for European flights
+                    country.Contains("Turkey") ||
                     country.Contains("United Kingdom"); 
         }
     }
