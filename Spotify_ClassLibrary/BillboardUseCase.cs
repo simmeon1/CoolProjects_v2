@@ -164,15 +164,21 @@ public class BillboardUseCase
             .Where(x =>
                 {
                     var genres = artists[filteredTracks[x.Key].artists.First().id].genres;
-                    bool any = !genres.Any(g => g.ToLower().Contains("rap") || g.ToLower().Contains("country"))
-                               && genres.Any(g => g.ToLower().Contains("rock") || g.ToLower().Contains("metal"));
+                    bool any = !genres.Any(g => g.ToLower().Contains("rap") || g.ToLower().Contains("country"));
+                               // && genres.Any(g => g.ToLower().Contains("rock") || g.ToLower().Contains("metal"));
                     return any;
 
                 }
             )
+            // .Where(x => bestSongsMap[x.Key].year >= 1990 && bestSongsMap[x.Key].year <= 1999)
+            // .OrderByDescending(x => bestSongsMap[x.Key].score)
             .OrderByDescending(x => filteredTracks[x.Key].popularity)
-            .ThenByDescending(x => bestSongsMap[x.Key].score)
-            .Take(1500)
+            // .OrderByDescending(x => bestSongsMap[x.Key].score * (filteredTracks[x.Key].popularity / (double) 100))
+            // .ThenByDescending(x => bestSongsMap[x.Key].score)
+            // .Take(500)
+            .GroupBy(x => bestSongsMap[x.Key].year)
+                .Where(x => x.Key is > 1969 and < 2024)
+                .SelectMany(x => x.Take(10).ToList())
             .ToList();
 
         var x = orderedArtistSongsKPs.Select(x => bestSongsMap[x.Key]).ToList();
@@ -206,19 +212,18 @@ public class BillboardUseCase
 
     private void MakeSongsMoreGeneric(List<Dictionary<string, List<BillboardSong>>> dateSongMaps)
     {
+        var songss = new List<string>();
+        var artists = new List<string>();
         foreach (var songMap in dateSongMaps)
         {
             foreach (var songs in songMap.Values)
             {
                 foreach (var song in songs)
                 {
-                    var songStr = song.song;
-                    songStr = CleanText(songStr, false);
-                    song.song = songStr;
-                    
-                    var artist = song.artist;
-                    artist = CleanText(artist, true);
-                    song.artist = artist;
+                    songss.Add(song.song);
+                    artists.Add(song.artist);
+                    song.song = CleanText(song.song, false);
+                    song.artist = CleanText(song.artist, true);
                 }
             }
         }
