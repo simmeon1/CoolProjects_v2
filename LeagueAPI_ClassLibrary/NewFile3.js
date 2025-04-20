@@ -1,79 +1,111 @@
 ﻿// ==UserScript==
-// @name         Insert Timestamps
+// @name         FFVI guide add buttons
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  try to take over the world!
 // @author       You
-// @match        https://www.youtube.com/watch?v=*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=youtube.com
+// @match        https://steamcommunity.com/sharedfiles/filedetails/?id=2762645480
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=steamcommunity.com
 // @grant        none
 // ==/UserScript==
 
-window.onload = main;
-
-function main() {
-    const body = document.querySelector('body');
-    const observer = new MutationObserver(main2);
-    observer.observe(body, {attributes: false, childList: true, subtree: true});
+window.onload = function () {
+    addButton("Get list with bestiary and images", true, true);
+    addButton("Get list with bestiary", true, false);
+    addButton("Get list", false, false);
 }
 
-function main2(els, obs) {
-    const actions = document.querySelector("#actions");
-    if (!actions) {
-        return;
+function main(event) {
+
+    const guide = document.querySelector(".guide");
+    guide.innerHTML = guide.innerHTML.replaceAll(". Phoenix Cave: 6/9", ". [Phoenix Cave: 6/9");
+    const originalHtml = guide.innerHTML;
+
+    let guideHtml = guide.innerHTML;
+    const regExp = new RegExp(" \\d+\\/\\d+(]|})", 'g');
+    const treasureMatches = [...guideHtml.matchAll(regExp)];
+
+    for (let i = treasureMatches.length - 1; i > 0; i--) {
+        const match = treasureMatches[i];
+        const matchStartIndex = match.index;
+        const startIndex = getPositionOfCharBackwards(matchStartIndex, guideHtml);
+        const endIndex = matchStartIndex + match[0].toString().length;
+        const wholePhrase = guideHtml.substring(startIndex, endIndex);
+        const span = "<span class='chest'>" + wholePhrase + "</span>"
+        guideHtml = guideHtml.substring(0, startIndex) + span + guideHtml.substring(endIndex);
+    }
+    guide.innerHTML = guideHtml;
+
+    const button = event.target;
+    const includeBestiary = button.includeBestiary;
+    const includeImages = button.includeImages;
+    let list = "";
+    let selectors = ".chest, u";
+    if (includeBestiary || includeImages) {
+        selectors += ", .bb_table";
     }
 
-    obs.disconnect();
+    const collectiblesArray = Array.from(document.querySelectorAll(selectors));
+    for (let i = 0; i < collectiblesArray.length; i++) {
+        let collectible = collectiblesArray[i];
+        if (includeImages || !collectible.querySelector("img")) {
+            list += collectible.outerHTML + "<br>";
+        }
+    }
+
+    const newWin = window.open();
+    newWin.document.write(
+        "<title>" + button.title + "</title>" +
+        "<style>" +
+        ".bb_table" +
+        "{" +
+        "	display: table;" +
+        "	font-size: 12px;" +
+        "}" +
+        "" +
+        ".bb_table_th" +
+        "{" +
+        "	display: table-cell;" +
+        "	font-weight: bold;" +
+        "	border: 1px solid #4d4d4d;" +
+        "	padding: 4px;" +
+        "}" +
+        "" +
+        ".bb_table_tr" +
+        "{" +
+        "	display: table-row;" +
+        "}" +
+        "" +
+        ".bb_table_td" +
+        "{" +
+        "	display: table-cell;" +
+        "	vertical-align: middle;" +
+        "	border: 1px solid #4d4d4d;" +
+        "	padding: 4px;" +
+        "}" +
+        "</style>");
+    newWin.document.write(list);
+    newWin.document.close()
+
+    guide.innerHTML = originalHtml;
+}
+
+function getPositionOfCharBackwards(matchStartIndex, text) {
+    let earliestStart = matchStartIndex - 30;
+    for (let i = matchStartIndex; i > earliestStart; i--) {
+        if (text[i] === '[' || text[i] === '{') {
+            return i;
+        }
+    }
+    return earliestStart;
+}
+
+function addButton(text, includeBestiary, includeImages) {
     const button = document.createElement("button");
-    button.innerHTML = "Get Timestamps";
-    button.onclick = main3;
-    actions.insertAdjacentElement("afterbegin", button);
-}
-
-function main3() {
-    const rightSideContainer = document.querySelector("#secondary-inner");
-    const timestampTableContainerName = 'timestampTableContainer';
-    const timestampTableName = 'timestampTable';
-    let tableContainer = document.querySelector("#" + timestampTableContainerName);
-
-    if (!tableContainer) {
-        rightSideContainer.insertAdjacentHTML("afterbegin", "<div id = " + timestampTableContainerName + "><table id='" + timestampTableName + "'></table></div>");
-        tableContainer = document.querySelector("#" + timestampTableContainerName);
-        const playerHeight = document.querySelector("#player").clientHeight;
-        tableContainer.style.cssText = "max-height: " + playerHeight + "px; overflow: auto; width: 100%; color: white;";
-    }
-
-    const tableElement = document.createElement("table");
-    const timesAndDescs = new Set();
-    for (const timestamp of document.querySelectorAll("[href*='&t=']")) {
-        if (!timestamp.offsetParent) {
-            continue;
-        }
-
-        const time = timestamp.textContent;
-        let fullText = timestamp.offsetParent.innerText;
-        const lines = fullText.split("\n");
-        const desc = lines.find(l => l.includes(time));
-
-        const timeAndDesc = time + " - " + desc;
-        if (timesAndDescs.has(timeAndDesc)) {
-            continue;
-        }
-
-        timesAndDescs.add(timeAndDesc);
-        const row = tableElement.insertRow();
-        row.onclick = () => {
-            timestamp.click();
-        }
-        row.style.cssText = "cursor:pointer;text-decoration:underline;font-size:1.4rem;";
-        row.title = time + " - " + fullText;
-        
-        const cell1 = row.insertCell();
-        cell1.innerHTML = time;
-        const cell2 = row.insertCell();
-        cell2.innerHTML = desc;
-    }
-
-    tableContainer.innerHTML = "";
-    tableContainer.insertAdjacentElement("afterbegin", tableElement);
+    button.innerHTML = text;
+    button.includeBestiary = includeBestiary;
+    button.includeImages = includeImages;
+    button.onclick = main;
+    button.title = text;
+    document.querySelector("body").insertAdjacentElement("afterbegin", button);
 }
