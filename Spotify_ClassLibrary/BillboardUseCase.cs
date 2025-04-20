@@ -174,6 +174,8 @@ public class BillboardUseCase
             .ThenByDescending(x => bestSongsMap[x.Key].score)
             .Take(1500)
             .ToList();
+
+        var x = orderedArtistSongsKPs.Select(x => bestSongsMap[x.Key]).ToList();
         
         // foreach (var pair in orderedArtistSongsKPs)
         // {

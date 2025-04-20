@@ -30,7 +30,25 @@ namespace Vigem_Console
             else if (command == "crisis-core") doCrisisCoreTest();
             else if (command == "ffvii-super-dunk") doFf7SuperDunk();
             else if (command == "ffvii-farm") doFf7Farm();
+            else if (command == "ffix-farm") doFf9Farm();
             else if (command == "rebirth") doFf9JumpRope3(dict);
+        }
+
+        private static void doFf9Farm()
+        {
+            RealStopwatch s = new();
+            Dualshock4Controller cds4 = GetConnectedDs4Controller();
+            StopwatchControllerUser user = new(cds4, s, 100);
+            
+            // user.HoldDPad(DPadMappings.Left);
+            // user.HoldButton(ButtonMappings.ShoulderLeft);
+            user.HoldDPad(DPadMappings.Right);
+            
+            while (true)
+            {
+                user.PressButton(ButtonMappings.Cross, 100);
+                s.Wait(100);
+            }
         }
 
         // private static void doSaveClient()
