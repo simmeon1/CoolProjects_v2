@@ -36,6 +36,8 @@ namespace Vigem_Console
 
         private static void doFf9Farm()
         {
+            // test
+            
             RealStopwatch s = new();
             Dualshock4Controller cds4 = GetConnectedDs4Controller();
             StopwatchControllerUser user = new(cds4, s, 100);
