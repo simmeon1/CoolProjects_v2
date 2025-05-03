@@ -5,34 +5,59 @@ public class Day2
     [Fact]
     public void Part1()
     {
-        int GetSafeReports(int[][] lines)
-        {
-            var safeCount = 0;
-            foreach (var line in lines)
-            {
-                int GetCurrent(int ci) => line[ci];
-                int GetNext(int ci) => line[ci + 1];
-                bool CurrentGreaterThanNext(int ci) => GetCurrent(ci) > GetNext(ci);
-                bool DiffAcceptable(int ci) =>
-                        int.Max(GetCurrent(ci), GetNext(ci)) - 
-                        int.Min(GetCurrent(ci), GetNext(ci)
-                    ) is >= 1 and <= 3;
-                var shouldDecrease = CurrentGreaterThanNext(0);
-                var valuesAndIndexes = line[..^1].Select((v, i) => i);
-                safeCount += Convert.ToInt32(
-                    valuesAndIndexes.Count(i => !(CurrentGreaterThanNext(i) == shouldDecrease && DiffAcceptable(i))) == 0
-                );
-            }
-            return safeCount;
-        }
-        Assert.Equal(2, GetSafeReports(exampleLines));
-        Assert.Equal(359, GetSafeReports(lines));
+        Assert.Equal(2, GetSafeReports(exampleLines, false));
+        Assert.Equal(359, GetSafeReports(lines, false));
     }
 
     [Fact]
     public void Part2()
     {
-        Assert.Fail();
+        Assert.Equal(4, GetSafeReports(exampleLines, true));
+        Assert.Equal(1, GetSafeReports([[1, 7, 8, 9]], true));
+        Assert.Equal(1, GetSafeReports([[1, 2, 3, 9]], true));
+        Assert.Equal(1, GetSafeReports([[1, 4, 3, 2]], true));
+        Assert.Equal(1, GetSafeReports([[4, 1, 2, 3]], true));
+        Assert.Equal(418, GetSafeReports(lines, true));
+    }
+
+    private int GetSafeReports(int[][] lines, bool retry)
+    {
+        int GetCurrent(int ci, List<int> l) => l.ElementAt(ci);
+        int GetNext(int ci, List<int> l) => l.ElementAt(ci + 1);
+        bool CurrentGreaterThanNext(int ci, List<int> l) => GetCurrent(ci, l) > GetNext(ci, l);
+        bool DiffAcceptable(int ci, List<int> l) =>
+            int.Max(GetCurrent(ci, l), GetNext(ci, l)) - 
+                int.Min(GetCurrent(ci, l), GetNext(ci, l)
+                ) is >= 1 and <= 3;
+        bool GetBadIndexesFromLine(List<int> l)
+        {
+            var shouldDecrease = CurrentGreaterThanNext(0, l);
+            var indexes = l.Take(l.Count - 1).Select((v, i) => i);
+            return indexes.Any(i => !(CurrentGreaterThanNext(i, l) == shouldDecrease && DiffAcceptable(i, l)));
+        }
+        
+        var safeCount = 0;
+        foreach (var line in lines)
+        {
+            var hasBadIndexes = GetBadIndexesFromLine(line.ToList());
+            if (!hasBadIndexes) {
+                safeCount += 1;
+            } else if (retry)
+            {
+                for (int i = 0; i < line.Length; i++)
+                {
+                    var newLine = line.ToList();
+                    newLine.RemoveAt(i);
+                    hasBadIndexes = GetBadIndexesFromLine(newLine);
+                    if (!hasBadIndexes)
+                    {
+                        safeCount += 1;
+                        break;
+                    }
+                }
+            }
+        }
+        return safeCount;
     }
 
     private readonly int[][] exampleLines =
