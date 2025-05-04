@@ -19,16 +19,16 @@ public class Day5
     [Fact]
     public void Part2Example()
     {
-        // Assert.Equal(48, GetResult(Example, true));
+        Assert.Equal(123, GetResult(Example, true));
     }
 
     [Fact]
     public void Part2Real()
     {
-        // Assert.Equal(90669332, GetResult(Real, true));
+        Assert.Equal(6142, GetResult(Real, true));
     }
     
-    private static int GetResult(string str)
+    private static int GetResult(string str, bool sumBadSets = false)
     {
         var sections = str.Split("\r\n\r\n", StringSplitOptions.RemoveEmptyEntries);
         var rules = sections[0].Split("\r\n", StringSplitOptions.RemoveEmptyEntries)
@@ -40,6 +40,7 @@ public class Day5
             .Select(s => s.Select(int.Parse).ToList()).ToList();
 
         var goodSets = new List<List<int>>();
+        var badSets = new List<List<int>>();
         foreach (var pages in pagesToProduce)
         {
             var scannedPages = new List<int>();
@@ -47,19 +48,34 @@ public class Day5
             foreach (var page in pages)
             {
                 var mustBeBefore = rules.GetValueOrDefault(page, []);
-                if (scannedPages.Intersect(mustBeBefore).Any())
+                bool ScannedPagesHaveConflict(List<int> sp) => sp.Intersect(mustBeBefore).Any();
+                if (ScannedPagesHaveConflict(scannedPages))
                 {
                     setIsGood = false;
-                    break;
+                    if (!sumBadSets)
+                    {
+                        break;
+                    }
+                    var indexToShave = 1;
+                    while (true)
+                    {
+                        var scannedPagesSubset = scannedPages[..^indexToShave];
+                        if (!ScannedPagesHaveConflict(scannedPagesSubset))
+                        {
+                            scannedPages.Insert(scannedPages.Count - indexToShave, page);
+                            break;
+                        }
+                        indexToShave++;
+                    }
                 }
-                scannedPages.Add(page);
+                else
+                {
+                    scannedPages.Add(page);
+                }
             }
-            if (setIsGood)
-            {
-                goodSets.Add(pages);
-            }
+            (setIsGood ? goodSets : badSets).Add(scannedPages);
         }
-        return goodSets.Sum(s => s[s.Count / 2]);
+        return (sumBadSets ? badSets : goodSets).Sum(s => s[s.Count / 2]);
     }
 
     private const string Example = @"47|53
