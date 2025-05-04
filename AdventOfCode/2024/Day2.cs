@@ -1,35 +1,48 @@
-﻿namespace AdventOfCode._2024;
+﻿using Xunit.Abstractions;
 
-public class Day2
+namespace AdventOfCode._2024;
+
+public class Day2(ITestOutputHelper testOutputHelper)
 {
     [Fact]
-    public void Part1()
+    public void Part1Example()
     {
         Assert.Equal(2, GetSafeReports(exampleLines, false));
+    }
+
+    [Fact]
+    public void Part1Real()
+    {
         Assert.Equal(359, GetSafeReports(lines, false));
     }
 
     [Fact]
-    public void Part2()
+    public void Part2Example()
     {
         Assert.Equal(4, GetSafeReports(exampleLines, true));
         Assert.Equal(1, GetSafeReports([[1, 7, 8, 9]], true));
         Assert.Equal(1, GetSafeReports([[1, 2, 3, 9]], true));
         Assert.Equal(1, GetSafeReports([[1, 4, 3, 2]], true));
         Assert.Equal(1, GetSafeReports([[4, 1, 2, 3]], true));
+    }
+
+    [Fact]
+    public void Part2Real()
+    {
         Assert.Equal(418, GetSafeReports(lines, true));
     }
 
     private int GetSafeReports(int[][] lines, bool retry)
     {
-        int GetCurrent(int ci, List<int> l) => l.ElementAt(ci);
-        int GetNext(int ci, List<int> l) => l.ElementAt(ci + 1);
-        bool CurrentGreaterThanNext(int ci, List<int> l) => GetCurrent(ci, l) > GetNext(ci, l);
-        bool DiffAcceptable(int ci, List<int> l) =>
+        int GetCurrent(int ci, IEnumerable<int> l) => l.ElementAt(ci);
+        int GetNext(int ci, IEnumerable<int> l) => l.ElementAt(ci + 1);
+        bool CurrentGreaterThanNext(int ci, IEnumerable<int> l) => GetCurrent(ci, l) > GetNext(ci, l);
+        void LogLine(IEnumerable<int> l) => testOutputHelper.WriteLine(string.Join(",", l));;
+        bool DiffAcceptable(int ci, ICollection<int> l) =>
             int.Max(GetCurrent(ci, l), GetNext(ci, l)) - 
                 int.Min(GetCurrent(ci, l), GetNext(ci, l)
                 ) is >= 1 and <= 3;
-        bool GetBadIndexesFromLine(List<int> l)
+        bool GetBadIndexesFromLine(ICollection<int> l)
         {
             var shouldDecrease = CurrentGreaterThanNext(0, l);
             var indexes = l.Take(l.Count - 1).Select((v, i) => i);
@@ -41,6 +54,7 @@ public class Day2
         {
             var hasBadIndexes = GetBadIndexesFromLine(line.ToList());
             if (!hasBadIndexes) {
+                // LogLine(line);
                 safeCount += 1;
             } else if (retry)
             {
@@ -51,6 +65,7 @@ public class Day2
                     hasBadIndexes = GetBadIndexesFromLine(newLine);
                     if (!hasBadIndexes)
                     {
+                        // LogLine(line);
                         safeCount += 1;
                         break;
                     }
@@ -69,6 +84,7 @@ public class Day2
         [8, 6, 4, 4, 1],
         [1, 3, 6, 7, 9]
     ];
+
     private readonly int[][] lines = [
         [1, 3, 5, 6, 8, 9, 12, 9],
 [66, 67, 70, 72, 73, 74, 75, 75],
@@ -1071,5 +1087,4 @@ public class Day2
 [60, 59, 56, 55, 54, 52, 51],
 [46, 47, 50, 53, 54, 57, 59, 61]       
     ];
-
 }
