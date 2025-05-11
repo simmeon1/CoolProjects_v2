@@ -73,11 +73,11 @@ public class BillboardUseCase
 
         var songsToAdd = fullCol
             .Where(x => !x.SongIsGenre(new[]{ "rap", "country" }))
-            .OrderByDescending(x => x.spotifySong.popularity)
-            .ThenByDescending(x => x.billboardSong.score)
+            .OrderByDescending(x => x.billboardSong.score)
+            // .ThenByDescending(x => x.spotifySong.popularity)
             .GroupBy(x => x.billboardSong.year / 10)
-            .Where(x => x.Key == 198)
-            .SelectMany(x => x.Take(100))
+            .Where(x => x.Key is > 197 and < 202)
+            .SelectMany(x => x.Take(250))
             .ToList();
         
         string userId = await client.GetUserId();
