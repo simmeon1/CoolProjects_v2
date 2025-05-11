@@ -21,27 +21,24 @@ public class SpotifySearchUseCase
     )
     {
         var cachePath = jsonPath + "\\cachedSearchesAndSong.json";
-        var cached =
-            JsonSerializer.Deserialize<Dictionary<string, TrackObject?>>(fileIo.ReadAllText(cachePath))!;
+        var cached = JsonSerializer.Deserialize<Dictionary<string, TrackObject?>>(fileIo.ReadAllText(cachePath))!;
         
         Dictionary<string, TrackObject?> tracks = new();
         for (int i = 0; i < songs.Count; i++)
         {
             ArtistSong song = songs[i];
             TrackObject? track;
-            string songToString = song.ToString();
-            if (cached.ContainsKey(songToString))
+            string artistDashSong = song.GetArtistDashSong();
+            if (cached.TryGetValue(artistDashSong, out TrackObject? value))
             {
-                track = cached[songToString];
+                track = value;
             }
             else
             {
                 // return tracks;
-                string search = song.artist + " " + song.song;
-
                 try
                 {
-                    track = await client.GetFirstTrackResult(search);
+                    track = await client.GetFirstTrackResult(song.GetArtistSpaceSong());
                 }
                 catch (Exception e)
                 {
@@ -53,10 +50,10 @@ public class SpotifySearchUseCase
             }
             logger.Log(
                 track == null
-                    ? $"No tracks found ({songToString})"
-                    : $"Searched {i} out of {songs.Count} song ids ({songToString}) (Popularity: {track.popularity})"
+                    ? $"No tracks found ({artistDashSong})"
+                    : $"Searched {i} out of {songs.Count} song ids ({artistDashSong}) (Popularity: {track.popularity})"
             );
-            tracks.Add(songToString, track);
+            tracks.Add(artistDashSong, track);
         }
 
         fileIo.WriteAllText(cachePath, tracks.SerializeObject());

@@ -51,25 +51,18 @@ public class SpotifyClient
         return items.FirstOrDefault();
     }
 
-    public async Task<Dictionary<string, FullArtistObject>> GetArtists(List<string> artistIds)
+    public async Task<Dictionary<string, FullArtistObject>> GetArtists(IEnumerable<string> artistIds)
     {
-        Dictionary<string, FullArtistObject> result = new();
-        artistIds = artistIds.Distinct().ToList();
-        while (artistIds.Any())
+        var list = new List<FullArtistObject>();
+        foreach (var ids in artistIds.Distinct().Chunk(50))
         {
-            var take = 50;
             var response = await GetDeserializedObjectFromRequestResponse<GetSeveralArtistsResult>(
                 HttpMethod.Get,
-                $"{Root}artists?ids={artistIds.Take(take).ToList().ConcatenateListOfStringsToCommaString()}"
+                $"{Root}artists?ids={ids.ConcatenateListOfStringsToCommaString()}"
             );
-            artistIds.RemoveRange(0, int.Min(take, artistIds.Count));
-            foreach (var artist in response.artists)
-            {
-                result.Add(artist.id, artist);
-            }
+            list.AddRange(response.artists);
         }
-
-        return result;
+        return list.ToDictionary(x => x.id, x => x);
     }
 
     public async Task<string> GetUserId()
@@ -93,21 +86,14 @@ public class SpotifyClient
         return responseJson["id"].ToString();
     }
 
-    public async Task AddSongsToPlaylist(string playlistId, List<string> songIds)
+    public async Task AddSongsToPlaylist(string playlistId, IEnumerable<string> songIds)
     {
-        songIds = songIds.Distinct().Where(s => !s.IsNullOrEmpty()).ToList();
-        List<string> partOfSongIds = new();
-        while (songIds.Any())
+        foreach (var ids in songIds.Where(s => !s.IsNullOrEmpty()).Distinct().Select(x => "spotify:track:" + x).Chunk(100))
         {
-            partOfSongIds = songIds.Take(100).ToList();
-            songIds.RemoveRange(0, partOfSongIds.Count);
-
-            for (int i = 0; i < partOfSongIds.Count; i++) partOfSongIds[i] = "spotify:track:" + partOfSongIds[i];
-
             await GetJObjectFromRequestResponse(
                 HttpMethod.Post,
                 $"{Root}playlists/{playlistId}/tracks",
-                new Dictionary<string, object> {{"uris", partOfSongIds}}
+                new Dictionary<string, object> {{"uris", ids}}
             );
         }
     }

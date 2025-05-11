@@ -1,14 +1,21 @@
-﻿namespace Spotify_ClassLibrary;
+﻿using System.Diagnostics;
 
+namespace Spotify_ClassLibrary;
+
+[DebuggerDisplay("{GetSummary()}")]
 public class BillboardSong2
 {
-    public string song { get; set; }
-    public string artist { get; set; }
+    public ArtistSong artistSong { get; set; }
     public int score { get; set; }
     public int year { get; set; }
 
-    public override string ToString()
+    public string GetSummary()
     {
-        return artist + " - " + song + " - " + year + " - " + score;
+        return GetArtistDashSong() + " - " + year + " - " + score;
+    } 
+    
+    public string GetArtistDashSong()
+    {
+        return artistSong.GetArtistDashSong();
     }
 }
