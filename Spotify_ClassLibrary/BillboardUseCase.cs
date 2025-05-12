@@ -1,33 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using Common_ClassLibrary;
 
 namespace Spotify_ClassLibrary;
 
-public class BillboardUseCase
-{
-    private readonly IFileIO fileIo;
-    private readonly ILogger logger;
-    private readonly IDelayer delayer;
-    private readonly SpotifyClient client;
-    private readonly SpotifySearchUseCase spotifySearchUseCase;
-
-    public BillboardUseCase(
-        IFileIO fileIo,
-        ILogger logger,
-        IDelayer delayer,
-        SpotifyClient client,
-        SpotifySearchUseCase spotifySearchUseCase
-    )
-    {
-        this.fileIo = fileIo;
-        this.logger = logger;
-        this.delayer = delayer;
-        this.client = client;
-        this.spotifySearchUseCase = spotifySearchUseCase;
-    }
-
+public class BillboardUseCase(IFileIO fileIo, SpotifyClientUseCase spotifyClientUseCase) {
     public async Task DoWork(string jsonPath)
     {
         var usContents =
@@ -47,71 +24,67 @@ public class BillboardUseCase
         
         MakeSongsMoreGeneric(dateSongMaps);
         var songsMap = GetSongsMap(dateSongMaps);
-        // return songFullSongMap.Select(x => x.Value).OrderByDescending(x => x.score).ToList();
+        var artistSongStringMap = songsMap.ToDictionary(x => x.Key.GetArtistDashSong(), x => x.Key);
 
-        var trackMap = new Dictionary<string, TrackObject>();
-        // var filteredArtistSongsMap = new Dictionary<string, ArtistSong>();
-        foreach ((string key, TrackObject? track) in JsonSerializer.Deserialize<Dictionary<string, TrackObject?>>(fileIo.ReadAllText(jsonPath + "\\cachedSearchesAndSong.json"))!)
-        {
-            if (track != null)
-            {
-                trackMap.Add(key, track);
-                // filteredArtistSongsMap.Add(key, artistSongsMap[key]);
-            }
-        }
+        var trackMap =
+            // JsonSerializer.Deserialize<Dictionary<string, TrackObject?>>(fileIo.ReadAllText(jsonPath + "\\cachedSearchesAndSong.json"))!
+            (await spotifyClientUseCase.GetSongs(
+                songsMap.Keys.OrderBy(x => x.GetArtistDashSong()).ToList(), fileIo, jsonPath + "\\cachedSearchesAndSong.json", true)
+            )!.Where(x => x.Value != null)
+                .Select(x => new KeyValuePair<string,TrackObject>(x.Key, x.Value!))
+                .ToList();
         
+        // JsonSerializer.Deserialize<Dictionary<string, FullArtistObject>>(fileIo.ReadAllText(jsonPath + "\\cachedTrackArtistsMap.json"))!;
         var artists =
-            // await client.GetArtists(mainArtistMap.Select(x => x.Value).ToList());
-            JsonSerializer.Deserialize<Dictionary<string, FullArtistObject>>(fileIo.ReadAllText(jsonPath + "\\cachedTrackArtistsMap.json"))!;
+            await spotifyClientUseCase.GetArtists(
+                trackMap.Select(x => x.Value.artists.First().id).ToList(), fileIo, jsonPath + "\\cachedTrackArtistsMap.json", true
+            );
 
         var fullCol = trackMap.Select(x => new Master(
-                songsMap[x.Key],
+                songsMap[artistSongStringMap[x.Key]],
                 x.Value,
                 artists[x.Value.artists.First().id]
             )
         );
 
         var songsToAdd = fullCol
-            .Where(x => !x.SongIsGenre(new[]{ "rap", "country" }))
+            .Where(x => !x.SongIsGenre(["rap", "country"]))
             .OrderByDescending(x => x.billboardSong.score)
             // .ThenByDescending(x => x.spotifySong.popularity)
             .GroupBy(x => x.billboardSong.year / 10)
             .Where(x => x.Key is > 197 and < 202)
             .SelectMany(x => x.Take(250))
             .ToList();
-        
-        string userId = await client.GetUserId();
-        string playlistId = await client.CreatePlaylist($"Billboard-{DateTime.Now}", userId);
-        await client.AddSongsToPlaylist(playlistId, songsToAdd.Select(x => x.spotifySong.id));
-        logger.Log("Billboard playlist added.");
-    }
 
-    private static Dictionary<string, BillboardSong2> GetSongsMap(List<Dictionary<string, List<BillboardSong>>> dateSongMaps)
+        await spotifyClientUseCase.AddSongsToNewPlaylist($"Billboard-{DateTime.Now}", songsToAdd.Select(x => x.spotifySong.id));
+    }
+    
+    private static Dictionary<ArtistSong, BillboardSong2> GetSongsMap(List<Dictionary<string, List<BillboardSong>>> dateSongMaps)
     {
-        var songScoreMap = new Dictionary<string, int>();
-        var songYearMap = new Dictionary<string, int>();
-        var songFullSongMap = new Dictionary<string, BillboardSong2>();
+        var comparer = new ArtistSongEqualityComparer();
+        var songScoreMap = new Dictionary<ArtistSong, int>(comparer);
+        var songYearMap = new Dictionary<ArtistSong, int>(comparer);
+        var songFullSongMap = new Dictionary<ArtistSong, BillboardSong2>(comparer);
 
         foreach (var regionDateSongMap in dateSongMaps)
         {
-            foreach (var dateSongMap in regionDateSongMap)
+            foreach ((string fullDate, List<BillboardSong> songs) in regionDateSongMap)
             {
-                var year = int.Parse(dateSongMap.Key[..4]);
-                var songs = dateSongMap.Value;
+                var year = int.Parse(fullDate[..4]);
                 foreach (var song in songs)
                 {
-                    var songName = new ArtistSong(song.artist, song.song).GetArtistDashSong();
+                    var artistSong = new ArtistSong(song.artist, song.song);
 
-                    songScoreMap.TryAdd(songName, 0);
-                    songScoreMap[songName] += 101 - song.this_week;
+                    songScoreMap.TryAdd(artistSong, 0);
+                    songScoreMap[artistSong] += 101 - song.this_week;
 
-                    songYearMap.TryAdd(songName, year);
-                    songYearMap[songName] = Math.Min(year, songYearMap[songName]);
+                    songYearMap.TryAdd(artistSong, year);
+                    songYearMap[artistSong] = Math.Min(year, songYearMap[artistSong]);
 
                     var song2 = new BillboardSong2 { artistSong = new ArtistSong(song.artist, song.song) };
-                    songFullSongMap.TryAdd(songName, song2);
-                    songFullSongMap[songName].score = songScoreMap[songName];
-                    songFullSongMap[songName].year = songYearMap[songName];
+                    songFullSongMap.TryAdd(artistSong, song2);
+                    songFullSongMap[artistSong].score = songScoreMap[artistSong];
+                    songFullSongMap[artistSong].year = songYearMap[artistSong];
                 }
             }
         }
@@ -127,51 +100,16 @@ public class BillboardUseCase
             {
                 foreach (var song in songs)
                 {
-                    song.song = CleanText(song.song, false);
-                    song.artist = CleanText(song.artist, true);
+                    song.song = SpotifyHelper.CleanText(song.song, false);
+                    song.artist = SpotifyHelper.CleanText(song.artist, true);
                 }
             }
         }
     }
     
-    private static string CleanText(string text, bool isArtist)
-    {
-        //\bAND\b|& | with
-        text = text.ToUpper();
-        text = ReplaceTextPattern(text, @"\(.*?\)");
-        text = ReplaceTextPattern(text, @"(\bFEAT\b|\bFT\b|\bFEATURING\b|DUET WITH|A DUET WITH|\\|\/).*");
-
-        if (isArtist)
-        {
-            text = ReplaceTextPattern(text, @"(\bAND\b|\bWITH\b|& ).*");
-        }
-        
-        text = ReplaceTextPattern(text, @"('|^THE )");
-        text = ReplaceTextPattern(text, @"[^a-zA-Z0-9 ]", " ");
-        text = ReplaceTextPattern(text, @"\s+", " ");
-        text = text.Trim();
-        return text;
-    }
-
-    private static string ReplaceTextPattern(string str, string pattern, string replacement = "")
-    {
-        return Regex.Replace(str, pattern, replacement);
-    }
-
     [DebuggerDisplay("{GetSummary()}")]
-    private class Master
+    private record Master(BillboardSong2 billboardSong, TrackObject spotifySong, FullArtistObject spotifyArtist)
     {
-        public BillboardSong2 billboardSong { get; init; }
-        public TrackObject spotifySong { get; init; }
-        public FullArtistObject spotifyArtist { get; init; }
-
-        public Master(BillboardSong2 billboardSong, TrackObject spotifySong, FullArtistObject spotifyArtist)
-        {
-            this.billboardSong = billboardSong;
-            this.spotifySong = spotifySong;
-            this.spotifyArtist = spotifyArtist;
-        }
-
         public string GetSummary() =>
             $"{billboardSong.GetArtistDashSong()} ({spotifyArtist.name} - {spotifySong.name}) - {billboardSong.score} - {spotifySong.popularity}";
         public bool SongIsGenre(string[] genres) => spotifyArtist.genres.Any(genres.Contains);

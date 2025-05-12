@@ -15,19 +15,19 @@ try
     string credentialFilePath = dict["--credentials-file"];
     SpotifyClient client = GetClientFromCredentialFiles(credentialFilePath);
     await client.Initialise();
-    var searchUseCase = new SpotifySearchUseCase(logger, client);
+    var clientUseCase = new SpotifyClientUseCase(client, logger);
 
     switch (dict["command"])
     {
         case "uk-radio-live-add-radio":
         {
-            UkRadioLiveAddRadioUseCase useCase = new(fileIo, logger, delayer, client, GetChromeDriver(), searchUseCase);
-            await useCase.AddRadio(dict["--script-file"], dict["--radio-name"], dict["--max-songs"]);
+            UkRadioLiveAddRadioUseCase useCase = new(fileIo, delayer, GetChromeDriver(), clientUseCase);
+            await useCase.AddRadio(dict["--script-file"], dict["--radio-name"], dict["--max-songs"], dict["--jsonPath"]);
             break;
         }
         case "spotify-merge-playlists":
         {
-            SpotifyMergePlaylistsUseCase useCase = new(client);
+            SpotifyClientUseCase useCase = new(client, logger);
             string[] playlists = dict["--playlists"].Split(",", StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
             string finalPlaylist = dict["--final-playlist"];
             await useCase.MergePlaylists(playlists, finalPlaylist);
@@ -35,7 +35,13 @@ try
         }
         case "billboard":
         {
-            BillboardUseCase useCase = new(fileIo, logger, delayer, client, searchUseCase);
+            BillboardUseCase useCase = new(fileIo, clientUseCase);
+            await useCase.DoWork(dict["--jsonPath"]);
+            break;
+        }
+        case "kworbNet":
+        {
+            KworbNetUseCase useCase = new(fileIo, logger, delayer, client, clientUseCase, GetChromeDriver());
             await useCase.DoWork(dict["--jsonPath"]);
             break;
         }

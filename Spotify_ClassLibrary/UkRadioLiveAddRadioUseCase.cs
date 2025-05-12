@@ -3,31 +3,19 @@ using Common_ClassLibrary;
 
 namespace Spotify_ClassLibrary;
 
-public class UkRadioLiveAddRadioUseCase
+public class UkRadioLiveAddRadioUseCase(
+    IFileIO fileIo,
+    IDelayer delayer,
+    IWebDriverWrapper driver,
+    SpotifyClientUseCase spotifyClientUseCase
+)
 {
-    private readonly IFileIO fileIo;
-    private readonly ILogger logger;
-    private readonly IDelayer delayer;
-    private readonly SpotifyClient client;
-    private readonly IWebDriverWrapper driver;
-    private readonly SpotifySearchUseCase searchUseCase;
-
-    public UkRadioLiveAddRadioUseCase(IFileIO fileIo, ILogger logger, IDelayer delayer, SpotifyClient client, IWebDriverWrapper driver, SpotifySearchUseCase searchUseCase)
-    {
-        this.fileIo = fileIo;
-        this.logger = logger;
-        this.delayer = delayer;
-        this.client = client;
-        this.driver = driver;
-        this.searchUseCase = searchUseCase;
-    }
-
     public async Task AddRadio(
         string scriptFilePath,
         string radioName,
-        string maxSongs
-    )
-    {
+        string maxSongs,
+        string jsonPath
+    ) {
         string script = fileIo.ReadAllText(scriptFilePath);
         driver.GoToUrl("https://ukradiolive.com/playlists");
         await delayer.Delay(2000);
@@ -38,21 +26,11 @@ public class UkRadioLiveAddRadioUseCase
         var artistSongs = songs
             .Select(x => (Dictionary<string, object>) x)
             .Select(x => new ArtistSong(x["artist"].ToString(), x["track"].ToString()));
-        // FIX ME
-        var artistSongTrackMaps = await searchUseCase.GetSongs(artistSongs.ToList(), fileIo, "");
-        var songIds = new List<string>();
-        foreach (var pair in artistSongTrackMaps)
-        {
-            var track = pair.Value;
-            if (track != null)
-            {
-                songIds.Add(pair.Key);
-            }
-        }
+        
+        var artistSongTrackMaps = (await spotifyClientUseCase.GetSongs(artistSongs.ToList(), fileIo, jsonPath + "\\cachedSearchesAndSong.json", true))!
+            .Where(x => x.Value != null)
+            .Select(x => new KeyValuePair<string,TrackObject>(x.Key, x.Value!));
 
-        string userId = await client.GetUserId();
-        string playlistId = await client.CreatePlaylist(radioName + "-" + DateTime.Now, userId);
-        await client.AddSongsToPlaylist(playlistId, songIds);
-        logger.Log("Radio playlist added.");
+        await spotifyClientUseCase.AddSongsToNewPlaylist(radioName + "-" + DateTime.Now, artistSongTrackMaps.Select(x => x.Value.id));
     }
 }

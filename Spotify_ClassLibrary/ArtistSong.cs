@@ -3,18 +3,22 @@
 namespace Spotify_ClassLibrary;
 
 [DebuggerDisplay("{GetArtistDashSong()}")]
-public class ArtistSong
+public class ArtistSong(string artist, string song)
 {
-    public string artist { get; init; }
-    public string song { get; init; }
-
-    public ArtistSong(string artist, string song)
-    {
-        this.artist = artist;
-        this.song = song;
-    }
-
     public string GetArtistDashSong() => Concatenate(" - ");
     public string GetArtistSpaceSong() => Concatenate(" ");
     private string Concatenate(string joiner) => string.Join(joiner, new List<string> {artist, song});
+}
+
+class ArtistSongEqualityComparer : IEqualityComparer<ArtistSong>
+{
+    public bool Equals(ArtistSong? x, ArtistSong? y)
+    {
+        return x?.GetArtistDashSong() == y?.GetArtistDashSong();
+    }
+
+    public int GetHashCode(ArtistSong obj)
+    {
+        return obj.GetArtistDashSong().GetHashCode();
+    }
 }

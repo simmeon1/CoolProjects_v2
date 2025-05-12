@@ -56,6 +56,10 @@ public class SpotifyClient
         var list = new List<FullArtistObject>();
         foreach (var ids in artistIds.Distinct().Chunk(50))
         {
+            if (ids.Length == 0)
+            {
+                continue;
+            }
             var response = await GetDeserializedObjectFromRequestResponse<GetSeveralArtistsResult>(
                 HttpMethod.Get,
                 $"{Root}artists?ids={ids.ConcatenateListOfStringsToCommaString()}"
