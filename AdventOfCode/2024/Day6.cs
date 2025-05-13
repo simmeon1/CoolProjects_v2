@@ -1,32 +1,33 @@
 ﻿using System.Text.RegularExpressions;
+using Xunit.Abstractions;
 
 namespace AdventOfCode._2024;
 
-public class Day6
+public class Day6(ITestOutputHelper testOutputHelper)
 {
     [Fact]
     public void Part1Example()
     {
-        Assert.Equal(41, GetResult(exampleString1));
+        Assert.Equal(41, GetResult(exampleString1, false, []));
     }
 
     [Fact]
     public void Part1Real()
     {
-        Assert.Equal(5199, GetResult(realString));
+        Assert.Equal(5199, GetResult(realString, false, []));
     }
-    //
-    // [Fact]
-    // public void Part2Example()
-    // {
-    //     Assert.Equal(48, GetResult(exampleString2, true));
-    // }
-    //
-    // [Fact]
-    // public void Part2Real()
-    // {
-    //     Assert.Equal(90669332, GetResult(realString, true));
-    // }
+    
+    [Fact]
+    public void Part2Example()
+    {
+        Assert.Equal(6, GetResult(exampleString1, true, []));
+    }
+    
+    [Fact]
+    public void Part2Real()
+    {
+        Assert.Equal(90669332, GetResult(realString, true, []));
+    }
 
     private class Pos(int x, int y)
     {
@@ -39,7 +40,7 @@ public class Day6
         public char c { get; set; } = c;
     }
 
-    private static int GetResult(string str)
+    private int GetResult(string str, bool paradox, HashSet<string> log)
     {
         var lineLength = str.IndexOf(Environment.NewLine);
         var map = str.ReplaceLineEndings("").Chunk(lineLength).Select(x => x.ToList()).ToList();
@@ -49,32 +50,53 @@ public class Day6
         var guardX = map.FindIndex(x => x.Any(IsGuard));
         var guardY = map[guardX].FindIndex(IsGuard);
         var guard = new Guard(guardX, guardY, map[guardX][guardY]);
+        var history = new HashSet<string>();
+        void TurnGuard() {
+            guard.c = transforms.ElementAtOrDefault(transforms.IndexOf(guard.c) + 1);
+            if (guard.c == '\0')
+            {
+                guard.c = transforms.First();
+            }
+        }
+        string GetLog(int x, int y, char c) => $"{x}-{y}-{c}";
+        string GetGuardLog() => $"{guard.x}-{guard.y}-{guard.c}";
+        void Log()
+        {
+            var l = GetGuardLog();
+            if (!history.Add(l))
+            {
+                throw new ArgumentException();
+            }
+        }
 
+        Log();
+
+        var paradoxTotal = 0;
         while (true)
         {
-            var f = guard.c switch
-            {
-                '^' => new Pos(guard.x - 1, guard.y),
-                '>' => new Pos(guard.x, guard.y + 1),
-                'v' => new Pos(guard.x + 1, guard.y),
-                _ => new Pos(guard.x, guard.y - 1)
-            };
-            
+            Pos GetForward() =>
+                guard.c switch
+                {
+                    '^' => new Pos(guard.x - 1, guard.y),
+                    '>' => new Pos(guard.x, guard.y + 1),
+                    'v' => new Pos(guard.x + 1, guard.y),
+                    _ => new Pos(guard.x, guard.y - 1)
+                };
+
+            var f = GetForward();
             void MarkGuardX() => map[guard.x][guard.y] = 'X';
-            if (map.ElementAtOrDefault(f.x) == null || map[f.x].ElementAtOrDefault(f.y) == '\0')
+
+            bool ForwardDoesNotExist(Pos p) => map.ElementAtOrDefault(p.x) == null || map[p.x].ElementAtOrDefault(p.y) == '\0';
+
+            if (ForwardDoesNotExist(f))
             {
                 MarkGuardX();
                 break;
             }
-
+            
             if (map[f.x][f.y] == '#')
             {
-                guard.c = transforms.ElementAtOrDefault(transforms.IndexOf(guard.c) + 1);
-                if (guard.c == '\0')
-                {
-                    guard.c = transforms.First();
-                }
-
+                TurnGuard();
                 continue;
             }
 
@@ -82,9 +104,49 @@ public class Day6
             guard.x = f.x;
             guard.y = f.y;
             map[guard.x][guard.y] = guard.c;
+            Log();
+
+            var orig = guard.c;
+            TurnGuard();
+            var possibleForward = GetForward();
+            guard.c = orig;
+            if (!ForwardDoesNotExist(possibleForward) && history.Contains(GetLog(possibleForward.x, possibleForward.y, guard.c)))
+            {
+                paradoxTotal++;
+            }
         }
 
-        return map.Sum(r => r.Count(c => c == 'X'));
+        // testOutputHelper.WriteLine(string.Join(Environment.NewLine, map.Select(r => string.Join("", r))));
+        return !paradox ? map.Sum(r => r.Count(c => c == 'X')) : paradoxTotal;
+
+        // var result = 0;
+        // for (int i = 0; i < map.Count; i++)
+        // {
+        //     for (int j = 0; j < map[i].Count; j++)
+        //     {
+        //         if (i == guardX && j == guardY)
+        //         {
+        //             continue;
+        //         }
+        //         
+        //         var orig = map[i][j];
+        //         map[i][j] = '#';
+        //         try
+        //         {
+        //             GetResult(str, false, history);
+        //         }
+        //         catch (Exception e)
+        //         {
+        //             result++;
+        //         }
+        //         finally
+        //         {
+        //             map[i][j] = orig;
+        //         }
+        //     }
+        // }
+        //
+        // return result;
     }
 
     private string exampleString1 = @"....#.....
