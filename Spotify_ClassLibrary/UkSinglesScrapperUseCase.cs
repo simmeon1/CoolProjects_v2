@@ -4,22 +4,16 @@ using Common_ClassLibrary;
 
 namespace Spotify_ClassLibrary;
 
-public class UkSinglesScrapperUseCase
+public class UkSinglesScrapperUseCase(
+    IFileIO fileIo,
+    ILogger logger,
+    IDelayer delayer,
+    IWebDriverWrapper driver,
+    IHttpClient http
+)
 {
-    private readonly IFileIO fileIo;
-    private readonly ILogger logger;
-    private readonly IDelayer delayer;
-    private readonly IWebDriverWrapper driver;
-    private readonly IHttpClient http;
-
-    public UkSinglesScrapperUseCase(IFileIO fileIo, ILogger logger, IDelayer delayer, IWebDriverWrapper driver, IHttpClient http)
-    {
-        this.fileIo = fileIo;
-        this.logger = logger;
-        this.delayer = delayer;
-        this.driver = driver;
-        this.http = http;
-    }
+    // private readonly ILogger logger = logger;
+    // private readonly IDelayer delayer = delayer;
 
     public async Task Scrap(string resultPath)
     {

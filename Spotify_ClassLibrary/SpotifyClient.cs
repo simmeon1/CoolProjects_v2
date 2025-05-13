@@ -222,7 +222,7 @@ public class SpotifyClient
         if (response.StatusCode == HttpStatusCode.TooManyRequests)
         {
             TimeSpan retryAfterDelta = response.Headers.RetryAfter.Delta.Value;
-            Console.WriteLine(retryAfterDelta + $"({DateTime.Now.AddSeconds(retryAfterDelta.TotalSeconds)})");
+            Console.WriteLine(retryAfterDelta + $" ({DateTime.Now.AddSeconds(retryAfterDelta.TotalSeconds)})");
             await delayer.Delay(retryAfterDelta);
             response = await ResendRequest(request);
         }

@@ -5,15 +5,13 @@ using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using JourneyPlanner_ClassLibrary.Classes;
 using JourneyPlanner_ClassLibrary.FlightConnectionsDotCom;
 using JourneyPlanner_ClassLibrary.Workers;
-using Newtonsoft.Json.Linq;
+using ChromeDriverService = Common_ClassLibrary.ChromeDriverService;
 
 namespace JourneyPlanner_Console
 {
@@ -31,36 +29,11 @@ namespace JourneyPlanner_Console
             
             RealHttpClient httpClient = new();
             Logger_Console logger = new();
-            
-            logger.Log("Getting latest chromedriver.");
-            
-            //Download latest web driver
 
-            // var x = await (await httpClient.GetAsync(
-            //     "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/all.json"
-            // )).Content.ReadAsStringAsync();
-            // File.WriteAllText($"billboard_new.json", x);
-            
-            var latestVersionsJson = await (await httpClient.GetAsync(
-                "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json"
-            )).Content.ReadAsStringAsync();
-            JToken latestStableVersionDownloads = JObject.Parse(latestVersionsJson)["channels"]["Stable"]["downloads"]["chromedriver"];
-            string downloadLink = "";
-            foreach (JToken download in latestStableVersionDownloads)
-            {
-                if (download["platform"].ToString() == "win64")
-                {
-                    downloadLink = download["url"].ToString();
-                    break;
-                }
-            }
-            
-            WebClient webClient = new();
-            string savePath = parameters.FileSavePath;
-            await webClient.DownloadFileTaskAsync(new Uri(downloadLink), $"{savePath}\\chromedriver.zip");
-            if (Directory.Exists($"{savePath}\\chromeDriverFolder"))  Directory.Delete($"{savePath}\\chromeDriverFolder", true);
-            ZipFile.ExtractToDirectory($"{savePath}\\chromedriver.zip", $"{savePath}\\chromeDriverFolder");
-            
+            var fileIo = new RealFileIO();
+            var savePath = parameters.FileSavePath;
+            await ChromeDriverService.GetLatestChromeDriver(logger, httpClient, savePath, fileIo);
+
             ChromeOptions chromeOptions = new();
             chromeOptions.AddArgument("--log-level=3");
             chromeOptions.AddArgument("window-size=1280,800");
@@ -78,7 +51,7 @@ namespace JourneyPlanner_Console
                 new RealDelayer(),
                 httpClient,
                 driver,
-                fileIo: new RealFileIO(),
+                fileIo: fileIo,
                 dateTimeProvider: new RealDateTimeProvider(),
                 printer: new ExcelPrinter(),
                 airportCollector: new FlightConnectionsDotComWorkerAirportCollector(worker),

@@ -27,7 +27,7 @@ public class UkRadioLiveAddRadioUseCase(
             .Select(x => (Dictionary<string, object>) x)
             .Select(x => new ArtistSong(x["artist"].ToString(), x["track"].ToString()));
         
-        var artistSongTrackMaps = (await spotifyClientUseCase.GetSongs(artistSongs.ToList(), fileIo, jsonPath + "\\cachedSearchesAndSong.json", true))!
+        var artistSongTrackMaps = (await spotifyClientUseCase.GetSongs(artistSongs.ToList(), jsonPath, true))!
             .Where(x => x.Value != null)
             .Select(x => new KeyValuePair<string,TrackObject>(x.Key, x.Value!));
 

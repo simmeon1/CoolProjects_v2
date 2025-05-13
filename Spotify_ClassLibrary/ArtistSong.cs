@@ -10,7 +10,7 @@ public class ArtistSong(string artist, string song)
     private string Concatenate(string joiner) => string.Join(joiner, new List<string> {artist, song});
 }
 
-class ArtistSongEqualityComparer : IEqualityComparer<ArtistSong>
+public class ArtistSongEqualityComparer : IEqualityComparer<ArtistSong>
 {
     public bool Equals(ArtistSong? x, ArtistSong? y)
     {

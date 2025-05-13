@@ -3,7 +3,7 @@ using Common_ClassLibrary;
 
 namespace Spotify_ClassLibrary;
 
-public class SpotifyClientUseCase(SpotifyClient client, ILogger logger)
+public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO fileIo)
 {
     public async Task MergePlaylists(IEnumerable<string> playlists, string finalPlaylist)
     {
@@ -29,11 +29,11 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger)
     
     public async Task<Dictionary<string, TrackObject?>> GetSongs(
         List<ArtistSong> songs,
-        IFileIO fileIo,
-        string storePath,
-        bool saveToFile
+        string storeFolder,
+        bool updateStore
     ) {
-        var store = GetStore<TrackObject?>(fileIo, storePath);
+        var storePath = storeFolder + "/spotifyTrackCache.json";
+        var store = GetStore<TrackObject?>(storePath);
         Dictionary<string, TrackObject?> tracks = new();
         try
         {
@@ -41,41 +41,56 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger)
             {
                 ArtistSong song = songs[i];
                 string artistDashSong = song.GetArtistDashSong();
-                TrackObject? track = store.TryGetValue(artistDashSong, out TrackObject? value)
-                    ? value
-                    : await client.GetFirstTrackResult(song.GetArtistSpaceSong());
+                TrackObject? track;
+                bool wasCached = false;
+                if (store.TryGetValue(artistDashSong, out TrackObject? value))
+                {
+                    track = value;
+                    wasCached = true;
+                }
+                else
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            track = await client.GetFirstTrackResult(song.GetArtistSpaceSong());
+                            break;
+                        }
+                        catch (HttpRequestException ex) { 
+                            // Try again
+                        }
+                    }
+                }
+
+                var extra = wasCached ? " (already cached)" : "";
                 logger.Log(
                     track == null
                         ? $"No tracks found ({artistDashSong})"
-                        : $"Searched {i} out of {songs.Count} song ids ({artistDashSong}) (Popularity: {track.popularity})"
+                        : $"Searched {i} out of {songs.Count} song ids ({artistDashSong}) (Popularity: {track.popularity}){extra}"
                 );
                 store.TryAdd(artistDashSong, track);
-                tracks.Add(artistDashSong, track);
+                tracks.TryAdd(artistDashSong, track);
+
+                if (i % 250 == 0)
+                {
+                    FinalizeStoreUsage(storePath, store, updateStore);
+                }
             }
             return tracks;  
         }
         finally
         {
-            SaveStoreToFile(fileIo, storePath, saveToFile, store);
+            FinalizeStoreUsage(storePath, store, updateStore);
         }
     }
 
-    private static Dictionary<string, T> GetStore<T>(IFileIO fileIo, string storePath)
-    {
-        return fileIo.FileExists(storePath) ?
-            JsonSerializer.Deserialize<Dictionary<string, T>>(fileIo.ReadAllText(storePath))! :
-            new Dictionary<string, T>();
-    }
-
-    public async Task<Dictionary<string, FullArtistObject>> GetArtists(
-        List<string> artistIds,
-        IFileIO fileIo,
-        string storePath,
-        bool saveToFile
-    ) {
-        var store = GetStore<FullArtistObject>(fileIo, storePath);
+    public async Task<Dictionary<string, FullArtistObject>> GetArtists(List<string> artistIds, string storeFolder) {
+        var storePath = storeFolder + "/spotifyArtistCache.json";
+        var store = GetStore<FullArtistObject>(storePath);
         try
         {
+            artistIds = artistIds.Distinct().ToList();
             var artists = await client.GetArtists(artistIds.Except(store.Keys));
             foreach (var artist in artists)
             {
@@ -85,13 +100,20 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger)
         }
         finally
         {
-            SaveStoreToFile(fileIo, storePath, saveToFile, store);
+            FinalizeStoreUsage(storePath, store, true);
         }
     }
 
-    private static void SaveStoreToFile(IFileIO fileIo, string storePath, bool saveToFile, object store)
+    private Dictionary<string, T> GetStore<T>(string storePath)
     {
-        if (saveToFile)
+        return fileIo.FileExists(storePath) ?
+            JsonSerializer.Deserialize<Dictionary<string, T>>(fileIo.ReadAllText(storePath))! :
+            new Dictionary<string, T>();
+    }
+
+    private void FinalizeStoreUsage(string storePath, object store, bool updateStore)
+    {
+        if (updateStore)
         {
             fileIo.WriteAllText(storePath, store.SerializeObject());
         }

@@ -4,32 +4,30 @@ using Common_ClassLibrary;
 
 namespace Spotify_ClassLibrary;
 
-public class BillboardUseCase(IFileIO fileIo, SpotifyClientUseCase spotifyClientUseCase) {
+public class BillboardUseCase(SpotifyClientUseCase spotifyClientUseCase, IHttpClient http) {
     public async Task DoWork(string jsonPath)
     {
         var usContents =
+            // JsonSerializer.Deserialize<List<BillboardList>>(fileIo.ReadAllText(jsonPath + "\\billboard_all_mhollingshead.json"))!;
             JsonSerializer.Deserialize<List<BillboardList>>(
-                fileIo.ReadAllText(jsonPath + "\\billboard_all_mhollingshead.json")
+                await (await http.GetAsync(
+                    "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/all.json"
+                )).Content.ReadAsStringAsync()
             )!;
         var ukContents =
-            JsonSerializer.Deserialize<List<BillboardList>>(fileIo.ReadAllText(jsonPath + "\\ukSingles.json"))!;
+            // JsonSerializer.Deserialize<List<BillboardList>>(fileIo.ReadAllText(jsonPath + "\\ukSingles.json"))!;
+            new List<BillboardList>();
 
-        Dictionary<string, List<BillboardSong>> GetDictFromBillboardList(List<BillboardList> billboardLists) =>
-            billboardLists.ToDictionary(x => x.date, y => y.data);
-
-        var dateSongMaps = new List<Dictionary<string, List<BillboardSong>>>
-        {
-            GetDictFromBillboardList(usContents), GetDictFromBillboardList(ukContents)
-        };
-        
-        MakeSongsMoreGeneric(dateSongMaps);
+        var dateSongMaps = SpotifyHelper.GetDateSongMaps(usContents, ukContents);
         var songsMap = GetSongsMap(dateSongMaps);
         var artistSongStringMap = songsMap.ToDictionary(x => x.Key.GetArtistDashSong(), x => x.Key);
 
         var trackMap =
             // JsonSerializer.Deserialize<Dictionary<string, TrackObject?>>(fileIo.ReadAllText(jsonPath + "\\cachedSearchesAndSong.json"))!
             (await spotifyClientUseCase.GetSongs(
-                songsMap.Keys.OrderBy(x => x.GetArtistDashSong()).ToList(), fileIo, jsonPath + "\\cachedSearchesAndSong.json", true)
+                songsMap.Keys.OrderBy(x => x.GetArtistDashSong()).ToList(), jsonPath,
+                false
+                )
             )!.Where(x => x.Value != null)
                 .Select(x => new KeyValuePair<string,TrackObject>(x.Key, x.Value!))
                 .ToList();
@@ -37,7 +35,7 @@ public class BillboardUseCase(IFileIO fileIo, SpotifyClientUseCase spotifyClient
         // JsonSerializer.Deserialize<Dictionary<string, FullArtistObject>>(fileIo.ReadAllText(jsonPath + "\\cachedTrackArtistsMap.json"))!;
         var artists =
             await spotifyClientUseCase.GetArtists(
-                trackMap.Select(x => x.Value.artists.First().id).ToList(), fileIo, jsonPath + "\\cachedTrackArtistsMap.json", true
+                trackMap.Select(x => x.Value.artists.First().id).ToList(), jsonPath
             );
 
         var fullCol = trackMap.Select(x => new Master(
@@ -92,26 +90,11 @@ public class BillboardUseCase(IFileIO fileIo, SpotifyClientUseCase spotifyClient
         return songFullSongMap;
     }
     
-    private void MakeSongsMoreGeneric(List<Dictionary<string, List<BillboardSong>>> dateSongMaps)
-    {
-        foreach (var songMap in dateSongMaps)
-        {
-            foreach (var songs in songMap.Values)
-            {
-                foreach (var song in songs)
-                {
-                    song.song = SpotifyHelper.CleanText(song.song, false);
-                    song.artist = SpotifyHelper.CleanText(song.artist, true);
-                }
-            }
-        }
-    }
-    
     [DebuggerDisplay("{GetSummary()}")]
     private record Master(BillboardSong2 billboardSong, TrackObject spotifySong, FullArtistObject spotifyArtist)
     {
         public string GetSummary() =>
             $"{billboardSong.GetArtistDashSong()} ({spotifyArtist.name} - {spotifySong.name}) - {billboardSong.score} - {spotifySong.popularity}";
-        public bool SongIsGenre(string[] genres) => spotifyArtist.genres.Any(genres.Contains);
+        public bool SongIsGenre(string[] genres) => spotifyArtist.genres.Any(s => genres.Any(s.Contains));
     }
 }

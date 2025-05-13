@@ -4,6 +4,15 @@ namespace Spotify_ClassLibrary;
 
 public static class SpotifyHelper
 {
+    public static List<Dictionary<string, List<BillboardSong>>> GetDateSongMaps(params List<List<BillboardList>> listOfBillBoardLists)
+    {
+        Dictionary<string, List<BillboardSong>> GetDictFromBillboardList(List<BillboardList> billboardLists) =>
+            billboardLists.ToDictionary(x => x.date, y => y.data);
+        List<Dictionary<string, List<BillboardSong>>> dateSongMaps = [..listOfBillBoardLists.Select(GetDictFromBillboardList)];
+        MakeSongsMoreGeneric(dateSongMaps);
+        return dateSongMaps;
+    }
+
     public static string CleanText(string text, bool isArtist)
     {
         //\bAND\b|& | with
@@ -22,10 +31,24 @@ public static class SpotifyHelper
         text = text.Trim();
         return text;
     }
-    
+
+    private static void MakeSongsMoreGeneric(List<Dictionary<string, List<BillboardSong>>> dateSongMaps)
+    {
+        foreach (var songMap in dateSongMaps)
+        {
+            foreach (var songs in songMap.Values)
+            {
+                foreach (var song in songs)
+                {
+                    song.song = CleanText(song.song, false);
+                    song.artist = CleanText(song.artist, true);
+                }
+            }
+        }
+    }
+
     private static string ReplaceTextPattern(string str, string pattern, string replacement = "")
     {
         return Regex.Replace(str, pattern, replacement);
     }
-
 }
