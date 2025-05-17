@@ -16,34 +16,60 @@ public class KworbNetUseCase(
 ) {
     public async Task DoWork(string jsonPath)
     {
-        var links = new[]
-        {
-            //  "https://kworb.net/spotify/songs.html",
-            "https://kworb.net/spotify/songs_2024.html",
-            "https://kworb.net/spotify/songs_2023.html",
-            "https://kworb.net/spotify/songs_2022.html",
-            "https://kworb.net/spotify/songs_2021.html",
-            "https://kworb.net/spotify/songs_2020.html",
-            "https://kworb.net/spotify/songs_2019.html",
-            "https://kworb.net/spotify/songs_2018.html",
-            "https://kworb.net/spotify/songs_2017.html",
-            "https://kworb.net/spotify/songs_2016.html",
-            "https://kworb.net/spotify/songs_2015.html",
-            "https://kworb.net/spotify/songs_2014.html",
-            "https://kworb.net/spotify/songs_2013.html",
-            "https://kworb.net/spotify/songs_2012.html",
-            "https://kworb.net/spotify/songs_2011.html",
-            "https://kworb.net/spotify/songs_2010.html",
-            "https://kworb.net/spotify/songs_2005.html",
-            "https://kworb.net/spotify/songs_2000.html",
-            "https://kworb.net/spotify/songs_1990.html",
-            "https://kworb.net/spotify/songs_1980.html",
-            "https://kworb.net/spotify/songs_1970.html",
-            "https://kworb.net/spotify/songs_1960.html",
-            "https://kworb.net/spotify/songs_1950.html"
-        };
-        
-        var results = JsonSerializer.Deserialize<Dictionary<string, long>>(fileIo.ReadAllText(jsonPath + "\\kworb.json"))!;
+        // async Task GoToLinkTable(string link)
+        // {
+        //     var response = await http.GetAsync(link);
+        //     var responseContent = await response.Content.ReadAsStringAsync();
+        //     var table = Regex.Match(responseContent, @"(<table class=""addpos sortable""(.|\n)*?</table>)").Groups[1].Value;
+        //     fileIo.WriteAllText("temp.html", table);
+        //     chromeDriver.GoToUrl("file:///C:/Users/simme/source/repos/CoolProjects_v2/Spotify_Console/bin/Debug/net9.0/temp.html");
+        // }
+        //
+        // await GoToLinkTable("https://kworb.net/spotify/artists.html");
+        //
+        // var artistLinks = (ReadOnlyCollection<object>)chromeDriver.ExecuteScript(
+        //     """
+        //     return [...document.querySelectorAll('a')].map(a => a.href.replace(/^.*artist\//i, ""));
+        //     """
+        // );
+        var store = jsonPath + "\\kworbArtist.json";
+        // var results = Newtonsoft.Json.JsonSerializer.Deserialize<Dictionary<string, long>>(store)!;
+        // var results = JsonSerializer.Deserialize<Dictionary<string, long>>(fileIo.ReadAllText(store))!;
+        // await spotifyClientUseCase.GetSongs(results.Keys.ToList(), jsonPath);
+
+        // var results = new Dictionary<string, long>();
+        // for (int i = 0; i < artistLinks.Count; i++)
+        // {
+        //     logger.Log($"Artist link {i}");
+        //     object artistLink = artistLinks[i];
+        //     await GoToLinkTable("https://kworb.net/spotify/artist/" + (string) artistLink);
+        //     var map = (Dictionary<string, object>) chromeDriver.ExecuteScript(
+        //         """
+        //         var result = {};
+        //         var rows = document.querySelectorAll('tbody tr');
+        //         for (var row of rows) {
+        //             var cells = row.cells;
+        //             var spotifyId = cells[0].querySelector('a').href.replace("https://open.spotify.com/track/", "");
+        //             var streams = parseInt(cells[1].textContent.replaceAll(",", ""));
+        //             result[spotifyId] = Math.max(result[spotifyId] || 0, streams);
+        //         }
+        //         return result;
+        //         """
+        //     );
+        //
+        //     foreach ((string key, object value) in map)
+        //     {
+        //         var v = (long) value;
+        //         if (!results.TryAdd(key, v))
+        //         {
+        //             results[key] = Math.Max(v, results[key]);
+        //         }
+        //     }
+        //
+        //     fileIo.WriteAllText(store, results.SerializeObject());
+        // }
+
+        // var results = JsonSerializer.Deserialize<Dictionary<string, long>>(fileIo.ReadAllText(jsonPath + "\\kworb.json"))!;
 
         // var results = new Dictionary<string, long>();
         // foreach (var link in links)
@@ -79,81 +105,81 @@ public class KworbNetUseCase(
         // fileIo.WriteAllText(jsonPath + "/kwob.json", results.SerializeObject());
         // var x = 1;
 
-        var dumbedResults = new Dictionary<ArtistSong, long>(new ArtistSongEqualityComparer());
-        foreach (var pair in results)
-        {
-            var artistSong = new ArtistSong(
-                SpotifyHelper.CleanText(pair.Key.Split(" - ", StringSplitOptions.RemoveEmptyEntries)[0], true),
-                SpotifyHelper.CleanText(pair.Key.Split(" - ", StringSplitOptions.RemoveEmptyEntries)[1], false)
-            );
-            if (dumbedResults.ContainsKey(artistSong))
-            {
-                dumbedResults[artistSong] = Math.Max(dumbedResults[artistSong], pair.Value);
-            }
-            else
-            {
-                dumbedResults.Add(artistSong, pair.Value);
-            }
-        }
-        
-        var trackMap = (await spotifyClientUseCase.GetSongs(dumbedResults.Select(x => x.Key).ToList(), jsonPath, false))
-            .Where(x => x.Value != null)
-            .Select(x => new KeyValuePair<string,TrackObject>(x.Key, x.Value!)) 
-            .ToList();
-        
-        var artists =
-            await spotifyClientUseCase.GetArtists(
-                trackMap.Select(x => x.Value.artists.First().id).ToList(), jsonPath
-            );
-        
-        var usContents =
-            // JsonSerializer.Deserialize<List<BillboardList>>(fileIo.ReadAllText(jsonPath + "\\billboard_all_mhollingshead.json"))!;
-            JsonSerializer.Deserialize<List<BillboardList>>(
-                await (await http.GetAsync(
-                    "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/all.json"
-                )).Content.ReadAsStringAsync()
-            )!;
-        
-        var dateSongMaps = SpotifyHelper.GetDateSongMaps(usContents);
-
-        var yearMaps = new Dictionary<string, int>();
-        foreach (var map in dateSongMaps)
-        {
-            foreach (var pair in map)
-            {
-                foreach (var song in pair.Value)
-                {
-                    var simpleName = SpotifyHelper.CleanText(song.artist, true) + " - " +
-                                     SpotifyHelper.CleanText(song.song, false);
-                    yearMaps.TryAdd(simpleName, int.Parse(pair.Key[..4]));
-                }
-            }
-        }
-
-        var dumbedResultsWithStrings = dumbedResults.ToDictionary(x => x.Key.GetArtistDashSong(), x => x.Value);
-        var spanishVowels = new List<char> {'á', 'é', 'í', 'ó', 'ú'};
-        var fullCol = trackMap.Select(x => new Master(
-                x.Key,
-                x.Value,
-                artists[x.Value.artists.First().id],
-                yearMaps.TryGetValue(x.Key, out int year) ? year : int.Parse(x.Value.album.release_date[..4]),
-                dumbedResultsWithStrings[x.Key]
-            )
-        );
-
-        bool ContainsSpanishLetters(string str) => str.Any(x => spanishVowels.Contains(x)); 
-        
-        var songsToAdd = fullCol
-            .Where(x => !ContainsSpanishLetters(x.spotifyArtist.name) && !ContainsSpanishLetters(x.spotifySong.name))
-            .Where(x => !x.SongIsGenre(["rap", "country"]))
-            .OrderByDescending(x => x.streams)
-            // .ThenByDescending(x => x.spotifySong.popularity)
-            .GroupBy(x => x.year / 10)
-            .Where(x => x.Key is > 197 and < 202)
-            .SelectMany(x => x.Take(250))
-            .ToList();
-
-        await spotifyClientUseCase.AddSongsToNewPlaylist($"Billboard-{DateTime.Now}", songsToAdd.Select(x => x.spotifySong.id));
+        // var dumbedResults = new Dictionary<ArtistSong, long>(new ArtistSongEqualityComparer());
+        // foreach (var pair in results)
+        // {
+        //     var artistSong = new ArtistSong(
+        //         SpotifyHelper.CleanText(pair.Key.Split(" - ", StringSplitOptions.RemoveEmptyEntries)[0], true),
+        //         SpotifyHelper.CleanText(pair.Key.Split(" - ", StringSplitOptions.RemoveEmptyEntries)[1], false)
+        //     );
+        //     if (dumbedResults.ContainsKey(artistSong))
+        //     {
+        //         dumbedResults[artistSong] = Math.Max(dumbedResults[artistSong], pair.Value);
+        //     }
+        //     else
+        //     {
+        //         dumbedResults.Add(artistSong, pair.Value);
+        //     }
+        // }
+        //
+        // var trackMap = (await spotifyClientUseCase.GetSongs(dumbedResults.Select(x => x.Key).ToList(), jsonPath, false))
+        //     .Where(x => x.Value != null)
+        //     .Select(x => new KeyValuePair<string,TrackObject>(x.Key, x.Value!)) 
+        //     .ToList();
+        //
+        // var artists =
+        //     await spotifyClientUseCase.GetArtists(
+        //         trackMap.Select(x => x.Value.artists.First().id).ToList(), jsonPath
+        //     );
+        //
+        // var usContents =
+        //     // JsonSerializer.Deserialize<List<BillboardList>>(fileIo.ReadAllText(jsonPath + "\\billboard_all_mhollingshead.json"))!;
+        //     JsonSerializer.Deserialize<List<BillboardList>>(
+        //         await (await http.GetAsync(
+        //             "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/all.json"
+        //         )).Content.ReadAsStringAsync()
+        //     )!;
+        //
+        // var dateSongMaps = SpotifyHelper.GetDateSongMaps(usContents);
+        //
+        // var yearMaps = new Dictionary<string, int>();
+        // foreach (var map in dateSongMaps)
+        // {
+        //     foreach (var pair in map)
+        //     {
+        //         foreach (var song in pair.Value)
+        //         {
+        //             var simpleName = SpotifyHelper.CleanText(song.artist, true) + " - " +
+        //                              SpotifyHelper.CleanText(song.song, false);
+        //             yearMaps.TryAdd(simpleName, int.Parse(pair.Key[..4]));
+        //         }
+        //     }
+        // }
+        //
+        // var dumbedResultsWithStrings = dumbedResults.ToDictionary(x => x.Key.GetArtistDashSong(), x => x.Value);
+        // var spanishVowels = new List<char> {'á', 'é', 'í', 'ó', 'ú'};
+        // var fullCol = trackMap.Select(x => new Master(
+        //         x.Key,
+        //         x.Value,
+        //         artists[x.Value.artists.First().id],
+        //         yearMaps.TryGetValue(x.Key, out int year) ? year : int.Parse(x.Value.album.release_date[..4]),
+        //         dumbedResultsWithStrings[x.Key]
+        //     )
+        // );
+        //
+        // bool ContainsSpanishLetters(string str) => str.Any(x => spanishVowels.Contains(x)); 
+        //
+        // var songsToAdd = fullCol
+        //     .Where(x => !ContainsSpanishLetters(x.spotifyArtist.name) && !ContainsSpanishLetters(x.spotifySong.name))
+        //     .Where(x => !x.SongIsGenre(["rap", "country"]))
+        //     .OrderByDescending(x => x.streams)
+        //     // .ThenByDescending(x => x.spotifySong.popularity)
+        //     .GroupBy(x => x.year / 10)
+        //     .Where(x => x.Key is > 197 and < 202)
+        //     .SelectMany(x => x.Take(250))
+        //     .ToList();
+        //
+        // await spotifyClientUseCase.AddSongsToNewPlaylist($"Billboard-{DateTime.Now}", songsToAdd.Select(x => x.spotifySong.id));
     }
     
     [DebuggerDisplay("{GetSummary()}")]

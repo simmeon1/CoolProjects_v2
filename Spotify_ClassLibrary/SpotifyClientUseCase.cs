@@ -18,7 +18,7 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
         string playlistId = await client.CreatePlaylist(finalPlaylist + "-" + DateTime.Now, userId);
         await client.AddSongsToPlaylist(playlistId, playlistTracks);
     }
-    
+
     public async Task AddSongsToNewPlaylist(string playlistName, IEnumerable<string> songIds)
     {
         string userId = await client.GetUserId();
@@ -26,7 +26,7 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
         await client.AddSongsToPlaylist(playlistId, songIds);
         logger.Log("Playlist added.");
     }
-    
+
     public async Task<Dictionary<string, TrackObject?>> GetSongs(
         List<ArtistSong> songs,
         string storeFolder,
@@ -57,7 +57,8 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
                             track = await client.GetFirstTrackResult(song.GetArtistSpaceSong());
                             break;
                         }
-                        catch (HttpRequestException ex) { 
+                        catch (HttpRequestException ex)
+                        {
                             // Try again
                         }
                     }
@@ -77,7 +78,7 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
                     FinalizeStoreUsage(storePath, store, updateStore);
                 }
             }
-            return tracks;  
+            return tracks;
         }
         finally
         {
@@ -85,18 +86,49 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
         }
     }
 
-    public async Task<Dictionary<string, FullArtistObject>> GetArtists(List<string> artistIds, string storeFolder) {
-        var storePath = storeFolder + "/spotifyArtistCache.json";
-        var store = GetStore<FullArtistObject>(storePath);
+    public async Task<Dictionary<string, FullArtistObject>> GetArtists(List<string> artistIds, string storeFolder)
+    {
+        return await GetSeveral(artistIds, storeFolder, "spotifyArtistCache.json", client.GetArtists);
+    }
+
+    public async Task<Dictionary<string, SimpleTrackObject>> GetSongs(List<string> artistIds, string storeFolder)
+    {
+        return await GetSeveral(
+            artistIds,
+            storeFolder,
+            "spotifyTracksByIdCache.json",
+            async x => (await client.GetSongs(x)).ToDictionary(
+                y => y.Key,
+                y => new SimpleTrackObject
+                {
+                    id = y.Value.id,
+                    name = y.Value.name,
+                    artist_id = y.Value.artists.First().id,
+                    artist_name = y.Value.artists.First().name,
+                    popularity = y.Value.popularity,
+                }
+            )
+        );
+    }
+    
+    private async Task<Dictionary<string, T>> GetSeveral<T>(
+        List<string> ids,
+        string storeFolder,
+        string storeName,
+        Func<IEnumerable<string>, Task<Dictionary<string, T>>> entriesGetter
+    )
+    {
+        var storePath = $"{storeFolder}/{storeName}";
+        var store = GetStore<T>(storePath);
         try
         {
-            artistIds = artistIds.Distinct().ToList();
-            var artists = await client.GetArtists(artistIds.Except(store.Keys));
-            foreach (var artist in artists)
+            ids = ids.Distinct().ToList();
+            var entries = await entriesGetter(ids.Except(store.Keys));
+            foreach (var entry in entries)
             {
-                store.Add(artist.Key, artist.Value);
+                store.Add(entry.Key, entry.Value);
             }
-            return artistIds.ToDictionary(x => x, x => store[x]);
+            return ids.ToDictionary(x => x, x => store[x]);
         }
         finally
         {
@@ -106,9 +138,9 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
 
     private Dictionary<string, T> GetStore<T>(string storePath)
     {
-        return fileIo.FileExists(storePath) ?
-            JsonSerializer.Deserialize<Dictionary<string, T>>(fileIo.ReadAllText(storePath))! :
-            new Dictionary<string, T>();
+        return fileIo.FileExists(storePath)
+            ? JsonSerializer.Deserialize<Dictionary<string, T>>(fileIo.ReadAllText(storePath))!
+            : new Dictionary<string, T>();
     }
 
     private void FinalizeStoreUsage(string storePath, object store, bool updateStore)

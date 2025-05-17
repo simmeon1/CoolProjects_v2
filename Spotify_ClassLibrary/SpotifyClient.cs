@@ -53,22 +53,35 @@ public class SpotifyClient
 
     public async Task<Dictionary<string, FullArtistObject>> GetArtists(IEnumerable<string> artistIds)
     {
-        var list = new List<FullArtistObject>();
-        foreach (var ids in artistIds.Distinct().Chunk(50))
+        return await GetSeveral<FullArtistObject, GetSeveralArtistsResult>(artistIds, x => x.id, x => x.artists);
+    }
+
+    public async Task<Dictionary<string, TrackObject>> GetSongs(IEnumerable<string> songIds)
+    {
+        return await GetSeveral<TrackObject, GetSeveralTracksResult>(songIds, x => x.id, x => x.tracks);
+    }
+
+    private async Task<Dictionary<string, TResult>> GetSeveral<TResult, TSeveral>(
+        IEnumerable<string> ids,
+        Func<TResult, string> getIdFunc,
+        Func<TSeveral, TResult[]> getResults
+    ) {
+        var list = new List<TResult>();
+        foreach (var idSets in ids.Distinct().Chunk(50))
         {
-            if (ids.Length == 0)
+            if (idSets.Length == 0)
             {
                 continue;
             }
-            var response = await GetDeserializedObjectFromRequestResponse<GetSeveralArtistsResult>(
+            var response = await GetDeserializedObjectFromRequestResponse<TSeveral>(
                 HttpMethod.Get,
-                $"{Root}artists?ids={ids.ConcatenateListOfStringsToCommaString()}"
+                $"{Root}tracks?ids={idSets.ConcatenateListOfStringsToCommaString()}"
             );
-            list.AddRange(response.artists);
+            list.AddRange(getResults(response));
         }
-        return list.ToDictionary(x => x.id, x => x);
+        return list.ToDictionary(getIdFunc, x => x);
     }
-
+    
     public async Task<string> GetUserId()
     {
         JObject responseJson = await GetJObjectFromRequestResponse(HttpMethod.Get, $"{Root}me");
