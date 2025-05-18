@@ -53,33 +53,30 @@ public class SpotifyClient
 
     public async Task<Dictionary<string, FullArtistObject>> GetArtists(IEnumerable<string> artistIds)
     {
-        return await GetSeveral<FullArtistObject, GetSeveralArtistsResult>(artistIds, x => x.id, x => x.artists);
+        return await GetSeveral<FullArtistObject, GetSeveralArtistsResult>(artistIds, x => x.id, x => x.artists, "artists");
     }
 
     public async Task<Dictionary<string, TrackObject>> GetSongs(IEnumerable<string> songIds)
     {
-        return await GetSeveral<TrackObject, GetSeveralTracksResult>(songIds, x => x.id, x => x.tracks);
+        return await GetSeveral<TrackObject, GetSeveralTracksResult>(songIds, x => x.id, x => x.tracks, "tracks");
     }
 
     private async Task<Dictionary<string, TResult>> GetSeveral<TResult, TSeveral>(
         IEnumerable<string> ids,
         Func<TResult, string> getIdFunc,
-        Func<TSeveral, TResult[]> getResults
+        Func<TSeveral, TResult[]> getResults,
+        string type
     ) {
-        var list = new List<TResult>();
-        foreach (var idSets in ids.Distinct().Chunk(50))
+        var commaString = ids.ConcatenateListOfStringsToCommaString();
+        if (commaString.Length == 0)
         {
-            if (idSets.Length == 0)
-            {
-                continue;
-            }
-            var response = await GetDeserializedObjectFromRequestResponse<TSeveral>(
-                HttpMethod.Get,
-                $"{Root}tracks?ids={idSets.ConcatenateListOfStringsToCommaString()}"
-            );
-            list.AddRange(getResults(response));
+            return new Dictionary<string, TResult>();
         }
-        return list.ToDictionary(getIdFunc, x => x);
+        var response = await GetDeserializedObjectFromRequestResponse<TSeveral>(
+            HttpMethod.Get,
+            $"{Root}{type}?ids={commaString}"
+        );
+        return getResults(response).ToDictionary(getIdFunc, x => x);
     }
     
     public async Task<string> GetUserId()

@@ -86,12 +86,12 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
         }
     }
 
-    public async Task<Dictionary<string, FullArtistObject>> GetArtists(List<string> artistIds, string storeFolder)
+    public async Task<Dictionary<string, FullArtistObject>> GetArtists(IEnumerable<string> artistIds, string storeFolder)
     {
         return await GetSeveral(artistIds, storeFolder, "spotifyArtistCache.json", client.GetArtists);
     }
 
-    public async Task<Dictionary<string, SimpleTrackObject>> GetSongs(List<string> artistIds, string storeFolder)
+    public async Task<Dictionary<string, SimpleTrackObject>> GetSongs(IEnumerable<string> artistIds, string storeFolder)
     {
         return await GetSeveral(
             artistIds,
@@ -99,36 +99,49 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
             "spotifyTracksByIdCache.json",
             async x => (await client.GetSongs(x)).ToDictionary(
                 y => y.Key,
-                y => new SimpleTrackObject
+                y =>
                 {
-                    id = y.Value.id,
-                    name = y.Value.name,
-                    artist_id = y.Value.artists.First().id,
-                    artist_name = y.Value.artists.First().name,
-                    popularity = y.Value.popularity,
+                    var track = y.Value;
+                    var firstArtist = track.artists.First();
+                    return new SimpleTrackObject
+                    {
+                        id = track.id,
+                        name = track.name,
+                        artist_id = firstArtist.id,
+                        artist_name = firstArtist.name,
+                        popularity = track.popularity,
+                        release_date = track.album.release_date
+                    };
                 }
             )
         );
     }
     
     private async Task<Dictionary<string, T>> GetSeveral<T>(
-        List<string> ids,
+        IEnumerable<string> ids,
         string storeFolder,
         string storeName,
         Func<IEnumerable<string>, Task<Dictionary<string, T>>> entriesGetter
     )
     {
-        var storePath = $"{storeFolder}/{storeName}";
+        var idsList = ids.ToList();
+        var storePath = $"{storeFolder}\\{storeName}";
         var store = GetStore<T>(storePath);
+        var initialStoreCount = store.Count;
+        logger.Log($"{initialStoreCount} initial store entry count.");
         try
         {
-            ids = ids.Distinct().ToList();
-            var entries = await entriesGetter(ids.Except(store.Keys));
-            foreach (var entry in entries)
+            var chunks = idsList.Except(store.Keys).Distinct().Chunk(50);
+            foreach (var idSets in chunks)
             {
-                store.Add(entry.Key, entry.Value);
+                var entries = await entriesGetter(idSets);
+                foreach (var entry in entries)
+                {
+                    store.Add(entry.Key, entry.Value);
+                }
+                logger.Log($"{store.Count - initialStoreCount} store entries added.");
             }
-            return ids.ToDictionary(x => x, x => store[x]);
+            return idsList.ToDictionary(x => x, x => store[x]);
         }
         finally
         {

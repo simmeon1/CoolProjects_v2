@@ -19,102 +19,86 @@ public class KworbNetUseCase(
 {
     public async Task DoWork(string jsonPath)
     {
-        string GetKworbUrl(string str) => "https://kworb.net/spotify/" + str;
-
-        async Task GoToLinkTable(string link)
-        {
-            var response = await http.GetAsync(link);
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var table = Regex.Match(responseContent, @"(<table class="".*sortable""(.|\n)*?</table>)").Groups[1].Value;
-            fileIo.WriteAllText("temp.html", table);
-            chromeDriver.GoToUrl(
-                "file:///C:/Users/simme/source/repos/CoolProjects_v2/Spotify_Console/bin/Debug/net9.0/temp.html"
-            );
-        }
-
-        for (int i = 0; i < 10; i++)
-        {
-            var listenersId = "listeners" + (i == 0 ? "" : i + 1);
-            var store = jsonPath + "\\kworb" + listenersId + ".json";
-            var results = new Dictionary<string, long>();
-            logger.Log(listenersId);
-            
-            await GoToLinkTable(GetKworbUrl(listenersId  + ".html"));
-            var artistLinks = (ReadOnlyCollection<object>) chromeDriver.ExecuteScript(
-                """
-                return [...document.querySelectorAll('a')].map(a => a.href.replace(/^.*artist\//i, ""));
-                """
-            );
-            // var results = Newtonsoft.Json.JsonSerializer.Deserialize<Dictionary<string, long>>(store)!;
-            // var results = JsonSerializer.Deserialize<Dictionary<string, long>>(fileIo.ReadAllText(store))!;
-            // await spotifyClientUseCase.GetSongs(results.Keys.ToList(), jsonPath);
-
-            for (int j = 0; j < artistLinks.Count; j++)
-            {
-                logger.Log($"Artist link {j}");
-                object artistLink = artistLinks[j];
-                await GoToLinkTable(GetKworbUrl("artist/" + (string) artistLink));
-                var map = (Dictionary<string, object>) chromeDriver.ExecuteScript(
-                    """
-                    var result = {};
-                    var rows = document.querySelectorAll('tbody tr');
-                    for (var row of rows) {
-                        var cells = row.cells;
-                        var spotifyId = cells[0].querySelector('a').href.replace("https://open.spotify.com/track/", "");
-                        var streams = parseInt(cells[1].textContent.replaceAll(",", ""));
-                        result[spotifyId] = Math.max(result[spotifyId] || 0, streams);
-                    }
-                    return result;
-                    """
-                );
-
-                foreach ((string key, object value) in map)
-                {
-                    var v = (long) value;
-                    if (!results.TryAdd(key, v))
-                    {
-                        results[key] = Math.Max(v, results[key]);
-                    }
-                }
-            }
-            fileIo.WriteAllText(store, results.SerializeObject());
-        }
-
-        // var results = JsonSerializer.Deserialize<Dictionary<string, long>>(fileIo.ReadAllText(jsonPath + "\\kworb.json"))!;
-
-        // var results = new Dictionary<string, long>();
-        // foreach (var link in links)
+        // string GetKworbUrl(string str) => "https://kworb.net/spotify/" + str;
+        //
+        // async Task GoToLinkTable(string link)
         // {
         //     var response = await http.GetAsync(link);
         //     var responseContent = await response.Content.ReadAsStringAsync();
-        //     fileIo.WriteAllText("temp.html", responseContent);
-        //     chromeDriver.GoToUrl("file:///C:/Users/simme/source/repos/CoolProjects_v2/Spotify_Console/bin/Debug/net9.0/temp.html");
-        //     // chromeDriver.GoToUrl(link);
-        //     var map = (Dictionary<string, object>)chromeDriver.ExecuteScript(
+        //     var table = Regex.Match(responseContent, @"(<table class="".*sortable""(.|\n)*?</table>)").Groups[1].Value;
+        //     fileIo.WriteAllText("temp.html", table);
+        //     chromeDriver.GoToUrl(
+        //         "file:///C:/Users/simme/source/repos/CoolProjects_v2/Spotify_Console/bin/Debug/net9.0/temp.html"
+        //     );
+        // }
+        //
+        // for (int i = 0; i < 10; i++)
+        // {
+        //     var listenersId = "listeners" + (i == 0 ? "" : i + 1);
+        //     var store = jsonPath + "\\kworb" + listenersId + ".json";
+        //     var results = new Dictionary<string, long>();
+        //     logger.Log(listenersId);
+        //     
+        //     await GoToLinkTable(GetKworbUrl(listenersId  + ".html"));
+        //     var artistLinks = (ReadOnlyCollection<object>) chromeDriver.ExecuteScript(
         //         """
-        //         var result = {};
-        //         var rows = document.querySelectorAll('tbody tr');
-        //         for (var row of rows) {
-        //             var cells = row.cells;
-        //             var artistSong = cells[0].textContent;
-        //             var streams = parseInt(cells[1].textContent.replaceAll(",", ""));
-        //             result[artistSong] = Math.max(result[artistSong] || 0, streams);
-        //         }
-        //         return result;
+        //         return [...document.querySelectorAll('a')].map(a => a.href.replace(/^.*artist\//i, ""));
         //         """
         //     );
+        //     // var results = Newtonsoft.Json.JsonSerializer.Deserialize<Dictionary<string, long>>(store)!;
+        //     // var results = JsonSerializer.Deserialize<Dictionary<string, long>>(fileIo.ReadAllText(store))!;
+        //     // await spotifyClientUseCase.GetSongs(results.Keys.ToList(), jsonPath);
         //
-        //     foreach ((string key, object value) in map)
+        //     for (int j = 0; j < artistLinks.Count; j++)
         //     {
-        //         var v = (long) value;
-        //         if (!results.TryAdd(key, v))
+        //         logger.Log($"Artist link {j}");
+        //         object artistLink = artistLinks[j];
+        //         await GoToLinkTable(GetKworbUrl("artist/" + (string) artistLink));
+        //         var map = (Dictionary<string, object>) chromeDriver.ExecuteScript(
+        //             """
+        //             var result = {};
+        //             var rows = document.querySelectorAll('tbody tr');
+        //             for (var row of rows) {
+        //                 var cells = row.cells;
+        //                 var spotifyId = cells[0].querySelector('a').href.replace("https://open.spotify.com/track/", "");
+        //                 var streams = parseInt(cells[1].textContent.replaceAll(",", ""));
+        //                 result[spotifyId] = Math.max(result[spotifyId] || 0, streams);
+        //             }
+        //             return result;
+        //             """
+        //         );
+        //
+        //         foreach ((string key, object value) in map)
         //         {
-        //             results[key] = Math.Max(v, results[key]);
+        //             var v = (long) value;
+        //             if (!results.TryAdd(key, v))
+        //             {
+        //                 results[key] = Math.Max(v, results[key]);
+        //             }
         //         }
         //     }
+        //     fileIo.WriteAllText(store, results.SerializeObject());
         // }
-        // fileIo.WriteAllText(jsonPath + "/kwob.json", results.SerializeObject());
-        // var x = 1;
+
+        var results = JsonSerializer.Deserialize<Dictionary<string, long>>(fileIo.ReadAllText(jsonPath + "\\kworblisteners.json"))!;
+        foreach (var col in new []
+                 {
+                     "kworblisteners",
+                     "kworblisteners2",
+                     "kworblisteners3",
+                     "kworblisteners4",
+                     "kworblisteners5",
+                     "kworblisteners6",
+                     "kworblisteners7",
+                     "kworblisteners8",
+                     "kworblisteners9"
+                 })
+        {
+            logger.Log($"Processing {col}.");
+            logger.Log($"{results.Count} songs to collect.");
+            await spotifyClientUseCase.GetSongs(results.Keys, jsonPath);
+        }
+
 
         // var dumbedResults = new Dictionary<ArtistSong, long>(new ArtistSongEqualityComparer());
         // foreach (var pair in results)

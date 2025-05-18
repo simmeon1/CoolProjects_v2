@@ -19,7 +19,7 @@ namespace Common_ClassLibrary
 
         public static T DeserializeObject<T>(this string str)
         {
-            return JsonConvert.DeserializeObject<T>(str);
+            return JsonConvert.DeserializeObject<T>(str)!;
         }
 
         public static bool IsNullOrEmpty(this string str)
@@ -44,14 +44,7 @@ namespace Common_ClassLibrary
 
         private static string ConcatenateListOfStrings(IEnumerable<string> list, string replacement)
         {
-            if (list == null) return "";
-            StringBuilder result = new("");
-            foreach (string str in list)
-            {
-                if (result.Length > 0) result.Append(replacement);
-                result.Append(str);
-            }
-            return result.ToString();
+            return string.Join(replacement, list);
         }
     }
 }
