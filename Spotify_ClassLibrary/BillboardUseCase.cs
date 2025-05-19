@@ -35,7 +35,9 @@ public class BillboardUseCase(SpotifyClientUseCase spotifyClientUseCase, IHttpCl
         // JsonSerializer.Deserialize<Dictionary<string, FullArtistObject>>(fileIo.ReadAllText(jsonPath + "\\cachedTrackArtistsMap.json"))!;
         var artists =
             await spotifyClientUseCase.GetArtists(
-                trackMap.Select(x => x.Value.artists.First().id).ToList(), jsonPath
+                trackMap.Select(x => x.Value.artists.First().id).ToList(), jsonPath,
+                true,
+                true
             );
 
         var fullCol = trackMap.Select(x => new Master(

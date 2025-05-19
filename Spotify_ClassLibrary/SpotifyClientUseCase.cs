@@ -86,12 +86,22 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
         }
     }
 
-    public async Task<Dictionary<string, FullArtistObject>> GetArtists(IEnumerable<string> artistIds, string storeFolder)
+    public async Task<Dictionary<string, FullArtistObject>> GetArtists(
+        IEnumerable<string> artistIds,
+        string storeFolder,
+        bool getNewEntries,
+        bool updateStore
+    )
     {
-        return await GetSeveral(artistIds, storeFolder, "spotifyArtistCache.json", client.GetArtists);
+        return await GetSeveral(artistIds, storeFolder, "spotifyArtistCache.json", client.GetArtists, getNewEntries, updateStore);
     }
 
-    public async Task<Dictionary<string, SimpleTrackObject>> GetSongs(IEnumerable<string> artistIds, string storeFolder)
+    public async Task<Dictionary<string, SimpleTrackObject>> GetSongs(
+        IEnumerable<string> artistIds,
+        string storeFolder,
+        bool getNewEntries,
+        bool updateStore
+    )
     {
         return await GetSeveral(
             artistIds,
@@ -113,7 +123,7 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
                         release_date = track.album.release_date
                     };
                 }
-            )
+            ), getNewEntries, updateStore
         );
     }
     
@@ -121,29 +131,38 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
         IEnumerable<string> ids,
         string storeFolder,
         string storeName,
-        Func<IEnumerable<string>, Task<Dictionary<string, T>>> entriesGetter
-    )
-    {
-        var idsList = ids.ToList();
+        Func<IEnumerable<string>, Task<Dictionary<string, T>>> entriesGetter,
+        bool getNewEntries,
+        bool updateStore
+    ) {
+        var idsList = ids.Distinct().ToList();
         var storePath = $"{storeFolder}\\{storeName}";
         var store = GetStore<T>(storePath);
         var initialStoreCount = store.Count;
-        void Finish() => FinalizeStoreUsage(storePath, store, true);
-        client.TooManyRequestsAction = Finish;
+        void Finish() => FinalizeStoreUsage(storePath, store, updateStore);
         logger.Log($"{initialStoreCount} initial store entry count.");
+        
+        client.TooManyRequestsAction = Finish;
         try
         {
-            var chunks = idsList.Except(store.Keys).Distinct().Chunk(50);
-            foreach (var idSets in chunks)
+            if (getNewEntries)
             {
-                var entries = await entriesGetter(idSets);
-                foreach (var entry in entries)
+                var chunks = idsList.Except(store.Keys).Distinct().Chunk(50);
+                foreach (var idSets in chunks)
                 {
-                    store.Add(entry.Key, entry.Value);
+                    var entries = await entriesGetter(idSets);
+                    foreach (var entry in entries)
+                    {
+                        store.Add(entry.Key, entry.Value);
+                    }
+                    logger.Log($"{store.Count - initialStoreCount} store entries added.");
                 }
-                logger.Log($"{store.Count - initialStoreCount} store entries added.");
             }
-            return idsList.ToDictionary(x => x, x => store[x]);
+            else
+            {
+                logger.Log($"Skipping collection of new entries.");
+            }
+            return idsList.Where(x => store.ContainsKey(x)).ToDictionary(x => x, x => store[x]);
         }
         finally
         {
