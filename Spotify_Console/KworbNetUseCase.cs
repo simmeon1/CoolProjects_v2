@@ -80,7 +80,6 @@ public class KworbNetUseCase(
         //     fileIo.WriteAllText(store, results.SerializeObject());
         // }
 
-        var results = JsonSerializer.Deserialize<Dictionary<string, long>>(fileIo.ReadAllText(jsonPath + "\\kworblisteners.json"))!;
         foreach (var col in new []
                  {
                      "kworblisteners",
@@ -94,6 +93,7 @@ public class KworbNetUseCase(
                      "kworblisteners9"
                  })
         {
+            var results = JsonSerializer.Deserialize<Dictionary<string, long>>(fileIo.ReadAllText($"{jsonPath}\\{col}.json"))!;
             logger.Log($"Processing {col}.");
             logger.Log($"{results.Count} songs to collect.");
             await spotifyClientUseCase.GetSongs(results.Keys, jsonPath);

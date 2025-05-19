@@ -128,6 +128,8 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
         var storePath = $"{storeFolder}\\{storeName}";
         var store = GetStore<T>(storePath);
         var initialStoreCount = store.Count;
+        void Finish() => FinalizeStoreUsage(storePath, store, true);
+        client.TooManyRequestsAction = Finish;
         logger.Log($"{initialStoreCount} initial store entry count.");
         try
         {
@@ -145,7 +147,7 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
         }
         finally
         {
-            FinalizeStoreUsage(storePath, store, true);
+            Finish();
         }
     }
 

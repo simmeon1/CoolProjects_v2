@@ -8,32 +8,18 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Spotify_ClassLibrary;
 
-public class SpotifyClient
+public class SpotifyClient(
+    IHttpClient http,
+    IDelayer delayer,
+    string clientId,
+    string clientSecret,
+    string callback,
+    SpotifyCredentials credentials
+)
 {
     private const string Root = "https://api.spotify.com/v1/";
-    private readonly IHttpClient http;
-    private readonly IDelayer delayer;
-    private readonly string clientId;
-    private readonly string clientSecret;
-    private readonly string callback;
-    private SpotifyCredentials credentials;
-
-    public SpotifyClient(
-        IHttpClient http,
-        IDelayer delayer,
-        string clientId,
-        string clientSecret,
-        string callback,
-        SpotifyCredentials credentials = null
-    )
-    {
-        this.http = http;
-        this.delayer = delayer;
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
-        this.callback = callback;
-        this.credentials = credentials;
-    }
+    private SpotifyCredentials credentials = credentials;
+    public Action? TooManyRequestsAction { get; set; } = null;
 
     public async Task Initialise()
     {
@@ -231,6 +217,7 @@ public class SpotifyClient
 
         if (response.StatusCode == HttpStatusCode.TooManyRequests)
         {
+            TooManyRequestsAction?.Invoke();
             TimeSpan retryAfterDelta = response.Headers.RetryAfter.Delta.Value;
             Console.WriteLine(retryAfterDelta + $" ({DateTime.Now.AddSeconds(retryAfterDelta.TotalSeconds)})");
             await delayer.Delay(retryAfterDelta);
