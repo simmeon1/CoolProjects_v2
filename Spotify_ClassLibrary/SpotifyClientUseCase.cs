@@ -181,6 +181,7 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
     {
         if (updateStore)
         {
+            logger.Log("Saving store.");
             fileIo.WriteAllText(storePath, store.SerializeObject());
         }
     }
