@@ -22,38 +22,39 @@ public class KworbNetUseCase(
         // await GetTopListStores(jsonPath);
         // await GetListenerStores(jsonPath);
         
-        var trackStreamsMap = new Dictionary<string, long>();
+        var totalCache = new Dictionary<string, long>();
         var trackMap = new Dictionary<string, SimpleTrackObject>();
         var getNewEntries = true;
         var updateStore = true;
-        foreach (var col in new[]
-                 {
-                     "kworblisteners",
-                     "kworblisteners2",
-                     "kworblisteners3",
-                     "kworblisteners4",
-                     "kworblisteners5",
-                     "kworblisteners6",
-                     "kworblisteners7",
-                     "kworblisteners8",
-                     "kworblisteners9"
-                 })
+        var collections = new[]
         {
-            var cache = JsonSerializer.Deserialize<Dictionary<string, long>>(
-                fileIo.ReadAllText($"{jsonPath}\\{col}.json")
-            )!.Where(x => x.Value >= 1000000).ToList();
-            foreach (var pair in cache)
-            {
-                trackStreamsMap.TryAdd(pair.Key, pair.Value);
+            "kworblisteners",
+            "kworblisteners2",
+            "kworblisteners3",
+            "kworblisteners4",
+            "kworblisteners5",
+            "kworblisteners6",
+            "kworblisteners7",
+            "kworblisteners8",
+            "kworblisteners9"
+        };
+
+        foreach (var col in collections)
+        {
+            foreach (var pair in JsonSerializer.Deserialize<Dictionary<string, long>>(
+                         fileIo.ReadAllText($"{jsonPath}\\{col}.json")
+            )!) {
+                totalCache.TryAdd(pair.Key, pair.Value);
             }
+        }
         
-            logger.Log($"Processing {col}.");
-            logger.Log($"{cache.Count} songs to collect.");
-            var songs = await spotifyClientUseCase.GetSongs(cache.Select(x => x.Key), jsonPath, getNewEntries, updateStore);
-            foreach (var song in songs)
-            {
-                trackMap.TryAdd(song.Key, song.Value);
-            }
+        var cache = totalCache.Where(x => x.Value >= 5000000).ToList();
+        // logger.Log($"Processing {col}.");
+        logger.Log($"{cache.Count} songs to collect.");
+        var songs = await spotifyClientUseCase.GetSongs(cache.Select(x => x.Key), jsonPath, getNewEntries, updateStore);
+        foreach (var song in songs)
+        {
+            trackMap.TryAdd(song.Key, song.Value);
         }
         
         var artists = await spotifyClientUseCase.GetArtists(
@@ -87,13 +88,13 @@ public class KworbNetUseCase(
             }
         }
         
-        var toAdd = trackMap.Values
+        var songsToAdd = trackMap.Values
             .Where(x =>
                 !ContainsSpanish(x.name) &&
                 !ContainsSpanish(x.artist_name) &&
                 artists.TryGetValue(x.artist_id, out var artist) &&
                 !artist.genres.Any(g => new[] {"rap", "country"}.Any(g.Contains))
-            ).OrderByDescending(x => trackStreamsMap[x.id])
+            ).OrderByDescending(x => totalCache[x.id])
             .GroupBy(
                 x => Math.Min(
                     yearMaps.GetValueOrDefault(
@@ -103,11 +104,13 @@ public class KworbNetUseCase(
                     ),
                     int.Parse(x.release_date[..4])
                 ) / 10,
-                (x, y) => y.Take(x < 197 ? 0 : x > 201 ? 100 : 250)
+                (x, y) => y.Take(x < 197 ? 0 : x > 201 ? 100 : 500)
             )
             // .Where(x => x.Key is > 197 and < 202)
             .SelectMany(x => x)
             .ToList();
+        
+        await spotifyClientUseCase.AddSongsToNewPlaylist($"kworb-topLists-{DateTime.Now}", songsToAdd.Select(x => x.id));
     }
 
     private async Task GetListenerStores(string jsonPath)
@@ -173,6 +176,7 @@ public class KworbNetUseCase(
             fileIo.WriteAllText(store, results.SerializeObject());
         }
     }
+    
     private async Task GetTopListStores(string jsonPath)
     {
         var links = new[]
@@ -241,7 +245,7 @@ public class KworbNetUseCase(
 
     private bool ContainsSpanish(string str) => Regex.IsMatch(
         str.ToLower(),
-        "(á|é|í|ó|ú|\bla\b|\blo\b|\bque\b|\bcomo\b)"
+        "(á|é|í|ó|ú|\bla\b|\blo\b|\bque\b|\bcomo\b|\bel\b)"
     );
 
     [DebuggerDisplay("{GetSummary()}")]
