@@ -21,6 +21,7 @@ public class KworbNetUseCase(
     {
         // await GetTopListStores(jsonPath);
         // await GetListenerStores(jsonPath);
+        chromeDriver.Quit();
         
         var totalCache = new Dictionary<string, long>();
         var trackMap = new Dictionary<string, SimpleTrackObject>();
@@ -87,13 +88,21 @@ public class KworbNetUseCase(
                 }
             }
         }
+
+        // Remove duplicates
+        trackMap = trackMap
+            .GroupBy(
+                x => totalCache[x.Key],
+                x => x.Value
+                , (x, y) => y.OrderByDescending(z => z.popularity).First()
+            ).ToDictionary(x => x.id, x => x);
         
         var songsToAdd = trackMap.Values
             .Where(x =>
                 !ContainsSpanish(x.name) &&
                 !ContainsSpanish(x.artist_name) &&
                 artists.TryGetValue(x.artist_id, out var artist) &&
-                !artist.genres.Any(g => new[] {"rap", "country"}.Any(g.Contains))
+                (new[] { "Linkin Park", "Eminem" }.Contains(artist.name) || !artist.genres.Any(g => new[] {"rap", "country"}.Any(g.Contains)))
             ).OrderByDescending(x => totalCache[x.id])
             .GroupBy(
                 x => Math.Min(

@@ -1,4 +1,8 @@
 ﻿// Custom, less info than track object
+
+using System.Diagnostics;
+
+[DebuggerDisplay("{artist_name} - {name} - {release_date} - {popularity}")]
 public class SimpleTrackObject
 {
     public string id { get; set; }
