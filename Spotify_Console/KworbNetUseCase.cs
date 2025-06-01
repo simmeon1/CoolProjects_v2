@@ -97,6 +97,7 @@ public class KworbNetUseCase(
                 , (x, y) => y.OrderByDescending(z => z.popularity).First()
             ).ToDictionary(x => x.id, x => x);
         
+        // Anything
         var songsToAdd = trackMap.Values
             .Where(x =>
                 !ContainsSpanish(x.name) &&
@@ -118,6 +119,28 @@ public class KworbNetUseCase(
             // .Where(x => x.Key is > 197 and < 202)
             .SelectMany(x => x)
             .ToList();
+
+        // Rock/metal
+        // var songsToAdd = trackMap.Values
+        //     .Where(x =>
+        //         !ContainsSpanish(x.name) &&
+        //         !ContainsSpanish(x.artist_name) &&
+        //         artists.TryGetValue(x.artist_id, out var artist) &&
+        //         artist.genres.Any(g => new[] {"rock", "metal"}.Any(g.Contains))
+        //     ).OrderByDescending(x => totalCache[x.id])
+        //     // .GroupBy(
+        //     //     x => Math.Min(
+        //     //         yearMaps.GetValueOrDefault(
+        //     //             SpotifyHelper.CleanText(x.artist_name, true) + " - " +
+        //     //             SpotifyHelper.CleanText(x.name, false),
+        //     //             9999
+        //     //         ),
+        //     //         int.Parse(x.release_date[..4])
+        //     //     ) / 10,
+        //     //     (x, y) => y.Take(x < 197 ? 0 : x > 201 ? 100 : 500)
+        //     // )
+        //     .Take(1000)
+        //     .ToList();
         
         await spotifyClientUseCase.AddSongsToNewPlaylist($"kworb-topLists-{DateTime.Now}", songsToAdd.Select(x => x.id));
     }
