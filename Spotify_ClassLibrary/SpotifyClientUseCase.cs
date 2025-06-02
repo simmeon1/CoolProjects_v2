@@ -1,9 +1,11 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
+using System.Web;
 using Common_ClassLibrary;
 
 namespace Spotify_ClassLibrary;
 
-public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO fileIo)
+public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO fileIo, IHttpClient http)
 {
     public async Task MergePlaylists(IEnumerable<string> playlists, string finalPlaylist)
     {
@@ -93,18 +95,26 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
         bool updateStore
     )
     {
-        return await GetSeveral(artistIds, storeFolder, "spotifyArtistCache.json", client.GetArtists, getNewEntries, updateStore);
+        return await GetSeveral(
+            artistIds,
+            storeFolder,
+            "spotifyArtistCache.json",
+            client.GetArtists,
+            x => x,
+            getNewEntries,
+            updateStore,
+            50
+        );
     }
 
     public async Task<Dictionary<string, SimpleTrackObject>> GetSongs(
-        IEnumerable<string> artistIds,
+        IEnumerable<string> songIds,
         string storeFolder,
         bool getNewEntries,
         bool updateStore
-    )
-    {
+    ) {
         return await GetSeveral(
-            artistIds,
+            songIds,
             storeFolder,
             "spotifyTracksByIdCache.json",
             async x => (await client.GetSongs(x)).ToDictionary(
@@ -123,19 +133,82 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
                         release_date = track.album.release_date
                     };
                 }
-            ), getNewEntries, updateStore
+            ), x => x, getNewEntries, updateStore, 50
         );
     }
-    
-    private async Task<Dictionary<string, T>> GetSeveral<T>(
-        IEnumerable<string> ids,
+
+    public async Task<Dictionary<string, YoutubeTrack>> GetYoutubeSongs(
+        IEnumerable<SimpleTrackObject> songs,
         string storeFolder,
-        string storeName,
-        Func<IEnumerable<string>, Task<Dictionary<string, T>>> entriesGetter,
         bool getNewEntries,
         bool updateStore
     ) {
-        var idsList = ids.Distinct().ToList();
+        return await GetSeveral(
+            songs,
+            storeFolder,
+            "youtubeTracksBySpotifyIdCache.json",
+            async x =>
+            {
+                var song = x.FirstOrDefault();
+                if (song == null)
+                {
+                    return new Dictionary<string, YoutubeTrack>();
+                }
+                
+                var response = await http.GetAsync("https://www.youtube.com/results?search_query=" + 
+                    HttpUtility.UrlEncode(
+                        SpotifyHelper.CleanText(song.artist_name, true) + " " + SpotifyHelper.CleanText(song.name, false)
+                    )
+                );
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var obj = GetVideoRenderer(responseContent);
+                var id = obj.GetProperty("videoId").GetString();
+                var name = obj.GetProperty("title").GetProperty("runs")[0].GetProperty("text").GetString();
+                var views = long.Parse(obj.GetProperty("viewCountText").GetProperty("simpleText").GetString().Replace(",", "").Replace(" views", ""));
+                return new Dictionary<string, YoutubeTrack> {{song.id, new YoutubeTrack(id, name, views)}};
+            }, x => x.id, getNewEntries, updateStore, 1
+        );
+    }
+    
+    private static JsonElement GetVideoRenderer(string str)
+    {
+        var lookFor = "\"videoRenderer\":";
+        var index = str.IndexOf(lookFor) + lookFor.Length;
+        var sb = new StringBuilder();
+        var counter = 0;
+        while (true)
+        {
+            var ch = str[index];
+            sb.Append(ch);
+            index++;
+            if (ch == '{')
+            {
+                counter++;
+            } else if (ch == '}')
+            {
+                counter--;
+            }
+
+            if (counter == 0)
+            {
+                return JsonSerializer.Deserialize<JsonElement>(sb.ToString());
+            }            
+        }
+    }
+
+    
+    private async Task<Dictionary<string, T>> GetSeveral<T, K>(
+        IEnumerable<K> inputList,
+        string storeFolder,
+        string storeName,
+        Func<IEnumerable<K>, Task<Dictionary<string, T>>> entriesGetter,
+        Func<K, string> idGetter,
+        bool getNewEntries,
+        bool updateStore,
+        int chunkSize
+    ) {
+        // Remove duplicates
+        inputList = inputList.DistinctBy(idGetter).ToList();
         var storePath = $"{storeFolder}\\{storeName}";
         var store = GetStore<T>(storePath);
         var initialStoreCount = store.Count;
@@ -147,7 +220,7 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
         {
             if (getNewEntries)
             {
-                var chunks = idsList.Except(store.Keys).Distinct().Chunk(50);
+                var chunks = inputList.ExceptBy(store.Keys, idGetter).Distinct().Chunk(chunkSize);
                 foreach (var idSets in chunks)
                 {
                     var entries = await entriesGetter(idSets);
@@ -162,7 +235,7 @@ public class SpotifyClientUseCase(SpotifyClient client, ILogger logger, IFileIO 
             {
                 logger.Log($"Skipping collection of new entries.");
             }
-            return idsList.Where(x => store.ContainsKey(x)).ToDictionary(x => x, x => store[x]);
+            return inputList.Where(x => store.ContainsKey(idGetter(x))).ToDictionary(idGetter, x => store[idGetter(x)]);
         }
         finally
         {

@@ -15,7 +15,7 @@ try
     Dictionary<string, string> dict = GetCommandAndValuesDictionary(args);
     string credentialFilePath = dict["--credentials-file"];
     SpotifyClient client = GetClientFromCredentialFiles(credentialFilePath);
-    var clientUseCase = new SpotifyClientUseCase(client, logger, fileIo);
+    var clientUseCase = new SpotifyClientUseCase(client, logger, fileIo, http);
     await client.Initialise();
 
     string GetJsonPath() => dict["--jsonPath"]; 

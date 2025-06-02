@@ -21,7 +21,7 @@ public class KworbNetUseCase(
     {
         // await GetTopListStores(jsonPath);
         // await GetListenerStores(jsonPath);
-        chromeDriver.Quit();
+        // chromeDriver.Quit();
         
         var totalCache = new Dictionary<string, long>();
         var trackMap = new Dictionary<string, SimpleTrackObject>();
@@ -119,6 +119,9 @@ public class KworbNetUseCase(
             // .Where(x => x.Key is > 197 and < 202)
             .SelectMany(x => x)
             .ToList();
+        
+        // Useful to update the store
+        var youtubeTracks = await spotifyClientUseCase.GetYoutubeSongs(songsToAdd, jsonPath, getNewEntries, updateStore);
 
         // Rock/metal
         // var songsToAdd = trackMap.Values
