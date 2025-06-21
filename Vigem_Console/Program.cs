@@ -412,7 +412,7 @@ namespace Vigem_Console
         private static void doRecord(Dictionary<string, string> dict)
         {
             string processName = dict["processName"];
-            // string processName = "chiaki";
+            User32.RestoreWindow(processName);
             int countParam = int.Parse(dict["count"]);
             // int countParam = 1;
             double durationParam = double.Parse(dict["duration"]);
@@ -432,19 +432,13 @@ namespace Vigem_Console
             {
                 string filePath = $"{directory}\\{counter}-{DateTime.Now:yyyy-MM-dd--HH-mm-ss.fff}.png";
                 bw.ProcessBitmap(
-                    "chiaki",
+                    processName,
                     bm =>
                     {
                         bm.Save(filePath, BitmapWorker.GetImageFormatFromPath(filePath));
                         return true;
                     }
                 );
-        
-                // if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.C)
-                // {
-                //     
-                //     File.WriteAllText(dataFilePath, "");
-                // }
         
                 if (
                     (countParam != 0 && counter >= countParam)
