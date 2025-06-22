@@ -87,7 +87,9 @@ namespace Vigem_Console
             RealStopwatch s = new();
             Dualshock4Controller cds4 = GetConnectedDs4Controller();
             StopwatchControllerUser user = new(cds4, s, 100, 50);
-            var tess = new TesseractUseCase();
+            // Prevent output as it might be causing button slips
+            Console.WriteLine("Disabling tess output for performance");
+            var tess = new TesseractUseCase(true);
 
             var client = "chiaki";
             User32.RestoreWindow(client);
@@ -120,22 +122,23 @@ namespace Vigem_Console
                     user.PressButton(ButtonMappings.Triangle);
                     s.Wait(200);
                 });
-                    
+
+            var spedUp = false;
             void ToggleSpeed()
             {
                 user.PressButton(ButtonMappings.Options);
                 user.PressButton(ButtonMappings.ShoulderRight);
                 user.PressButton(ButtonMappings.Options);
+                spedUp = !spedUp;
             }
-
-            // Prevent output as it might be causing button slips
-            Console.WriteLine("Disabling output for performance");
-            Console.SetOut(TextWriter.Null);
 
             while (true)
             {
                 // Speed up
-                ToggleSpeed();
+                if (!spedUp)
+                {
+                    ToggleSpeed();
+                }
 
                 // Walk left right until spawn
                 var goLeft = true;
@@ -182,6 +185,8 @@ namespace Vigem_Console
                 user.PressDPad(DPadMappings.Down);
                 user.PressButton(ButtonMappings.Cross);
                 user.PressButton(ButtonMappings.Cross);
+                
+                ToggleSpeed();
                 
                 // Cancel tent
                 WaitForTent();
