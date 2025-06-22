@@ -5,7 +5,7 @@ namespace WindowsScreenReading;
 public class TesseractUseCase
 {
     private readonly BitmapWorker bw = new();
-    private readonly TesseractEngine engine = new(@"C:\D\Apps\Vigem\tessdata", "eng", EngineMode.Default);
+    private readonly TesseractEngine engine = new(@"C:\D\Apps\Vigem_scripts\tessdata", "eng", EngineMode.Default);
     
     public string GetTextFromClient(
         string processName,

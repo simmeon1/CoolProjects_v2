@@ -446,7 +446,7 @@ namespace Vigem_Console
                 $"ProcessName param - {processName}, count param - {countParam}, duration param - {durationParam}"
             );
         
-            string directory = $"C:\\D\\Apps\\Vigem\\Recordings\\{DateTime.Now:yyyy-MM-dd--HH-mm-ss}";
+            string directory = $"C:\\D\\Apps\\Vigem_scripts\\Recordings\\{DateTime.Now:yyyy-MM-dd--HH-mm-ss}";
             Directory.CreateDirectory(directory);
         
             int counter = 1;
