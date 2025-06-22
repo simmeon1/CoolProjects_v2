@@ -118,7 +118,7 @@ namespace Vigem_Console
             void ChangeCharsUntilTextSeen(int x, int y, string word) =>
                 DoUntilTextComes(x, y, word, () => {
                     user.PressButton(ButtonMappings.Triangle);
-                    s.Wait(300);
+                    s.Wait(200);
                 });
                     
             void ToggleSpeed()
@@ -137,11 +137,11 @@ namespace Vigem_Console
                 var goLeft = true;
                 
                 DoUntilTextComes(110, 273, "Attack", () => {
-                    user.PressDPad(goLeft ? DPadMappings.Left : DPadMappings.Right, 1000);
+                    user.PressDPad(goLeft ? DPadMappings.Left : DPadMappings.Right, 300);
                     goLeft = !goLeft;
                 });
                 // Make sure Attack is selected
-                s.Wait(1000);
+                s.Wait(100);
                 user.PressDPad(DPadMappings.Left);
                 user.PressDPad(DPadMappings.Left);
 
