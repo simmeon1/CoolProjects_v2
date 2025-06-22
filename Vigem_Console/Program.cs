@@ -21,7 +21,7 @@ namespace Vigem_Console
             // else if (command == "ffix-jump-rope") doFf9JumpRope(dict);
             // else if (command == "ffix-jump-rope-2") doFf9JumpRope2(dict);
             if (command == "log-cursor") doLogCursor(dict);
-            if (command == "log-client-pos") doLogClientPos(dict);
+            // if (command == "log-client-pos") doLogClientPos(dict);
             else if (command == "record") doRecord(dict);
             else if (command == "ffvi-auto-battle") doFf6AutoBattle();
             // else if (command == "save-client") doSaveClient();
@@ -32,6 +32,33 @@ namespace Vigem_Console
             else if (command == "ffvii-farm") doFf7Farm();
             else if (command == "ffix-farm") doFf9Farm();
             else if (command == "rebirth") doFf9JumpRope3(dict);
+            else if (command == "get-text") doGetTextBasedOnCursor(dict);
+        }
+
+        private static void doGetTextBasedOnCursor(Dictionary<string, string> dict)
+        {
+            var tesseractUseCase = new TesseractUseCase();
+            RealStopwatch s = new();
+            s.Restart();
+            var client = dict["client"];
+            User32.RestoreWindow(client);
+            var rectWidth = int.Parse(dict["rectWidth"]);
+            var rectHeight = int.Parse(dict["rectHeight"]);
+            var speed = int.Parse(dict["speed"]);
+            while (true)
+            {
+                Point point = User32.GetCursorPos();
+                User32.ScreenToClient(client, ref point);
+                var text = tesseractUseCase.GetTextFromClient(
+                    client,
+                    point.X,
+                    point.Y,
+                    point.X + rectWidth,
+                    point.Y + rectHeight
+                );
+                Console.WriteLine($"X - {point.X}, Width - {rectWidth}, Y - {point.Y}, Height - {rectHeight} - {text}");
+                s.Wait(speed);
+            }
         }
 
         private static void doFf9Farm()
@@ -52,20 +79,6 @@ namespace Vigem_Console
                 s.Wait(100);
             }
         }
-
-        // private static void doSaveClient()
-        // {
-        //     BitmapWorker bw = new();
-        //     bw.ProcessBitmap(
-        //         "chiaki",
-        //         bm =>
-        //         {
-        //             var path = "test.png";
-        //             bm.Save(path, BitmapWorker.GetImageFormatFromPath(path));
-        //             return true;
-        //         }
-        //     );
-        // }
 
         private static void doFf9JumpRope3(Dictionary<string, string> dict)
         {
@@ -167,47 +180,6 @@ namespace Vigem_Console
                 }
             }
         }
-
-        // private static void doTest(Dictionary<string, string> dict)
-        // {
-        //     RealStopwatch s = new();
-        //     Dualshock4Controller cds4 = GetConnectedDs4Controller();
-        //     StopwatchControllerUser user = new(cds4, s, 100);
-        //     nint handle = GetProcessHandle("chiaki");
-        //     PixelReader pr = new();
-        //     s.Restart();
-        //
-        //     bool lastIsLeft = !true;
-        //     while (true)
-        //     {
-        //         user.PressDPad(lastIsLeft ? DPadMappings.Right : DPadMappings.Left);
-        //         lastIsLeft = !lastIsLeft;
-        //         double ts = s.GetElapsedTotalMilliseconds();
-        //         while (s.GetElapsedTotalMilliseconds() - ts < 300)
-        //         {
-        //             Point screenPoint = new(483, 141);
-        //             User32.ClientToScreen(handle, ref screenPoint);
-        //             Pixel pixel = pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y);
-        //             if (pixel.PixelColor.GetBrightness() < 0.8) continue;
-        //             
-        //             s.Wait(1000);
-        //             int clientX = 144;
-        //             int clientY = 275;
-        //             Point screenPoint2 = new(clientX, clientY);
-        //             User32.ClientToScreen(handle, ref screenPoint2);
-        //             pr.SaveScreen(screenPoint2.X, screenPoint2.Y, 196 - clientX, 286 - clientY, "C:\\D\\test2.png");
-        //             Color color = pr.GetScreenAverageColor(screenPoint2.X, screenPoint2.Y, 196 - clientX, 286 - clientY);
-        //             if (color is {R: 54, G: 55, B: 90})
-        //             {
-        //                 user.PressButton(ButtonMappings.Options);
-        //             }
-        //         }
-        //         
-        //         //484
-        //         //135
-        //         //0.1
-        //     }
-        // }
 
         private static void doFf6AutoBattle()
         {
@@ -314,31 +286,15 @@ namespace Vigem_Console
             //     // localStopwatch.Wait(delay);
             // }
         }
-        
-        private static void doLogClientPos(Dictionary<string, string> dict)
-        {
-            // PixelReader pr = new();
-            BitmapWorker bw = new();
-            RealStopwatch localStopwatch = new();
-            localStopwatch.Restart();
-            Point point = new(0, 0);
-            point.X = int.Parse(dict["X"]);
-            point.Y = int.Parse(dict["Y"]);
-            while (true)
-            {
-                string message = bw.ProcessBitmap(
-                    point.X, point.Y, bm => 
-                        new Pixel(point.X, point.Y, bw.GetAverageColor(bm)).ToString(), dict["client"]
-                );
-                
-                Console.WriteLine(message);
-                localStopwatch.Wait(int.Parse(dict["speed"]));
-            }
-        }
 
         private static void doLogCursor(Dictionary<string, string> dict)
         {
-            // PixelReader pr = new();
+            dict.TryGetValue("client", out var client);
+            if (client != null)
+            {
+                User32.RestoreWindow(client);
+            }
+
             BitmapWorker bw = new();
             RealStopwatch localStopwatch = new();
             localStopwatch.Restart();
@@ -364,9 +320,9 @@ namespace Vigem_Console
                     point.X, point.Y, bm =>
                     {
                         string s = new Pixel(point.X, point.Y, bw.GetAverageColor(bm)).ToString();
-                        if (dict.ContainsKey("client"))
+                        if (client != null)
                         {
-                            User32.ScreenToClient(dict["client"], ref point);
+                            User32.ScreenToClient(client, ref point);
                             s += $" Client coordinates = {point}";
                         }
                         return s;
@@ -377,37 +333,6 @@ namespace Vigem_Console
                 localStopwatch.Wait(int.Parse(dict["speed"]));
             }
         }
-
-        // private static void doLogScreen(Dictionary<string, string> dict)
-        // {
-        //     int x1 = int.Parse(dict["X1"]);
-        //     int x2 = int.Parse(dict["X2"]);
-        //     int y1 = int.Parse(dict["Y1"]);
-        //     int y2 = int.Parse(dict["Y2"]);
-        //
-        //     int width = x2 - x1;
-        //     int height = y2 - y1;
-        //
-        //     PixelReader pr = new();
-        //     Point point = new(x1, y1);
-        //     if (dict.ContainsKey("client"))
-        //     {
-        //         nint handle = GetProcessHandle(dict["client"]);
-        //         User32.ClientToScreen(handle, ref point);
-        //         x1 = point.X;
-        //         y1 = point.Y;
-        //     }
-        //
-        //     RealStopwatch localStopwatch = new();
-        //     localStopwatch.Restart();
-        //     while (true)
-        //     {
-        //         Color c = pr.GetScreenAverageColor(x1, y1, width, height);
-        //         Console.WriteLine(new Pixel(x1, y1, c));
-        //         pr.SaveScreen(x1, y1, width, height, "C:\\D\\test.png");
-        //         localStopwatch.Wait(int.Parse(dict["speed"]));
-        //     }
-        // }
 
         private static void doRecord(Dictionary<string, string> dict)
         {
@@ -452,180 +377,6 @@ namespace Vigem_Console
             }
             Console.WriteLine("Done");
         }
-
-        // private static nint GetProcessHandle(string processName)
-        // {
-        //     Process[] processes = Process.GetProcessesByName(processName);
-        //     Process process = processes.First();
-        //     nint handle = process.MainWindowHandle;
-        //     return handle;
-        // }
-
-        // private static void doFf9JumpRope(Dictionary<string, string> dict)
-        // {
-        //
-        //     Dualshock4Controller cds4 = GetConnectedDs4Controller();
-        //     StopwatchControllerUser user = new(cds4, new RealStopwatch(), 0);
-        //     PixelReader pr = new();
-        //     RealStopwatch localStopwatch = new();
-        //     // Point p = new(x, y);
-        //
-        //     
-        //     string client = dict["client"];
-        //     int clientX = int.Parse(dict["X"]);
-        //     int clientY = int.Parse(dict["Y"]);
-        //     int speechBubble = int.Parse(dict["speechBubble"]);
-        //     nint process = GetProcessHandle(client);
-        //     Point clientPoint = new(clientX, clientY);
-        //     User32.ClientToScreen(process, ref clientPoint);
-        //
-        //     // while (true)
-        //     // {
-        //     //     Pixel pixelAtLocation = pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y);
-        //     //     Console.WriteLine(pixelAtLocation);
-        //     // }
-        //     
-        //     
-        //     Func<int> getB = () => pr.GetPixelAtLocation(clientPoint.X, clientPoint.Y).PixelColor.B;
-        //     localStopwatch.Restart();
-        //     localStopwatch.Wait(1000);
-        //     int counter = 0;
-        //     user.HoldButton(ButtonMappings.Cross);
-        //     localStopwatch.Wait(50);
-        //     user.ReleaseButton(ButtonMappings.Cross);
-        //     while (true)
-        //     {
-        //         Console.WriteLine($"{counter} cycles");
-        //
-        //         int b = 0;
-        //         counter += 1;
-        //
-        //         Console.WriteLine("Looking for shadow");
-        //         localStopwatch.WaitUntilTrue(
-        //             () =>
-        //             {
-        //                 b = getB.Invoke();
-        //                 Console.WriteLine(counter + "+" + b);
-        //                 return b == speechBubble;
-        //             }
-        //         );
-        //         Console.WriteLine("Shadow found");
-        //         // localStopwatch.Wait(10);
-        //
-        //         user.HoldButton(ButtonMappings.Cross);
-        //         localStopwatch.Wait(50);
-        //         user.ReleaseButton(ButtonMappings.Cross);
-        //         Console.WriteLine("Button pressed");
-        //
-        //
-        //         Console.WriteLine("Looking for light");
-        //         localStopwatch.WaitUntilTrue(
-        //             () =>
-        //             {
-        //                 b = getB.Invoke();
-        //                 Console.WriteLine(counter + "+" + b);
-        //                 return b != speechBubble;
-        //             }
-        //         );
-        //         Console.WriteLine("Light found");
-        //     }
-        // }
-        
-        // private static void doFf9JumpRope2(Dictionary<string, string> dict)
-        // {
-        //
-        //     Dualshock4Controller cds4 = GetConnectedDs4Controller();
-        //     RealStopwatch localStopwatch = new();
-        //     StopwatchControllerUser user = new(cds4, localStopwatch, 50);
-        //     PixelReader pr = new();
-        //     
-        //     string client = dict["client"];
-        //     int clientX = int.Parse(dict["X"]);
-        //     int clientY = int.Parse(dict["Y"]);
-        //     int speechBubble = int.Parse(dict["speechBubble"]);
-        //     nint process = GetProcessHandle(client);
-        //     Point clientPoint = new(clientX, clientY);
-        //     User32.ClientToScreen(process, ref clientPoint);
-        //     
-        //     // Func<float> getB = () => pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y).PixelColor.GetBrightness();
-        //     // Func<int> getB = () => pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y).PixelColor.B;
-        //     localStopwatch.Restart();
-        //     localStopwatch.Wait(1000);
-        //     int counter = 0;
-        //     
-        //     user.PressButton(ButtonMappings.Cross);
-        //     localStopwatch.Wait(2000);
-        //     user.PressButton(ButtonMappings.Cross);
-        //     localStopwatch.Wait(2000);
-        //     user.PressButton(ButtonMappings.Cross);
-        //     localStopwatch.Wait(2000);
-        //
-        //     Func<bool> pressCondition = () => pr.GetPixelAtLocation(clientPoint.X, clientPoint.Y).PixelColor.GetBrightness() <= 0.2;
-        //     user.PressButton(ButtonMappings.Cross);
-        //     localStopwatch.Wait(500);
-        //     while (true)
-        //     {
-        //         // byte pixelColorB = pr.GetPixelAtLocation(screenPoint.X, screenPoint.Y).PixelColor.B;
-        //         // Console.WriteLine(pixelColorB); 
-        //         while (!pressCondition.Invoke())
-        //         {
-        //             // Console.WriteLine(counter + "+" + b); 
-        //         }
-        //         // localStopwatch.Wait( counter < 50 ? 100 : 10);
-        //         // localStopwatch.Wait(counter >= 100 ? 20 : 25);
-        //         // localStopwatch.Wait(50);
-        //         counter++;
-        //         Console.WriteLine($"Button press - {counter}");
-        //         user.PressButton(ButtonMappings.Cross, 150);
-        //         // localStopwatch.Wait(100);
-        //         while (pressCondition.Invoke())
-        //         {
-        //             // Console.WriteLine(counter + "+" + b); 
-        //         }
-        //     }
-        // }
-
-
-        // private static void doDarkSoulsRun(Dictionary<string, string> dict)
-        // {
-        //     Dualshock4Controller cds4 = GetConnectedDs4Controller();
-        //     RealStopwatch executorStopWatch = new();
-        //     CommandExecutor executor = new(executorStopWatch, cds4);
-        //     ChromeGamepadStateParser parser = new();
-        //     PixelReader pixelReader = new();
-        //     RealStopwatch localStopwatch = new();
-        //     string runFile = dict["run-file"];
-        //     string run = File.ReadAllText(runFile);
-        //
-        //     bool runTypeIsPixelRead = dict["pixel-read"] == "true";
-        //     IDictionary<double, IEnumerable<IControllerCommand>> states = parser.GetStates(run);
-        //     localStopwatch.Restart();
-        //     while (true)
-        //     {
-        //         Point point = new(0, 0);
-        //         if (runTypeIsPixelRead)
-        //         {
-        //             point = new Point(int.Parse(dict["X"]), int.Parse(dict["Y"]));
-        //             localStopwatch.WaitUntilTrue(
-        //                 () => pixelReader.GetPixelAtLocation(point.X, point.Y).PixelColor.GetBrightness() != 0
-        //             );
-        //             localStopwatch.Wait(2000);
-        //         }
-        //
-        //         executor.ExecuteCommands(states);
-        //
-        //         if (runTypeIsPixelRead)
-        //         {
-        //             localStopwatch.WaitUntilTrue(
-        //                 () => pixelReader.GetPixelAtLocation(point.X, point.Y).PixelColor.GetBrightness() == 0
-        //             );
-        //         }
-        //         else
-        //         {
-        //             localStopwatch.Wait(int.Parse(dict["repeat-delay"]));
-        //         }
-        //     }
-        // }
 
         private static Dualshock4Controller GetConnectedDs4Controller()
         {

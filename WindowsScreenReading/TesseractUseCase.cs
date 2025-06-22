@@ -1,50 +1,55 @@
-﻿using System.Drawing;
-using Tesseract;
-using ImageFormat = System.Drawing.Imaging.ImageFormat;
+﻿using Tesseract;
 
-namespace WindowsScreenReading
+namespace WindowsScreenReading;
+
+public class TesseractUseCase
 {
-    public class TesseractUseCase
-    {
-        // private readonly PixelReader pr;
-        private readonly BitmapWorker bw;
-        private readonly TesseractEngine engine;
-
-        public TesseractUseCase()
-        {
-            // this.pr = pr;
-            bw = new BitmapWorker();
-            engine = new TesseractEngine(@"C:\D\Apps\Vigem\tessdata", "eng", EngineMode.Default);
-        }
-        
-        public bool ClientContainsTextInRect(
-            string processName,
-            string text,
-            int clientStartX,
-            int clientStartY,
-            int clientEndX,
-            int clientEndY
-        ) {
-            return bw.ProcessBitmap(
-                clientStartX,
-                clientStartY,
-                clientEndX,
-                clientEndY,
-                img =>
+    private readonly BitmapWorker bw = new();
+    private readonly TesseractEngine engine = new(@"C:\D\Apps\Vigem\tessdata", "eng", EngineMode.Default);
+    
+    public string GetTextFromClient(
+        string processName,
+        int clientStartX,
+        int clientStartY,
+        int clientEndX,
+        int clientEndY
+    ) {
+        return bw.ProcessBitmap(
+            clientStartX,
+            clientStartY,
+            clientEndX,
+            clientEndY,
+            img =>
+            {
+                // img.Save("tessTest.png", ImageFormat.Png);
+                // using (var pix = Pix.LoadFromFile("tessTest.png"))
+                using (var pix = PixConverter.ToPix(img))
                 {
-                    // img.Save("tessTest.png", ImageFormat.Png);
-                    // using (var pix = Pix.LoadFromFile("tessTest.png"))
-                    using (var pix = PixConverter.ToPix(img))
+                    using (var page = engine.Process(pix))
                     {
-                        using (var page = engine.Process(pix))
-                        {
-                            var pageText = page.GetText();
-                            return pageText.Contains(text);
-                        }
+                        return page.GetText();
                     }
-                },
-                processName
-            );
-        }
+                }
+            },
+            processName
+        );
+    }
+    
+    public bool ClientContainsTextInRect(
+        string processName,
+        string text,
+        int clientStartX,
+        int clientStartY,
+        int clientEndX,
+        int clientEndY
+    )
+    {
+        return GetTextFromClient(
+            processName,
+            clientStartX,
+            clientStartY,
+            clientEndX,
+            clientEndY
+        ).Contains(text);
     }
 }
