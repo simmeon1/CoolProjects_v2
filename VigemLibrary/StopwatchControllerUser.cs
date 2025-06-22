@@ -9,12 +9,15 @@ namespace VigemLibrary
         private readonly IController controller;
         private readonly IStopwatch stopwatch;
         private readonly int pressLength;
+        private readonly int delayAfterSet;
 
-        public StopwatchControllerUser(IController controller, IStopwatch stopwatch, int pressLength)
+        // Changing away form zero could break other usages like jump rope
+        public StopwatchControllerUser(IController controller, IStopwatch stopwatch, int pressLength, int delayAfterSet = 0)
         {
             this.controller = controller;
             this.stopwatch = stopwatch;
             this.pressLength = pressLength;
+            this.delayAfterSet = delayAfterSet;
             this.stopwatch.Restart();
         }
 
@@ -28,10 +31,10 @@ namespace VigemLibrary
             controller.Disconnect();
         }
 
-        public void PressButton(ButtonMappings button, int? delay = null)
+        public void PressButton(ButtonMappings button, int? holdDuration = null)
         {
             HoldButton(button);
-            Wait(delay);
+            Wait(holdDuration);
             ReleaseButton(button);
         }
 
@@ -82,16 +85,19 @@ namespace VigemLibrary
         private void SetDPadDirection(DPadMappings direction, bool pressed)
         {
             controller.SetDPadState(direction, pressed);
+            Wait(delayAfterSet);
         }
 
         private void SetButtonState(ButtonMappings button, bool pressed)
         {
             controller.SetButtonState(button, pressed);
+            Wait(delayAfterSet);
         }
 
         private void SetAxisValue(AxisMappings axis, byte value)
         {
             controller.SetAxisState(axis, value);
+            Wait(delayAfterSet);
         }
 
         private void Wait(int? delay)

@@ -31,6 +31,7 @@ namespace Vigem_Console
             else if (command == "ffvii-super-dunk") doFf7SuperDunk();
             else if (command == "ffvii-farm") doFf7Farm();
             else if (command == "ffix-farm") doFf9Farm();
+            else if (command == "ffix-grand-dragon") doFf9GrandDragon();
             else if (command == "rebirth") doFf9JumpRope3(dict);
             else if (command == "get-text") doGetTextBasedOnCursor(dict);
         }
@@ -79,6 +80,105 @@ namespace Vigem_Console
                 s.Wait(100);
             }
         }
+        
+        private static void doFf9GrandDragon()
+        {
+            // Client is 634x371
+            RealStopwatch s = new();
+            Dualshock4Controller cds4 = GetConnectedDs4Controller();
+            StopwatchControllerUser user = new(cds4, s, 100, 50);
+            var tess = new TesseractUseCase();
+
+            var client = "chiaki";
+            User32.RestoreWindow(client);
+            var defaultRectWidth = 46;
+            var defaultRectHeight = 14;
+
+            string GetTextFromClient(int x, int y) => 
+                tess.GetTextFromClient(client, x, y, x + defaultRectWidth, y + defaultRectHeight);
+
+            void DoUntilTextComes(int x, int y, string text, Action action)
+            {
+                while (!TextContainsWord(x, y, text)) { action(); }
+            }
+
+            void DoUntilTextGoes(int x, int y, string text, Action action)
+            {
+                while (TextContainsWord(x, y, text)) { action(); }
+            }
+
+            void DoUntilTextComesAndGoes(int x, int y, string text, Action action)
+            {
+                DoUntilTextComes(x, y, text, action);
+                DoUntilTextGoes(x, y, text, action);
+            }
+
+            bool TextContainsWord(int x, int y, string word)
+            {
+                var text = GetTextFromClient(x, y).Trim();
+                return text.Contains(word);
+            }
+
+            void ChangeCharsUntilTextSeen(int x, int y, string word) =>
+                DoUntilTextComes(x, y, word,
+                    () =>
+                    {
+                        user.PressButton(ButtonMappings.Triangle);
+                        s.Wait(300);
+                    });
+
+            while (true)
+            {
+                // Walk left right until spawn
+                var goLeft = true;
+                
+                DoUntilTextComes(110, 273, "Attack", () => {
+                    user.PressDPad(goLeft ? DPadMappings.Left : DPadMappings.Right, 1000);
+                    goLeft = !goLeft;
+                });
+                // Make sure Attack is selected
+                s.Wait(1000);
+                user.PressDPad(DPadMappings.Left);
+                user.PressDPad(DPadMappings.Left);
+
+                // Switch chart until Zidane
+                ChangeCharsUntilTextSeen(112, 296, "Steal");
+                
+                // Steal
+                user.PressDPad(DPadMappings.Down);
+                user.PressButton(ButtonMappings.Cross);
+                user.PressButton(ButtonMappings.Cross);
+                
+                // Switch chart until Quina
+                ChangeCharsUntilTextSeen(207, 296, "Blu Ma");
+                
+                // Lvl 5 Death
+                user.PressDPad(DPadMappings.Down);
+                user.PressDPad(DPadMappings.Right);
+                user.PressButton(ButtonMappings.Cross);
+                user.PressDPad(DPadMappings.Down);
+                user.PressButton(ButtonMappings.Cross);
+                user.PressButton(ButtonMappings.Cross);
+
+                // Go through screens
+                DoUntilTextComesAndGoes(189, 339, "contirm", () => { user.PressButton(ButtonMappings.Cross); });
+                
+                // Tent up
+                // Might need to slow the game down here
+                void WaitForTent() => DoUntilTextComes(236, 105, "Tent", () => { user.PressButton(ButtonMappings.Square); });
+                WaitForTent();
+                
+                //Use tent
+                user.PressDPad(DPadMappings.Down);
+                user.PressButton(ButtonMappings.Cross);
+                user.PressButton(ButtonMappings.Cross);
+                
+                // Cancel tent
+                WaitForTent();
+                user.PressButton(ButtonMappings.Circle);
+                user.PressButton(ButtonMappings.Cross);
+            }
+        }
 
         private static void doFf9JumpRope3(Dictionary<string, string> dict)
         {
@@ -88,7 +188,7 @@ namespace Vigem_Console
              * At first, resized chiaki down so that recording frames would be recorded faster.
              * Final resolution was 634x371.
              * 
-             * Found a better way eventually - downloaded a youtube video of the whole thing and used
+             * Needed a recording of the 1000 jumps. Downloaded a youtube video of the whole thing and used
              * ffmpeg to extract its frames at the same resolution.
              * Command akin to ffmpeg -i input.mp4 -vf "scale=634:371" output_%04d.png
              * 
@@ -109,7 +209,7 @@ namespace Vigem_Console
              * buttons on top from control panel showed that buttons were pressed before the bubble and close to the
              * height of jump.
              *
-             * A source of frustation was multiple clicks at times. This was solved by looking at the pixel and its
+             * A source of frustration was multiple clicks at times. This was solved by looking at the pixel and its
              * changes through the youtube images - it would change to a "must jump" state but not because of the hat
              * position but because of the white bubble appearing. Ignoring the bubble (easy as it's very bright) solved
              * this. Did shadow lookup attempts but there's more cases to code than above so gave up on it.
@@ -118,7 +218,7 @@ namespace Vigem_Console
              * hadn't fully rendered. Could decrease streaming resolution to help next time. 
              *
              * Release build were more consistently better. I was stuck at 200 jumps for a long time thinking I need
-             * a diffrent pixel but a random release build seemed to fix it (can't remember if I had done release builds)
+             * a different pixel but a random release build seemed to fix it (can't remember if I had done release builds)
              * before. An attempt that failed at 762 jumps made me optimize more and removed console writes.
              *
              * Stacking image viewer on top of chiaki and youtube video worked right down to the pixel - approach is
