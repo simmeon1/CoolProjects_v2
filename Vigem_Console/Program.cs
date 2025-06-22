@@ -113,22 +113,26 @@ namespace Vigem_Console
                 DoUntilTextGoes(x, y, text, action);
             }
 
-            bool TextContainsWord(int x, int y, string word)
-            {
-                var text = GetTextFromClient(x, y).Trim();
-                return text.Contains(word);
-            }
+            bool TextContainsWord(int x, int y, string word) => GetTextFromClient(x, y).Trim().Contains(word);
 
             void ChangeCharsUntilTextSeen(int x, int y, string word) =>
-                DoUntilTextComes(x, y, word,
-                    () =>
-                    {
-                        user.PressButton(ButtonMappings.Triangle);
-                        s.Wait(300);
-                    });
+                DoUntilTextComes(x, y, word, () => {
+                    user.PressButton(ButtonMappings.Triangle);
+                    s.Wait(300);
+                });
+                    
+            void ToggleSpeed()
+            {
+                user.PressButton(ButtonMappings.Options);
+                user.PressButton(ButtonMappings.ShoulderRight);
+                user.PressButton(ButtonMappings.Options);
+            }
 
             while (true)
             {
+                // Speed up
+                ToggleSpeed();
+
                 // Walk left right until spawn
                 var goLeft = true;
                 
@@ -160,13 +164,15 @@ namespace Vigem_Console
                 user.PressButton(ButtonMappings.Cross);
                 user.PressButton(ButtonMappings.Cross);
 
-                // Go through screens
-                DoUntilTextComesAndGoes(189, 339, "contirm", () => { user.PressButton(ButtonMappings.Cross); });
+                // Go through screens, con is confirm but sometimes text is different
+                DoUntilTextComesAndGoes(189, 339, "con", () => { user.PressButton(ButtonMappings.Cross); });
                 
                 // Tent up
-                // Might need to slow the game down here
                 void WaitForTent() => DoUntilTextComes(236, 105, "Tent", () => { user.PressButton(ButtonMappings.Square); });
                 WaitForTent();
+                
+                // Slow down as moogle is broken when sped up
+                ToggleSpeed();
                 
                 //Use tent
                 user.PressDPad(DPadMappings.Down);
