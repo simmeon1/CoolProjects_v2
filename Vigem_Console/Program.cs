@@ -129,6 +129,7 @@ namespace Vigem_Console
             }
 
             // Prevent output as it might be causing button slips
+            Console.WriteLine("Disabling output for performance");
             Console.SetOut(TextWriter.Null);
 
             while (true)
