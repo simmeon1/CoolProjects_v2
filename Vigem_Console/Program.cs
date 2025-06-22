@@ -128,6 +128,9 @@ namespace Vigem_Console
                 user.PressButton(ButtonMappings.Options);
             }
 
+            // Prevent output as it might be causing button slips
+            Console.SetOut(TextWriter.Null);
+
             while (true)
             {
                 // Speed up
