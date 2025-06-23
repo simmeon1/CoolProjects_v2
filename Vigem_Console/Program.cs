@@ -109,6 +109,19 @@ namespace Vigem_Console
                 while (TextContainsWord(x, y, text)) { action(); }
             }
 
+            bool WaitForText(int x, int y, string text, int maxWaitMilliseconds)
+            {
+                var elapsed = s.GetElapsedTotalMilliseconds();
+                while (s.GetElapsedTotalMilliseconds() - elapsed < maxWaitMilliseconds)
+                {
+                    if (TextContainsWord(x, y, text))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
             void DoUntilTextComesAndGoes(int x, int y, string text, Action action)
             {
                 DoUntilTextComes(x, y, text, action);
@@ -139,7 +152,7 @@ namespace Vigem_Console
                 {
                     ToggleSpeed();
                 }
-
+                
                 // Walk left right until spawn
                 var goLeft = true;
                 
@@ -151,7 +164,7 @@ namespace Vigem_Console
                 s.Wait(100);
                 user.PressDPad(DPadMappings.Left);
                 user.PressDPad(DPadMappings.Left);
-
+                
                 // Switch chart until Zidane
                 ChangeCharsUntilTextSeen(112, 296, "Steal");
                 
@@ -170,7 +183,7 @@ namespace Vigem_Console
                 user.PressDPad(DPadMappings.Down);
                 user.PressButton(ButtonMappings.Cross);
                 user.PressButton(ButtonMappings.Cross);
-
+                
                 // Go through screens, con is confirm but sometimes text is different
                 DoUntilTextComesAndGoes(189, 339, "con", () => { user.PressButton(ButtonMappings.Cross); });
                 
@@ -184,6 +197,16 @@ namespace Vigem_Console
                 //Use tent
                 user.PressDPad(DPadMappings.Down);
                 user.PressButton(ButtonMappings.Cross);
+
+                // If no tents, stop. Otherwise press X again to use it and continue.
+                var noTents = WaitForText(313, 43, "any", 1000);
+                if (noTents)
+                {
+                    Console.WriteLine("No more tents. Stopping.");
+                    user.PressButton(ButtonMappings.Options);
+                    return;
+                }
+                
                 user.PressButton(ButtonMappings.Cross);
                 
                 ToggleSpeed();

@@ -6,13 +6,8 @@ namespace VigemLibrary.SystemImplementations
     [ExcludeFromCodeCoverage]
     public class RealStopwatch : IStopwatch
     {
-        private readonly Stopwatch stopwatch;
+        private readonly Stopwatch stopwatch = new();
 
-        public RealStopwatch()
-        {
-            stopwatch = new Stopwatch();
-        }
-        
         public void Restart()
         {
             stopwatch.Restart();
