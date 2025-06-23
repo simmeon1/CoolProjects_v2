@@ -13,6 +13,7 @@ public class TesseractUseCase
         // Prevent output as performance can get affected
         // This might be better fixed by adding borders (empty page + invalid box errors)
         // https://github.com/tesseract-ocr/tessdoc/blob/main/ImproveQuality.md#borders
+        // https://github.com/tesseract-ocr/tesseract/issues/427
         // https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!msg/tesseract-ocr/v26a-RYPSOE/2Sppq61GBwAJ
         Console.WriteLine("Disabling tess output for performance");
         engine.SetVariable("debug_file", "NUL");
