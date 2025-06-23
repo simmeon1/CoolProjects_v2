@@ -11,6 +11,9 @@ public class TesseractUseCase
     {
         engine = new TesseractEngine(@"C:\D\Apps\Vigem_scripts\tessdata", "eng", EngineMode.Default);
         // Prevent output as performance can get affected
+        // This might be better fixed by adding borders (empty page + invalid box errors)
+        // https://github.com/tesseract-ocr/tessdoc/blob/main/ImproveQuality.md#borders
+        // https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!msg/tesseract-ocr/v26a-RYPSOE/2Sppq61GBwAJ
         Console.WriteLine("Disabling tess output for performance");
         engine.SetVariable("debug_file", "NUL");
     }
