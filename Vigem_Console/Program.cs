@@ -87,9 +87,7 @@ namespace Vigem_Console
             RealStopwatch s = new();
             Dualshock4Controller cds4 = GetConnectedDs4Controller();
             StopwatchControllerUser user = new(cds4, s, 100, 50);
-            // Prevent output as it might be causing button slips
-            Console.WriteLine("Disabling tess output for performance");
-            var tess = new TesseractUseCase(true);
+            var tess = new TesseractUseCase();
 
             var client = "chiaki";
             User32.RestoreWindow(client);

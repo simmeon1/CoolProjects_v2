@@ -7,9 +7,11 @@ public class TesseractUseCase
     private readonly BitmapWorker bw = new();
     private readonly TesseractEngine engine;
 
-    public TesseractUseCase(bool muteMessages = false)
+    public TesseractUseCase()
     {
         engine = new TesseractEngine(@"C:\D\Apps\Vigem_scripts\tessdata", "eng", EngineMode.Default);
+        // Prevent output as performance can get affected
+        Console.WriteLine("Disabling tess output for performance");
         engine.SetVariable("debug_file", "NUL");
     }
 
