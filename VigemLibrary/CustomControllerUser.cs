@@ -3,7 +3,7 @@ using VigemLibrary.Mappings;
 
 namespace VigemLibrary
 {
-    public class CustomControllerUser(StopwatchControllerUser controllerUser)
+    public class CustomControllerUser(StopwatchControllerUser controllerUser, ButtonHandler buttonHandler)
     {
         private readonly Dictionary<JoystickOffset, ButtonMappings> buttonMappings = new()
         {
@@ -24,7 +24,7 @@ namespace VigemLibrary
             // { JoystickOffset.Buttons13, ButtonMappings.Map },
         };
 
-        public void Listen()
+        public void Create()
         {
             // Initialize DirectInput
             var directInput = new DirectInput();
@@ -62,8 +62,20 @@ namespace VigemLibrary
 
         private void HandleButton(JoystickUpdate state, ButtonMappings button)
         {
-            if (state.Value == 0) controllerUser.ReleaseButton(button);
-            else if (state.Value == 128) controllerUser.HoldButton(button);
+            if (state.Value == 0)
+            {
+                if (!buttonHandler.ReleaseButton(button))
+                {
+                    controllerUser.ReleaseButton(button);
+                }
+            }
+            else if (state.Value == 128)
+            {
+                if (!buttonHandler.HoldButton(button))
+                {
+                    controllerUser.HoldButton(button);
+                }
+            }
         }
         
         private void HandleDpad(JoystickUpdate state)

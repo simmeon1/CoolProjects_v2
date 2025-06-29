@@ -41,8 +41,8 @@ namespace Vigem_Console
         {
             RealStopwatch s = new();
             var user = GetStopwatchControllerUser(s, 100);
-            var customUser = new CustomControllerUser(user);
-            customUser.Listen();
+            var customUser = new CustomControllerUser(user, new ButtonHandler(user));
+            customUser.Create();
         }
 
         private static void doGetTextBasedOnCursor(Dictionary<string, string> dict)
