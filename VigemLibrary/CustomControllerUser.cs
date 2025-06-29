@@ -5,7 +5,7 @@ namespace VigemLibrary
 {
     public class CustomControllerUser(StopwatchControllerUser controllerUser)
     {
-        private Dictionary<JoystickOffset, ButtonMappings> buttonMappings = new()
+        private readonly Dictionary<JoystickOffset, ButtonMappings> buttonMappings = new()
         {
             {JoystickOffset.Buttons0, ButtonMappings.Square},
             {JoystickOffset.Buttons1, ButtonMappings.Cross},
