@@ -98,7 +98,7 @@ public class KworbNetUseCase(
             ).ToDictionary(x => x.id, x => x);
         
         // Anything
-        var songsToAdd = trackMap.Values
+        var songsByDecade = trackMap.Values
             .Where(x =>
                 !ContainsSpanish(x.name) &&
                 !ContainsSpanish(x.artist_name) &&
@@ -108,20 +108,20 @@ public class KworbNetUseCase(
             .GroupBy(
                 x => Math.Min(
                     yearMaps.GetValueOrDefault(
-                        SpotifyHelper.CleanText(x.artist_name, true) + " - " +
-                        SpotifyHelper.CleanText(x.name, false),
+                        SpotifyHelper.CleanText(x.artist_name, true) + " - " + SpotifyHelper.CleanText(x.name, false),
                         9999
                     ),
                     int.Parse(x.release_date[..4])
-                ) / 10,
-                (x, y) => y.Take(x < 197 ? 0 : x > 201 ? 100 : 500)
-            )
+                ) / 10
+            );
+        var songsToAdd = songsByDecade
+                // (x, y) => y.Take(x < 197 ? 0 : x > 201 ? 100 : 500)
             // .Where(x => x.Key is > 197 and < 202)
-            .SelectMany(x => x)
+            .SelectMany(x => x.Take(x.Key is < 197 or > 200 ? 0 : 200))
             .ToList();
         
         // Useful to update the store
-        var youtubeTracks = await spotifyClientUseCase.GetYoutubeSongs(songsToAdd, jsonPath, getNewEntries, updateStore);
+        // var youtubeTracks = await spotifyClientUseCase.GetYoutubeSongs(songsToAdd, jsonPath, getNewEntries, updateStore);
 
         // Rock/metal
         // var songsToAdd = trackMap.Values
