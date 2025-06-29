@@ -6,7 +6,7 @@ namespace VigemLibrary
     {
         private bool shoulderRightPressed = false; 
         private bool squarePressed = false;
-        
+
         public bool HoldButton(ButtonMappings button)
         {
             return DoWork(button, true);
@@ -27,9 +27,15 @@ namespace VigemLibrary
             {
                 squarePressed = buttonHeld;
             }
+
             if (shoulderRightPressed && squarePressed)
             {
-                controllerUser.PressButton(ButtonMappings.Square);
+                new Thread(() => {
+                    while (shoulderRightPressed && squarePressed)
+                    {
+                        controllerUser.PressButton(ButtonMappings.Square, 500);
+                    }
+                }).Start();
                 return true;
             }
             return false;
