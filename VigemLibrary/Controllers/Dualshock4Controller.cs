@@ -4,14 +4,9 @@ using VigemLibrary.Mappings;
 
 namespace VigemLibrary.Controllers
 {
-    public class Dualshock4Controller : IController
+    public class Dualshock4Controller(IDualShock4Controller controller) : IController
     {
-        private readonly IDualShock4Controller controller;
         private DualShock4DPadDirection dpadState = DualShock4DPadDirection.None;
-        public Dualshock4Controller(IDualShock4Controller controller)
-        {
-            this.controller = controller;
-        }
 
         public void Connect()
         {

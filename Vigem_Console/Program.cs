@@ -64,11 +64,8 @@ namespace Vigem_Console
 
         private static void doFf9Farm()
         {
-            // test 4
-            
             RealStopwatch s = new();
-            Dualshock4Controller cds4 = GetConnectedDs4Controller();
-            StopwatchControllerUser user = new(cds4, s, 100);
+            var user = GetStopwatchControllerUser(s, 100);
             
             // user.HoldDPad(DPadMappings.Left);
             // user.HoldButton(ButtonMappings.ShoulderLeft);
@@ -85,8 +82,7 @@ namespace Vigem_Console
         {
             // Client is 634x371
             RealStopwatch s = new();
-            Dualshock4Controller cds4 = GetConnectedDs4Controller();
-            StopwatchControllerUser user = new(cds4, s, 100, 50);
+            StopwatchControllerUser user = GetStopwatchControllerUser(s, 100, 50);
             var tess = new TesseractUseCase();
 
             var client = "chiaki";
@@ -215,7 +211,7 @@ namespace Vigem_Console
                 user.PressButton(ButtonMappings.Cross);
             }
         }
-
+        
         private static void doFf9JumpRope3(Dictionary<string, string> dict)
         {
             /*
@@ -262,8 +258,7 @@ namespace Vigem_Console
              */
             
             RealStopwatch s = new();
-            Dualshock4Controller cds4 = GetConnectedDs4Controller();
-            StopwatchControllerUser user = new(cds4, s, 100);
+            var user = GetStopwatchControllerUser(s, 100);
             Point clPoint = new(245, 167);
             Point shadowPoint = new(260, 215);
             var treshold = 160;
@@ -296,9 +291,8 @@ namespace Vigem_Console
         private static void doRebirth(Dictionary<string, string> dict)
         {
             var tesseractUseCase = new TesseractUseCase();
-            RealStopwatch s = new();    
-            Dualshock4Controller cds4 = GetConnectedDs4Controller();
-            StopwatchControllerUser user = new(cds4, s, 100);
+            RealStopwatch s = new();
+            var user = GetStopwatchControllerUser(s, 100);
             while (true)
             {
                 user.PressButton(ButtonMappings.Triangle);
@@ -320,8 +314,7 @@ namespace Vigem_Console
         private static void doFf6AutoBattle()
         {
             RealStopwatch localStopwatch = new();
-            Dualshock4Controller cds4 = GetConnectedDs4Controller();
-            StopwatchControllerUser user = new(cds4, localStopwatch, 100);
+            var user = GetStopwatchControllerUser(localStopwatch, 100);
 
             DPadMappings lastPressedDpad = DPadMappings.Left;
             while (true)
@@ -338,8 +331,7 @@ namespace Vigem_Console
         private static void doCrisisCoreTest()
         {
             RealStopwatch localStopwatch = new();
-            Dualshock4Controller cds4 = GetConnectedDs4Controller();
-            StopwatchControllerUser user = new(cds4, localStopwatch, 100);
+            var user = GetStopwatchControllerUser(localStopwatch, 100);
             int delay = 100;
             while (true)
             {
@@ -372,8 +364,7 @@ namespace Vigem_Console
         private static void doFf7Farm()
         {
             RealStopwatch s = new();
-            Dualshock4Controller cds4 = GetConnectedDs4Controller();
-            StopwatchControllerUser user = new(cds4, s, 100);
+            var user = GetStopwatchControllerUser(s, 100);
             
             // user.HoldDPad(DPadMappings.Left);
             // user.HoldButton(ButtonMappings.ShoulderLeft);
@@ -389,9 +380,7 @@ namespace Vigem_Console
         private static void doFf7SuperDunk()
         {
             RealStopwatch s = new();
-            Dualshock4Controller cds4 = GetConnectedDs4Controller();
-            // int delay = 500;
-            StopwatchControllerUser user = new(cds4, s, 100);
+            var user = GetStopwatchControllerUser(s, 100);
             //normal speed
             
             // user.PressButton(ButtonMappings.ThumbLeft);
@@ -514,13 +503,11 @@ namespace Vigem_Console
             Console.WriteLine("Done");
         }
 
-        private static Dualshock4Controller GetConnectedDs4Controller()
+        private static StopwatchControllerUser GetStopwatchControllerUser(IStopwatch s, int pressLength, int delayAfterSet = 0)
         {
-            ControllerCreator creator = new();
-            IDualShock4Controller createdDs4Controller = creator.GetDualShock4Controller();
-            Dualshock4Controller cds4 = new(createdDs4Controller);
-            cds4.Connect();
-            return cds4;
+            var controller = new Dualshock4Controller(new ControllerCreator().GetDualShock4Controller());
+            controller.Connect();
+            return new StopwatchControllerUser(controller, s, pressLength, delayAfterSet);
         }
 
         private static Dictionary<string, string> GetArgs(string[] args)

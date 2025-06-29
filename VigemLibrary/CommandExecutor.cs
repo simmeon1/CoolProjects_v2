@@ -4,17 +4,8 @@ using VigemLibrary.SystemImplementations;
 
 namespace VigemLibrary
 {
-    public class CommandExecutor
+    public class CommandExecutor(IStopwatch stopwatch, IController controller)
     {
-        private readonly IStopwatch stopwatch;
-        private readonly IController controller;
-
-        public CommandExecutor(IStopwatch stopwatch, IController controller)
-        {
-            this.stopwatch = stopwatch;
-            this.controller = controller;
-        }
-
         public void ExecuteCommands(IDictionary<double, IEnumerable<IControllerCommand>> tsAndCmds)
         {
             IEnumerable<double> orderedTimestamps = tsAndCmds.Keys.OrderBy(t => t);
