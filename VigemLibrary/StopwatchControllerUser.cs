@@ -100,7 +100,7 @@ namespace VigemLibrary
             Wait(delayAfterSet);
         }
 
-        private void Wait(int? delay)
+        public void Wait(int? delay)
         {
             stopwatch.Wait(delay ?? pressLength);
         }

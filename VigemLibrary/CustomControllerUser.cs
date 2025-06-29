@@ -5,114 +5,80 @@ namespace VigemLibrary
 {
     public class CustomControllerUser(StopwatchControllerUser controllerUser, ButtonHandler buttonHandler)
     {
-        private readonly Dictionary<JoystickOffset, ButtonMappings> buttonMappings = new()
+        private readonly Dictionary<int, ButtonMappings> buttonMappings = new()
         {
-            {JoystickOffset.Buttons0, ButtonMappings.Square},
-            {JoystickOffset.Buttons1, ButtonMappings.Cross},
-            {JoystickOffset.Buttons2, ButtonMappings.Circle},
-            {JoystickOffset.Buttons3, ButtonMappings.Triangle},
-            {JoystickOffset.Buttons4, ButtonMappings.ShoulderLeft},
-            {JoystickOffset.Buttons5, ButtonMappings.ShoulderRight},
-            // No handling for triggers
-            // { JoystickOffset.Buttons6, ButtonMappings.LeftTrigger },
-            // { JoystickOffset.Buttons7, ButtonMappings.RightTrigger },
-            {JoystickOffset.Buttons8, ButtonMappings.Share},
-            {JoystickOffset.Buttons9, ButtonMappings.Options},
-            {JoystickOffset.Buttons10, ButtonMappings.ThumbLeft},
-            {JoystickOffset.Buttons11, ButtonMappings.ThumbRight},
-            // { JoystickOffset.Buttons12, ButtonMappings.Home },
-            // { JoystickOffset.Buttons13, ButtonMappings.Map },
+            {0, ButtonMappings.Square},
+            {1, ButtonMappings.Cross},
+            {2, ButtonMappings.Circle},
+            {3, ButtonMappings.Triangle},
+            {4, ButtonMappings.ShoulderLeft},
+            {5, ButtonMappings.ShoulderRight},
+            // Not set
+            // { 6, ButtonMappings.LeftTrigger },
+            // { 7, ButtonMappings.RightTrigger },
+            {8, ButtonMappings.Share},
+            {9, ButtonMappings.Options},
+            {10, ButtonMappings.ThumbLeft},
+            {11, ButtonMappings.ThumbRight},
+            // {12, ButtonMappings.Home },
+            // {13, ButtonMappings.Map },
         };
 
         public void Create()
         {
+            // Based on https://github.com/sharpdx/SharpDX-Samples/blob/master/Desktop/DirectInput/JoystickApp/Program.cs if you need joystick
+            // Removed joystick and buffered code.
+            
             // Initialize DirectInput
             var directInput = new DirectInput();
 
             var joystickGuid = directInput.GetDevices(DeviceType.Gamepad, DeviceEnumerationFlags.AllDevices).Single().InstanceGuid;
             // If Gamepad not found, look for a Joystick
-            // Lookup https://github.com/sharpdx/SharpDX-Samples/blob/master/Desktop/DirectInput/JoystickApp/Program.cs if you need joystick
 
             // Instantiate the joystick
             var joystick = new Joystick(directInput, joystickGuid);
             
-            // Query all suported ForceFeedback effects
+            // Query all supported ForceFeedback effects
             // Zero for dualsense so code removed
 
             // Set BufferSize in order to use buffered data.
-            joystick.Properties.BufferSize = 128;
-            // joystick.Properties.BufferSize = 500;
+            // UPDATE WHEN READING BUFFERED DATA
+            // joystick.Properties.BufferSize = 128;
 
             // Acquire the joystick
             joystick.Acquire();
 
             // Poll events from joystick
+            var shoulderRight = ButtonMappings.ShoulderRight;
+            var shoulderRightIndex = buttonMappings.Single(x => x.Value == shoulderRight).Key;
             while (true)
             {
                 joystick.Poll();
-                var datas = joystick.GetBufferedData();
-                foreach (var state in datas)
-                {
-                    // Console.WriteLine(DateTime.Now + " - " + datas.Length + " - " + state.Value);
-                    if (state.Offset is JoystickOffset.PointOfViewControllers0) HandleDpad(state);
-                    else if (buttonMappings.TryGetValue(state.Offset, out var button)) HandleButton(state, button);
-                }
-            }
-        }
+                var currentState = joystick.GetCurrentState();
+                var shoulderRightButtonIsPressed = currentState.Buttons[shoulderRightIndex];
 
-        private void HandleButton(JoystickUpdate state, ButtonMappings button)
-        {
-            if (state.Value == 0)
-            {
-                if (!buttonHandler.ReleaseButton(button))
+                foreach (var mapping in buttonMappings)
                 {
-                    controllerUser.ReleaseButton(button);
-                }
-            }
-            else if (state.Value == 128)
-            {
-                if (!buttonHandler.HoldButton(button))
-                {
-                    controllerUser.HoldButton(button);
-                }
-            }
-        }
-        
-        private void HandleDpad(JoystickUpdate state)
-        {
-            void ReleaseAllDpadExcept(params DPadMappings[] mappingsToExclude)
-            {
-                var allMappings = Enum.GetValues(typeof(DPadMappings)).Cast<DPadMappings>();
-                foreach (var mapping in allMappings)
-                {
-                    if (!mappingsToExclude.Contains(mapping))
+                    var buttonIndex = mapping.Key;
+                    var button = mapping.Value;
+                    var buttonIsPressed = currentState.Buttons[buttonIndex];
+                    if (button == shoulderRight || !shoulderRightButtonIsPressed)
                     {
-                        controllerUser.ReleaseDPad(mapping);
+                        if (buttonIsPressed)
+                        {
+                            controllerUser.HoldButton(button);
+                        }
+                        else
+                        {
+                            controllerUser.ReleaseButton(button);
+                        }
+                    } else if (buttonIsPressed && shoulderRightButtonIsPressed)
+                    {
+                        controllerUser.PressButton(button);
+                        controllerUser.Wait(50);
                     }
                 }
             }
-
-            void PressDpads(params DPadMappings[] mappingsToInclude)
-            {
-                ReleaseAllDpadExcept(mappingsToInclude);
-                foreach (var mapping in mappingsToInclude)
-                {
-                    if (mappingsToInclude.Contains(mapping))
-                    {
-                        controllerUser.HoldDPad(mapping);
-                    }
-                }
-            }
-
-            if (state.Value == -1) ReleaseAllDpadExcept();
-            else if (state.Value == 0) PressDpads(DPadMappings.Up); 
-            else if (state.Value == 4500) PressDpads(DPadMappings.Up, DPadMappings.Right);
-            else if (state.Value == 9000) PressDpads(DPadMappings.Right); 
-            else if (state.Value == 13500) PressDpads(DPadMappings.Right, DPadMappings.Down);
-            else if (state.Value == 18000) PressDpads(DPadMappings.Down); 
-            else if (state.Value == 22500) PressDpads(DPadMappings.Down, DPadMappings.Left);
-            else if (state.Value == 27000) PressDpads(DPadMappings.Left); 
-            else if (state.Value == 31500) PressDpads(DPadMappings.Left, DPadMappings.Up);
         }
     }
 }
