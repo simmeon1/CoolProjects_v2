@@ -36,7 +36,8 @@ namespace LeagueAPI_ClassLibrary
             PopulateRunes(ddragonRunes.Result);
             PopulateStatPerks(ddragonStatPerks.Result);
             PopulateSpells(ddragonSpells.Result);
-            PopulateArenaAugments(ddragonArenaAugments.Result);
+            // Seems broken, duplicate key error
+            // PopulateArenaAugments(ddragonArenaAugments.Result);
         }
         
         private void PopulateSpells(string spellsJson)
