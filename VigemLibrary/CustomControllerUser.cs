@@ -5,7 +5,24 @@ namespace VigemLibrary
 {
     public class CustomControllerUser(StopwatchControllerUser controllerUser)
     {
-        private readonly StopwatchControllerUser controllerUser = controllerUser;
+        private Dictionary<JoystickOffset, ButtonMappings> buttonMappings = new()
+        {
+            {JoystickOffset.Buttons0, ButtonMappings.Square},
+            {JoystickOffset.Buttons1, ButtonMappings.Cross},
+            {JoystickOffset.Buttons2, ButtonMappings.Circle},
+            {JoystickOffset.Buttons3, ButtonMappings.Triangle},
+            {JoystickOffset.Buttons4, ButtonMappings.ShoulderLeft},
+            {JoystickOffset.Buttons5, ButtonMappings.ShoulderRight},
+            // No handling for triggers
+            // { JoystickOffset.Buttons6, ButtonMappings.LeftTrigger },
+            // { JoystickOffset.Buttons7, ButtonMappings.RightTrigger },
+            {JoystickOffset.Buttons8, ButtonMappings.Share},
+            {JoystickOffset.Buttons9, ButtonMappings.Options},
+            {JoystickOffset.Buttons10, ButtonMappings.ThumbLeft},
+            {JoystickOffset.Buttons11, ButtonMappings.ThumbRight},
+            // { JoystickOffset.Buttons12, ButtonMappings.Home },
+            // { JoystickOffset.Buttons13, ButtonMappings.Map },
+        };
 
         public void Listen()
         {
@@ -36,18 +53,19 @@ namespace VigemLibrary
                 var datas = joystick.GetBufferedData();
                 foreach (var state in datas)
                 {
-                    Console.WriteLine(DateTime.Now + " - " + datas.Length + " - " + state.Value);
+                    // Console.WriteLine(DateTime.Now + " - " + datas.Length + " - " + state.Value);
                     if (state.Offset is JoystickOffset.PointOfViewControllers0) HandleDpad(state);
-                    else if (state.Offset is JoystickOffset.Buttons0) HandleButtons(state);
+                    else if (buttonMappings.TryGetValue(state.Offset, out var button)) HandleButton(state, button);
                 }
             }
         }
 
-        private void HandleButtons(JoystickUpdate state)
+        private void HandleButton(JoystickUpdate state, ButtonMappings button)
         {
-            throw new NotImplementedException();
+            if (state.Value == 0) controllerUser.ReleaseButton(button);
+            else if (state.Value == 128) controllerUser.HoldButton(button);
         }
-
+        
         private void HandleDpad(JoystickUpdate state)
         {
             void ReleaseAllDpadExcept(params DPadMappings[] mappingsToExclude)
