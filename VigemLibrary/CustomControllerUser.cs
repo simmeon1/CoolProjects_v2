@@ -36,22 +36,23 @@ namespace VigemLibrary
                 var datas = joystick.GetBufferedData();
                 foreach (var state in datas)
                 {
-                    HandleDpad(state);
+                    Console.WriteLine(DateTime.Now + " - " + datas.Length + " - " + state.Value);
+                    if (state.Offset is JoystickOffset.PointOfViewControllers0) HandleDpad(state);
+                    else if (state.Offset is JoystickOffset.Buttons0) HandleButtons(state);
                 }
-                // Console.WriteLine(DateTime.Now + " - " + datas.Length + " - " + state.Value);
             }
+        }
+
+        private void HandleButtons(JoystickUpdate state)
+        {
+            throw new NotImplementedException();
         }
 
         private void HandleDpad(JoystickUpdate state)
         {
-            if (state.Offset is not JoystickOffset.PointOfViewControllers0)
-            {
-                return;
-            }
-
             void ReleaseAllDpadExcept(params DPadMappings[] mappingsToExclude)
             {
-                var allMappings = new [] { DPadMappings.Up, DPadMappings.Right, DPadMappings.Down, DPadMappings.Left };
+                var allMappings = Enum.GetValues(typeof(DPadMappings)).Cast<DPadMappings>();
                 foreach (var mapping in allMappings)
                 {
                     if (!mappingsToExclude.Contains(mapping))
