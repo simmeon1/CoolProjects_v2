@@ -13,15 +13,15 @@ namespace VigemLibrary
             {3, ButtonMappings.Triangle},
             {4, ButtonMappings.ShoulderLeft},
             {5, ButtonMappings.ShoulderRight},
-            // Not set
+            // Not set -- do i need triggers?
             // { 6, ButtonMappings.LeftTrigger },
             // { 7, ButtonMappings.RightTrigger },
             {8, ButtonMappings.Share},
             {9, ButtonMappings.Options},
             {10, ButtonMappings.ThumbLeft},
             {11, ButtonMappings.ThumbRight},
-            // {12, ButtonMappings.Home },
-            // {13, ButtonMappings.Map },
+            {12, ButtonMappings.Ps },
+            {13, ButtonMappings.Touchpad },
         };
 
         public void Create()

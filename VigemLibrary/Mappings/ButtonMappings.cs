@@ -6,6 +6,7 @@
         ThumbLeft,
         Options,
         Share,
+        // Covered by triggers
         //TriggerRight,
         //TriggerLeft,
         ShoulderRight,
@@ -13,6 +14,8 @@
         Triangle,
         Circle,
         Cross,
-        Square
+        Square,
+        Ps,
+        Touchpad
     }
 }

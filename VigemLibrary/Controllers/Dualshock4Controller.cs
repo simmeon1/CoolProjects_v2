@@ -99,6 +99,8 @@ namespace VigemLibrary.Controllers
                 ButtonMappings.Triangle => DualShock4Button.Triangle,
                 ButtonMappings.Circle => DualShock4Button.Circle,
                 ButtonMappings.Cross => DualShock4Button.Cross,
+                ButtonMappings.Ps => DualShock4SpecialButton.Ps,
+                ButtonMappings.Touchpad => DualShock4SpecialButton.Touchpad,
                 _ => DualShock4Button.Square
             };
         }
