@@ -49,34 +49,71 @@ namespace VigemLibrary
             joystick.Acquire();
 
             // Poll events from joystick
-            var shoulderRight = ButtonMappings.ShoulderRight;
-            var shoulderRightIndex = buttonMappings.Single(x => x.Value == shoulderRight).Key;
             while (true)
             {
                 joystick.Poll();
                 var currentState = joystick.GetCurrentState();
-                var shoulderRightButtonIsPressed = currentState.Buttons[shoulderRightIndex];
+                // var s = currentState.ToString();
+                // Console.WriteLine(s);
+                HandleButtons(currentState);
+                HandleDpad(currentState);
+            }
+        }
+        
+        private void HandleDpad(JoystickState s)
+        {
+            var state = s.PointOfViewControllers[0];
+            if (state == -1)
+            {
+                controllerUser.ReleaseDPad(DPadMappings.Up);
+                controllerUser.ReleaseDPad(DPadMappings.Right);
+                controllerUser.ReleaseDPad(DPadMappings.Down);
+                controllerUser.ReleaseDPad(DPadMappings.Left);
+                return;
+            }
 
-                foreach (var mapping in buttonMappings)
+            void ToggleDpadDirection(int state1, int state2, int state3, DPadMappings dPadMappings)
+            {
+                if (state == state1 || state == state2 || state == state3)
                 {
-                    var buttonIndex = mapping.Key;
-                    var button = mapping.Value;
-                    var buttonIsPressed = currentState.Buttons[buttonIndex];
-                    if (button == shoulderRight || !shoulderRightButtonIsPressed)
+                    controllerUser.HoldDPad(dPadMappings);
+                }
+                else
+                {
+                    controllerUser.ReleaseDPad(dPadMappings);
+                }
+            }
+
+            ToggleDpadDirection(31500, 0, 4500, DPadMappings.Up);
+            ToggleDpadDirection(4500, 9000, 13500, DPadMappings.Right);
+            ToggleDpadDirection(13500, 18000, 22500, DPadMappings.Down);
+            ToggleDpadDirection(22500, 27000, 31500, DPadMappings.Left);
+        }
+
+        private void HandleButtons(JoystickState currentState)
+        {
+            var shoulderRight = ButtonMappings.ShoulderRight;
+            var shoulderRightIndex = buttonMappings.Single(x => x.Value == shoulderRight).Key;
+            var shoulderRightButtonIsPressed = currentState.Buttons[shoulderRightIndex];
+            foreach (var mapping in buttonMappings)
+            {
+                var buttonIndex = mapping.Key;
+                var button = mapping.Value;
+                var buttonIsPressed = currentState.Buttons[buttonIndex];
+                if (button == shoulderRight || !shoulderRightButtonIsPressed)
+                {
+                    if (buttonIsPressed)
                     {
-                        if (buttonIsPressed)
-                        {
-                            controllerUser.HoldButton(button);
-                        }
-                        else
-                        {
-                            controllerUser.ReleaseButton(button);
-                        }
-                    } else if (buttonIsPressed && shoulderRightButtonIsPressed)
-                    {
-                        controllerUser.PressButton(button);
-                        controllerUser.Wait(50);
+                        controllerUser.HoldButton(button);
                     }
+                    else
+                    {
+                        controllerUser.ReleaseButton(button);
+                    }
+                } else if (buttonIsPressed && shoulderRightButtonIsPressed)
+                {
+                    controllerUser.PressButton(button);
+                    controllerUser.Wait(50);
                 }
             }
         }
