@@ -81,6 +81,16 @@ namespace VigemLibrary
         {
             SetAxisValue(axis, 128);
         }
+        
+        public void HoldTrigger(TriggerMappings trigger, byte value)
+        {
+            SetTriggerValue(trigger, value);
+        }
+
+        public void ReleaseTrigger(TriggerMappings trigger)
+        {
+            SetTriggerValue(trigger, 128);
+        }
     
         private void SetDPadDirection(DPadMappings direction, bool pressed)
         {
@@ -97,6 +107,12 @@ namespace VigemLibrary
         private void SetAxisValue(AxisMappings axis, byte value)
         {
             controller.SetAxisState(axis, value);
+            Wait(delayAfterSet);
+        }
+
+        private void SetTriggerValue(TriggerMappings trigger, byte value)
+        {
+            controller.SetTriggerState(trigger, value);
             Wait(delayAfterSet);
         }
 

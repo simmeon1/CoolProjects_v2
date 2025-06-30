@@ -3,7 +3,7 @@ using VigemLibrary.Mappings;
 
 namespace VigemLibrary
 {
-    public class CustomControllerUser(StopwatchControllerUser controllerUser, ButtonHandler buttonHandler)
+    public class CustomControllerUser(StopwatchControllerUser controllerUser)
     {
         private readonly Dictionary<int, ButtonMappings> buttonMappings = new()
         {
@@ -53,13 +53,37 @@ namespace VigemLibrary
             {
                 joystick.Poll();
                 var currentState = joystick.GetCurrentState();
-                // var s = currentState.ToString();
-                // Console.WriteLine(s);
                 HandleButtons(currentState);
                 HandleDpad(currentState);
+                HandleAxis(currentState);
+                HandleTriggers(currentState);
             }
         }
-        
+
+        private void HandleTriggers(JoystickState s)
+        {
+            void HoldStick(TriggerMappings triggerMapping, int value)
+            {
+                controllerUser.HoldTrigger(triggerMapping, (byte) Math.Floor(value / 257.0));
+            }
+
+            HoldStick(TriggerMappings.LeftTrigger, s.RotationX);
+            HoldStick(TriggerMappings.RightTrigger, s.RotationY);
+        }
+
+        private void HandleAxis(JoystickState s)
+        {
+            void HoldStick(AxisMappings axisMappings, int value)
+            {
+                controllerUser.HoldStick(axisMappings, (byte) Math.Floor(value / 257.0));
+            }
+
+            HoldStick(AxisMappings.LeftThumbX, s.X);
+            HoldStick(AxisMappings.LeftThumbY, s.Y);
+            HoldStick(AxisMappings.RightThumbX, s.Z);
+            HoldStick(AxisMappings.RightThumbY, s.RotationZ);
+        }
+
         private void HandleDpad(JoystickState s)
         {
             var state = s.PointOfViewControllers[0];
@@ -90,16 +114,16 @@ namespace VigemLibrary
             ToggleDpadDirection(22500, 27000, 31500, DPadMappings.Left);
         }
 
-        private void HandleButtons(JoystickState currentState)
+        private void HandleButtons(JoystickState s)
         {
             var shoulderRight = ButtonMappings.ShoulderRight;
             var shoulderRightIndex = buttonMappings.Single(x => x.Value == shoulderRight).Key;
-            var shoulderRightButtonIsPressed = currentState.Buttons[shoulderRightIndex];
+            var shoulderRightButtonIsPressed = s.Buttons[shoulderRightIndex];
             foreach (var mapping in buttonMappings)
             {
                 var buttonIndex = mapping.Key;
                 var button = mapping.Value;
-                var buttonIsPressed = currentState.Buttons[buttonIndex];
+                var buttonIsPressed = s.Buttons[buttonIndex];
                 if (button == shoulderRight || !shoulderRightButtonIsPressed)
                 {
                     if (buttonIsPressed)
