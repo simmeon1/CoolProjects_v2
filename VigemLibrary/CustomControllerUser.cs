@@ -13,7 +13,7 @@ namespace VigemLibrary
             {3, ButtonMappings.Triangle},
             {4, ButtonMappings.ShoulderLeft},
             {5, ButtonMappings.ShoulderRight},
-            // Not set -- do i need triggers?
+            // Triggers covered by slider functionality
             // { 6, ButtonMappings.LeftTrigger },
             // { 7, ButtonMappings.RightTrigger },
             {8, ButtonMappings.Share},
