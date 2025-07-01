@@ -32,7 +32,17 @@ namespace VigemLibrary
             // Initialize DirectInput
             var directInput = new DirectInput();
 
-            var joystickGuid = directInput.GetDevices(DeviceType.Gamepad, DeviceEnumerationFlags.AllDevices).Single().InstanceGuid;
+
+            DeviceInstance? GetDevice() => directInput.GetDevices(DeviceType.Gamepad, DeviceEnumerationFlags.AllDevices).SingleOrDefault();
+            var device = GetDevice();
+            while (device == null)
+            {
+                Console.WriteLine("Controller not found. Is it hidden by HidHide? Retrying in 5 seconds.");
+                controllerUser.Wait(5000);
+                device = GetDevice();
+            }
+            
+            var joystickGuid = device.InstanceGuid;
             // If Gamepad not found, look for a Joystick
 
             // Instantiate the joystick
