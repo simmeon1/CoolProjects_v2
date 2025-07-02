@@ -41,7 +41,7 @@ namespace Vigem_Console
         {
             RealStopwatch s = new();
             var user = GetStopwatchControllerUser(s, 100);
-            var customUser = new CustomControllerUser(user);
+            var customUser = new CustomControllerUser(s, user);
             customUser.Create();
         }
 

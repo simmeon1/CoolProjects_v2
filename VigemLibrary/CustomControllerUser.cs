@@ -1,9 +1,10 @@
 ﻿using SharpDX.DirectInput;
 using VigemLibrary.Mappings;
+using VigemLibrary.SystemImplementations;
 
 namespace VigemLibrary
 {
-    public class CustomControllerUser(StopwatchControllerUser controllerUser)
+    public class CustomControllerUser
     {
         private readonly Dictionary<int, ButtonMappings> buttonMappings = new()
         {
@@ -24,6 +25,17 @@ namespace VigemLibrary
             {13, ButtonMappings.Touchpad },
         };
 
+        private readonly Dictionary<ButtonMappings, TimestampedTurbo> turboedButtons = new();
+        private readonly IStopwatch s;
+        private readonly StopwatchControllerUser controllerUser;
+        private bool turboPressed = false;
+
+        public CustomControllerUser(IStopwatch s, StopwatchControllerUser controllerUser)
+        {
+            this.s = s;
+            this.controllerUser = controllerUser;
+        }
+
         public void Create()
         {
             // Based on https://github.com/sharpdx/SharpDX-Samples/blob/master/Desktop/DirectInput/JoystickApp/Program.cs if you need joystick
@@ -38,7 +50,7 @@ namespace VigemLibrary
             while (device == null)
             {
                 Console.WriteLine("Controller not found. Is it hidden by HidHide? Retrying in 5 seconds.");
-                controllerUser.Wait(5000);
+                s.Wait(5000);
                 device = GetDevice();
             }
             
@@ -126,30 +138,54 @@ namespace VigemLibrary
 
         private void HandleButtons(JoystickState s)
         {
-            var shoulderRight = ButtonMappings.ShoulderRight;
-            var shoulderRightIndex = buttonMappings.Single(x => x.Value == shoulderRight).Key;
-            var shoulderRightButtonIsPressed = s.Buttons[shoulderRightIndex];
             foreach (var mapping in buttonMappings)
             {
                 var buttonIndex = mapping.Key;
                 var button = mapping.Value;
                 var buttonIsPressed = s.Buttons[buttonIndex];
-                if (button == shoulderRight || !shoulderRightButtonIsPressed)
+
+                if (button == ButtonMappings.ShoulderRight)
                 {
-                    if (buttonIsPressed)
-                    {
-                        controllerUser.HoldButton(button);
-                    }
-                    else
-                    {
-                        controllerUser.ReleaseButton(button);
-                    }
-                } else if (buttonIsPressed && shoulderRightButtonIsPressed)
+                    turboPressed = buttonIsPressed;
+                    DoDefaultButtonHandling(button, buttonIsPressed);
+                    continue;
+                }
+
+                if (!turboPressed || !buttonIsPressed)
                 {
-                    controllerUser.PressButton(button);
-                    controllerUser.Wait(50);
+                    DoDefaultButtonHandling(button, buttonIsPressed);
+                    continue;
+                }
+                
+                if (!turboedButtons.ContainsKey(button))
+                {
+                    turboedButtons.Add(button, new(this.s.GetElapsedTotalMilliseconds(), buttonIsPressed));
+                }
+                var turboedButton = turboedButtons[button];
+                if (this.s.GetElapsedTotalMilliseconds() - turboedButton.Timestamp > 50)
+                {
+                    turboedButtons[button] = new TimestampedTurbo(this.s.GetElapsedTotalMilliseconds(), !turboedButtons[button].Pressed);
+                    DoDefaultButtonHandling(button, turboedButtons[button].Pressed);
                 }
             }
+        }
+
+        private void DoDefaultButtonHandling(ButtonMappings button, bool buttonIsPressed)
+        {
+            if (buttonIsPressed)
+            {
+                controllerUser.HoldButton(button);
+            }
+            else
+            {
+                controllerUser.ReleaseButton(button);
+            }
+        }
+        
+        private class TimestampedTurbo(double timestamp, bool pressed)
+        {
+            public double Timestamp { get; } = timestamp;
+            public bool Pressed { get; } = pressed;
         }
     }
 }

@@ -7,5 +7,6 @@
         void WaitUntilTimestampReached(double ts);
         void WaitUntilTrue(Func<bool> action);
         void Wait(double milliseconds);
+        double GetElapsedTotalMilliseconds();
     }
 }
