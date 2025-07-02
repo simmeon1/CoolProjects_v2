@@ -34,10 +34,10 @@ namespace Vigem_Console
             else if (command == "ffix-grand-dragon") doFf9GrandDragon();
             else if (command == "rebirth") doFf9JumpRope3(dict);
             else if (command == "get-text") doGetTextBasedOnCursor(dict);
-            else if (command == "poll-controller") doPollController(dict);
+            else if (command == "r1-turbo") doR1Turbo(dict);
         }
 
-        private static void doPollController(Dictionary<string, string> dict)
+        private static void doR1Turbo(Dictionary<string, string> dict)
         {
             RealStopwatch s = new();
             var user = GetStopwatchControllerUser(s, 100);
