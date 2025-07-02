@@ -144,14 +144,13 @@ namespace VigemLibrary
                 var button = mapping.Value;
                 var buttonIsPressed = s.Buttons[buttonIndex];
 
-                if (button == ButtonMappings.ShoulderRight)
+                var buttonIsTurbo = button == ButtonMappings.ShoulderRight;
+                if (buttonIsTurbo)
                 {
                     turboPressed = buttonIsPressed;
-                    DoDefaultButtonHandling(button, buttonIsPressed);
-                    continue;
                 }
 
-                if (!turboPressed || !buttonIsPressed)
+                if (buttonIsTurbo || !turboPressed || !buttonIsPressed)
                 {
                     DoDefaultButtonHandling(button, buttonIsPressed);
                     continue;
