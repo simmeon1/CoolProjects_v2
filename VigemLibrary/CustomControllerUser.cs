@@ -1,4 +1,6 @@
-﻿using SharpDX.DirectInput;
+﻿using System.Text.Json;
+using SharpDX.DirectInput;
+using VigemLibrary.Controllers;
 using VigemLibrary.Mappings;
 using VigemLibrary.SystemImplementations;
 
@@ -37,6 +39,7 @@ public class CustomControllerUser {
     public void Create() {
         // Based on https://github.com/sharpdx/SharpDX-Samples/blob/master/Desktop/DirectInput/JoystickApp/Program.cs if you need joystick
         // Removed joystick and buffered code.
+        // Commented out poll method, doesnt look needed.
 
         // Initialize DirectInput
         var directInput = new DirectInput();
@@ -68,14 +71,31 @@ public class CustomControllerUser {
         joystick.Acquire();
 
         // Poll events from joystick
+        var lastEmulatedControllerState = controllerUser.GetState();
         while (true) {
-            joystick.Poll();
+            // joystick.Poll();
             var currentState = joystick.GetCurrentState();
             HandleButtons(currentState);
             HandleDpad(currentState);
             HandleAxis(currentState);
             HandleTriggers(currentState);
+            lastEmulatedControllerState = HandleStateUpdate(lastEmulatedControllerState);
         }
+    }
+
+    private ControllerState HandleStateUpdate(ControllerState lastEmulatedControllerState) {
+        var emulatedControllerState = controllerUser.GetState();
+        var emulatedUpdate = new ControllerState(
+            GetDiff(lastEmulatedControllerState.axisStates, emulatedControllerState.axisStates),
+            GetDiff(lastEmulatedControllerState.buttonStates, emulatedControllerState.buttonStates),
+            GetDiff(lastEmulatedControllerState.dpadStates, emulatedControllerState.dpadStates),
+            GetDiff(lastEmulatedControllerState.triggerStates, emulatedControllerState.triggerStates)
+        );
+        if (emulatedUpdate.axisStates.Count != 0 || emulatedUpdate.buttonStates.Count != 0 ||
+            emulatedUpdate.dpadStates.Count != 0 || emulatedUpdate.triggerStates.Count != 0) {
+            Console.WriteLine(JsonSerializer.Serialize(emulatedUpdate));
+        }
+        return emulatedControllerState;
     }
 
     private void HandleTriggers(JoystickState s) {
@@ -148,6 +168,18 @@ public class CustomControllerUser {
             }
         }
     }
+
+    private static Dictionary<T, TV> GetDiff<T, TV>(IReadOnlyDictionary<T, TV> d1, IReadOnlyDictionary<T, TV> d2)
+        where T : notnull where TV : notnull =>
+        d1.Aggregate(
+            new Dictionary<T, TV>(),
+            (acc, v) => {
+                if (!v.Value.Equals(d2[v.Key])) {
+                    acc.Add(v.Key, d2[v.Key]);
+                }
+                return acc;
+            }
+        );
 
     private class TimestampedTurbo(double timestamp, bool pressed) {
         public double Timestamp { get; } = timestamp;

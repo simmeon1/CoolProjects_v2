@@ -106,6 +106,8 @@ public class StopwatchControllerUser {
         Wait(delayAfterSet);
     }
 
+    public ControllerState GetState() => controller.GetState();
+
     private void Wait(int? delay) {
         stopwatch.Wait(delay ?? pressLength);
     }
