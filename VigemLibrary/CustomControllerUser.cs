@@ -25,15 +25,16 @@ public class CustomControllerUser {
         {13, ButtonMappings.Touchpad}
     };
 
-    private readonly StopwatchControllerUser controllerUser;
+    private readonly IController controller;
     private readonly IStopwatch s;
 
     private readonly Dictionary<ButtonMappings, TimestampedTurbo> turboedButtons = new();
     private bool turboPressed;
 
-    public CustomControllerUser(IStopwatch s, StopwatchControllerUser controllerUser) {
+    public CustomControllerUser(IStopwatch s, IController controller) {
         this.s = s;
-        this.controllerUser = controllerUser;
+        this.s.Restart();
+        this.controller = controller;
     }
 
     public void Create() {
@@ -71,7 +72,7 @@ public class CustomControllerUser {
         joystick.Acquire();
 
         // Poll events from joystick
-        var lastEmulatedControllerState = controllerUser.GetState();
+        var lastEmulatedControllerState = controller.GetState();
         while (true) {
             // joystick.Poll();
             var currentState = joystick.GetCurrentState();
@@ -84,7 +85,7 @@ public class CustomControllerUser {
     }
 
     private ControllerState HandleStateUpdate(ControllerState lastEmulatedControllerState) {
-        var emulatedControllerState = controllerUser.GetState();
+        var emulatedControllerState = controller.GetState();
         var emulatedUpdate = new ControllerState(
             GetDiff(lastEmulatedControllerState.axisStates, emulatedControllerState.axisStates),
             GetDiff(lastEmulatedControllerState.buttonStates, emulatedControllerState.buttonStates),
@@ -101,7 +102,7 @@ public class CustomControllerUser {
     private void HandleTriggers(JoystickState s) {
         void SetTriggerValue(TriggerMappings triggerMapping, int value) {
             var floored = (byte) Math.Floor(value / 257.0);
-            controllerUser.SetTrigger(
+            controller.SetTriggerState(
                 triggerMapping,
                 floored > 200 ? byte.MaxValue : byte.MinValue
             );
@@ -114,7 +115,7 @@ public class CustomControllerUser {
     private void HandleAxis(JoystickState s) {
         void SetAxisValue(AxisMappings axisMappings, int value) {
             var floored = (byte) Math.Floor(value / 257.0);
-            controllerUser.SetAxis(
+            controller.SetAxisState(
                 axisMappings,
                 floored > 200 ? byte.MaxValue : floored < 50 ? byte.MinValue : (byte) 128
             );
@@ -129,15 +130,14 @@ public class CustomControllerUser {
     private void HandleDpad(JoystickState s) {
         var state = s.PointOfViewControllers[0];
         if (state == -1) {
-            controllerUser.ReleaseDPad(DPadMappings.Up);
-            controllerUser.ReleaseDPad(DPadMappings.Right);
-            controllerUser.ReleaseDPad(DPadMappings.Down);
-            controllerUser.ReleaseDPad(DPadMappings.Left);
+            foreach (var dpadMapping in Enum.GetValues<DPadMappings>()) {
+                controller.SetDPadState(dpadMapping, false);
+            }
             return;
         }
 
         void ToggleDpadDirection(int state1, int state2, int state3, DPadMappings dPadMappings) {
-            controllerUser.SetDPadDirection(dPadMappings, state == state1 || state == state2 || state == state3);
+            controller.SetDPadState(dPadMappings, state == state1 || state == state2 || state == state3);
         }
 
         ToggleDpadDirection(31500, 0, 4500, DPadMappings.Up);
@@ -158,21 +158,18 @@ public class CustomControllerUser {
             }
 
             if (buttonIsTurbo || !turboPressed || !buttonIsPressed) {
-                controllerUser.SetButtonState(button, buttonIsPressed);
+                controller.SetButtonState(button, buttonIsPressed);
                 continue;
             }
 
-            if (!turboedButtons.ContainsKey(button)) {
-                turboedButtons.Add(button, new TimestampedTurbo(this.s.GetElapsedTotalMilliseconds(), buttonIsPressed));
-            }
+            turboedButtons.TryAdd(button, new TimestampedTurbo(this.s.GetElapsedTotalMilliseconds(), buttonIsPressed));
             var turboedButton = turboedButtons[button];
             if (this.s.GetElapsedTotalMilliseconds() - turboedButton.Timestamp > 50) {
                 turboedButtons[button] = new TimestampedTurbo(
                     this.s.GetElapsedTotalMilliseconds(),
                     !turboedButtons[button].Pressed
                 );
-                var buttonIsPressed1 = turboedButtons[button].Pressed;
-                controllerUser.SetButtonState(button, buttonIsPressed1);
+                controller.SetButtonState(button, turboedButtons[button].Pressed);
             }
         }
     }
@@ -189,8 +186,5 @@ public class CustomControllerUser {
             }
         );
 
-    private class TimestampedTurbo(double timestamp, bool pressed) {
-        public double Timestamp { get; } = timestamp;
-        public bool Pressed { get; } = pressed;
-    }
+    private record TimestampedTurbo(double Timestamp, bool Pressed);
 }

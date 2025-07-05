@@ -24,14 +24,6 @@ public class StopwatchControllerUser {
         this.stopwatch.Restart();
     }
 
-    public void Connect() {
-        controller.Connect();
-    }
-
-    public void Disconnect() {
-        controller.Disconnect();
-    }
-
     public void HoldButton(ButtonMappings button) {
         SetButtonState(button, true);
     }
@@ -105,8 +97,6 @@ public class StopwatchControllerUser {
         controller.SetTriggerState(trigger, value);
         Wait(delayAfterSet);
     }
-
-    public ControllerState GetState() => controller.GetState();
 
     private void Wait(int? delay) {
         stopwatch.Wait(delay ?? pressLength);
