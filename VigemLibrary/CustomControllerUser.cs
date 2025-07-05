@@ -100,7 +100,11 @@ public class CustomControllerUser {
 
     private void HandleTriggers(JoystickState s) {
         void SetTriggerValue(TriggerMappings triggerMapping, int value) {
-            controllerUser.SetTrigger(triggerMapping, (byte) Math.Floor(value / 257.0));
+            var floored = (byte) Math.Floor(value / 257.0);
+            controllerUser.SetTrigger(
+                triggerMapping,
+                floored > 200 ? byte.MaxValue : byte.MinValue
+            );
         }
 
         SetTriggerValue(TriggerMappings.LeftTrigger, s.RotationX);
@@ -109,7 +113,11 @@ public class CustomControllerUser {
 
     private void HandleAxis(JoystickState s) {
         void SetAxisValue(AxisMappings axisMappings, int value) {
-            controllerUser.SetAxis(axisMappings, (byte) Math.Floor(value / 257.0));
+            var floored = (byte) Math.Floor(value / 257.0);
+            controllerUser.SetAxis(
+                axisMappings,
+                floored > 200 ? byte.MaxValue : floored < 50 ? byte.MinValue : (byte) 128
+            );
         }
 
         SetAxisValue(AxisMappings.LeftThumbX, s.X);
