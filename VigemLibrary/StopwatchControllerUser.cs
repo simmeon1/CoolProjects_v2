@@ -2,123 +2,111 @@
 using VigemLibrary.Mappings;
 using VigemLibrary.SystemImplementations;
 
-namespace VigemLibrary
-{
-    public class StopwatchControllerUser
-    {
-        private readonly IController controller;
-        private readonly IStopwatch stopwatch;
-        private readonly int pressLength;
-        private readonly int delayAfterSet;
+namespace VigemLibrary;
 
-        // Changing away form zero could break other usages like jump rope
-        public StopwatchControllerUser(IController controller, IStopwatch stopwatch, int pressLength, int delayAfterSet = 0)
-        {
-            this.controller = controller;
-            this.stopwatch = stopwatch;
-            this.pressLength = pressLength;
-            this.delayAfterSet = delayAfterSet;
-            this.stopwatch.Restart();
-        }
+public class StopwatchControllerUser {
+    private readonly IController controller;
+    private readonly int delayAfterSet;
+    private readonly int pressLength;
+    private readonly IStopwatch stopwatch;
 
-        public void Connect()
-        {
-            controller.Connect();
-        }
-        
-        public void Disconnect()
-        {
-            controller.Disconnect();
-        }
+    // Changing away form zero could break other usages like jump rope
+    public StopwatchControllerUser(
+        IController controller,
+        IStopwatch stopwatch,
+        int pressLength,
+        int delayAfterSet = 0
+    ) {
+        this.controller = controller;
+        this.stopwatch = stopwatch;
+        this.pressLength = pressLength;
+        this.delayAfterSet = delayAfterSet;
+        this.stopwatch.Restart();
+    }
 
-        public void PressButton(ButtonMappings button, int? holdDuration = null)
-        {
-            HoldButton(button);
-            Wait(holdDuration);
-            ReleaseButton(button);
-        }
+    public void Connect() {
+        controller.Connect();
+    }
 
-        public void HoldButton(ButtonMappings button)
-        {
-            SetButtonState(button, true);
-        }
+    public void Disconnect() {
+        controller.Disconnect();
+    }
 
-        public void ReleaseButton(ButtonMappings button)
-        {
-            SetButtonState(button, false);
-        }
-    
-        public void PressDPad(DPadMappings direction, int? delay = null)
-        {
-            HoldDPad(direction);
-            Wait(delay);
-            ReleaseDPad(direction);
-        }
+    public void HoldButton(ButtonMappings button) {
+        SetButtonState(button, true);
+    }
 
-        public void HoldDPad(DPadMappings direction)
-        {
-            SetDPadDirection(direction, true);
-        }
+    public void ReleaseButton(ButtonMappings button) {
+        SetButtonState(button, false);
+    }
 
-        public void ReleaseDPad(DPadMappings direction)
-        {
-            SetDPadDirection(direction, false);
-        }
-    
-        public void PressStick(AxisMappings axis, byte value, int? delay = null)
-        {
-            HoldStick(axis, value);
-            Wait(delay);
-            ReleaseStick(axis);
-        }
-    
-        public void HoldStick(AxisMappings axis, byte value)
-        {
-            SetAxisValue(axis, value);
-        }
+    public void PressButton(ButtonMappings button, int? holdDuration = null) {
+        HoldButton(button);
+        Wait(holdDuration);
+        ReleaseButton(button);
+    }
 
-        public void ReleaseStick(AxisMappings axis)
-        {
-            SetAxisValue(axis, 128);
-        }
-        
-        public void HoldTrigger(TriggerMappings trigger, byte value)
-        {
-            SetTriggerValue(trigger, value);
-        }
+    public void SetButtonState(ButtonMappings button, bool pressed) {
+        controller.SetButtonState(button, pressed);
+        Wait(delayAfterSet);
+    }
 
-        public void ReleaseTrigger(TriggerMappings trigger)
-        {
-            SetTriggerValue(trigger, 128);
-        }
-    
-        private void SetDPadDirection(DPadMappings direction, bool pressed)
-        {
-            controller.SetDPadState(direction, pressed);
-            Wait(delayAfterSet);
-        }
+    public void HoldDPad(DPadMappings direction) {
+        SetDPadDirection(direction, true);
+    }
 
-        private void SetButtonState(ButtonMappings button, bool pressed)
-        {
-            controller.SetButtonState(button, pressed);
-            Wait(delayAfterSet);
-        }
+    public void ReleaseDPad(DPadMappings direction) {
+        SetDPadDirection(direction, false);
+    }
 
-        private void SetAxisValue(AxisMappings axis, byte value)
-        {
-            controller.SetAxisState(axis, value);
-            Wait(delayAfterSet);
-        }
+    public void PressDPad(DPadMappings direction, int? delay = null) {
+        HoldDPad(direction);
+        Wait(delay);
+        ReleaseDPad(direction);
+    }
 
-        private void SetTriggerValue(TriggerMappings trigger, byte value)
-        {
-            controller.SetTriggerState(trigger, value);
-            Wait(delayAfterSet);
-        }
+    public void SetDPadDirection(DPadMappings direction, bool pressed) {
+        controller.SetDPadState(direction, pressed);
+        Wait(delayAfterSet);
+    }
 
-        private void Wait(int? delay)
-        {
-            stopwatch.Wait(delay ?? pressLength);
-        }
+    public void PushAxis(AxisMappings axis) {
+        SetAxis(axis, byte.MaxValue);
+    }
+
+    public void PullAxis(AxisMappings axis) {
+        SetAxis(axis, byte.MinValue);
+    }
+
+    public void ResetAxis(AxisMappings axis) {
+        SetAxis(axis, 128);
+    }
+
+    public void SetAxis(AxisMappings axis, byte value) {
+        controller.SetAxisState(axis, value);
+        Wait(delayAfterSet);
+    }
+
+    public void HoldTrigger(TriggerMappings trigger) {
+        SetTrigger(trigger, byte.MaxValue);
+    }
+
+    public void ReleaseTrigger(TriggerMappings trigger) {
+        SetTrigger(trigger, byte.MinValue);
+    }
+
+    public void PressTrigger(TriggerMappings trigger, int? delay = null) {
+        HoldTrigger(trigger);
+        Wait(delay);
+        ReleaseTrigger(trigger);
+    }
+
+    public void SetTrigger(TriggerMappings trigger, byte value) {
+        controller.SetTriggerState(trigger, value);
+        Wait(delayAfterSet);
+    }
+
+    private void Wait(int? delay) {
+        stopwatch.Wait(delay ?? pressLength);
     }
 }
