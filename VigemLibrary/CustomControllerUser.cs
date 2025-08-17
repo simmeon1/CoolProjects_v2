@@ -175,7 +175,7 @@ public class CustomControllerUser {
     }
 
     private static Dictionary<T, TV> GetDiff<T, TV>(IReadOnlyDictionary<T, TV> d1, IReadOnlyDictionary<T, TV> d2)
-        where T : notnull where TV : notnull =>
+        where T : Enum where TV : IEquatable<TV> =>
         d1.Aggregate(
             new Dictionary<T, TV>(),
             (acc, v) => {
