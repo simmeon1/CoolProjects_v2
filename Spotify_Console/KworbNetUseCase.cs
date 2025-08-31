@@ -22,7 +22,7 @@ public class KworbNetUseCase(
         // await GetTopListStores(jsonPath);
         // await GetListenerStores(jsonPath);
         // chromeDriver.Quit();
-        
+
         var totalCache = new Dictionary<string, long>();
         var trackMap = new Dictionary<string, SimpleTrackObject>();
         var getNewEntries = true;
@@ -44,11 +44,12 @@ public class KworbNetUseCase(
         {
             foreach (var pair in JsonSerializer.Deserialize<Dictionary<string, long>>(
                          fileIo.ReadAllText($"{jsonPath}\\{col}.json")
-            )!) {
+                     )!)
+            {
                 totalCache.TryAdd(pair.Key, pair.Value);
             }
         }
-        
+
         var cache = totalCache.Where(x => x.Value >= 5000000).ToList();
         // logger.Log($"Processing {col}.");
         logger.Log($"{cache.Count} songs to collect.");
@@ -57,14 +58,14 @@ public class KworbNetUseCase(
         {
             trackMap.TryAdd(song.Key, song.Value);
         }
-        
+
         var artists = await spotifyClientUseCase.GetArtists(
             trackMap.Values.Select(x => x.artist_id),
             jsonPath,
-            getNewEntries, 
+            getNewEntries,
             updateStore
         );
-        
+
         var usContents =
             // JsonSerializer.Deserialize<List<BillboardList>>(fileIo.ReadAllText(jsonPath + "\\billboard_all_mhollingshead.json"))!;
             JsonSerializer.Deserialize<List<BillboardList>>(
@@ -72,9 +73,9 @@ public class KworbNetUseCase(
                     "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/all.json"
                 )).Content.ReadAsStringAsync()
             )!;
-        
+
         var dateSongMaps = SpotifyHelper.GetDateSongMaps(usContents);
-        
+
         var yearMaps = new Dictionary<string, int>();
         foreach (var map in dateSongMaps)
         {
@@ -83,7 +84,7 @@ public class KworbNetUseCase(
                 foreach (var song in pair.Value)
                 {
                     var simpleName = SpotifyHelper.CleanText(song.artist, true) + " - " +
-                                     SpotifyHelper.CleanText(song.song, false);
+                        SpotifyHelper.CleanText(song.song, false);
                     yearMaps.TryAdd(simpleName, int.Parse(pair.Key[..4]));
                 }
             }
@@ -93,33 +94,35 @@ public class KworbNetUseCase(
         trackMap = trackMap
             .GroupBy(
                 x => totalCache[x.Key],
-                x => x.Value
-                , (x, y) => y.OrderByDescending(z => z.popularity).First()
+                x => x.Value,
+                (x, y) => y.OrderByDescending(z => z.popularity).First()
             ).ToDictionary(x => x.id, x => x);
-        
-        // Anything
-        var songsByDecade = trackMap.Values
+
+        var orderedByListens = trackMap.Values
             .Where(x =>
                 !ContainsSpanish(x.name) &&
                 !ContainsSpanish(x.artist_name) &&
                 artists.TryGetValue(x.artist_id, out var artist) &&
-                (new[] { "Linkin Park", "Eminem" }.Contains(artist.name) || !artist.genres.Any(g => new[] {"rap", "country"}.Any(g.Contains)))
-            ).OrderByDescending(x => totalCache[x.id])
-            .GroupBy(
-                x => Math.Min(
-                    yearMaps.GetValueOrDefault(
-                        SpotifyHelper.CleanText(x.artist_name, true) + " - " + SpotifyHelper.CleanText(x.name, false),
-                        9999
-                    ),
-                    int.Parse(x.release_date[..4])
-                ) / 10
-            );
-        var songsToAdd = songsByDecade
-                // (x, y) => y.Take(x < 197 ? 0 : x > 201 ? 100 : 500)
-            // .Where(x => x.Key is > 197 and < 202)
-            .SelectMany(x => x.Take(x.Key is < 197 or > 200 ? 0 : 200))
-            .ToList();
-        
+                (new[] { "Linkin Park", "Eminem" }.Contains(artist.name) ||
+                    !artist.genres.Any(g => new[] { "rap", "country" }.Any(g.Contains)))
+            ).OrderByDescending(x => totalCache[x.id]);
+
+        // var songsByDecade = orderedByListens
+        //     .GroupBy(x => Math.Min(
+        //             yearMaps.GetValueOrDefault(
+        //                 SpotifyHelper.CleanText(x.artist_name, true) + " - " + SpotifyHelper.CleanText(x.name, false),
+        //                 9999
+        //             ),
+        //             int.Parse(x.release_date[..4])
+        //         ) / 10
+        //     );
+        // var songsToAdd = songsByDecade
+        //     // (x, y) => y.Take(x < 197 ? 0 : x > 201 ? 100 : 500)
+        //     // .Where(x => x.Key is > 197 and < 202)
+        //     .SelectMany(x => x.Take(x.Key is < 197 or > 200 ? 0 : 200))
+        //     .ToList();
+        var songsToAdd = orderedByListens.Take(1000);
+
         // Useful to update the store
         // var youtubeTracks = await spotifyClientUseCase.GetYoutubeSongs(songsToAdd, jsonPath, getNewEntries, updateStore);
 
@@ -144,14 +147,17 @@ public class KworbNetUseCase(
         //     // )
         //     .Take(1000)
         //     .ToList();
-        
-        await spotifyClientUseCase.AddSongsToNewPlaylist($"kworb-topLists-{DateTime.Now}", songsToAdd.Select(x => x.id));
+
+        await spotifyClientUseCase.AddSongsToNewPlaylist(
+            $"kworb-topLists-{DateTime.Now}",
+            songsToAdd.Select(x => x.id)
+        );
     }
 
     private async Task GetListenerStores(string jsonPath)
     {
         string GetKworbUrl(string str) => "https://kworb.net/spotify/" + str;
-        
+
         async Task GoToLinkTable(string link)
         {
             var response = await http.GetAsync(link);
@@ -162,15 +168,15 @@ public class KworbNetUseCase(
                 "file:///C:/Users/simme/source/repos/CoolProjects_v2/Spotify_Console/bin/Debug/net9.0/temp.html"
             );
         }
-        
-        for (int i = 0; i < 10; i++)
+
+        for (var i = 0; i < 10; i++)
         {
             var listenersId = "listeners" + (i == 0 ? "" : i + 1);
             var store = jsonPath + "\\kworb" + listenersId + ".json";
             var results = new Dictionary<string, long>();
             logger.Log(listenersId);
-            
-            await GoToLinkTable(GetKworbUrl(listenersId  + ".html"));
+
+            await GoToLinkTable(GetKworbUrl(listenersId + ".html"));
             var artistLinks = (ReadOnlyCollection<object>) chromeDriver.ExecuteScript(
                 """
                 return [...document.querySelectorAll('a')].map(a => a.href.replace(/^.*artist\//i, ""));
@@ -179,11 +185,11 @@ public class KworbNetUseCase(
             // var results = Newtonsoft.Json.JsonSerializer.Deserialize<Dictionary<string, long>>(store)!;
             // var results = JsonSerializer.Deserialize<Dictionary<string, long>>(fileIo.ReadAllText(store))!;
             // await spotifyClientUseCase.GetSongs(results.Keys.ToList(), jsonPath);
-        
-            for (int j = 0; j < artistLinks.Count; j++)
+
+            for (var j = 0; j < artistLinks.Count; j++)
             {
                 logger.Log($"Artist link {j}");
-                object artistLink = artistLinks[j];
+                var artistLink = artistLinks[j];
                 await GoToLinkTable(GetKworbUrl("artist/" + (string) artistLink));
                 var map = (Dictionary<string, object>) chromeDriver.ExecuteScript(
                     """
@@ -198,8 +204,8 @@ public class KworbNetUseCase(
                     return result;
                     """
                 );
-        
-                foreach ((string key, object value) in map)
+
+                foreach (var (key, value) in map)
                 {
                     var v = (long) value;
                     if (!results.TryAdd(key, v))
@@ -211,7 +217,7 @@ public class KworbNetUseCase(
             fileIo.WriteAllText(store, results.SerializeObject());
         }
     }
-    
+
     private async Task GetTopListStores(string jsonPath)
     {
         var links = new[]
@@ -240,7 +246,7 @@ public class KworbNetUseCase(
             "https://kworb.net/spotify/songs_1960.html",
             "https://kworb.net/spotify/songs_1950.html"
         };
-        
+
         // var results = JsonSerializer.Deserialize<Dictionary<string, long>>(fileIo.ReadAllText(jsonPath + "\\kworb.json"))!;
 
         var results = new Dictionary<string, long>();
@@ -250,9 +256,11 @@ public class KworbNetUseCase(
             var responseContent = await response.Content.ReadAsStringAsync();
             var table = Regex.Match(responseContent, @"(<table (.|\n)*?</table>)").Groups[1].Value;
             fileIo.WriteAllText("temp.html", table);
-            chromeDriver.GoToUrl("file:///C:/Users/simme/source/repos/CoolProjects_v2/Spotify_Console/bin/Debug/net9.0/temp.html");
+            chromeDriver.GoToUrl(
+                "file:///C:/Users/simme/source/repos/CoolProjects_v2/Spotify_Console/bin/Debug/net9.0/temp.html"
+            );
             // chromeDriver.GoToUrl(link);
-            var map = (Dictionary<string, object>)chromeDriver.ExecuteScript(
+            var map = (Dictionary<string, object>) chromeDriver.ExecuteScript(
                 """
                 var result = {};
                 var rows = document.querySelectorAll('tbody tr');
@@ -265,8 +273,8 @@ public class KworbNetUseCase(
                 return result;
                 """
             );
-        
-            foreach ((string key, object value) in map)
+
+            foreach (var (key, value) in map)
             {
                 var v = (long) value;
                 if (!results.TryAdd(key, v))
@@ -280,7 +288,7 @@ public class KworbNetUseCase(
 
     private bool ContainsSpanish(string str) => Regex.IsMatch(
         str.ToLower(),
-        "(á|é|í|ó|ú|\bla\b|\blo\b|\bque\b|\bcomo\b|\bel\b)"
+        "(á|é|í|ó|ú|\bla\b|\blo\b|\bque\b|\bcomo\b|\bel\b|\ble\b|\bay\b)"
     );
 
     [DebuggerDisplay("{GetSummary()}")]
