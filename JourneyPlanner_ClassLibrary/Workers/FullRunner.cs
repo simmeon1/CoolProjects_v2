@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Common_ClassLibrary;
@@ -7,6 +8,7 @@ using JourneyPlanner_ClassLibrary.Classes;
 using JourneyPlanner_ClassLibrary.Interfaces;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
+using Path = JourneyPlanner_ClassLibrary.Classes.Path;
 
 namespace JourneyPlanner_ClassLibrary.Workers
 {
@@ -113,15 +115,28 @@ namespace JourneyPlanner_ClassLibrary.Workers
 
 
             AirportPathGenerator generator = new(logger, filteredAirportsAndDestinations, airportsList);
-            var results = p.ExistingResultsPath.IsNullOrEmpty()
-                ? null
-                : fileIo.ReadAllText(p.ExistingResultsPath)
-                    .DeserializeObject<JourneyCollectorResults>();
+            JourneyCollectorResults? results = null;
+            if (!p.ExistingResultsPath.IsNullOrEmpty())
+            {
+                results = fileIo.ReadAllText(p.ExistingResultsPath).DeserializeObject<JourneyCollectorResults>();
+            }
+            else if (p.RetryLast)
+            {
+                var x = fileIo.ReadAllText(
+                    Directory.GetFiles(p.FileSavePath, "", SearchOption.AllDirectories)
+                        .Where(x => x.Contains("_journeyCollectorResults.json")).Select(x => new FileInfo(x))
+                        .OrderBy(x => x.CreationTime).Last().FullName
+                ).DeserializeObject<JourneyCollectorResults>();
+                if (x.Origins.SequenceEqual(p.Origins) && x.Destinations.SequenceEqual(p.Destinations))
+                {
+                    results = x;
+                }
+            }
 
             var origins = results?.Origins ?? p.Origins;
             var destinations = results?.Destinations ?? p.Destinations;
             var maxFlights = results?.MaxFlights ?? p.MaxFlights;
-            var existingJourneyCollection = results?.JourneyCollection;
+            var existingJourneyCollection = results?.JourneyCollection ?? new JourneyCollection();
 
             var paths = generator.GeneratePaths(
                 origins,
@@ -144,11 +159,12 @@ namespace JourneyPlanner_ClassLibrary.Workers
                     .OrderBy(x => x.ToString())
                     .ToList();
 
-            var journeyCollection = existingJourneyCollection ?? await new MultiJourneyCollector().GetJourneys(
+            var journeyCollection = await new MultiJourneyCollector().GetJourneys(
                 components,
                 directPaths,
                 p.DateFrom,
-                p.DateTo
+                p.DateTo,
+                existingJourneyCollection
             );
 
             var journeyCollectorResults = new JourneyCollectorResults

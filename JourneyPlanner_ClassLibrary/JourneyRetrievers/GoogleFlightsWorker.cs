@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 {
     public class GoogleFlightsWorker
     {
-        private JourneyRetrieverComponents c;
+        private readonly JourneyRetrieverComponents c;
         private bool stopsSet;
 
         public GoogleFlightsWorker(JourneyRetrieverComponents c)
@@ -29,6 +28,21 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
         public Task<JourneyCollection> GetJourneysForDates(List<DirectPath> paths, List<DateTime> allDates)
         {
             var results = new List<Journey>();
+            try
+            {
+                DoWork(paths, allDates, results);
+                return Task.FromResult(new JourneyCollection(results.OrderBy(j => j.ToString()).ToList()));
+            }
+            catch (Exception ex)
+            {
+                throw new GoogleFlightsWorkerException(
+                    new JourneyCollection(results.OrderBy(j => j.ToString()).ToList())
+                );
+            }
+        }
+
+        private void DoWork(List<DirectPath> paths, List<DateTime> allDates, List<Journey> results)
+        {
             var lastResultCount = 0;
             var remainingPaths = paths.Select(x => x).ToList();
             var collectedFlightsSet = new HashSet<string>();
@@ -36,7 +50,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             while (remainingPaths.Any())
             {
                 var remainingPathsSet = remainingPaths.Select(x => x.Path.ToString()).ToHashSet();
-                
+
                 //Origin must be done in singles, otherwise it repeating in both search fields will wipe it from destination
                 var groups = remainingPaths.GroupBy(x => x.GetStart(), y => y.GetEnd());
 
@@ -58,29 +72,35 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     }
                 }
 
-                var searchDesc = $"{origins.ConcatenateListOfStringsToCommaAndSpaceString()} to {destinations.ConcatenateListOfStringsToCommaAndSpaceString()}";
+                var searchDesc =
+                    $"{origins.ConcatenateListOfStringsToCommaAndSpaceString()} to {destinations.ConcatenateListOfStringsToCommaAndSpaceString()}";
                 c.Log(
                     $"Looking for {searchDesc}"
                 );
 
-                for (int i = 0; i < allDates.Count; i++)
+                var dateResults = new List<Journey>();
+                for (var i = 0; i < allDates.Count; i++)
                 {
-                    DateTime date = allDates[i];
+                    var date = allDates[i];
                     if (i == 0)
                     {
-                        c.Log($"Populating locations...");
+                        c.Log("Populating locations...");
                         PopulateSearchField(origins, "Origin");
                         PopulateSearchField(destinations, "Destination");
                     }
 
                     c.Log($"Date is {date.ToShortDateString()}");
                     PopulateDateAndHitDone(date);
-                    if (!stopsSet) SetStopsToNone();
-                    List<Journey> flightsForDate = GetFlightsForDate(date, collectedFlightsSet, remainingPathsSet);
-                    results.AddRange(flightsForDate);
+                    if (!stopsSet)
+                    {
+                        SetStopsToNone();
+                    }
+                    var flightsForDate = GetFlightsForDate(date, collectedFlightsSet, remainingPathsSet);
+                    dateResults.AddRange(flightsForDate);
                 }
+                results.AddRange(dateResults);
 
-                foreach (string origin in origins)
+                foreach (var origin in origins)
                 {
                     foreach (var destination in destinations)
                     {
@@ -94,30 +114,35 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 );
                 lastResultCount = results.Count;
             }
-
-            return Task.FromResult(new JourneyCollection(results.OrderBy(j => j.ToString()).ToList()));
         }
 
-        private List<Journey> GetFlightsForDate(DateTime date, HashSet<string> collectedFlightsSet, HashSet<string> remainingPathsSet)
+        private List<Journey> GetFlightsForDate(
+            DateTime date,
+            HashSet<string> collectedFlightsSet,
+            HashSet<string> remainingPathsSet
+        )
         {
             var results = new List<Journey>();
 
-            ReadOnlyCollection<IWebElement> flights = c.FindElements(
+            var flights = c.FindElements(
                 GetCssSelectorParam("div[aria-label$='Select flight']")
             );
-            foreach (IWebElement flight in flights)
+            foreach (var flight in flights)
             {
-                IWebElement parent = (IWebElement) c.ExecuteScript(
+                var parent = (IWebElement) c.ExecuteScript(
                     "return arguments[0].parentElement",
                     flight
                 );
-                string text = parent.GetAttribute("innerText");
-                string[] flightText = text.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+                var text = parent.GetAttribute("innerText");
+                var flightText = text.Split("\n", StringSplitOptions.RemoveEmptyEntries);
                 try
                 {
                     // 14 flights on page but got 28, string is bad. Have to look into it.
-                    if (!flightText[6].Trim().Equals("Nonstop")) continue;
-                    Journey item = GetJourneyFromText(date, flightText);
+                    if (!flightText[6].Trim().Equals("Nonstop"))
+                    {
+                        continue;
+                    }
+                    var item = GetJourneyFromText(date, flightText);
                     if (remainingPathsSet.Contains(item.Path) && !collectedFlightsSet.Contains(item.ToString()))
                     {
                         results.Add(item);
@@ -125,9 +150,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                     }
                 }
                 catch (Exception e)
-                {
-                    continue;
-                }
+                { }
             }
 
             return results;
@@ -135,11 +158,11 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 
         private static Journey GetJourneyFromText(DateTime date, string[] flightText)
         {
-            string departingText = flightText[0].Replace(" ", "").Trim();
-            string arrivingText = flightText[2].Replace(" ", "").Trim();
-            string airlineText = flightText[3].Trim();
+            var departingText = flightText[0].Replace(" ", "").Trim();
+            var arrivingText = flightText[2].Replace(" ", "").Trim();
+            var airlineText = flightText[3].Trim();
 
-            string durationText = flightText[4];
+            var durationText = flightText[4];
             var arrivesAfterDays = 0;
             var regexMatches = Regex.Matches(arrivingText, "\\+(\\d)");
             if (regexMatches.Any())
@@ -148,13 +171,13 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 arrivingText = arrivingText.Replace(regexMatches[0].Groups[0].Value, "").Trim();
             }
 
-            int hours = ParseTimeUnit(durationText, "hr");
-            int minutes = ParseTimeUnit(durationText, "min");
+            var hours = ParseTimeUnit(durationText, "hr");
+            var minutes = ParseTimeUnit(durationText, "min");
 
-            Match pathMatch = Regex.Match(flightText[5].Trim(), @"(\w+)\W+(\w+)");
-            string pathText = $"{pathMatch.Groups[1].Value}-{pathMatch.Groups[2].Value}";
-            string costText = Regex.Replace(flightText[flightText.Length - 1], "\\D", "").Trim();
-            double.TryParse(costText, out double cost);
+            var pathMatch = Regex.Match(flightText[5].Trim(), @"(\w+)\W+(\w+)");
+            var pathText = $"{pathMatch.Groups[1].Value}-{pathMatch.Groups[2].Value}";
+            var costText = Regex.Replace(flightText[flightText.Length - 1], "\\D", "").Trim();
+            double.TryParse(costText, out var cost);
             Journey item = new(
                 DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {departingText}"),
                 DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {arrivingText}").AddDays(arrivesAfterDays),
@@ -174,7 +197,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 
         private void WaitForProgressBarToBeGone()
         {
-            IWebElement loadingBar = c.FindElement(GetCssSelectorParam("[data-buffervalue='1']"));
+            var loadingBar = c.FindElement(GetCssSelectorParam("[data-buffervalue='1']"));
             try
             {
                 c.Until(_ => loadingBar.GetAttribute("aria-hidden") == null, 5);
@@ -202,10 +225,13 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
         {
             var keywordLower = keyword.ToLower();
 
-            c.FindElementAndClickIt(GetCssSelectorParam($"[data-placeholder*='Where {(keyword == "Origin" ? "from" : "to")}'] input"));
+            c.FindElementAndClickIt(
+                GetCssSelectorParam($"[data-placeholder*='Where {(keyword == "Origin" ? "from" : "to")}'] input")
+            );
             Sleep();
 
-            FindElementParameters checkmarkDoneButtonParam = GetCssSelectorParam($"[aria-label*='Enter your {keywordLower}'] [aria-label*='Done']");
+            var checkmarkDoneButtonParam =
+                GetCssSelectorParam($"[aria-label*='Enter your {keywordLower}'] [aria-label*='Done']");
             var el = c.FindElement(checkmarkDoneButtonParam);
             el = (IWebElement) c.ExecuteScript("return arguments[0].parentElement.parentElement", el);
             var displayStyle = (string) c.ExecuteScript("return arguments[0].style.display", el);
@@ -232,7 +258,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                 );
             }
 
-            foreach (string location in locations)
+            foreach (var location in locations)
             {
                 c.FindElementAndSendKeysToIt(
                     GetCssSelectorParam($"[aria-label*='Enter your {keywordLower}'] input"),
@@ -282,10 +308,8 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
             c.Sleep(milliseconds);
         }
 
-        private static FindElementParameters GetCssSelectorParam(string cssSelector)
-        {
-            return FindElementParameters.WithSelector(By.CssSelector(cssSelector));
-        }
+        private static FindElementParameters GetCssSelectorParam(string cssSelector) =>
+            FindElementParameters.WithSelector(By.CssSelector(cssSelector));
 
         private void SetUpSearch()
         {
@@ -298,7 +322,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                         BySelector = By.CssSelector("button"),
                         Matcher = x =>
                         {
-                            string innerText = x.GetAttribute("innerText");
+                            var innerText = x.GetAttribute("innerText");
                             return !innerText.IsNullOrEmpty() && innerText.Equals("Reject all");
                         }
                     }
@@ -314,12 +338,22 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
 
         private void SetToOneWayTrip()
         {
-            FindElementParameters param = GetCssSelectorParam("[aria-label*='Change ticket type']");
-            IWebElement el = c.FindElement(param);
-            IWebElement parentEl = (IWebElement) c.ExecuteScript("return arguments[0].parentElement", el);
+            var param = GetCssSelectorParam("[aria-label*='Change ticket type']");
+            var el = c.FindElement(param);
+            var parentEl = (IWebElement) c.ExecuteScript("return arguments[0].parentElement", el);
             parentEl.Click();
 
             c.FindElementAndClickIt(GetCssSelectorParam("[aria-label*='Select your ticket type'] [data-value='2']"));
         }
+    }
+
+    public class GoogleFlightsWorkerException : Exception
+    {
+        public GoogleFlightsWorkerException(JourneyCollection results)
+        {
+            Results = results;
+        }
+
+        public JourneyCollection Results { get; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Common_ClassLibrary;
 using JourneyPlanner_ClassLibrary.Classes;
@@ -13,41 +14,50 @@ namespace JourneyPlanner_ClassLibrary.Workers
             JourneyRetrieverComponents c,
             List<DirectPath> directPaths,
             DateTime dateFrom,
-            DateTime dateTo
-            )
+            DateTime dateTo,
+            JourneyCollection existingJourneyCollection
+        )
         {
             JourneyCollection allJourneys = new();
-            int totalPathsCollected = 0;
-            int totalPathsToSearch = directPaths.Count;
-            List<DateTime> allDates = GetAllDates(dateFrom, dateTo);
-            
-            c.Log($"Beginning search for {totalPathsToSearch} paths from {dateFrom.ToShortDateString()} to {dateTo.ToShortDateString()}");
-            
+            allJourneys.AddRange(existingJourneyCollection);
+            var collectedPaths = allJourneys.Journeys.Select(x => x.Path).Distinct();
+            directPaths = directPaths.Where(x => !collectedPaths.Contains(x.ToString())).ToList();
+
+            var totalPathsCollected = 0;
+            var totalPathsToSearch = directPaths.Count;
+            var allDates = GetAllDates(dateFrom, dateTo);
+
+            c.Log(
+                $"Beginning search for {totalPathsToSearch} paths from {dateFrom.ToShortDateString()} to {dateTo.ToShortDateString()}"
+            );
+
             var retriever = new GoogleFlightsWorker(c);
             try
             {
                 retriever.Initialise();
-                JourneyCollection journeys = await retriever.GetJourneysForDates(directPaths, allDates);
+                var journeys = await retriever.GetJourneysForDates(directPaths, allDates);
                 allJourneys.AddRange(journeys);
 
                 totalPathsCollected += directPaths.Count;
 
-                c.Log($"Total progress ({Globals.GetPercentageAndCountString(totalPathsCollected, totalPathsToSearch)})");
+                c.Log(
+                    $"Total progress ({Globals.GetPercentageAndCountString(totalPathsCollected, totalPathsToSearch)})"
+                );
+                c.Log("Journey retrieval finished.");
+                return allJourneys;
             }
-            catch (Exception ex)
+            catch (GoogleFlightsWorkerException ex)
             {
                 c.Log("An exception was thrown while collecting flights and the results have been returned early.");
                 c.Log($"Exception details: {ex}");
+                allJourneys.AddRange(ex.Results);
                 return allJourneys;
             }
-            
-            c.Log($"Journey retrieval finished.");
-            return allJourneys;
         }
 
         private static List<DateTime> GetAllDates(DateTime dateFrom, DateTime dateTo)
         {
-            DateTime tempDate = dateFrom.AddDays(1);
+            var tempDate = dateFrom.AddDays(1);
             List<DateTime> listOfExtraDates = new();
             while (DateTime.Compare(tempDate, dateTo) <= 0)
             {
