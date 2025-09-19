@@ -96,6 +96,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
                         SetStopsToNone();
                     }
                     var flightsForDate = GetFlightsForDate(date, collectedFlightsSet, remainingPathsSet);
+                    c.Log($"Found {flightsForDate.Count} flights for {date.ToShortDateString()}");
                     dateResults.AddRange(flightsForDate);
                 }
                 results.AddRange(dateResults);
@@ -213,7 +214,11 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers
         {
             c.FindElementAndClickIt(GetCssSelectorParam("[aria-label='Stops, Not selected']"));
             Sleep(500);
-            c.FindElementAndClickIt(GetCssSelectorParam("[aria-label*='Nonstop only']"));
+            var el = c.FindElement(GetCssSelectorParam("div[aria-label*='Stops']"));
+            var p = GetCssSelectorParam("input");
+            p.Container = el;
+            p.Index = 1;
+            c.FindElementAndClickIt(p);
             Sleep();
 
             c.FindElementAndClickIt(GetCssSelectorParam("[data-filtertype*='10'] [aria-label*='Close dialog']"));
