@@ -154,6 +154,7 @@ namespace LeagueAPI_ClassLibrary
             JArray array = await GetJArrayFromResponse(uri);
             List<string> ids = new();
             foreach (JToken id in array) ids.Add(id.ToString());
+            // ids = new List<string> { "EUW1_7582808885" };
             return ids;
         }
 
