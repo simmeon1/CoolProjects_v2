@@ -16,8 +16,8 @@ public class Day2
     [Fact]
     public void Part1()
     {
-        var result = Get(Day2Input.Input);
-        Assert.Equal(1227775554, result);
+        Assert.Equal(1227775554, Get(Day2Input.Example));
+        Assert.Equal(31210613313, Get(Day2Input.Input));
     }
 
     private long Get(string str)
