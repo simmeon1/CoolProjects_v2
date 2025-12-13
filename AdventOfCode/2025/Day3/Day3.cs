@@ -8,66 +8,47 @@ public class Day3(ITestOutputHelper testOutputHelper)
     [Fact]
     public void Part1()
     {
-        Assert.Equal(357, Get(Day3Input.Example, testOutputHelper));
-        Assert.Equal(31210613313, Get(Day3Input.Input, new MutedTestOutputHelper()));
+        Assert.Equal(357, Get(Day3Input.Example, 2, testOutputHelper));
+        Assert.Equal(17359, Get(Day3Input.Input, 2, new MutedTestOutputHelper()));
     }
 
-    // [Fact]
-    // public void Part2()
-    // {
-    //     Assert.Equal(4174379265, Get(Day3Input.Example, Part2Strategy));
-    //     Assert.Equal(41823587546, Get(Day3Input.Input, Part2Strategy));
-    // }
-
-    private int Get(string input, ITestOutputHelper logger)
+    [Fact]
+    public void Part2()
     {
-        var result = 0;
+        Assert.Equal(3121910778619, Get(Day3Input.Example, 12, testOutputHelper));
+        Assert.Equal(172787336861064, Get(Day3Input.Input, 12, new MutedTestOutputHelper()));
+    }
+
+    private long Get(string input, int targetLength, ITestOutputHelper logger)
+    {
+        long result = 0;
         var lines = GetInputLines(input);
         foreach (var line in lines)
         {
-            logger.WriteLine("line " + line);
             var arr = line.ToCharArray().Select(x => int.Parse(x.ToString())).ToArray();
-            var numberIndexMap = new Dictionary<int, List<int>>();
-            for (var i = 0; i < arr.Length; i++)
+            var pairsList = arr.Index();
+            var ordered = pairsList
+                .OrderByDescending(x => x.Item)
+                .ThenBy(x => x.Item)
+                .ToList();
+
+            var num = new List<(int Index, int Number)>();
+            for (var i = 0; i < ordered.Count; i++)
             {
-                var number = arr[i];
-                if (!numberIndexMap.ContainsKey(number))
+                var el = ordered[i];
+                var count = ordered.Count(x => x.Index > el.Index);
+                if (count >= targetLength - num.Count - 1 && num.Select(x => x.Index).LastOrDefault(-1) < el.Index)
                 {
-                    numberIndexMap.Add(number, [i]);
-                }
-                else
-                {
-                    numberIndexMap[number].Add(i);
+                    num.Add(el);
+                    if (num.Count == targetLength)
+                    {
+                        break;
+                    }
+                    i = -1;
                 }
             }
-            logger.WriteLine("map " + Serialize(numberIndexMap));
-
-            var indexes = numberIndexMap
-                .OrderByDescending(x => x.Key)
-                .SelectMany(x => x.Value).ToList();
-
-            var possibleNumbers = new List<int>();
-
-            for (var i = 0; i < indexes.Count; i++)
-            {
-                var firstIndex = indexes[i];
-                var higherIndexes = indexes.Where(index => index > firstIndex).ToList();
-                if (!higherIndexes.Any())
-                {
-                    var possible = int.Parse(arr[firstIndex].ToString());
-                    possibleNumbers.Add(possible);
-                }
-                else
-                {
-                    var secondIndex = higherIndexes.MaxBy(x => int.Parse(arr[x].ToString()));
-                    var possible = int.Parse(arr[firstIndex].ToString() + arr[secondIndex]);
-                    possibleNumbers.Add(possible);
-                }
-            }
-            logger.WriteLine("possibleNumbers " + Serialize(possibleNumbers));
-            var max = possibleNumbers.Max();
-            logger.WriteLine("Adding max " + max + " to result");
-            result += max;
+            var join = string.Join("", num.Select(x => x.Number));
+            result += long.Parse(join);
         }
         return result;
     }
