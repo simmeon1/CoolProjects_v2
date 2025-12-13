@@ -8,18 +8,18 @@ public class Day4(ITestOutputHelper testOutputHelper)
     [Fact]
     public void Part1()
     {
-        Assert.Equal(13, Get(Day4Input.Example, testOutputHelper));
-        Assert.Equal(1540, Get(Day4Input.Input, new MutedTestOutputHelper()));
+        Assert.Equal(13, Get(Day4Input.Example, false, testOutputHelper));
+        Assert.Equal(1540, Get(Day4Input.Input, false, new MutedTestOutputHelper()));
     }
 
-    // [Fact]
-    // public void Part2()
-    // {
-    //     Assert.Equal(3121910778619, Get(Day4Input.Example, 12, testOutputHelper));
-    //     Assert.Equal(172787336861064, Get(Day4Input.Input, 12, new MutedTestOutputHelper()));
-    // }
+    [Fact]
+    public void Part2()
+    {
+        Assert.Equal(43, Get(Day4Input.Example, true, testOutputHelper));
+        Assert.Equal(8972, Get(Day4Input.Input, true, new MutedTestOutputHelper()));
+    }
 
-    private long Get(string input, ITestOutputHelper logger)
+    private long Get(string input, bool repeat, ITestOutputHelper logger)
     {
         var lines = GetInputLines(input);
         var map = new char[lines.Length, lines.First().Length];
@@ -34,49 +34,69 @@ public class Day4(ITestOutputHelper testOutputHelper)
         }
 
         var maxRolls = 3;
-        var total = 0;
-        for (int i = 0; i < map.GetLength(0); i++)
+        var total = new List<(int Row, int Column)>();
+
+        while (true)
         {
-            for (int j = 0; j < map.GetLength(1); j++)
+            var currentTotal = new List<(int Row, int Column)>();
+            for (int i = 0; i < map.GetLength(0); i++)
             {
-                if (map[i, j] == '.')
+                for (int j = 0; j < map.GetLength(1); j++)
                 {
-                    continue;
-                }
-                
-                var result = 0;
-                var checks = new (int Row, int Column)[]
-                {
-                    (i - 1, j - 1),
-                    (i - 1, j),
-                    (i - 1, j + 1),
-                    (i + 1, j - 1),
-                    (i + 1, j),
-                    (i + 1, j + 1),
-                    (i, j - 1),
-                    (i, j + 1),
-                };
-                foreach (var check in checks)
-                {
-                    try
+                    if (map[i, j] == '.')
                     {
-                        result += map[check.Row, check.Column] == '@' ? 1 : 0;
+                        continue;
                     }
-                    catch
+                    
+                    var result = new List<(int Row, int Column)>();
+                    var checks = new (int Row, int Column)[]
                     {
-                        // ignored
-                    }
-                    if (result > maxRolls)
+                        (i - 1, j - 1),
+                        (i - 1, j),
+                        (i - 1, j + 1),
+                        (i + 1, j - 1),
+                        (i + 1, j),
+                        (i + 1, j + 1),
+                        (i, j - 1),
+                        (i, j + 1),
+                    };
+                    foreach (var check in checks)
                     {
-                        break;
+                        try
+                        {
+                            if (map[check.Row, check.Column] == '@')
+                            {
+                                result.Add((check.Row, check.Column));
+                            }
+                        }
+                        catch
+                        {
+                            // ignored
+                        }
+                        if (result.Count > maxRolls)
+                        {
+                            break;
+                        }
                     }
-                }
-                if (result <= maxRolls)
-                {
-                    total++;
+                    if (result.Count <= maxRolls)
+                    {
+                        currentTotal.Add((i,j));
+                        total.Add((i,j));
+                    }
                 }
             }
+
+            if (!repeat || currentTotal.Count == 0)
+            {
+                break;
+            }
+
+            foreach (var c in currentTotal)
+            {
+                map[c.Row, c.Column] = '.';
+            }
+            
         }
-        return total;
+        return total.Count;
     }
 }
