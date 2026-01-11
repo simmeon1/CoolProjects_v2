@@ -12,51 +12,91 @@ IHttpClient http = new RealHttpClient();
 ILogger logger = new Logger_Console();
 try
 {
-    Dictionary<string, string> dict = GetCommandAndValuesDictionary(args);
-    string credentialFilePath = dict["--credentials-file"];
-    SpotifyClient client = GetClientFromCredentialFiles(credentialFilePath);
-    var clientUseCase = new SpotifyClientUseCase(client, logger, fileIo, http);
+    var dict = GetCommandAndValuesDictionary(args);
+    var credentialFilePath = dict["--credentials-file"];
+    var client = GetClientFromCredentialFiles(credentialFilePath);
+    var clientUseCase = new SpotifyClientUseCase(client: client, logger: logger, fileIo: fileIo, http: http);
     await client.Initialise();
 
-    string GetJsonPath() => dict["--jsonPath"]; 
+    string GetJsonPath()
+    {
+        return dict["--jsonPath"];
+    }
+
     switch (dict["command"])
     {
         case "uk-radio-live-add-radio":
         {
-            UkRadioLiveAddRadioUseCase useCase = new(fileIo, delayer, await GetChromeDriver(GetJsonPath()), clientUseCase);
-            await useCase.AddRadio(dict["--script-file"], dict["--radio-name"], dict["--max-songs"], GetJsonPath());
+            UkRadioLiveAddRadioUseCase useCase = new(
+                fileIo: fileIo,
+                delayer: delayer,
+                driver: await GetChromeDriver(GetJsonPath()),
+                spotifyClientUseCase: clientUseCase
+            );
+            await useCase.AddRadio(
+                scriptFilePath: dict["--script-file"],
+                radioName: dict["--radio-name"],
+                maxSongs: dict["--max-songs"],
+                jsonPath: GetJsonPath()
+            );
+            break;
+        }
+        case "online-radio-box-use-case":
+        {
+            OnlineRadioBoxUseCase useCase = new(spotifyClientUseCase: clientUseCase, http: http);
+            await useCase.AddRadio(radioName: dict["--radio-name"], jsonPath: GetJsonPath());
             break;
         }
         case "spotify-merge-playlists":
         {
-            string[] playlists = dict["--playlists"].Split(",", StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-            string finalPlaylist = dict["--final-playlist"];
-            await clientUseCase.MergePlaylists(playlists, finalPlaylist);
+            var playlists = dict["--playlists"].Split(separator: ",", options: StringSplitOptions.RemoveEmptyEntries)
+                .Distinct().ToArray();
+            var finalPlaylist = dict["--final-playlist"];
+            await clientUseCase.MergePlaylists(playlists: playlists, finalPlaylist: finalPlaylist);
             break;
         }
         case "billboard":
         {
-            BillboardUseCase useCase = new(clientUseCase, http);
+            BillboardUseCase useCase = new(spotifyClientUseCase: clientUseCase, http: http);
             await useCase.DoWork(GetJsonPath());
             break;
         }
         case "kworbNet":
         {
-            KworbNetUseCase useCase = new(fileIo, logger, delayer, client, clientUseCase, await GetChromeDriver(GetJsonPath()), http);
+            KworbNetUseCase useCase = new(
+                fileIo: fileIo,
+                logger: logger,
+                delayer: delayer,
+                spotifyClient: client,
+                spotifyClientUseCase: clientUseCase,
+                chromeDriver: await GetChromeDriver(GetJsonPath()),
+                http: http
+            );
             await useCase.DoWork(GetJsonPath());
             break;
         }
         case "ukSingles":
         {
-            UkSinglesScrapperUseCase useCase = new(fileIo, logger, delayer, await GetChromeDriver(GetJsonPath()), http);
+            UkSinglesScrapperUseCase useCase = new(
+                fileIo: fileIo,
+                logger: logger,
+                delayer: delayer,
+                driver: await GetChromeDriver(GetJsonPath()),
+                http: http
+            );
             await useCase.Scrap(GetJsonPath());
             break;
         }
     }
-    
+
     async Task<IWebDriverWrapper> GetChromeDriver(string savePath)
     {
-        await ChromeDriverService.GetLatestChromeDriver(logger, http, savePath, fileIo);
+        await ChromeDriverService.GetLatestChromeDriver(
+            logger: logger,
+            httpClient: http,
+            savePath: savePath,
+            fileIo: fileIo
+        );
         ChromeOptions options = new();
         //Tried debugging but no luck
         //options.AddArgument("--no-sandbox");
@@ -68,8 +108,12 @@ try
         //https://seleniumjava.com/2019/09/02/solved-the-http-request-to-the-remote-webdriver-server-for-url-http-localhost52847-session-value-timed-out-after-60-seconds/
         //Adding the service/timespan parameters fixed the issue for "the http request to the remote webdriver server for url timed out after 60 seconds" issue
         //See RemoteWebDriver.DefaultCommandTimeout property (set by timespan param)
-        ChromeDriver chromeDriver = new($"{savePath}\\chromeDriverFolder\\chromedriver-win64", options, TimeSpan.FromMinutes(3));
-        chromeDriver.Manage().Timeouts().AsynchronousJavaScript = new TimeSpan(0, 5, 0);
+        ChromeDriver chromeDriver = new(
+            chromeDriverDirectory: $"{savePath}\\chromeDriverFolder\\chromedriver-win64",
+            options: options,
+            commandTimeout: TimeSpan.FromMinutes(3)
+        );
+        chromeDriver.Manage().Timeouts().AsynchronousJavaScript = new TimeSpan(hours: 0, minutes: 5, seconds: 0);
         IWebDriverWrapper webDriverWrapper = new ChromeDriverWrapper(chromeDriver);
         return webDriverWrapper;
     }
@@ -84,9 +128,9 @@ Console.ReadKey();
 SpotifyClient GetClientFromCredentialFiles(string filePath)
 {
     //Found in dashboard
-    string clientId = "";
-    string clientSecret = "";
-    string callback = "";
+    var clientId = "";
+    var clientSecret = "";
+    var callback = "";
 
     //Retrieved with authorize code
     //If you need a new token, go to the url to authorize app scope access. Get code from response url
@@ -95,43 +139,67 @@ SpotifyClient GetClientFromCredentialFiles(string filePath)
     //string authorizeCode = "AQDwCqIGMuhtDkiHRvANtbJ1oHeNQRg...";
     //await client.SetAccessTokenFromAuthorizeCode(authorizeCode);
 
-    string accessToken = "";
-    string tokenType = "";
-    int expiresIn = 0;
-    string refreshToken = "";
-    string scope = "";
+    var accessToken = "";
+    var tokenType = "";
+    var expiresIn = 0;
+    var refreshToken = "";
+    var scope = "";
 
-    IEnumerable<string> credentialLines = fileIo.ReadLines(filePath);
-    foreach (string line in credentialLines)
+    var credentialLines = fileIo.ReadLines(filePath);
+    foreach (var line in credentialLines)
     {
-        string[] lineSplit = line.Split("=", StringSplitOptions.RemoveEmptyEntries);
-        string key = lineSplit[0];
-        string value = lineSplit[1];
-        if (key == "clientId") clientId = value;
-        else if (key == "clientSecret") clientSecret = value;
-        else if (key == "callback") callback = value;
-        else if (key == "accessToken") accessToken = value;
-        else if (key == "tokenType") tokenType = value;
-        else if (key == "expiresIn") expiresIn = int.Parse(value);
-        else if (key == "refreshToken") refreshToken = value;
-        else if (key == "scope") scope = value;
+        var lineSplit = line.Split(separator: "=", options: StringSplitOptions.RemoveEmptyEntries);
+        var key = lineSplit[0];
+        var value = lineSplit[1];
+        if (key == "clientId")
+        {
+            clientId = value;
+        }
+        else if (key == "clientSecret")
+        {
+            clientSecret = value;
+        }
+        else if (key == "callback")
+        {
+            callback = value;
+        }
+        else if (key == "accessToken")
+        {
+            accessToken = value;
+        }
+        else if (key == "tokenType")
+        {
+            tokenType = value;
+        }
+        else if (key == "expiresIn")
+        {
+            expiresIn = int.Parse(value);
+        }
+        else if (key == "refreshToken")
+        {
+            refreshToken = value;
+        }
+        else if (key == "scope")
+        {
+            scope = value;
+        }
     }
-    
+
     SpotifyCredentials credentials = new(
-        accessToken,
-        tokenType,
-        expiresIn,
-        refreshToken,
-        scope
+        accessToken: accessToken,
+        tokenType: tokenType,
+        expiresIn: expiresIn,
+        refreshToken: refreshToken,
+        scope: scope
     );
 
     SpotifyClient spotifyClient = new(
-        http,
-        delayer,
-        clientId,
-        clientSecret,
-        callback,
-        credentials
+        http: http,
+        delayer: delayer,
+        clientId: clientId,
+        clientSecret: clientSecret,
+        callback: callback,
+        credentials: credentials
     );
     return spotifyClient;
 }
@@ -139,16 +207,16 @@ SpotifyClient GetClientFromCredentialFiles(string filePath)
 Dictionary<string, string> GetCommandAndValuesDictionary(string[] strings)
 {
     Dictionary<string, string> commandsAndValues = new();
-    for (int i = 0; i < strings.Length; i++)
+    for (var i = 0; i < strings.Length; i++)
     {
-        string arg = strings[i];
+        var arg = strings[i];
         if (i == 0)
         {
-            commandsAndValues.Add("command", arg);
-        } 
+            commandsAndValues.Add(key: "command", value: arg);
+        }
         else if (arg.StartsWith("--"))
         {
-            commandsAndValues.Add(arg, strings[i + 1]);
+            commandsAndValues.Add(key: arg, value: strings[i + 1]);
         }
     }
 
