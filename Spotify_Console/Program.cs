@@ -44,7 +44,10 @@ try
         case "online-radio-box-use-case":
         {
             OnlineRadioBoxUseCase useCase = new(spotifyClientUseCase: clientUseCase, http: http);
-            await useCase.AddRadio(radioName: dict["--radio-name"], jsonPath: GetJsonPath());
+            await useCase.AddRadio(
+                radioNames: dict["--radio-name"].Split(separator: ",", options: StringSplitOptions.RemoveEmptyEntries),
+                jsonPath: GetJsonPath()
+            );
             break;
         }
         case "spotify-merge-playlists":
