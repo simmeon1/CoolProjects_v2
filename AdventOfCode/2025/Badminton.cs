@@ -22,7 +22,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
     [Fact]
     public void PairingsAreCorrect()
     {
-        var pairsList = CreatePairs();
+        var pairsList = CreatePairs(Names);
         Assert.Equal(
             expected: new List<Pairing>
             {
@@ -89,8 +89,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
     [Fact]
     public void MatchupMakingAsExpected()
     {
-        var pairsList = CreatePairs().ToList();
-        var matchups = GetMatchups(pairsList: pairsList, shuffle: true, minGames: 3);
+        var matchups = GetMatchups(names: Names, shuffle: true, minGames: 3, courtCount: 2);
         var matchupsPrint = GetPrintedMatchups(matchups);
         File.WriteAllText(
             path: "C:\\Users\\simme\\AppData\\Roaming\\JetBrains\\Rider2025.3\\scratches\\matchups.txt",
@@ -99,90 +98,116 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         );
         Assert.Equal(
             expected: matchups,
-            actual:
-            [
-                new Matchup(
-                    Pairing1: new Pairing(Player1: Names[0], Player2: Names[1]),
-                    Pairing2: new Pairing(Player1: Names[2], Player2: Names[3])
-                ),
-                new Matchup(
-                    Pairing1: new Pairing(Player1: Names[4], Player2: Names[5]),
-                    Pairing2: new Pairing(Player1: Names[6], Player2: Names[7])
-                ),
-                new Matchup(
-                    Pairing1: new Pairing(Player1: Names[8], Player2: Names[9]),
-                    Pairing2: new Pairing(Player1: Names[0], Player2: Names[10])
-                ),
-                new Matchup(
-                    Pairing1: new Pairing(Player1: Names[1], Player2: Names[2]),
-                    Pairing2: new Pairing(Player1: Names[3], Player2: Names[4])
-                ),
-                new Matchup(
-                    Pairing1: new Pairing(Player1: Names[5], Player2: Names[6]),
-                    Pairing2: new Pairing(Player1: Names[7], Player2: Names[8])
-                ),
-                new Matchup(
-                    Pairing1: new Pairing(Player1: Names[9], Player2: Names[10]),
-                    Pairing2: new Pairing(Player1: Names[0], Player2: Names[2])
-                )
-            ]
+            actual: new Dictionary<int, List<Matchup>>
+            {
+                {
+                    1, [
+                        new Matchup(
+                            Pairing1: new Pairing(Player1: Names[0], Player2: Names[1]),
+                            Pairing2: new Pairing(Player1: Names[2], Player2: Names[3])
+                        ),
+                        new Matchup(
+                            Pairing1: new Pairing(Player1: Names[4], Player2: Names[5]),
+                            Pairing2: new Pairing(Player1: Names[6], Player2: Names[7])
+                        ),
+                        new Matchup(
+                            Pairing1: new Pairing(Player1: Names[8], Player2: Names[9]),
+                            Pairing2: new Pairing(Player1: Names[0], Player2: Names[10])
+                        ),
+                        new Matchup(
+                            Pairing1: new Pairing(Player1: Names[1], Player2: Names[2]),
+                            Pairing2: new Pairing(Player1: Names[3], Player2: Names[4])
+                        ),
+                        new Matchup(
+                            Pairing1: new Pairing(Player1: Names[5], Player2: Names[6]),
+                            Pairing2: new Pairing(Player1: Names[7], Player2: Names[8])
+                        ),
+                        new Matchup(
+                            Pairing1: new Pairing(Player1: Names[9], Player2: Names[10]),
+                            Pairing2: new Pairing(Player1: Names[0], Player2: Names[2])
+                        )
+                    ]
+                }
+            }
         );
     }
 
-    private string GetPrintedMatchups(List<Matchup> matchups)
+    private string GetPrintedMatchups(IReadOnlyDictionary<int, List<Matchup>> matchupsMap)
     {
-        var lines = new List<string>();
-        foreach (var matchup in matchups)
+        var allLines = new List<string>();
+        foreach (var (courtIndex, matchups) in matchupsMap)
         {
-            lines.Add(
-                $"{matchup.Pairing1.Player1}/{matchup.Pairing1.Player2} - {matchup.Pairing2.Player1}/{matchup.Pairing2.Player2}"
-            );
+            var lines = new List<string> { $"Court {courtIndex}" };
+            foreach (var matchup in matchups)
+            {
+                lines.Add(
+                    $"{matchup.Pairing1.Player1}/{matchup.Pairing1.Player2} - {matchup.Pairing2.Player1}/{matchup.Pairing2.Player2}"
+                );
+            }
+            allLines.Add(string.Join(separator: "\n", values: lines));
         }
-        return string.Join(separator: "\n", values: lines);
+
+        return string.Join(separator: "\n\n", values: allLines);
     }
 
-    private static List<Matchup> GetMatchups(List<Pairing> pairsList, bool shuffle, int minGames)
+    private static IReadOnlyDictionary<int, List<Matchup>> GetMatchups(
+        string[] names,
+        bool shuffle,
+        int minGames,
+        int courtCount
+    )
     {
-        var result = new List<Matchup>();
-        var playerHasPlayedMap = pairsList
-            .SelectMany(p => p.GetPlayers())
-            .Distinct()
-            .ToDictionary(keySelector: p => p, elementSelector: _ => 0);
-        var pairingsHavePlayedMap = pairsList.ToDictionary(keySelector: p => p, elementSelector: _ => 0);
+        var ceiling = Math.Ceiling(names.Length / Convert.ToDouble(courtCount));
+        var nameChunks = names.Chunk(Convert.ToInt32(ceiling));
+        var resultMap = new Dictionary<int, List<Matchup>>();
 
-        while (true)
+        var courtIndex = 1;
+        foreach (var nameChunk in nameChunks)
         {
-            if (shuffle)
+            var result = new List<Matchup>();
+            var pairsList = CreatePairs(nameChunk).ToList();
+
+            var playerHasPlayedMap = pairsList
+                .SelectMany(p => p.GetPlayers())
+                .Distinct()
+                .ToDictionary(keySelector: p => p, elementSelector: _ => 0);
+            var pairingsHavePlayedMap = pairsList.ToDictionary(keySelector: p => p, elementSelector: _ => 0);
+
+            while (true)
             {
-                ShufflePairs(pairsList);
-            }
-            var prioritizedPairGroups = pairsList
-                .GroupBy(p => playerHasPlayedMap[p.Player1] + playerHasPlayedMap[p.Player2]
-                )
-                .OrderBy(g => g.Key);
-
-            var matchup = CreateMatchup(
-                prioritizedPairGroups: prioritizedPairGroups,
-                pairingsHavePlayedMap: pairingsHavePlayedMap
-            );
-
-            var matchupPairings = new Matchup(Pairing1: matchup.Pairing1, Pairing2: matchup.Pairing2);
-            result.Add(matchupPairings);
-
-            foreach (var pairing in new[] { matchupPairings.Pairing1, matchupPairings.Pairing2 })
-            {
-                pairingsHavePlayedMap[pairing]++;
-                foreach (var player in pairing.GetPlayers())
+                if (shuffle)
                 {
-                    playerHasPlayedMap[player]++;
+                    ShufflePairs(pairsList);
+                }
+                var prioritizedPairGroups = pairsList
+                    .GroupBy(p => playerHasPlayedMap[p.Player1] + playerHasPlayedMap[p.Player2]
+                    )
+                    .OrderBy(g => g.Key);
+
+                var matchup = CreateMatchup(
+                    prioritizedPairGroups: prioritizedPairGroups,
+                    pairingsHavePlayedMap: pairingsHavePlayedMap
+                );
+
+                var matchupPairings = new Matchup(Pairing1: matchup.Pairing1, Pairing2: matchup.Pairing2);
+                result.Add(matchupPairings);
+
+                foreach (var pairing in new[] { matchupPairings.Pairing1, matchupPairings.Pairing2 })
+                {
+                    pairingsHavePlayedMap[pairing]++;
+                    foreach (var player in pairing.GetPlayers())
+                    {
+                        playerHasPlayedMap[player]++;
+                    }
+                }
+                if (playerHasPlayedMap.Values.Min() >= minGames)
+                {
+                    break;
                 }
             }
-            if (playerHasPlayedMap.Values.Min() >= minGames)
-            {
-                break;
-            }
+            resultMap.Add(key: courtIndex++, value: result);
         }
-        return result;
+        return resultMap;
     }
 
     private static (Pairing Pairing1, Pairing Pairing2) CreateMatchup(
@@ -221,15 +246,15 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         }
     }
 
-    private static Pairing[] CreatePairs()
+    private static Pairing[] CreatePairs(string[] names)
     {
         var pairsSet = new HashSet<Pairing>();
-        for (var i = 0; i < Names.Length; i++)
+        for (var i = 0; i < names.Length; i++)
         {
-            var player1 = Names[i];
-            for (var j = 0; j < Names.Length; j++)
+            var player1 = names[i];
+            for (var j = 0; j < names.Length; j++)
             {
-                var player2 = Names[j];
+                var player2 = names[j];
                 if (player1 != player2)
                 {
                     var sorted = new[] { player1, player2 }.Order().ToArray();
