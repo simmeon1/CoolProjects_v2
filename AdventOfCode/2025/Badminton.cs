@@ -18,7 +18,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         "jjj",
         "kkk"
     ];
-    
+
     [Fact]
     public void PairingsAreCorrect()
     {
@@ -87,10 +87,16 @@ public class Badminton(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
-    public void ShufflingIsGood()
+    public void MatchupMakingAsExpected()
     {
         var pairsList = CreatePairs().ToList();
-        var matchups = GetMatchups(pairsList: pairsList, shuffle: false, minGames: 2);
+        var matchups = GetMatchups(pairsList: pairsList, shuffle: true, minGames: 3);
+        var matchupsPrint = GetPrintedMatchups(matchups);
+        File.WriteAllText(
+            path: "C:\\Users\\simme\\AppData\\Roaming\\JetBrains\\Rider2025.3\\scratches\\matchups.txt",
+            // JsonSerializer.Serialize(matchups, new JsonSerializerOptions { WriteIndented = true })
+            contents: matchupsPrint
+        );
         Assert.Equal(
             expected: matchups,
             actual:
@@ -123,12 +129,25 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         );
     }
 
+    private string GetPrintedMatchups(List<Matchup> matchups)
+    {
+        var lines = new List<string>();
+        foreach (var matchup in matchups)
+        {
+            lines.Add(
+                $"{matchup.Pairing1.Player1}/{matchup.Pairing1.Player2} - {matchup.Pairing2.Player1}/{matchup.Pairing2.Player2}"
+            );
+        }
+        return string.Join(separator: "\n", values: lines);
+    }
+
     private static List<Matchup> GetMatchups(List<Pairing> pairsList, bool shuffle, int minGames)
     {
         var result = new List<Matchup>();
-        var playerHasPlayedMap = pairsList.SelectMany(p =>
-            new[] { p.Player1, p.Player2 }
-        ).Distinct().ToDictionary(keySelector: p => p, elementSelector: _ => 0);
+        var playerHasPlayedMap = pairsList
+            .SelectMany(p => p.GetPlayers())
+            .Distinct()
+            .ToDictionary(keySelector: p => p, elementSelector: _ => 0);
         var pairingsHavePlayedMap = pairsList.ToDictionary(keySelector: p => p, elementSelector: _ => 0);
 
         while (true)
@@ -153,7 +172,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
             foreach (var pairing in new[] { matchupPairings.Pairing1, matchupPairings.Pairing2 })
             {
                 pairingsHavePlayedMap[pairing]++;
-                foreach (var player in new[] { pairing.Player1, pairing.Player2 })
+                foreach (var player in pairing.GetPlayers())
                 {
                     playerHasPlayedMap[player]++;
                 }
@@ -176,9 +195,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         {
             foreach (var pair in prioritizedPairGroup.OrderBy(p => pairingsHavePlayedMap[p]))
             {
-                var matchupNames = matchup.SelectMany(p =>
-                    new[] { p.Player1, p.Player2 }
-                ).ToList();
+                var matchupNames = matchup.SelectMany(p => p.GetPlayers()).ToList();
                 if (!matchupNames.Contains(pair.Player1) && !matchupNames.Contains(pair.Player2))
                 {
                     matchup.Add(pair);
@@ -223,7 +240,13 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         return pairsSet.OrderBy(p => p.Player1).ThenBy(p => p.Player2).ToArray();
     }
 
-    private record Pairing(string Player1, string Player2);
+    private record Pairing(string Player1, string Player2)
+    {
+        public IEnumerable<string> GetPlayers()
+        {
+            return [Player1, Player2];
+        }
+    }
 
     private record Matchup(Pairing Pairing1, Pairing Pairing2);
 }
