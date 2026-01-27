@@ -39,107 +39,107 @@ public class Badminton(ITestOutputHelper testOutputHelper)
     {
         var pairsList = CreatePairs(Names);
         Assert.Equal(
-            expected: new List<Pairing>
+            new List<Pairing>
             {
-                new(Player1: Names[0], Player2: Names[1]),
-                new(Player1: Names[0], Player2: Names[2]),
-                new(Player1: Names[0], Player2: Names[3]),
-                new(Player1: Names[0], Player2: Names[4]),
-                new(Player1: Names[0], Player2: Names[5]),
-                new(Player1: Names[0], Player2: Names[6]),
-                new(Player1: Names[0], Player2: Names[7]),
-                new(Player1: Names[0], Player2: Names[8]),
-                new(Player1: Names[0], Player2: Names[9]),
-                new(Player1: Names[0], Player2: Names[10]),
-                new(Player1: Names[1], Player2: Names[2]),
-                new(Player1: Names[1], Player2: Names[3]),
-                new(Player1: Names[1], Player2: Names[4]),
-                new(Player1: Names[1], Player2: Names[5]),
-                new(Player1: Names[1], Player2: Names[6]),
-                new(Player1: Names[1], Player2: Names[7]),
-                new(Player1: Names[1], Player2: Names[8]),
-                new(Player1: Names[1], Player2: Names[9]),
-                new(Player1: Names[1], Player2: Names[10]),
-                new(Player1: Names[2], Player2: Names[3]),
-                new(Player1: Names[2], Player2: Names[4]),
-                new(Player1: Names[2], Player2: Names[5]),
-                new(Player1: Names[2], Player2: Names[6]),
-                new(Player1: Names[2], Player2: Names[7]),
-                new(Player1: Names[2], Player2: Names[8]),
-                new(Player1: Names[2], Player2: Names[9]),
-                new(Player1: Names[2], Player2: Names[10]),
-                new(Player1: Names[3], Player2: Names[4]),
-                new(Player1: Names[3], Player2: Names[5]),
-                new(Player1: Names[3], Player2: Names[6]),
-                new(Player1: Names[3], Player2: Names[7]),
-                new(Player1: Names[3], Player2: Names[8]),
-                new(Player1: Names[3], Player2: Names[9]),
-                new(Player1: Names[3], Player2: Names[10]),
-                new(Player1: Names[4], Player2: Names[5]),
-                new(Player1: Names[4], Player2: Names[6]),
-                new(Player1: Names[4], Player2: Names[7]),
-                new(Player1: Names[4], Player2: Names[8]),
-                new(Player1: Names[4], Player2: Names[9]),
-                new(Player1: Names[4], Player2: Names[10]),
-                new(Player1: Names[5], Player2: Names[6]),
-                new(Player1: Names[5], Player2: Names[7]),
-                new(Player1: Names[5], Player2: Names[8]),
-                new(Player1: Names[5], Player2: Names[9]),
-                new(Player1: Names[5], Player2: Names[10]),
-                new(Player1: Names[6], Player2: Names[7]),
-                new(Player1: Names[6], Player2: Names[8]),
-                new(Player1: Names[6], Player2: Names[9]),
-                new(Player1: Names[6], Player2: Names[10]),
-                new(Player1: Names[7], Player2: Names[8]),
-                new(Player1: Names[7], Player2: Names[9]),
-                new(Player1: Names[7], Player2: Names[10]),
-                new(Player1: Names[8], Player2: Names[9]),
-                new(Player1: Names[8], Player2: Names[10]),
-                new(Player1: Names[9], Player2: Names[10])
+                new(Names[0], Names[1]),
+                new(Names[0], Names[2]),
+                new(Names[0], Names[3]),
+                new(Names[0], Names[4]),
+                new(Names[0], Names[5]),
+                new(Names[0], Names[6]),
+                new(Names[0], Names[7]),
+                new(Names[0], Names[8]),
+                new(Names[0], Names[9]),
+                new(Names[0], Names[10]),
+                new(Names[1], Names[2]),
+                new(Names[1], Names[3]),
+                new(Names[1], Names[4]),
+                new(Names[1], Names[5]),
+                new(Names[1], Names[6]),
+                new(Names[1], Names[7]),
+                new(Names[1], Names[8]),
+                new(Names[1], Names[9]),
+                new(Names[1], Names[10]),
+                new(Names[2], Names[3]),
+                new(Names[2], Names[4]),
+                new(Names[2], Names[5]),
+                new(Names[2], Names[6]),
+                new(Names[2], Names[7]),
+                new(Names[2], Names[8]),
+                new(Names[2], Names[9]),
+                new(Names[2], Names[10]),
+                new(Names[3], Names[4]),
+                new(Names[3], Names[5]),
+                new(Names[3], Names[6]),
+                new(Names[3], Names[7]),
+                new(Names[3], Names[8]),
+                new(Names[3], Names[9]),
+                new(Names[3], Names[10]),
+                new(Names[4], Names[5]),
+                new(Names[4], Names[6]),
+                new(Names[4], Names[7]),
+                new(Names[4], Names[8]),
+                new(Names[4], Names[9]),
+                new(Names[4], Names[10]),
+                new(Names[5], Names[6]),
+                new(Names[5], Names[7]),
+                new(Names[5], Names[8]),
+                new(Names[5], Names[9]),
+                new(Names[5], Names[10]),
+                new(Names[6], Names[7]),
+                new(Names[6], Names[8]),
+                new(Names[6], Names[9]),
+                new(Names[6], Names[10]),
+                new(Names[7], Names[8]),
+                new(Names[7], Names[9]),
+                new(Names[7], Names[10]),
+                new(Names[8], Names[9]),
+                new(Names[8], Names[10]),
+                new(Names[9], Names[10])
             },
-            actual: pairsList
+            pairsList
         );
     }
 
     [Fact]
     public void MatchupMakingAsExpected()
     {
-        var matchups = GetMatchup(names: Names.Take(14).ToArray(), shuffle: true, minGames: 2, courtCount: 2);
+        var matchups = GetMatchup(Names.Take(14).ToArray(), true, 2, 2);
         var matchupsPrint = GetPrintedMatchups(matchups);
         File.WriteAllText(
-            path: "C:\\Users\\simme\\AppData\\Roaming\\JetBrains\\Rider2025.3\\scratches\\matchups.txt",
+            "C:\\Users\\simme\\AppData\\Roaming\\JetBrains\\Rider2025.3\\scratches\\matchups.txt",
             // JsonSerializer.Serialize(matchups, new JsonSerializerOptions { WriteIndented = true })
-            contents: matchupsPrint
+            matchupsPrint
         );
         Assert.Equal(
-            expected: matchups,
-            actual: new Dictionary<int, List<Matchup>>
+            matchups,
+            new Dictionary<int, List<Matchup>>
             {
                 {
                     1, [
                         new Matchup(
-                            Pairing1: new Pairing(Player1: Names[0], Player2: Names[1]),
-                            Pairing2: new Pairing(Player1: Names[2], Player2: Names[3])
+                            new Pairing(Names[0], Names[1]),
+                            new Pairing(Names[2], Names[3])
                         ),
                         new Matchup(
-                            Pairing1: new Pairing(Player1: Names[4], Player2: Names[5]),
-                            Pairing2: new Pairing(Player1: Names[6], Player2: Names[7])
+                            new Pairing(Names[4], Names[5]),
+                            new Pairing(Names[6], Names[7])
                         ),
                         new Matchup(
-                            Pairing1: new Pairing(Player1: Names[8], Player2: Names[9]),
-                            Pairing2: new Pairing(Player1: Names[0], Player2: Names[10])
+                            new Pairing(Names[8], Names[9]),
+                            new Pairing(Names[0], Names[10])
                         ),
                         new Matchup(
-                            Pairing1: new Pairing(Player1: Names[1], Player2: Names[2]),
-                            Pairing2: new Pairing(Player1: Names[3], Player2: Names[4])
+                            new Pairing(Names[1], Names[2]),
+                            new Pairing(Names[3], Names[4])
                         ),
                         new Matchup(
-                            Pairing1: new Pairing(Player1: Names[5], Player2: Names[6]),
-                            Pairing2: new Pairing(Player1: Names[7], Player2: Names[8])
+                            new Pairing(Names[5], Names[6]),
+                            new Pairing(Names[7], Names[8])
                         ),
                         new Matchup(
-                            Pairing1: new Pairing(Player1: Names[9], Player2: Names[10]),
-                            Pairing2: new Pairing(Player1: Names[0], Player2: Names[2])
+                            new Pairing(Names[9], Names[10]),
+                            new Pairing(Names[0], Names[2])
                         )
                     ]
                 }
@@ -166,11 +166,8 @@ public class Badminton(ITestOutputHelper testOutputHelper)
 
             var pairsToPlay = new List<Pairing>();
 
-            int GetPlayerWillPlayCount(string name)
-            {
-                return pairsToPlay.Count(p => p.ContainsPlayer(name));
-            }
-
+            int GetPlayerWillPlayCount(string name) => pairsToPlay.Count(p => p.ContainsPlayer(name));
+            int GetPlayersPlayCountSum(Pairing p) => p.GetPlayers().Select(GetPlayerWillPlayCount).Sum();
 
             foreach (var name in nameChunk)
             {
@@ -179,7 +176,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                         {
                             var pairPlayers = p.GetPlayers().ToList();
                             return !pairsToPlay.Contains(p) && pairPlayers.Contains(name) &&
-                                pairPlayers.All(pName => GetPlayerWillPlayCount(pName) != minGames);
+                                pairPlayers.All(pName => GetPlayerWillPlayCount(pName) < minGames);
                         }
                     )
                     .Take(minGames - GetPlayerWillPlayCount(name))
@@ -187,22 +184,19 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                 pairsToPlay.AddRange(namePairs);
             }
 
-            pairsToPlay = pairsToPlay.Where(p => p.GetPlayers()
-                    .Select(GetPlayerWillPlayCount)
-                    .Sum() == minGames * p.GetPlayers().Count()
-            ).ToList();
+            pairsToPlay = pairsToPlay.Where(p => GetPlayersPlayCountSum(p) >= minGames * 2).ToList();
             var needingMoreGames = nameChunk.Where(n => GetPlayerWillPlayCount(n) == 0);
             foreach (var name in needingMoreGames)
             {
                 // ShufflePairs(pairsToPlay);
                 while (GetPlayerWillPlayCount(name) < minGames)
                 {
-                    var firstPair = pairsToPlay[0];
-                    pairsToPlay.RemoveAt(0);
+                    var pairToSeparate = pairsToPlay.MaxBy(GetPlayersPlayCountSum)!;
+                    pairsToPlay.Remove(pairToSeparate);
                     pairsToPlay.AddRange(
                         [
-                            new Pairing(Player1: name, Player2: firstPair.Player1),
-                            new Pairing(Player1: name, Player2: firstPair.Player2)
+                            new Pairing(name, pairToSeparate.Player1),
+                            new Pairing(name, pairToSeparate.Player2)
                         ]
                     );
                 }
@@ -210,21 +204,22 @@ public class Badminton(ITestOutputHelper testOutputHelper)
 
             while (pairsToPlay.Any())
             {
-                var ordered = pairsToPlay
-                    .OrderByDescending(p =>
-                        p.GetPlayers()
-                            .Select(GetPlayerWillPlayCount)
-                            .Sum()
-                    ).ToList();
+                Pairing? FindUniquePairing(IEnumerable<Pairing> allPairing, Pairing firstPair) =>
+                    allPairing.FirstOrDefault(p =>
+                        p.GetPlayers().Concat(firstPair.GetPlayers()).Distinct().Count() == 4
+                    );
+
+                var ordered = pairsToPlay.OrderByDescending(GetPlayersPlayCountSum).ToList();
                 var firstPair = ordered[0];
-                var secondPair = ordered.First(p =>
-                    p.GetPlayers().Concat(firstPair.GetPlayers()).Distinct().Count() == 4
-                );
-                result.Add(new Matchup(Pairing1: firstPair, Pairing2: secondPair));
+                var secondPair = FindUniquePairing(ordered, firstPair) ?? FindUniquePairing(
+                    result.SelectMany(m => m.GetPairings()),
+                    firstPair
+                )!;
+                result.Add(new Matchup(firstPair, secondPair));
                 pairsToPlay.Remove(firstPair);
                 pairsToPlay.Remove(secondPair);
             }
-            resultMap.Add(key: courtIndex++, value: result);
+            resultMap.Add(courtIndex++, result);
         }
         return resultMap;
     }
@@ -253,7 +248,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                 if (player1 != player2)
                 {
                     var sorted = new[] { player1, player2 }.Order().ToArray();
-                    pairsSet.Add(new Pairing(Player1: sorted[0], Player2: sorted[1]));
+                    pairsSet.Add(new Pairing(sorted[0], sorted[1]));
                 }
             }
         }
@@ -272,10 +267,10 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                     $"{matchup.Pairing1.Player1}/{matchup.Pairing1.Player2} - {matchup.Pairing2.Player1}/{matchup.Pairing2.Player2}"
                 );
             }
-            allLines.Add(string.Join(separator: "\n", values: lines));
+            allLines.Add(string.Join("\n", lines));
         }
 
-        return string.Join(separator: "\n\n", values: allLines);
+        return string.Join("\n\n", allLines);
     }
 
     private record Pairing(string Player1, string Player2)
@@ -291,5 +286,11 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         }
     }
 
-    private record Matchup(Pairing Pairing1, Pairing Pairing2);
+    private record Matchup(Pairing Pairing1, Pairing Pairing2)
+    {
+        public IEnumerable<Pairing> GetPairings()
+        {
+            return [Pairing1, Pairing2];
+        }
+    }
 }
