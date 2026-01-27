@@ -116,32 +116,15 @@ public class Badminton(ITestOutputHelper testOutputHelper)
             new Dictionary<int, List<Matchup>>
             {
                 {
-                    1, [
-                        new Matchup(
-                            new Pairing(Names[0], Names[1]),
-                            new Pairing(Names[2], Names[3])
-                        ),
-                        new Matchup(
-                            new Pairing(Names[4], Names[5]),
-                            new Pairing(Names[6], Names[7])
-                        ),
-                        new Matchup(
-                            new Pairing(Names[8], Names[9]),
-                            new Pairing(Names[0], Names[10])
-                        ),
-                        new Matchup(
-                            new Pairing(Names[1], Names[2]),
-                            new Pairing(Names[3], Names[4])
-                        ),
-                        new Matchup(
-                            new Pairing(Names[5], Names[6]),
-                            new Pairing(Names[7], Names[8])
-                        ),
-                        new Matchup(
-                            new Pairing(Names[9], Names[10]),
-                            new Pairing(Names[0], Names[2])
-                        )
-                    ]
+                    1, new List<Matchup>
+                    {
+                        new(new Pairing(Names[0], Names[1]), new Pairing(Names[2], Names[3])),
+                        new(new Pairing(Names[4], Names[5]), new Pairing(Names[6], Names[7])),
+                        new(new Pairing(Names[8], Names[9]), new Pairing(Names[0], Names[10])),
+                        new(new Pairing(Names[1], Names[2]), new Pairing(Names[3], Names[4])),
+                        new(new Pairing(Names[5], Names[6]), new Pairing(Names[7], Names[8])),
+                        new(new Pairing(Names[9], Names[10]), new Pairing(Names[0], Names[2]))
+                    }
                 }
             }
         );
