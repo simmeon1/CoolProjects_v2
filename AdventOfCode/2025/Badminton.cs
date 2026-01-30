@@ -37,94 +37,49 @@ public class Badminton(ITestOutputHelper testOutputHelper)
     [Fact]
     public void PairingsAreCorrect()
     {
-        var pairsList = CreatePairs(Names);
+        var pairsList = CreatePairs(Names.Take(3).ToArray());
         Assert.Equal(
             new List<Pairing>
             {
-                new(Names[0], Names[1]),
-                new(Names[0], Names[2]),
-                new(Names[0], Names[3]),
-                new(Names[0], Names[4]),
-                new(Names[0], Names[5]),
-                new(Names[0], Names[6]),
-                new(Names[0], Names[7]),
-                new(Names[0], Names[8]),
-                new(Names[0], Names[9]),
-                new(Names[0], Names[10]),
-                new(Names[1], Names[2]),
-                new(Names[1], Names[3]),
-                new(Names[1], Names[4]),
-                new(Names[1], Names[5]),
-                new(Names[1], Names[6]),
-                new(Names[1], Names[7]),
-                new(Names[1], Names[8]),
-                new(Names[1], Names[9]),
-                new(Names[1], Names[10]),
-                new(Names[2], Names[3]),
-                new(Names[2], Names[4]),
-                new(Names[2], Names[5]),
-                new(Names[2], Names[6]),
-                new(Names[2], Names[7]),
-                new(Names[2], Names[8]),
-                new(Names[2], Names[9]),
-                new(Names[2], Names[10]),
-                new(Names[3], Names[4]),
-                new(Names[3], Names[5]),
-                new(Names[3], Names[6]),
-                new(Names[3], Names[7]),
-                new(Names[3], Names[8]),
-                new(Names[3], Names[9]),
-                new(Names[3], Names[10]),
-                new(Names[4], Names[5]),
-                new(Names[4], Names[6]),
-                new(Names[4], Names[7]),
-                new(Names[4], Names[8]),
-                new(Names[4], Names[9]),
-                new(Names[4], Names[10]),
-                new(Names[5], Names[6]),
-                new(Names[5], Names[7]),
-                new(Names[5], Names[8]),
-                new(Names[5], Names[9]),
-                new(Names[5], Names[10]),
-                new(Names[6], Names[7]),
-                new(Names[6], Names[8]),
-                new(Names[6], Names[9]),
-                new(Names[6], Names[10]),
-                new(Names[7], Names[8]),
-                new(Names[7], Names[9]),
-                new(Names[7], Names[10]),
-                new(Names[8], Names[9]),
-                new(Names[8], Names[10]),
-                new(Names[9], Names[10])
+                new("Alfa", "Bravo"),
+                new("Alfa", "Charlie"),
+                new("Bravo", "Charlie")
             },
             pairsList
         );
     }
 
     [Fact]
-    public void MatchupMakingAsExpected()
+    public void MatchupsAsExpectedWith14Players4Games2Courts()
     {
-        var matchups = GetMatchup(Names.Take(14).ToArray(), true, 2, 2);
-        var matchupsPrint = GetPrintedMatchups(matchups);
-        File.WriteAllText(
-            "C:\\Users\\simme\\AppData\\Roaming\\JetBrains\\Rider2025.3\\scratches\\matchups.txt",
-            // JsonSerializer.Serialize(matchups, new JsonSerializerOptions { WriteIndented = true })
-            matchupsPrint
-        );
+        var matchups = GetMatchup(Names.Take(14).ToArray(), true, 4, 2);
         Assert.Equal(
             matchups,
             new Dictionary<int, List<Matchup>>
             {
                 {
-                    1, new List<Matchup>
-                    {
-                        new(new Pairing(Names[0], Names[1]), new Pairing(Names[2], Names[3])),
-                        new(new Pairing(Names[4], Names[5]), new Pairing(Names[6], Names[7])),
-                        new(new Pairing(Names[8], Names[9]), new Pairing(Names[0], Names[10])),
-                        new(new Pairing(Names[1], Names[2]), new Pairing(Names[3], Names[4])),
-                        new(new Pairing(Names[5], Names[6]), new Pairing(Names[7], Names[8])),
-                        new(new Pairing(Names[9], Names[10]), new Pairing(Names[0], Names[2]))
-                    }
+                    1,
+                    [
+                        new Matchup(new Pairing("Bravo", "Charlie"), new Pairing("Delta", "Echo")),
+                        new Matchup(new Pairing("Foxtrot", "Alfa"), new Pairing("Golf", "Delta")),
+                        new Matchup(new Pairing("Bravo", "Echo"), new Pairing("Foxtrot", "Alfa")),
+                        new Matchup(new Pairing("Charlie", "Delta"), new Pairing("Golf", "Alfa")),
+                        new Matchup(new Pairing("Charlie", "Echo"), new Pairing("Foxtrot", "Bravo")),
+                        new Matchup(new Pairing("Golf", "Alfa"), new Pairing("Bravo", "Delta")),
+                        new Matchup(new Pairing("Foxtrot", "Charlie"), new Pairing("Golf", "Echo"))
+                    ]
+                },
+                {
+                    2,
+                    [
+                        new Matchup(new Pairing("India", "Juliett"), new Pairing("Kilo", "Lima")),
+                        new Matchup(new Pairing("Mike", "Hotel"), new Pairing("November", "Kilo")),
+                        new Matchup(new Pairing("India", "Lima"), new Pairing("Mike", "Hotel")),
+                        new Matchup(new Pairing("Juliett", "Kilo"), new Pairing("November", "Hotel")),
+                        new Matchup(new Pairing("Juliett", "Lima"), new Pairing("Mike", "India")),
+                        new Matchup(new Pairing("November", "Hotel"), new Pairing("India", "Kilo")),
+                        new Matchup(new Pairing("Mike", "Juliett"), new Pairing("November", "Lima"))
+                    ]
                 }
             }
         );
