@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using System.Text.Json;
+using Xunit.Abstractions;
 
 namespace AdventOfCode._2025;
 
@@ -120,8 +121,8 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                         new Matchup(new Pairing("Alfa", "Bravo"), new Pairing("Charlie", "Delta")),
                         new Matchup(new Pairing("Alfa", "Echo"), new Pairing("Bravo", "Charlie")),
                         new Matchup(new Pairing("Delta", "Echo"), new Pairing("Alfa", "Charlie")),
-                        new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Charlie", "Echo")),
-                        new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Echo"))
+                        new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Bravo", "Echo")),
+                        new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Charlie", "Echo"))
                     ]
                 }
             }
@@ -133,6 +134,10 @@ public class Badminton(ITestOutputHelper testOutputHelper)
     public void MatchupsAsExpectedWith6Players4Games1Courts()
     {
         var matchups = GetMatchup(Names.Take(6).ToArray(), true, 4, 1);
+        File.WriteAllText(
+            "C:\\Users\\simme\\AppData\\Roaming\\JetBrains\\Rider2025.3\\scratches\\scratch_18.json",
+            JsonSerializer.Serialize(matchups)
+        );
         Assert.Equal(
             matchups,
             new Dictionary<int, List<Matchup>>
@@ -140,12 +145,12 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                 {
                     1,
                     [
+                        new Matchup(new Pairing("Alfa", "Bravo"), new Pairing("Charlie", "Delta")),
+                        new Matchup(new Pairing("Echo", "Foxtrot"), new Pairing("Alfa", "Charlie")),
+                        new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Echo", "Foxtrot")),
                         new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Charlie")),
-                        new Matchup(new Pairing("Alfa", "Echo"), new Pairing("Foxtrot", "Bravo")),
-                        new Matchup(new Pairing("Charlie", "Delta"), new Pairing("Bravo", "Echo")),
-                        new Matchup(new Pairing("Foxtrot", "Alfa"), new Pairing("Charlie", "Echo")),
-                        new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Foxtrot", "Alfa")),
-                        new Matchup(new Pairing("Delta", "Echo"), new Pairing("Foxtrot", "Charlie"))
+                        new Matchup(new Pairing("Echo", "Foxtrot"), new Pairing("Alfa", "Echo")),
+                        new Matchup(new Pairing("Bravo", "Foxtrot"), new Pairing("Charlie", "Delta"))
                     ]
                 }
             }
@@ -190,63 +195,57 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         var courtIndex = 1;
         foreach (var nameChunk in nameChunks)
         {
+            var currentNames = new List<string>();
+            var currentPairs = new List<Pairing>();
             var result = new List<Matchup>();
-            var pairsList = CreatePairs(nameChunk).ToList();
 
-            var pairsToPlay = new List<Pairing>();
-
-            int GetPlayerWillPlayCount(string name) => pairsToPlay.Count(p => p.ContainsPlayer(name));
-            int GetPlayersPlayCountSum(Pairing p) => p.GetPlayers().Select(GetPlayerWillPlayCount).Sum();
-
-            foreach (var name in nameChunk)
+            Pairing GetPairing(string p1, string p2)
             {
-                var namePairs = pairsList
-                    .Where(p =>
+                var sorted = new[] { p1, p2 }.OrderBy(p => p).ToList();
+                return new Pairing(sorted[0], sorted[1]);
+            }
+
+            while (true)
+            {
+                var iOrderedEnumerable = nameChunk
+                    .OrderBy(n => currentNames.Count(nn => nn == n));
+                var orderedEnumerable = iOrderedEnumerable
+                    .ThenBy(n =>
                         {
-                            var pairPlayers = p.GetPlayers().ToList();
-                            return !pairsToPlay.Contains(p) && pairPlayers.Contains(name) &&
-                                pairPlayers.All(pName => GetPlayerWillPlayCount(pName) < minGames);
+                            if (currentNames.Count % 2 == 0)
+                            {
+                                return 0;
+                            }
+                            else
+                            {
+                                var count = currentPairs.Count(p =>
+                                {
+                                    var pairing = GetPairing(currentNames[^1], n);
+                                    var b = pairing == p;
+                                    return b;
+                                });
+                                return count;
+                            }
                         }
-                    )
-                    .Take(minGames - GetPlayerWillPlayCount(name))
-                    .ToList();
-                pairsToPlay.AddRange(namePairs);
-            }
-
-            pairsToPlay = pairsToPlay.Where(p => GetPlayersPlayCountSum(p) >= minGames * 2).ToList();
-            var needingMoreGames = nameChunk.Where(n => GetPlayerWillPlayCount(n) == 0);
-            foreach (var name in needingMoreGames)
-            {
-                // ShufflePairs(pairsToPlay);
-                while (GetPlayerWillPlayCount(name) < minGames)
+                    );
+                var pick = orderedEnumerable
+                    .First();
+                currentNames.Add(pick);
+                if (currentNames.Count != 0 && currentNames.Count % 2 == 0)
                 {
-                    var pairToSeparate = pairsToPlay.MaxBy(GetPlayersPlayCountSum)!;
-                    pairsToPlay.Remove(pairToSeparate);
-                    pairsToPlay.AddRange(
-                        [
-                            new Pairing(name, pairToSeparate.Player1),
-                            new Pairing(name, pairToSeparate.Player2)
-                        ]
-                    );
+                    var lastTwoNames = currentNames.TakeLast(2).ToList();
+                    currentPairs.Add(GetPairing(lastTwoNames[0], lastTwoNames[1]));
+                    if (currentPairs.Count % 2 == 0)
+                    {
+                        var lastTwoPairs = currentPairs.TakeLast(2).ToList();
+                        result.Add(new Matchup(lastTwoPairs[0], lastTwoPairs[1]));
+                    }
                 }
-            }
-
-            while (pairsToPlay.Any())
-            {
-                Pairing? FindUniquePairing(IEnumerable<Pairing> allPairing, Pairing firstPair) =>
-                    allPairing.FirstOrDefault(p =>
-                        p.GetPlayers().Concat(firstPair.GetPlayers()).Distinct().Count() == 4
-                    );
-
-                var ordered = pairsToPlay.OrderByDescending(GetPlayersPlayCountSum).ToList();
-                var firstPair = ordered[0];
-                var secondPair = FindUniquePairing(ordered, firstPair) ?? FindUniquePairing(
-                    result.SelectMany(m => m.GetPairings()),
-                    firstPair
-                )!;
-                result.Add(new Matchup(firstPair, secondPair));
-                pairsToPlay.Remove(firstPair);
-                pairsToPlay.Remove(secondPair);
+                if (currentNames.Count % 4 == 0 &&
+                    nameChunk.All(n => currentNames.Count(nn => nn == n) >= minGames))
+                {
+                    break;
+                }
             }
             resultMap.Add(courtIndex++, result);
         }
