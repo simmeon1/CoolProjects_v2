@@ -85,6 +85,97 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         );
     }
 
+    [Fact]
+    public void MatchupsAsExpectedWith4Players3Games1Courts()
+    {
+        var matchups = GetMatchup(Names.Take(4).ToArray(), true, 3, 1);
+        Assert.Equal(
+            matchups,
+            new Dictionary<int, List<Matchup>>
+            {
+                {
+                    1,
+                    [
+                        new Matchup(new Pairing("Alfa", "Bravo"), new Pairing("Charlie", "Delta")),
+                        new Matchup(new Pairing("Alfa", "Charlie"), new Pairing("Bravo", "Delta")),
+                        new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Charlie"))
+                    ]
+                }
+            }
+        );
+    }
+
+
+    [Fact]
+    public void MatchupsAsExpectedWith5Players4Games1Courts()
+    {
+        var matchups = GetMatchup(Names.Take(5).ToArray(), true, 4, 1);
+        Assert.Equal(
+            matchups,
+            new Dictionary<int, List<Matchup>>
+            {
+                {
+                    1,
+                    [
+                        new Matchup(new Pairing("Alfa", "Bravo"), new Pairing("Charlie", "Delta")),
+                        new Matchup(new Pairing("Alfa", "Echo"), new Pairing("Bravo", "Charlie")),
+                        new Matchup(new Pairing("Delta", "Echo"), new Pairing("Alfa", "Charlie")),
+                        new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Charlie", "Echo")),
+                        new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Echo"))
+                    ]
+                }
+            }
+        );
+    }
+
+
+    [Fact]
+    public void MatchupsAsExpectedWith6Players4Games1Courts()
+    {
+        var matchups = GetMatchup(Names.Take(6).ToArray(), true, 4, 1);
+        Assert.Equal(
+            matchups,
+            new Dictionary<int, List<Matchup>>
+            {
+                {
+                    1,
+                    [
+                        new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Charlie")),
+                        new Matchup(new Pairing("Alfa", "Echo"), new Pairing("Foxtrot", "Bravo")),
+                        new Matchup(new Pairing("Charlie", "Delta"), new Pairing("Bravo", "Echo")),
+                        new Matchup(new Pairing("Foxtrot", "Alfa"), new Pairing("Charlie", "Echo")),
+                        new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Foxtrot", "Alfa")),
+                        new Matchup(new Pairing("Delta", "Echo"), new Pairing("Foxtrot", "Charlie"))
+                    ]
+                }
+            }
+        );
+    }
+
+    [Fact]
+    public void MatchupsAsExpectedWith7Players4Games1Courts()
+    {
+        var matchups = GetMatchup(Names.Take(7).ToArray(), true, 4, 1);
+        Assert.Equal(
+            matchups,
+            new Dictionary<int, List<Matchup>>
+            {
+                {
+                    1,
+                    [
+                        new Matchup(new Pairing("Bravo", "Charlie"), new Pairing("Delta", "Echo")),
+                        new Matchup(new Pairing("Foxtrot", "Alfa"), new Pairing("Golf", "Delta")),
+                        new Matchup(new Pairing("Bravo", "Echo"), new Pairing("Foxtrot", "Alfa")),
+                        new Matchup(new Pairing("Charlie", "Delta"), new Pairing("Golf", "Alfa")),
+                        new Matchup(new Pairing("Charlie", "Echo"), new Pairing("Foxtrot", "Bravo")),
+                        new Matchup(new Pairing("Golf", "Alfa"), new Pairing("Bravo", "Delta")),
+                        new Matchup(new Pairing("Foxtrot", "Charlie"), new Pairing("Golf", "Echo"))
+                    ]
+                }
+            }
+        );
+    }
+
     private static IReadOnlyDictionary<int, List<Matchup>> GetMatchup(
         string[] names,
         bool shuffle,
