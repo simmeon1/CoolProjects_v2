@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Xunit.Abstractions;
+﻿using Xunit.Abstractions;
 
 namespace AdventOfCode._2025;
 
@@ -105,7 +104,29 @@ public class Badminton(ITestOutputHelper testOutputHelper)
             matchups
         );
     }
-
+    
+    [Fact]
+    public void MatchupsAsExpectedWith4Players6Games1Courts()
+    {
+        var matchups = GetMatchup(Names.Take(4).ToArray(), true, 6, 1);
+        Assert.Equal(
+            new Dictionary<int, List<Matchup>>
+            {
+                {
+                    1,
+                    [
+                        new Matchup(new Pairing("Alfa", "Bravo"), new Pairing("Charlie", "Delta")),
+                        new Matchup(new Pairing("Alfa", "Charlie"), new Pairing("Bravo", "Delta")),
+                        new Matchup(new Pairing("Bravo", "Charlie"), new Pairing("Alfa", "Delta")),
+                        new Matchup(new Pairing("Bravo", "Charlie"), new Pairing("Alfa", "Delta")),
+                        new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Alfa", "Charlie")),
+                        new Matchup(new Pairing("Charlie", "Delta"), new Pairing("Alfa", "Bravo")),
+                    ]
+                }
+            },
+            matchups
+        );
+    }
 
     [Fact]
     public void MatchupsAsExpectedWith5Players4Games1Courts()
