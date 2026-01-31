@@ -390,35 +390,19 @@ public class Badminton(ITestOutputHelper testOutputHelper)
             while (true)
             {
                 testOutputHelper.WriteLine("Player count is " + currentNames.Count);
-                var iOrderedEnumerable = queue
+
+                var pick = queue
                     .OrderBy(n => currentNames.TakeLast(currentNames.Count % 4).Contains(n) ? int.MaxValue : 0)
                     .ThenBy(n => currentNames.Count(nn => nn == n) >= minGames)
                     .ThenBy(n =>
-                        {
-                            if (currentNames.Count % 2 == 0)
-                            {
-                                return 0;
-                            }
-                            var count = currentPairs.Count(p =>
-                                {
-                                    var pairing = GetPairing(currentNames[^1], n);
-                                    var b = pairing == p;
-                                    return b;
-                                }
-                            );
-                            return count;
-                        }
-                    );
-
-                var pick = iOrderedEnumerable.First();
+                        currentNames.Count % 2 == 0 ? 0 : currentPairs.Count(p => GetPairing(currentNames[^1], n) == p)
+                    ).First();
                 var indexOf = nameChunkList.IndexOf(pick);
                 var nextIndex = indexOf == nameChunkList.Count - 1 ? 0 : indexOf + 1;
-                queue = nameChunkList.Slice(nextIndex, nameChunkList.Count - nextIndex)
-                    .Concat(
-                        nameChunkList[..nextIndex]
-                    )
+                queue = nameChunkList
+                    .Slice(nextIndex, nameChunkList.Count - nextIndex)
+                    .Concat(nameChunkList[..nextIndex])
                     .ToList();
-
                 testOutputHelper.WriteLine("Picked " + pick);
                 currentNames.Add(pick);
 
@@ -447,7 +431,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         return resultMap;
     }
 
-    private static void ShufflePairs(List<Pairing> pairsList)
+    private static void ShufflePairs<T>(IList<T> pairsList)
     {
         var rng = new Random();
         var n = pairsList.Count;
@@ -496,24 +480,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         return string.Join("\n\n", allLines);
     }
 
-    private record Pairing(string Player1, string Player2)
-    {
-        public IEnumerable<string> GetPlayers()
-        {
-            return [Player1, Player2];
-        }
+    private record Pairing(string Player1, string Player2);
 
-        public bool ContainsPlayer(string name)
-        {
-            return GetPlayers().Contains(name);
-        }
-    }
-
-    private record Matchup(Pairing Pairing1, Pairing Pairing2)
-    {
-        public IEnumerable<Pairing> GetPairings()
-        {
-            return [Pairing1, Pairing2];
-        }
-    }
+    private record Matchup(Pairing Pairing1, Pairing Pairing2);
 }
