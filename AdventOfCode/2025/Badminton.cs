@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Runtime.CompilerServices;
+using System.Text.Json;
 using Xunit.Abstractions;
 
 namespace AdventOfCode._2025;
@@ -55,7 +56,6 @@ public class Badminton(ITestOutputHelper testOutputHelper)
     {
         var matchups = GetMatchup(Names.Take(14).ToArray(), true, 4, 2);
         Assert.Equal(
-            matchups,
             new Dictionary<int, List<Matchup>>
             {
                 {
@@ -82,7 +82,8 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                         new Matchup(new Pairing("Mike", "Juliett"), new Pairing("November", "Lima"))
                     ]
                 }
-            }
+            },
+            matchups
         );
     }
 
@@ -91,7 +92,6 @@ public class Badminton(ITestOutputHelper testOutputHelper)
     {
         var matchups = GetMatchup(Names.Take(4).ToArray(), true, 3, 1);
         Assert.Equal(
-            matchups,
             new Dictionary<int, List<Matchup>>
             {
                 {
@@ -102,7 +102,8 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                         new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Charlie"))
                     ]
                 }
-            }
+            },
+            matchups
         );
     }
 
@@ -111,21 +112,25 @@ public class Badminton(ITestOutputHelper testOutputHelper)
     public void MatchupsAsExpectedWith5Players4Games1Courts()
     {
         var matchups = GetMatchup(Names.Take(5).ToArray(), true, 4, 1);
+        File.WriteAllText(
+            "C:\\Users\\simme\\AppData\\Roaming\\JetBrains\\Rider2025.3\\scratches\\scratch_18.json",
+            JsonSerializer.Serialize(matchups)
+        );
         Assert.Equal(
-            matchups,
             new Dictionary<int, List<Matchup>>
             {
                 {
                     1,
                     [
                         new Matchup(new Pairing("Alfa", "Bravo"), new Pairing("Charlie", "Delta")),
+                        new Matchup(new Pairing("Alfa", "Charlie"), new Pairing("Bravo", "Delta")),
+                        new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Charlie")),
                         new Matchup(new Pairing("Alfa", "Echo"), new Pairing("Bravo", "Charlie")),
-                        new Matchup(new Pairing("Delta", "Echo"), new Pairing("Alfa", "Charlie")),
-                        new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Bravo", "Echo")),
-                        new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Charlie", "Echo"))
+                        new Matchup(new Pairing("Delta", "Echo"), new Pairing("Echo", "Echo"))
                     ]
                 }
-            }
+            },
+            matchups
         );
     }
 
@@ -139,7 +144,6 @@ public class Badminton(ITestOutputHelper testOutputHelper)
             JsonSerializer.Serialize(matchups)
         );
         Assert.Equal(
-            matchups,
             new Dictionary<int, List<Matchup>>
             {
                 {
@@ -153,7 +157,8 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                         new Matchup(new Pairing("Bravo", "Foxtrot"), new Pairing("Charlie", "Delta"))
                     ]
                 }
-            }
+            },
+            matchups
         );
     }
 
@@ -181,7 +186,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         );
     }
 
-    private static IReadOnlyDictionary<int, List<Matchup>> GetMatchup(
+    private IReadOnlyDictionary<int, List<Matchup>> GetMatchup(
         string[] names,
         bool shuffle,
         int minGames,
@@ -197,7 +202,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         {
             var currentNames = new List<string>();
             var currentPairs = new List<Pairing>();
-            var result = new List<Matchup>();
+            var currentMatchups = new List<Matchup>();
 
             Pairing GetPairing(string p1, string p2)
             {
@@ -208,7 +213,9 @@ public class Badminton(ITestOutputHelper testOutputHelper)
             while (true)
             {
                 var iOrderedEnumerable = nameChunk
-                    .OrderBy(n => currentNames.Count(nn => nn == n));
+                    .OrderBy(n => currentNames.TakeLast(currentNames.Count % 4).Contains(n) ? int.MaxValue : 0)
+                    .ThenBy(n => currentNames.Count(nn => nn == n) < minGames);
+                
                 var orderedEnumerable = iOrderedEnumerable
                     .ThenBy(n =>
                         {
@@ -216,29 +223,33 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                             {
                                 return 0;
                             }
-                            else
-                            {
-                                var count = currentPairs.Count(p =>
+                            var count = currentPairs.Count(p =>
                                 {
                                     var pairing = GetPairing(currentNames[^1], n);
                                     var b = pairing == p;
                                     return b;
-                                });
-                                return count;
-                            }
+                                }
+                            );
+                            return count;
                         }
                     );
-                var pick = orderedEnumerable
-                    .First();
+                
+                var pick = orderedEnumerable.First();
+                testOutputHelper.WriteLine("Picked " + pick);
                 currentNames.Add(pick);
+                
                 if (currentNames.Count != 0 && currentNames.Count % 2 == 0)
                 {
                     var lastTwoNames = currentNames.TakeLast(2).ToList();
-                    currentPairs.Add(GetPairing(lastTwoNames[0], lastTwoNames[1]));
+                    var pairing = GetPairing(lastTwoNames[0], lastTwoNames[1]);
+                    testOutputHelper.WriteLine("Paired " + pairing);
+                    currentPairs.Add(pairing);
                     if (currentPairs.Count % 2 == 0)
                     {
                         var lastTwoPairs = currentPairs.TakeLast(2).ToList();
-                        result.Add(new Matchup(lastTwoPairs[0], lastTwoPairs[1]));
+                        var matchup = new Matchup(lastTwoPairs[0], lastTwoPairs[1]);
+                        testOutputHelper.WriteLine("Matched up " + matchup);
+                        currentMatchups.Add(matchup);
                     }
                 }
                 if (currentNames.Count % 4 == 0 &&
@@ -247,7 +258,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                     break;
                 }
             }
-            resultMap.Add(courtIndex++, result);
+            resultMap.Add(courtIndex++, currentMatchups);
         }
         return resultMap;
     }
