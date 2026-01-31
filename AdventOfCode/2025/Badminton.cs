@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Xunit.Abstractions;
 
 namespace AdventOfCode._2025;
@@ -61,25 +60,25 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                 {
                     1,
                     [
+                        new Matchup(new Pairing("Alfa", "Bravo"), new Pairing("Charlie", "Delta")),
+                        new Matchup(new Pairing("Echo", "Foxtrot"), new Pairing("Alfa", "Golf")),
                         new Matchup(new Pairing("Bravo", "Charlie"), new Pairing("Delta", "Echo")),
-                        new Matchup(new Pairing("Foxtrot", "Alfa"), new Pairing("Golf", "Delta")),
-                        new Matchup(new Pairing("Bravo", "Echo"), new Pairing("Foxtrot", "Alfa")),
-                        new Matchup(new Pairing("Charlie", "Delta"), new Pairing("Golf", "Alfa")),
-                        new Matchup(new Pairing("Charlie", "Echo"), new Pairing("Foxtrot", "Bravo")),
-                        new Matchup(new Pairing("Golf", "Alfa"), new Pairing("Bravo", "Delta")),
-                        new Matchup(new Pairing("Foxtrot", "Charlie"), new Pairing("Golf", "Echo"))
+                        new Matchup(new Pairing("Foxtrot", "Golf"), new Pairing("Alfa", "Charlie")),
+                        new Matchup(new Pairing("Delta", "Foxtrot"), new Pairing("Bravo", "Golf")),
+                        new Matchup(new Pairing("Charlie", "Echo"), new Pairing("Alfa", "Foxtrot")),
+                        new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Echo", "Golf"))
                     ]
                 },
                 {
                     2,
                     [
+                        new Matchup(new Pairing("Hotel", "India"), new Pairing("Juliett", "Kilo")),
+                        new Matchup(new Pairing("Lima", "Mike"), new Pairing("Hotel", "November")),
                         new Matchup(new Pairing("India", "Juliett"), new Pairing("Kilo", "Lima")),
-                        new Matchup(new Pairing("Mike", "Hotel"), new Pairing("November", "Kilo")),
-                        new Matchup(new Pairing("India", "Lima"), new Pairing("Mike", "Hotel")),
-                        new Matchup(new Pairing("Juliett", "Kilo"), new Pairing("November", "Hotel")),
-                        new Matchup(new Pairing("Juliett", "Lima"), new Pairing("Mike", "India")),
-                        new Matchup(new Pairing("November", "Hotel"), new Pairing("India", "Kilo")),
-                        new Matchup(new Pairing("Mike", "Juliett"), new Pairing("November", "Lima"))
+                        new Matchup(new Pairing("Mike", "November"), new Pairing("Hotel", "Juliett")),
+                        new Matchup(new Pairing("Kilo", "Mike"), new Pairing("India", "November")),
+                        new Matchup(new Pairing("Juliett", "Lima"), new Pairing("Hotel", "Mike")),
+                        new Matchup(new Pairing("India", "Kilo"), new Pairing("Lima", "November"))
                     ]
                 }
             },
@@ -99,7 +98,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                     [
                         new Matchup(new Pairing("Alfa", "Bravo"), new Pairing("Charlie", "Delta")),
                         new Matchup(new Pairing("Alfa", "Charlie"), new Pairing("Bravo", "Delta")),
-                        new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Charlie"))
+                        new Matchup(new Pairing("Bravo", "Charlie"), new Pairing("Alfa", "Delta"))
                     ]
                 }
             },
@@ -112,10 +111,6 @@ public class Badminton(ITestOutputHelper testOutputHelper)
     public void MatchupsAsExpectedWith5Players4Games1Courts()
     {
         var matchups = GetMatchup(Names.Take(5).ToArray(), true, 4, 1);
-        File.WriteAllText(
-            "C:\\Users\\simme\\AppData\\Roaming\\JetBrains\\Rider2025.3\\scratches\\scratch_18.json",
-            JsonSerializer.Serialize(matchups)
-        );
         Assert.Equal(
             new Dictionary<int, List<Matchup>>
             {
@@ -123,10 +118,10 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                     1,
                     [
                         new Matchup(new Pairing("Alfa", "Bravo"), new Pairing("Charlie", "Delta")),
-                        new Matchup(new Pairing("Alfa", "Charlie"), new Pairing("Bravo", "Delta")),
-                        new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Charlie")),
                         new Matchup(new Pairing("Alfa", "Echo"), new Pairing("Bravo", "Charlie")),
-                        new Matchup(new Pairing("Delta", "Echo"), new Pairing("Echo", "Echo"))
+                        new Matchup(new Pairing("Delta", "Echo"), new Pairing("Alfa", "Charlie")),
+                        new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Echo")),
+                        new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Charlie", "Echo"))
                     ]
                 }
             },
@@ -139,10 +134,6 @@ public class Badminton(ITestOutputHelper testOutputHelper)
     public void MatchupsAsExpectedWith6Players4Games1Courts()
     {
         var matchups = GetMatchup(Names.Take(6).ToArray(), true, 4, 1);
-        File.WriteAllText(
-            "C:\\Users\\simme\\AppData\\Roaming\\JetBrains\\Rider2025.3\\scratches\\scratch_18.json",
-            JsonSerializer.Serialize(matchups)
-        );
         Assert.Equal(
             new Dictionary<int, List<Matchup>>
             {
@@ -151,10 +142,10 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                     [
                         new Matchup(new Pairing("Alfa", "Bravo"), new Pairing("Charlie", "Delta")),
                         new Matchup(new Pairing("Echo", "Foxtrot"), new Pairing("Alfa", "Charlie")),
-                        new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Echo", "Foxtrot")),
-                        new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Charlie")),
-                        new Matchup(new Pairing("Echo", "Foxtrot"), new Pairing("Alfa", "Echo")),
-                        new Matchup(new Pairing("Bravo", "Foxtrot"), new Pairing("Charlie", "Delta"))
+                        new Matchup(new Pairing("Delta", "Echo"), new Pairing("Alfa", "Foxtrot")),
+                        new Matchup(new Pairing("Bravo", "Charlie"), new Pairing("Delta", "Foxtrot")),
+                        new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Echo")),
+                        new Matchup(new Pairing("Charlie", "Echo"), new Pairing("Bravo", "Foxtrot"))
                     ]
                 }
             },
@@ -173,13 +164,13 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                 {
                     1,
                     [
+                        new Matchup(new Pairing("Alfa", "Bravo"), new Pairing("Charlie", "Delta")),
+                        new Matchup(new Pairing("Echo", "Foxtrot"), new Pairing("Alfa", "Golf")),
                         new Matchup(new Pairing("Bravo", "Charlie"), new Pairing("Delta", "Echo")),
-                        new Matchup(new Pairing("Foxtrot", "Alfa"), new Pairing("Golf", "Delta")),
-                        new Matchup(new Pairing("Bravo", "Echo"), new Pairing("Foxtrot", "Alfa")),
-                        new Matchup(new Pairing("Charlie", "Delta"), new Pairing("Golf", "Alfa")),
-                        new Matchup(new Pairing("Charlie", "Echo"), new Pairing("Foxtrot", "Bravo")),
-                        new Matchup(new Pairing("Golf", "Alfa"), new Pairing("Bravo", "Delta")),
-                        new Matchup(new Pairing("Foxtrot", "Charlie"), new Pairing("Golf", "Echo"))
+                        new Matchup(new Pairing("Foxtrot", "Golf"), new Pairing("Alfa", "Charlie")),
+                        new Matchup(new Pairing("Delta", "Foxtrot"), new Pairing("Bravo", "Golf")),
+                        new Matchup(new Pairing("Charlie", "Echo"), new Pairing("Alfa", "Foxtrot")),
+                        new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Echo", "Golf"))
                     ]
                 }
             }
@@ -200,6 +191,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
         var courtIndex = 1;
         foreach (var nameChunk in nameChunks)
         {
+            var nameChunkList = nameChunk.ToList();
             var currentNames = new List<string>();
             var currentPairs = new List<Pairing>();
             var currentMatchups = new List<Matchup>();
@@ -210,13 +202,13 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                 return new Pairing(sorted[0], sorted[1]);
             }
 
+            var queue = new List<string>(nameChunkList);
             while (true)
             {
-                var iOrderedEnumerable = nameChunk
+                testOutputHelper.WriteLine("Player count is " + currentNames.Count);
+                var iOrderedEnumerable = queue
                     .OrderBy(n => currentNames.TakeLast(currentNames.Count % 4).Contains(n) ? int.MaxValue : 0)
-                    .ThenBy(n => currentNames.Count(nn => nn == n) < minGames);
-                
-                var orderedEnumerable = iOrderedEnumerable
+                    .ThenBy(n => currentNames.Count(nn => nn == n) >= minGames)
                     .ThenBy(n =>
                         {
                             if (currentNames.Count % 2 == 0)
@@ -233,11 +225,19 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                             return count;
                         }
                     );
-                
-                var pick = orderedEnumerable.First();
+
+                var pick = iOrderedEnumerable.First();
+                var indexOf = nameChunkList.IndexOf(pick);
+                var nextIndex = indexOf == nameChunkList.Count - 1 ? 0 : indexOf + 1;
+                queue = nameChunkList.Slice(nextIndex, nameChunkList.Count - nextIndex)
+                    .Concat(
+                        nameChunkList[..nextIndex]
+                    )
+                    .ToList();
+
                 testOutputHelper.WriteLine("Picked " + pick);
                 currentNames.Add(pick);
-                
+
                 if (currentNames.Count != 0 && currentNames.Count % 2 == 0)
                 {
                     var lastTwoNames = currentNames.TakeLast(2).ToList();
@@ -253,7 +253,7 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                     }
                 }
                 if (currentNames.Count % 4 == 0 &&
-                    nameChunk.All(n => currentNames.Count(nn => nn == n) >= minGames))
+                    nameChunkList.All(n => currentNames.Count(nn => nn == n) >= minGames))
                 {
                     break;
                 }
