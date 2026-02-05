@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using System.Text.Json;
+using Xunit.Abstractions;
 
 namespace AdventOfCode._2025;
 
@@ -6,14 +7,14 @@ public class Badminton(ITestOutputHelper testOutputHelper)
 {
     private static readonly string[] Names =
     [
-        "Alfa",
-        "Bravo",
-        "Charlie",
-        "Delta",
-        "Echo",
-        "Foxtrot",
-        "Golf",
-        "Hotel",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
         "India",
         "Juliett",
         "Kilo",
@@ -184,6 +185,33 @@ public class Badminton(ITestOutputHelper testOutputHelper)
                         new Matchup(new Pairing("Delta", "Echo"), new Pairing("Alfa", "Charlie")),
                         new Matchup(new Pairing("Alfa", "Delta"), new Pairing("Bravo", "Echo")),
                         new Matchup(new Pairing("Bravo", "Delta"), new Pairing("Charlie", "Echo"))
+                    ]
+                }
+            },
+            matchups
+        );
+    }
+
+    [Fact]
+    public void MatchupsAsExpectedWith8Players4Games1Courts()
+    {
+        var matchups = GetMatchup(Names.Take(8).ToArray(), true, 3, 1);
+        File.WriteAllText(
+            "C:\\Users\\simme\\AppData\\Roaming\\JetBrains\\Rider2025.3\\scratches\\scratch_18.json",
+            JsonSerializer.Serialize(matchups)
+        );
+        Assert.Equal(
+            new Dictionary<int, List<Matchup>>
+            {
+                {
+                    1,
+                    [
+                        new Matchup(new Pairing("1", "2"), new Pairing("3", "4")),
+                        new Matchup(new Pairing("5", "6"), new Pairing("7", "8")),
+                        new Matchup(new Pairing("1", "3"), new Pairing("4", "5")),
+                        new Matchup(new Pairing("6", "7"), new Pairing("1", "8")),
+                        new Matchup(new Pairing("2", "3"), new Pairing("4", "6")),
+                        new Matchup(new Pairing("2", "7"), new Pairing("5", "8"))
                     ]
                 }
             },
