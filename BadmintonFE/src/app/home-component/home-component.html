@@ -1,3 +1,8 @@
-@if (state$ | async; as state) {
-    {{ state.map | json }}
-}
+<div>List every player. One per line.</div>
+<mat-form-field>
+    <textarea matInput cdkTextareaAutosize cdkAutosizeMinRows="1" [placeholder]="'Player names...'"></textarea>
+</mat-form-field>
+
+<!--@if (state$ | async; as state) {-->
+<!--    {{ state.map | json }}-->
+<!--}-->

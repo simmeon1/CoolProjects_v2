@@ -1,13 +1,19 @@
 import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {map, Observable} from "rxjs";
-import {AsyncPipe, JsonPipe} from "@angular/common";
+import {MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule} from '@angular/material/form-field';
+import {MatInput} from "@angular/material/input";
+import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 
 @Component({
     selector: 'home-component',
     imports: [
-        AsyncPipe,
-        JsonPipe
+        MatFormFieldModule,
+        MatInput,
+        CdkTextareaAutosize
+    ],
+    providers: [
+        {provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: {appearance: 'fill'}}
     ],
     templateUrl: './home-component.html',
     styleUrl: './home-component.sass',
