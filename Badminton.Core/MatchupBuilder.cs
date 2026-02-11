@@ -2,15 +2,16 @@
 
 public class MatchupBuilder(ILogger logger)
 {
-    public IReadOnlyDictionary<int, List<Matchup>> GetMatchup(
-        string[] names,
+    public IReadOnlyDictionary<int, IEnumerable<Matchup>> GetMatchup(
+        IEnumerable<string> names,
         int minGames,
         int courtCount
     )
     {
-        var ceiling = Math.Ceiling(names.Length / Convert.ToDouble(courtCount));
-        var nameChunks = names.Chunk(Convert.ToInt32(ceiling));
-        var resultMap = new Dictionary<int, List<Matchup>>();
+        var namesList = names.ToList();
+        var ceiling = Math.Ceiling(namesList.Count / Convert.ToDouble(courtCount));
+        var nameChunks = namesList.Chunk(Convert.ToInt32(ceiling));
+        var resultMap = new Dictionary<int, IEnumerable<Matchup>>();
 
         var courtIndex = 1;
         foreach (var nameChunk in nameChunks)

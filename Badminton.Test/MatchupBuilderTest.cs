@@ -50,7 +50,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(5).ToArray(), 1, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -69,7 +69,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(5).ToArray(), 2, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -89,7 +89,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(5).ToArray(), 3, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -110,7 +110,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(5).ToArray(), 5, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -134,7 +134,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(14).ToArray(), 4, 2);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -170,7 +170,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(5).ToArray(), 4, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -192,7 +192,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(6).ToArray(), 4, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -215,7 +215,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(7).ToArray(), 4, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -239,7 +239,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(4).ToArray(), 1, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -257,7 +257,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(4).ToArray(), 2, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -276,7 +276,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(4).ToArray(), 3, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -296,7 +296,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(4).ToArray(), 4, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -317,7 +317,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(4).ToArray(), 5, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
@@ -339,7 +339,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     {
         var matchups = builder.GetMatchup(Names.Take(4).ToArray(), 6, 1);
         Assert.Equal(
-            new Dictionary<int, List<Matchup>>
+            new Dictionary<int, IEnumerable<Matchup>>
             {
                 {
                     1,
