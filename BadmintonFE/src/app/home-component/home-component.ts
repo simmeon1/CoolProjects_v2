@@ -1,12 +1,13 @@
 import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {map, Observable} from "rxjs";
-import {AsyncPipe} from "@angular/common";
+import {AsyncPipe, JsonPipe} from "@angular/common";
 
 @Component({
     selector: 'home-component',
     imports: [
-        AsyncPipe
+        AsyncPipe,
+        JsonPipe
     ],
     templateUrl: './home-component.html',
     styleUrl: './home-component.sass',
@@ -20,7 +21,7 @@ export class HomeComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.state$ = this.httpClient.get<MatchupMap>("http://localhost:5287/?names=a&names=b&names=c&names=d&minGames=1&courtCount=1").pipe(
+        this.state$ = this.httpClient.get<MatchupMap>("http://localhost:5287/api/?names=a&names=b&names=c&names=d&minGames=1&courtCount=1").pipe(
             map((m): State => ({map: m}))
         )
     }

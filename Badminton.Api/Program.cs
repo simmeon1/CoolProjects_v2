@@ -4,6 +4,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+    {
+        options.AddPolicy(
+            name: myAllowSpecificOrigins,
+            policy => { policy.AllowAnyOrigin(); }
+        );
+    }
+);
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -15,9 +25,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors(myAllowSpecificOrigins);
 
 app.MapGet(
-    "/",
+    "/api/",
     (string[] names, int minGames, int courtCount) => new MatchupBuilder().GetMatchup(names, minGames, courtCount)
 );
 
