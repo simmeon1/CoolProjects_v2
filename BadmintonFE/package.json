@@ -23,7 +23,10 @@
     "@angular/build": "^21.1.0-next",
     "@angular/cli": "^21.1.0-next",
     "@angular/compiler-cli": "^21.1.0-next",
+    "@eslint/js": "^9.32.0",
     "@types/node": "^16.11.35",
-    "typescript": "~5.9.2"
+    "eslint": "^9.32.0",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.55.0"
   }
 }
