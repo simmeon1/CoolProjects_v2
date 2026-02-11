@@ -1,7 +1,24 @@
-<div>List every player. One per line.</div>
 <mat-form-field>
-    <textarea matInput cdkTextareaAutosize cdkAutosizeMinRows="1" [placeholder]="'Player names...'"></textarea>
+    <mat-label>Font size</mat-label>
+    <mat-select #fontSize value="16px">
+        <mat-option value="10px">10px</mat-option>
+        <mat-option value="12px">12px</mat-option>
+        <mat-option value="14px">14px</mat-option>
+        <mat-option value="16px">16px</mat-option>
+        <mat-option value="18px">18px</mat-option>
+        <mat-option value="20px">20px</mat-option>
+    </mat-select>
 </mat-form-field>
+
+<mat-form-field>
+    <mat-label>Autosize textarea</mat-label>
+    <textarea matInput
+              cdkTextareaAutosize
+              #autosize="cdkTextareaAutosize"
+              cdkAutosizeMinRows="1"
+              cdkAutosizeMaxRows="5"></textarea>
+</mat-form-field>
+
 
 <!--@if (state$ | async; as state) {-->
 <!--    {{ state.map | json }}-->

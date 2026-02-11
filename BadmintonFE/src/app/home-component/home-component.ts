@@ -2,16 +2,13 @@ import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {map, Observable} from "rxjs";
 import {MAT_FORM_FIELD_DEFAULT_OPTIONS, MatFormFieldModule} from '@angular/material/form-field';
-import {MatInput} from "@angular/material/input";
-import {CdkTextareaAutosize} from "@angular/cdk/text-field";
+import {MatInputModule} from "@angular/material/input";
+import {TextFieldModule} from "@angular/cdk/text-field";
+import {MatSelectModule} from "@angular/material/select";
 
 @Component({
     selector: 'home-component',
-    imports: [
-        MatFormFieldModule,
-        MatInput,
-        CdkTextareaAutosize
-    ],
+    imports: [MatFormFieldModule, MatSelectModule, MatInputModule, TextFieldModule],
     providers: [
         {provide: MAT_FORM_FIELD_DEFAULT_OPTIONS, useValue: {appearance: 'fill'}}
     ],
