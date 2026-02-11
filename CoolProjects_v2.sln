@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Badminton.Core", "Badminton
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Badminton.Test", "Badminton.Test\Badminton.Test.csproj", "{C18716C3-AA12-4744-AE7E-6C17EADEE0C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Badminton.Api", "Badminton.Api\Badminton.Api.csproj", "{07E1A36B-5E60-401F-BEAC-01E9376963FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -133,6 +135,10 @@ Global
 		{C18716C3-AA12-4744-AE7E-6C17EADEE0C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C18716C3-AA12-4744-AE7E-6C17EADEE0C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C18716C3-AA12-4744-AE7E-6C17EADEE0C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07E1A36B-5E60-401F-BEAC-01E9376963FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07E1A36B-5E60-401F-BEAC-01E9376963FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07E1A36B-5E60-401F-BEAC-01E9376963FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07E1A36B-5E60-401F-BEAC-01E9376963FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -155,6 +161,7 @@ Global
 		{AC73C1DC-762C-44D1-B618-9F594EB1F381} = {CAA8ACC2-CAF2-45E4-BFD7-FE960610C7B7}
 		{9F677EA0-C709-43CD-8271-2BA513F5D731} = {C5D10B50-635A-4148-A888-505AE575030D}
 		{C18716C3-AA12-4744-AE7E-6C17EADEE0C9} = {C5D10B50-635A-4148-A888-505AE575030D}
+		{07E1A36B-5E60-401F-BEAC-01E9376963FB} = {C5D10B50-635A-4148-A888-505AE575030D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F122953-B87D-4F7D-96BD-2F9CE1B50DA7}

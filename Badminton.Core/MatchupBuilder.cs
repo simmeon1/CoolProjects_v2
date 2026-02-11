@@ -2,6 +2,9 @@
 
 public class MatchupBuilder(ILogger logger)
 {
+    public MatchupBuilder() : this(new Logger())
+    { }
+
     public IReadOnlyDictionary<int, IEnumerable<Matchup>> GetMatchup(
         IEnumerable<string> names,
         int minGames,
@@ -70,6 +73,12 @@ public class MatchupBuilder(ILogger logger)
             resultMap.Add(courtIndex++, currentMatchups);
         }
         return resultMap;
+    }
+
+    private class Logger : ILogger
+    {
+        public void WriteLine(string str)
+        { }
     }
 }
 
