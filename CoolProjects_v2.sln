@@ -45,6 +45,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageViewer", "ImageViewer\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdventOfCode", "AdventOfCode\AdventOfCode.csproj", "{023E8F65-95BE-47B5-9D66-D4099B596B13}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Badminton", "Badminton", "{C5D10B50-635A-4148-A888-505AE575030D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Badminton.Core", "Badminton.Core\Badminton.Core.csproj", "{9F677EA0-C709-43CD-8271-2BA513F5D731}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -119,6 +123,10 @@ Global
 		{023E8F65-95BE-47B5-9D66-D4099B596B13}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{023E8F65-95BE-47B5-9D66-D4099B596B13}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{023E8F65-95BE-47B5-9D66-D4099B596B13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F677EA0-C709-43CD-8271-2BA513F5D731}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F677EA0-C709-43CD-8271-2BA513F5D731}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F677EA0-C709-43CD-8271-2BA513F5D731}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F677EA0-C709-43CD-8271-2BA513F5D731}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -139,6 +147,7 @@ Global
 		{BA404649-9FB9-4F19-842C-5D576C724776} = {CAA8ACC2-CAF2-45E4-BFD7-FE960610C7B7}
 		{FD46B8D0-A51F-42E3-9821-7F47DF47686B} = {CAA8ACC2-CAF2-45E4-BFD7-FE960610C7B7}
 		{AC73C1DC-762C-44D1-B618-9F594EB1F381} = {CAA8ACC2-CAF2-45E4-BFD7-FE960610C7B7}
+		{9F677EA0-C709-43CD-8271-2BA513F5D731} = {C5D10B50-635A-4148-A888-505AE575030D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F122953-B87D-4F7D-96BD-2F9CE1B50DA7}
