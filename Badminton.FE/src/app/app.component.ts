@@ -38,7 +38,7 @@ Golf`,
             max(schemaPath.courtCount, 10);
         }
     );
-    private readonly fetchUrl = signal<string | undefined>(undefined);
+    private readonly fetchUrl = signal<string>(this.getUrl());
     public readonly state = httpResource<MatchupMap>(() => this.fetchUrl());
 
     public onSubmit($event: SubmitEvent) {
