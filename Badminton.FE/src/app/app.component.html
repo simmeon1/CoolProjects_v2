@@ -1,26 +1,26 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
+<form novalidate (submit)="onSubmit($event)">
     <div>
         <mat-form-field>
             <mat-label>Add players, one per line</mat-label>
-            <textarea matInput cdkTextareaAutosize [formControl]="getControl('names')"></textarea>
+            <textarea matInput cdkTextareaAutosize [formField]="form.names"></textarea>
         </mat-form-field>
     </div>
     <div>
         <mat-form-field>
             <mat-label>Minimum games each?</mat-label>
-            <input matInput [formControl]="getControl('minGames')">
+            <input type="number" matInput [formField]="form.minGames">
         </mat-form-field>
     </div>
     <div>
         <mat-form-field>
             <mat-label>How many courts?</mat-label>
-            <input matInput [formControl]="getControl('courtCount')">
+            <input type="number" matInput [formField]="form.courtCount">
         </mat-form-field>
     </div>
     <div>
-        <mat-checkbox [formControl]="getControl('shuffle')">Shuffle names</mat-checkbox>
+        <mat-checkbox [formField]="form.shuffle">Shuffle names</mat-checkbox>
     </div>
-    <button matButton="filled" type="submit" [disabled]="!form.valid || state.isLoading()">Submit</button>
+    <button matButton="filled" type="submit" [disabled]="form().invalid() || state.isLoading()">Submit</button>
 </form>
 @if (state.hasValue()) {
     <pre>{{ state.value() | json }}</pre>
