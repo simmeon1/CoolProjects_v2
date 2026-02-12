@@ -11,7 +11,7 @@ public class MatchupBuilder(ILogger logger)
         int courtCount
     )
     {
-        var namesList = names.Select(n => n.Trim()).ToList();
+        var namesList = names.Distinct().Select(n => n.Trim()).ToList();
         var ceiling = Math.Ceiling(namesList.Count / Convert.ToDouble(courtCount));
         var nameChunks = namesList.Chunk(Convert.ToInt32(ceiling));
         var resultMap = new Dictionary<int, IEnumerable<Matchup>>();
