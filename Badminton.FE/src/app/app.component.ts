@@ -54,15 +54,12 @@ import {MatIcon} from "@angular/material/icon";
 
 export class App {
     public readonly state = httpResource<Response>(() => {
-        const names = this.fetchWithNames();
-        if (this.form.shuffle().value()) {
-            shuffle(names);
-        }
+        const p = this.fetchWithParams();
         const params = new HttpParams({
             fromObject: {
-                names,
-                minGames: this.form.minGames().value(),
-                courtCount: this.form.courtCount().value()
+                names: p.names,
+                minGames: p.minGames,
+                courtCount: p.courtCount
             }
         });
         return `http://localhost:5287/api/?${params.toString()}`;
@@ -89,22 +86,34 @@ Golf`,
             max(schemaPath.courtCount, 10);
         }
     );
-    private readonly fetchWithNames = signal<string[]>(this.getNamesFromForm());
+    private readonly fetchWithParams = signal<Params>(this.getParamsFromForm());
+
+    private getParamsFromForm(): Params {
+        return {
+            names: this.form.names().value().split('\n').map(n => n.trim()),
+            minGames: this.form.minGames().value(),
+            courtCount: this.form.courtCount().value()
+        }
+    }
 
     public onSubmit($event: SubmitEvent) {
         $event.preventDefault();
-        this.fetchWithNames.set(this.getNamesFromForm());
-    }
-
-    private getNamesFromForm() {
-        return this.form.names().value().split('\n').map(n => n.trim());
+        const p = this.getParamsFromForm();
+        if (this.form.shuffle().value()) {
+            shuffle(p.names);
+        }
+        this.fetchWithParams.set(p);
     }
 
     public drop(event: CdkDragDrop<string>, table: MatTable<KeyValue<string, string>>) {
         const dataSource = table.dataSource as KeyValue<string, string>[];
         const previousIndex = dataSource.findIndex(d => d === event.item.data);
         moveItemInArray(dataSource, previousIndex, event.currentIndex);
-        this.fetchWithNames.set(dataSource.map(x => x.value));
+        this.fetchWithParams.update((p): Params => ({
+            names: dataSource.map(x => x.value),
+            minGames: p.minGames,
+            courtCount: p.courtCount,
+        }))
     }
 }
 
@@ -123,6 +132,12 @@ interface Matchup {
 interface Pairing {
     player1: string;
     player2: string;
+}
+
+interface Params {
+    names: string[];
+    minGames: number;
+    courtCount: number;
 }
 
 interface Form {
