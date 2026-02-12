@@ -20,12 +20,12 @@
     <div>
         <mat-checkbox [formControl]="getControl('shuffle')">Shuffle names</mat-checkbox>
     </div>
-    <button matButton="filled" type="submit" [disabled]="!form.valid || (state() | json) === '{}'">Submit</button>
+    <button matButton="filled" type="submit" [disabled]="!form.valid || state.isLoading()">Submit</button>
 </form>
-@if (state()?.map; as map) {
-    <pre>{{ map | json }}</pre>
-} @else if (state()?.error; as error) {
-    {{ error }}
-} @else if (state()) {
+@if (state.hasValue()) {
+    <pre>{{ state.value() | json }}</pre>
+} @else if (state.error()) {
+    Something went wrong. Is the form valid?
+} @else if (state.isLoading()) {
     Loading...
 }

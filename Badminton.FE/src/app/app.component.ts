@@ -1,13 +1,11 @@
-import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {HttpClient, HttpParams} from "@angular/common/http";
+import {ChangeDetectionStrategy, Component, signal} from '@angular/core';
+import {HttpParams, httpResource} from "@angular/common/http";
 import {MatFormField, MatInput, MatLabel} from "@angular/material/input";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {MatCheckbox} from "@angular/material/checkbox";
 import {MatButton} from "@angular/material/button";
-import {catchError, concat, map, Observable, of, Subject, switchMap} from "rxjs";
 import shuffle from "knuth-shuffle-seeded";
-import {toSignal} from "@angular/core/rxjs-interop";
 import {JsonPipe} from "@angular/common";
 
 @Component({
@@ -20,15 +18,10 @@ import {JsonPipe} from "@angular/common";
 
 export class App {
     public readonly form: FormGroup<Form>
-    private readonly onSubmit$ = new Subject<void>();
-    public readonly state = toSignal(this.onSubmit$.pipe(
-        switchMap((): Observable<State> => concat(of({}), this.fetch())),
-    ));
+    private readonly fetchUrl = signal<string | undefined>(undefined);
+    public readonly state = httpResource<MatchupMap>(() => this.fetchUrl());
 
-    public constructor(
-        private readonly httpClient: HttpClient,
-        private readonly formBuilder: FormBuilder,
-    ) {
+    public constructor(private readonly formBuilder: FormBuilder) {
         const initialNames = `Alfa
 Bravo
 Charlie
@@ -50,10 +43,10 @@ Golf`;
     }
 
     public onSubmit() {
-        this.onSubmit$.next();
+        this.fetchUrl.set(this.getUrl());
     }
 
-    private fetch() {
+    private getUrl() {
         const names = this.getControl('names').value.split('\n').map(n => n.trim());
         if (this.getControl('shuffle').value) {
             shuffle(names);
@@ -65,17 +58,8 @@ Golf`;
                 courtCount: this.getControl('courtCount').value
             }
         });
-        return this.httpClient.get<MatchupMap>("http://localhost:5287/api/", {params}).pipe(
-            map((r): State => ({map: r})),
-            catchError((): Observable<State> => of({error: 'Something went wrong. Is the form valid?'}))
-        )
+        return `http://localhost:5287/api/?${params.toString()}`;
     }
-}
-
-
-interface State {
-    map?: MatchupMap
-    error?: string
 }
 
 type MatchupMap = Record<string, Matchup>;
