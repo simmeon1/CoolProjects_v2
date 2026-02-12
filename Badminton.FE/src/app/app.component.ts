@@ -38,12 +38,12 @@ Golf`,
             max(schemaPath.courtCount, 10);
         }
     );
-    private readonly fetchUrl = signal<string>(this.getUrl());
-    public readonly state = httpResource<Response>(() => this.fetchUrl());
+    private readonly fetchUrl = signal<{ url: string }>({url: this.getUrl()});
+    public readonly state = httpResource<Response>(() => this.fetchUrl().url);
 
     public onSubmit($event: SubmitEvent) {
         $event.preventDefault();
-        this.fetchUrl.set(this.getUrl());
+        this.fetchUrl.set({url: this.getUrl()});
     }
 
     private getUrl() {
