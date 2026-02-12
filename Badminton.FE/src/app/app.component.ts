@@ -1,22 +1,40 @@
 import {ChangeDetectionStrategy, Component, signal} from '@angular/core';
 import {HttpParams, httpResource} from "@angular/common/http";
 import {MatFormField, MatInput, MatLabel} from "@angular/material/input";
+import {MatIconModule} from "@angular/material/icon";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 import {form, FormField, max, min, required} from "@angular/forms/signals";
 import {MatCheckbox} from "@angular/material/checkbox";
 import {MatButton} from "@angular/material/button";
+import {MatTable, MatTableModule} from "@angular/material/table";
 import shuffle from "knuth-shuffle-seeded";
-import {JsonPipe} from "@angular/common";
+import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
+import {KeyValue, KeyValuePipe} from "@angular/common";
 
 @Component({
     selector: 'app-root',
-    imports: [MatFormField, MatLabel, CdkTextareaAutosize, MatInput, MatCheckbox, MatButton, JsonPipe, FormField],
+    imports: [
+        MatFormField,
+        MatLabel,
+        CdkTextareaAutosize,
+        MatInput,
+        MatCheckbox,
+        MatButton,
+        FormField,
+        MatTableModule,
+        MatIconModule,
+        CdkDropList,
+        KeyValuePipe,
+        CdkDrag
+    ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class App {
+    public readonly state = httpResource<Response>(() => this.fetchUrl().url);
+    public readonly displayedColumns: string[] = ['position', 'name'];
     public readonly form = form(signal<Form>({
             names: `Alfa
 Bravo
@@ -39,7 +57,6 @@ Golf`,
         }
     );
     private readonly fetchUrl = signal<{ url: string }>({url: this.getUrl()});
-    public readonly state = httpResource<Response>(() => this.fetchUrl().url);
 
     public onSubmit($event: SubmitEvent) {
         $event.preventDefault();
@@ -60,13 +77,20 @@ Golf`,
         });
         return `http://localhost:5287/api/?${params.toString()}`;
     }
+
+    public drop(event: CdkDragDrop<string>, table: MatTable<KeyValue<string, string>>) {
+        const dataSource = table.dataSource as KeyValue<string, string>[];
+        const previousIndex = dataSource.findIndex(d => d === event.item.data);
+        moveItemInArray(dataSource, previousIndex, event.currentIndex);
+        table.renderRows();
+    }
 }
 
 type Response = Record<string, MatchupCollection>;
 
 interface MatchupCollection {
     players: Record<string, string>;
-    Matchups: Matchup[];
+    matchups: Matchup[];
 }
 
 interface Matchup {
