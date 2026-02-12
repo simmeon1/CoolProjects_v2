@@ -33,7 +33,7 @@ public class MatchupBuilder(ILogger logger)
             var queue = new List<string>(nameChunkList);
             while (true)
             {
-                logger.WriteLine("Player count is " + currentNames.Count);
+                logger.WriteLine($"Player count is {currentNames.Count}");
 
                 var pick = queue
                     .OrderBy(n => currentNames.TakeLast(currentNames.Count % 4).Contains(n) ? int.MaxValue : 0)
@@ -47,20 +47,20 @@ public class MatchupBuilder(ILogger logger)
                     .Slice(nextIndex, nameChunkList.Count - nextIndex)
                     .Concat(nameChunkList[..nextIndex])
                     .ToList();
-                logger.WriteLine("Picked " + pick);
+                logger.WriteLine($"Picked {pick}");
                 currentNames.Add(pick);
 
                 if (currentNames.Count != 0 && currentNames.Count % 2 == 0)
                 {
                     var lastTwoNames = currentNames.TakeLast(2).ToList();
                     var pairing = GetPairing(lastTwoNames[0], lastTwoNames[1]);
-                    logger.WriteLine("Paired " + pairing);
+                    logger.WriteLine($"Paired {pairing}");
                     currentPairs.Add(pairing);
                     if (currentPairs.Count % 2 == 0)
                     {
                         var lastTwoPairs = currentPairs.TakeLast(2).ToList();
                         var matchup = new Matchup(lastTwoPairs[0], lastTwoPairs[1]);
-                        logger.WriteLine("Matched up " + matchup);
+                        logger.WriteLine($"Matched up {matchup}");
                         currentMatchups.Add(matchup);
                     }
                 }
