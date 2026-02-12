@@ -1,29 +1,73 @@
-import {Component, OnInit} from '@angular/core';
-import {map, Observable} from "rxjs";
-import {HttpClient} from "@angular/common/http";
-import {AsyncPipe, JsonPipe} from "@angular/common";
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {HttpClient, HttpParams} from "@angular/common/http";
 import {MatFormField, MatInput, MatLabel} from "@angular/material/input";
-import {MatOption, MatSelect} from "@angular/material/select";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
+import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
+import {MatCheckbox} from "@angular/material/checkbox";
+import {MatButton} from "@angular/material/button";
+import {catchError, of, Subject, switchMap} from "rxjs";
+import shuffle from "knuth-shuffle-seeded";
+import {toSignal} from "@angular/core/rxjs-interop";
+import {JsonPipe} from "@angular/common";
 
 @Component({
     selector: 'app-root',
-    imports: [AsyncPipe, JsonPipe, MatFormField, MatLabel, MatSelect, MatOption, CdkTextareaAutosize, MatInput],
+    imports: [MatFormField, MatLabel, CdkTextareaAutosize, MatInput, ReactiveFormsModule, MatCheckbox, MatButton, JsonPipe],
     templateUrl: './app.component.html',
-    styleUrl: './app.component.scss'
+    styleUrl: './app.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class App implements OnInit {
-    public state$!: Observable<State>;
 
-    constructor(private readonly httpClient: HttpClient) {
+export class App {
+    public readonly form: FormGroup<Form>
+    private readonly onSubmit$ = new Subject<void>();
+    public readonly lastResponse = toSignal(this.onSubmit$.pipe(
+        switchMap(() => {
+            const names = this.getControl('names').value.split('\n').map(n => n.trim());
+            if (this.getControl('shuffle').value) {
+                shuffle(names);
+            }
+            const params = new HttpParams({
+                fromObject: {
+                    names,
+                    minGames: this.getControl('minGames').value,
+                    courtCount: this.getControl('courtCount').value
+                }
+            });
+            return this.httpClient.get<MatchupMap>("http://localhost:5287/api/", {params}).pipe(
+                catchError(() => of('Something went wrong. Is the form valid?'))
+            )
+        })
+    ), {initialValue: {} as MatchupMap});
+
+    public constructor(
+        private readonly httpClient: HttpClient,
+        private readonly formBuilder: FormBuilder,
+    ) {
+        const initialNames = `Alfa
+Bravo
+Charlie
+Delta
+Echo
+Foxtrot
+Golf`;
+        this.form = this.formBuilder.nonNullable.group({
+            names: [initialNames, Validators.required],
+            minGames: ['4', [Validators.required, Validators.pattern(/^\d+$/)]],
+            courtCount: ['1', [Validators.required, Validators.pattern(/^\d+$/)]],
+            shuffle: [false],
+        })
     }
 
-    ngOnInit(): void {
-        this.state$ = this.httpClient.get<MatchupMap>("http://localhost:5287/api/?names=a&names=b&names=c&names=d&minGames=1&courtCount=1").pipe(
-            map((m): State => ({map: m}))
-        )
+    public getControl<T extends keyof Form>(key: T): Form[T] {
+        return this.form.controls[key];
+    }
+
+    public onSubmit() {
+        this.onSubmit$.next();
     }
 }
+
 
 interface State {
     map: MatchupMap
@@ -39,4 +83,11 @@ interface Matchup {
 interface Pairing {
     player1: string;
     player2: string;
+}
+
+interface Form {
+    names: FormControl<string>;
+    minGames: FormControl<string>;
+    courtCount: FormControl<string>;
+    shuffle: FormControl<boolean>;
 }

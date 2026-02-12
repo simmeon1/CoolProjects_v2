@@ -31,6 +31,7 @@
     "@angular/material": "~21.1.4",
     "@angular/platform-browser": "^21.1.0",
     "@angular/router": "^21.1.0",
+    "knuth-shuffle-seeded": "^1.0.6",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
@@ -40,6 +41,7 @@
     "@angular/compiler-cli": "^21.1.0",
     "@angular/material": "^21.1.4",
     "@eslint/js": "^9.32.0",
+    "@types/knuth-shuffle-seeded": "^1.0.2",
     "eslint": "^9.32.0",
     "jsdom": "^27.1.0",
     "swagger-typescript-api": "^13.2.17",
