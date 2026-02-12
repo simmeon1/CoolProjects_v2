@@ -39,7 +39,7 @@ Golf`,
         }
     );
     private readonly fetchUrl = signal<string>(this.getUrl());
-    public readonly state = httpResource<MatchupMap>(() => this.fetchUrl());
+    public readonly state = httpResource<Response>(() => this.fetchUrl());
 
     public onSubmit($event: SubmitEvent) {
         $event.preventDefault();
@@ -62,7 +62,12 @@ Golf`,
     }
 }
 
-type MatchupMap = Record<string, Matchup>;
+type Response = Record<string, MatchupCollection>;
+
+interface MatchupCollection {
+    players: Record<string, string>;
+    Matchups: Matchup[];
+}
 
 interface Matchup {
     pairing1: Pairing;

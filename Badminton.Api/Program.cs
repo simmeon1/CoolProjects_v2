@@ -35,7 +35,7 @@ app.MapGet(
         [Required] string[] names,
         [Required] [Range(1, 10)] int minGames,
         [Required] [Range(1, 10)] int courtCount
-    ) => new MatchupBuilder().GetMatchup(names, minGames, courtCount)
+    ) => new MatchupBuilder().GetMatchups(names, minGames, courtCount)
 );
 
 app.Run();

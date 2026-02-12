@@ -5,7 +5,7 @@ public class MatchupBuilder(ILogger logger)
     public MatchupBuilder() : this(new Logger())
     { }
 
-    public IReadOnlyDictionary<int, IEnumerable<Matchup>> GetMatchup(
+    public IReadOnlyDictionary<int, MatchupCollection> GetMatchups(
         IEnumerable<string> names,
         int minGames,
         int courtCount
@@ -14,7 +14,7 @@ public class MatchupBuilder(ILogger logger)
         var namesList = names.Select(n => n.Trim()).Distinct().ToList();
         var ceiling = Math.Ceiling(namesList.Count / Convert.ToDouble(courtCount));
         var nameChunks = namesList.Chunk(Convert.ToInt32(ceiling));
-        var resultMap = new Dictionary<int, IEnumerable<Matchup>>();
+        var resultMap = new Dictionary<int, MatchupCollection>();
 
         var courtIndex = 1;
         foreach (var nameChunk in nameChunks)
@@ -70,7 +70,10 @@ public class MatchupBuilder(ILogger logger)
                     break;
                 }
             }
-            resultMap.Add(courtIndex++, currentMatchups);
+            resultMap.Add(
+                courtIndex++,
+                new MatchupCollection(nameChunk.Index().ToDictionary(x => x.Index, x => x.Item), currentMatchups)
+            );
         }
         return resultMap;
     }
@@ -90,3 +93,9 @@ public interface ILogger
 public record Pairing(string Player1, string Player2);
 
 public record Matchup(Pairing Pairing1, Pairing Pairing2);
+
+public record MatchupCollection(
+    IReadOnlyDictionary<int, string> Players,
+    IEnumerable<Matchup> Matchups
+)
+{ }

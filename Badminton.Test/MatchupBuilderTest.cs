@@ -34,7 +34,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
         "Yankee",
         "Zulu"
     ];
-    
+
     private class Logger(ITestOutputHelper testOutputHelper) : ILogger
     {
         public void WriteLine(string str)
@@ -48,7 +48,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
     [Fact]
     public void MatchupsAsExpectedWith5Players1Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(5).ToArray(), 1, 1);
+        var matchups = builder.GetMatchups(Names.Take(5).ToArray(), 1, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -60,14 +60,21 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
+    }
+
+    private static Dictionary<int, IEnumerable<Matchup>> ExtractMatchups(
+        IReadOnlyDictionary<int, MatchupCollection> matchups
+    )
+    {
+        return matchups.ToDictionary(x => x.Key, x => x.Value.Matchups);
     }
 
     [Fact]
     public void MatchupsAsExpectedWith5Players2Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(5).ToArray(), 2, 1);
+        var matchups = builder.GetMatchups(Names.Take(5).ToArray(), 2, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -80,14 +87,14 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 
     [Fact]
     public void MatchupsAsExpectedWith5Players3Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(5).ToArray(), 3, 1);
+        var matchups = builder.GetMatchups(Names.Take(5).ToArray(), 3, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -101,14 +108,14 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 
     [Fact]
     public void MatchupsAsExpectedWith5Players5Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(5).ToArray(), 5, 1);
+        var matchups = builder.GetMatchups(Names.Take(5).ToArray(), 5, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -125,14 +132,14 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 
     [Fact]
     public void MatchupsAsExpectedWith14Players4Games2Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(14).ToArray(), 4, 2);
+        var matchups = builder.GetMatchups(Names.Take(14).ToArray(), 4, 2);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -161,14 +168,14 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 
     [Fact]
     public void MatchupsAsExpectedWith5Players4Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(5).ToArray(), 4, 1);
+        var matchups = builder.GetMatchups(Names.Take(5).ToArray(), 4, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -183,14 +190,14 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 
     [Fact]
     public void MatchupsAsExpectedWith6Players4Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(6).ToArray(), 4, 1);
+        var matchups = builder.GetMatchups(Names.Take(6).ToArray(), 4, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -206,14 +213,14 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 
     [Fact]
     public void MatchupsAsExpectedWith7Players4Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(7).ToArray(), 4, 1);
+        var matchups = builder.GetMatchups(Names.Take(7).ToArray(), 4, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -230,14 +237,14 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 
     [Fact]
     public void MatchupsAsExpectedWith4Players1Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(4).ToArray(), 1, 1);
+        var matchups = builder.GetMatchups(Names.Take(4).ToArray(), 1, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -248,14 +255,14 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 
     [Fact]
     public void MatchupsAsExpectedWith4Players2Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(4).ToArray(), 2, 1);
+        var matchups = builder.GetMatchups(Names.Take(4).ToArray(), 2, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -267,14 +274,14 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 
     [Fact]
     public void MatchupsAsExpectedWith4Players3Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(4).ToArray(), 3, 1);
+        var matchups = builder.GetMatchups(Names.Take(4).ToArray(), 3, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -287,14 +294,14 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 
     [Fact]
     public void MatchupsAsExpectedWith4Players4Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(4).ToArray(), 4, 1);
+        var matchups = builder.GetMatchups(Names.Take(4).ToArray(), 4, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -308,14 +315,14 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 
     [Fact]
     public void MatchupsAsExpectedWith4Players5Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(4).ToArray(), 5, 1);
+        var matchups = builder.GetMatchups(Names.Take(4).ToArray(), 5, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -330,14 +337,14 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 
     [Fact]
     public void MatchupsAsExpectedWith4Players6Games1Courts()
     {
-        var matchups = builder.GetMatchup(Names.Take(4).ToArray(), 6, 1);
+        var matchups = builder.GetMatchups(Names.Take(4).ToArray(), 6, 1);
         Assert.Equal(
             new Dictionary<int, IEnumerable<Matchup>>
             {
@@ -353,7 +360,7 @@ public class MatchupBuilderTest(ITestOutputHelper testOutputHelper)
                     ]
                 }
             },
-            matchups
+            ExtractMatchups(matchups)
         );
     }
 }
