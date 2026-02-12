@@ -362,10 +362,6 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-# Angular builds
-*/.angular/
-
-
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /LeagueAPI_Tests/integrationTestDataPath.json
