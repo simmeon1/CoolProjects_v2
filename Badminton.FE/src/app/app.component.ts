@@ -1,15 +1,26 @@
 import {ChangeDetectionStrategy, Component, signal} from '@angular/core';
 import {HttpParams, httpResource} from "@angular/common/http";
 import {MatFormField, MatInput, MatLabel} from "@angular/material/input";
-import {MatIconModule} from "@angular/material/icon";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 import {form, FormField, max, min, required} from "@angular/forms/signals";
 import {MatCheckbox} from "@angular/material/checkbox";
 import {MatButton} from "@angular/material/button";
-import {MatTable, MatTableModule} from "@angular/material/table";
+import {
+    MatCell,
+    MatCellDef,
+    MatColumnDef,
+    MatHeaderCell,
+    MatHeaderCellDef,
+    MatHeaderRow,
+    MatHeaderRowDef,
+    MatRow,
+    MatRowDef,
+    MatTable
+} from "@angular/material/table";
 import shuffle from "knuth-shuffle-seeded";
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {KeyValue, KeyValuePipe} from "@angular/common";
+import {MatIcon} from "@angular/material/icon";
 
 @Component({
     selector: 'app-root',
@@ -21,11 +32,20 @@ import {KeyValue, KeyValuePipe} from "@angular/common";
         MatCheckbox,
         MatButton,
         FormField,
-        MatTableModule,
-        MatIconModule,
         CdkDropList,
         KeyValuePipe,
-        CdkDrag
+        CdkDrag,
+        MatTable,
+        MatHeaderCell,
+        MatCell,
+        MatIcon,
+        MatHeaderRow,
+        MatRow,
+        MatColumnDef,
+        MatHeaderCellDef,
+        MatRowDef,
+        MatHeaderRowDef,
+        MatCellDef
     ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
