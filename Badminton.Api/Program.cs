@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Badminton.Core;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
 const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddValidation();
 builder.Services.AddCors(options =>
     {
         options.AddPolicy(
@@ -29,7 +31,11 @@ app.UseCors(myAllowSpecificOrigins);
 
 app.MapGet(
     "/api/",
-    (string[] names, int minGames, int courtCount) => new MatchupBuilder().GetMatchup(names, minGames, courtCount)
+    (
+        [Required] string[] names,
+        [Required] [Range(1, 10)] int minGames,
+        [Required] [Range(1, 10)] int courtCount
+    ) => new MatchupBuilder().GetMatchup(names, minGames, courtCount)
 );
 
 app.Run();

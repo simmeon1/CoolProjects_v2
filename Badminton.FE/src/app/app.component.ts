@@ -2,7 +2,7 @@ import {ChangeDetectionStrategy, Component, signal} from '@angular/core';
 import {HttpParams, httpResource} from "@angular/common/http";
 import {MatFormField, MatInput, MatLabel} from "@angular/material/input";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
-import {form, FormField, min, required} from "@angular/forms/signals";
+import {form, FormField, max, min, required} from "@angular/forms/signals";
 import {MatCheckbox} from "@angular/material/checkbox";
 import {MatButton} from "@angular/material/button";
 import shuffle from "knuth-shuffle-seeded";
@@ -32,8 +32,10 @@ Golf`,
             required(schemaPath.names);
             required(schemaPath.minGames);
             min(schemaPath.minGames, 1);
+            max(schemaPath.minGames, 10);
             required(schemaPath.courtCount);
             min(schemaPath.courtCount, 1);
+            max(schemaPath.courtCount, 10);
         }
     );
     private readonly fetchUrl = signal<string | undefined>(undefined);
