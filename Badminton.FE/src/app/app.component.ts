@@ -53,7 +53,20 @@ import {MatIcon} from "@angular/material/icon";
 })
 
 export class App {
-    public readonly state = httpResource<Response>(() => this.fetchUrl().url);
+    public readonly state = httpResource<Response>(() => {
+        const names = this.fetchWithNames();
+        if (this.form.shuffle().value()) {
+            shuffle(names);
+        }
+        const params = new HttpParams({
+            fromObject: {
+                names,
+                minGames: this.form.minGames().value(),
+                courtCount: this.form.courtCount().value()
+            }
+        });
+        return `http://localhost:5287/api/?${params.toString()}`;
+    });
     public readonly displayedColumns: string[] = ['position', 'name'];
     public readonly form = form(signal<Form>({
             names: `Alfa
@@ -76,33 +89,22 @@ Golf`,
             max(schemaPath.courtCount, 10);
         }
     );
-    private readonly fetchUrl = signal<{ url: string }>({url: this.getUrl()});
+    private readonly fetchWithNames = signal<string[]>(this.getNamesFromForm());
 
     public onSubmit($event: SubmitEvent) {
         $event.preventDefault();
-        this.fetchUrl.set({url: this.getUrl()});
+        this.fetchWithNames.set(this.getNamesFromForm());
     }
 
-    private getUrl() {
-        const names = this.form.names().value().split('\n').map(n => n.trim());
-        if (this.form.shuffle().value()) {
-            shuffle(names);
-        }
-        const params = new HttpParams({
-            fromObject: {
-                names,
-                minGames: this.form.minGames().value(),
-                courtCount: this.form.courtCount().value()
-            }
-        });
-        return `http://localhost:5287/api/?${params.toString()}`;
+    private getNamesFromForm() {
+        return this.form.names().value().split('\n').map(n => n.trim());
     }
 
     public drop(event: CdkDragDrop<string>, table: MatTable<KeyValue<string, string>>) {
         const dataSource = table.dataSource as KeyValue<string, string>[];
         const previousIndex = dataSource.findIndex(d => d === event.item.data);
         moveItemInArray(dataSource, previousIndex, event.currentIndex);
-        table.renderRows();
+        this.fetchWithNames.set(dataSource.map(x => x.value));
     }
 }
 
