@@ -22,6 +22,10 @@
     </div>
     <button matButton="filled" type="submit" [disabled]="!form.valid">Submit</button>
 </form>
-@if ((lastResponse() | json) !== '{}') {
-    <pre>{{ lastResponse() | json }}</pre>
+@if (state()?.map; as map) {
+    <pre>{{ map | json }}</pre>
+} @else if (state()?.error; as error) {
+    {{ error }}
+} @else if (state()) {
+    Loading...
 }
