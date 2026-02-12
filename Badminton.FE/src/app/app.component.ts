@@ -2,10 +2,13 @@ import {Component, OnInit} from '@angular/core';
 import {map, Observable} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {AsyncPipe, JsonPipe} from "@angular/common";
+import {MatFormField, MatInput, MatLabel} from "@angular/material/input";
+import {MatOption, MatSelect} from "@angular/material/select";
+import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 
 @Component({
     selector: 'app-root',
-    imports: [AsyncPipe, JsonPipe],
+    imports: [AsyncPipe, JsonPipe, MatFormField, MatLabel, MatSelect, MatOption, CdkTextareaAutosize, MatInput],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })
