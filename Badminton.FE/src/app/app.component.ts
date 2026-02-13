@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, signal} from '@angular/core';
 import {HttpParams, httpResource} from "@angular/common/http";
 import {MatFormField, MatInput, MatLabel} from "@angular/material/input";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
@@ -7,7 +7,6 @@ import {MatCheckbox} from "@angular/material/checkbox";
 import {MatButton} from "@angular/material/button";
 import shuffle from "knuth-shuffle-seeded";
 import {MatchupTable} from "./matchup-table/matchup-table.component";
-import {MatTab, MatTabGroup} from "@angular/material/tabs";
 
 @Component({
     selector: 'app-root',
@@ -19,9 +18,7 @@ import {MatTab, MatTabGroup} from "@angular/material/tabs";
         MatCheckbox,
         MatButton,
         FormField,
-        MatchupTable,
-        MatTabGroup,
-        MatTab
+        MatchupTable
     ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
@@ -40,7 +37,6 @@ export class App {
         });
         return `http://localhost:5287/api/?${params.toString()}`;
     });
-    public readonly response = computed(() => this.state.value());
     public readonly form = form(signal<Form>({
             names: `Alfa
 Bravo
@@ -69,7 +65,6 @@ Mike`,
         }
     );
     private readonly fetchWithParams = signal<Params>(this.getParamsFromForm());
-    public readonly selectedTab = signal<number>(0);
 
     private getParamsFromForm(): Params {
         return {
@@ -86,7 +81,6 @@ Mike`,
             shuffle(p.names);
         }
         this.fetchWithParams.set(p);
-        this.selectedTab.set(1);
     }
 }
 
