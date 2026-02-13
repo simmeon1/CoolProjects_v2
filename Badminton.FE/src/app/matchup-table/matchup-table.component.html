@@ -1,4 +1,4 @@
-<mat-table #table [dataSource]="state()" cdkDropList
+<mat-table #table class="example-list" [dataSource]="state()" cdkDropList
            (cdkDropListDropped)="drop(
                 table,
                 $event.item.data.name,
@@ -30,5 +30,5 @@
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns;" cdkDrag [cdkDragData]="row"></mat-row>
+    <mat-row class="example-box" *matRowDef="let row; columns: displayedColumns;" cdkDrag [cdkDragData]="row"></mat-row>
 </mat-table>
