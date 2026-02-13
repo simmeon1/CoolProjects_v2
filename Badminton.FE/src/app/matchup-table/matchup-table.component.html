@@ -1,1 +1,32 @@
-<p>matchup-table works!</p>
+<mat-table [dataSource]="state()" cdkDropList
+           (cdkDropListDropped)="drop(
+                state(),
+                $event.item.data.name,
+                $event.currentIndex
+           )"
+           cdkDropListData="dataSource">
+    <ng-container matColumnDef="position" sticky>
+        <mat-header-cell *matHeaderCellDef>Drag to reorder</mat-header-cell>
+        <mat-cell *matCellDef="let element">
+            <mat-icon class="example-drag-cursor">reorder</mat-icon>
+        </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="courtIndex">
+        <mat-header-cell *matHeaderCellDef>Court Index</mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{ element.courtIndex }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="playerIndex">
+        <mat-header-cell *matHeaderCellDef>Player Index</mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{ element.playerIndex }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{ element.name }}</mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;" cdkDrag [cdkDragData]="row"></mat-row>
+</mat-table>

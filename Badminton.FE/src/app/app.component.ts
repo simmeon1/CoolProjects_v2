@@ -5,22 +5,8 @@ import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 import {form, FormField, max, min, required} from "@angular/forms/signals";
 import {MatCheckbox} from "@angular/material/checkbox";
 import {MatButton} from "@angular/material/button";
-import {
-    MatCell,
-    MatCellDef,
-    MatColumnDef,
-    MatHeaderCell,
-    MatHeaderCellDef,
-    MatHeaderRow,
-    MatHeaderRowDef,
-    MatRow,
-    MatRowDef,
-    MatTable
-} from "@angular/material/table";
 import shuffle from "knuth-shuffle-seeded";
-import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
-import {KeyValue, KeyValuePipe} from "@angular/common";
-import {MatIcon} from "@angular/material/icon";
+import {MatchupTable} from "./matchup-table/matchup-table.component";
 
 @Component({
     selector: 'app-root',
@@ -32,20 +18,7 @@ import {MatIcon} from "@angular/material/icon";
         MatCheckbox,
         MatButton,
         FormField,
-        CdkDropList,
-        KeyValuePipe,
-        CdkDrag,
-        MatTable,
-        MatHeaderCell,
-        MatCell,
-        MatIcon,
-        MatHeaderRow,
-        MatRow,
-        MatColumnDef,
-        MatHeaderCellDef,
-        MatRowDef,
-        MatHeaderRowDef,
-        MatCellDef
+        MatchupTable
     ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
@@ -64,7 +37,6 @@ export class App {
         });
         return `http://localhost:5287/api/?${params.toString()}`;
     });
-    public readonly displayedColumns: string[] = ['position', 'name'];
     public readonly form = form(signal<Form>({
             names: `Alfa
 Bravo
@@ -104,32 +76,21 @@ Golf`,
         }
         this.fetchWithParams.set(p);
     }
-
-    public drop(event: CdkDragDrop<string>, table: MatTable<KeyValue<string, string>>) {
-        const dataSource = table.dataSource as KeyValue<string, string>[];
-        const previousIndex = dataSource.findIndex(d => d === event.item.data);
-        moveItemInArray(dataSource, previousIndex, event.currentIndex);
-        this.fetchWithParams.update((p): Params => ({
-            names: dataSource.map(x => x.value),
-            minGames: p.minGames,
-            courtCount: p.courtCount,
-        }))
-    }
 }
 
-type Response = Record<string, MatchupCollection>;
+export type Response = Record<string, MatchupCollection>;
 
-interface MatchupCollection {
+export interface MatchupCollection {
     players: Record<string, string>;
     matchups: Matchup[];
 }
 
-interface Matchup {
+export interface Matchup {
     pairing1: Pairing;
     pairing2: Pairing;
 }
 
-interface Pairing {
+export interface Pairing {
     player1: string;
     player2: string;
 }

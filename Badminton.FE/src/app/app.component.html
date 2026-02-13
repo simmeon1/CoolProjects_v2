@@ -23,32 +23,8 @@
     <button matButton="filled" type="submit" [disabled]="form().invalid() || state.isLoading()">Submit</button>
 </form>
 @if (state.hasValue()) {
-    @for (respEntry of state.value() | keyvalue; track respEntry.key) {
-        <h1>Court {{ respEntry.key }}</h1>
-        <mat-table #table [dataSource]="respEntry.value['players'] | keyvalue" cdkDropList
-                   (cdkDropListDropped)="drop($event, table)"
-                   cdkDropListData="dataSource">
-            <!-- Position Column -->
-            <ng-container matColumnDef="position" sticky>
-                <mat-header-cell *matHeaderCellDef>No.</mat-header-cell>
-                <mat-cell *matCellDef="let element">
-                    <mat-icon class="example-drag-cursor">reorder</mat-icon>
-                    <span>{{ element.key }}</span>
-                </mat-cell>
-            </ng-container>
-
-            <!-- Name Column -->
-            <ng-container matColumnDef="name">
-                <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
-                <mat-cell *matCellDef="let element"> {{ element.value }}</mat-cell>
-            </ng-container>
-
-            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-            <mat-row *matRowDef="let row; columns: displayedColumns;" cdkDrag [cdkDragData]="row"></mat-row>
-        </mat-table>
-    } @empty {
-        <li>There are no items.</li>
-    }
+    <matchup-table [inputRows]="state.value()" [minGames]="form.minGames().value()"
+                   [courtCount]="form.courtCount().value()"></matchup-table>
 } @else if (state.error()) {
     Something went wrong. Is the form valid?
 } @else if (state.isLoading()) {
