@@ -38,7 +38,7 @@ export class App {
                 courtCount: p.courtCount
             }
         });
-        return `http://localhost:5287/api/?${params.toString()}`;
+        return `http://https://thebadinbadminton-api.onrender.com/api/?${params.toString()}`;
     });
     public readonly form = form(signal<Form>({
             names: `Alfa

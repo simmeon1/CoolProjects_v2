@@ -85,7 +85,7 @@ export class MatchupTable {
                 courtCount: this.courtCount()
             }
         });
-        return `http://localhost:5287/api/?${params.toString()}`;
+        return `http://https://thebadinbadminton-api.onrender.com/api/?${params.toString()}`;
     });
 
     public readonly state = computed(() => {
