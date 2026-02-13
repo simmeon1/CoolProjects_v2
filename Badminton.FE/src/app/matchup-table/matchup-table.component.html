@@ -1,5 +1,9 @@
-<mat-tab-group>
-    <mat-tab label="Players">
+<mat-accordion>
+    <mat-expansion-panel>
+        <mat-expansion-panel-header>
+            <mat-panel-title>Players Table</mat-panel-title>
+            <mat-panel-description></mat-panel-description>
+        </mat-expansion-panel-header>
         Table usage instructions:
         <ul>
             <li>Populate form above and hit submit to repopulate table.</li>
@@ -52,8 +56,12 @@
             >
             </mat-row>
         </mat-table>
-    </mat-tab>
-    <mat-tab label="Matches">
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+        <mat-expansion-panel-header>
+            <mat-panel-title>Matches</mat-panel-title>
+            <mat-panel-description></mat-panel-description>
+        </mat-expansion-panel-header>
         Instructions: This is a reflection of the table state in the Players tab.
         @for (courtMatchups of matchups(); track courtMatchups.courtIndex) {
             <h1>Court {{ courtMatchups.courtIndex }}</h1>
@@ -67,5 +75,5 @@
         } @empty {
             There are no items.
         }
-    </mat-tab>
-</mat-tab-group>
+    </mat-expansion-panel>
+</mat-accordion>
