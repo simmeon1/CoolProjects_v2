@@ -89,3 +89,11 @@
 .partner-of-selected {
   background-color: lightgreen;
 }
+
+::ng-deep .mat-expansion-panel-body {
+  padding: 0 !important;
+}
+
+.expanded-panel-body {
+  padding: 0 24px 16px;
+}

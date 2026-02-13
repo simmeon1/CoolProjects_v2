@@ -4,13 +4,15 @@
             <mat-panel-title>Players Table</mat-panel-title>
             <mat-panel-description></mat-panel-description>
         </mat-expansion-panel-header>
-        Table usage instructions:
-        <ul>
-            <li>Populate form above and hit submit to repopulate table.</li>
-            <li>Drag and drop players using the left most cell. Indexes and matchups will get updated.</li>
-            <li>Click on player to highlight/unhighlight them along with the partners they will play with.</li>
-            <li>Even-numbered courts have a darker shade.</li>
-        </ul>
+        <div class="expanded-panel-body">
+            Table usage instructions:
+            <ul>
+                <li>Populate form above and hit submit to repopulate table.</li>
+                <li>Drag and drop players using the left most cell. Indexes and matchups will get updated.</li>
+                <li>Click on player to highlight/unhighlight them along with the partners they will play with.</li>
+                <li>Even-numbered courts have a darker shade.</li>
+            </ul>
+        </div>
         <mat-table #table [dataSource]="playerRowsDatasource()" cdkDropList
                    (cdkDropListDropped)="drop(
                 table,
@@ -62,18 +64,21 @@
             <mat-panel-title>Matches</mat-panel-title>
             <mat-panel-description></mat-panel-description>
         </mat-expansion-panel-header>
-        Instructions: This is a reflection of the table state in the Players tab.
-        @for (courtMatchups of matchups(); track courtMatchups.courtIndex) {
-            <h1>Court {{ courtMatchups.courtIndex }}</h1>
-            @for (courtMatchup of courtMatchups.matchups; track courtMatchup) {
-                <div>
-                    <mat-checkbox>{{ courtMatchup }}</mat-checkbox>
-                </div>
+        <div class="expanded-panel-body">
+            Instructions: This is a reflection of the table state in the Players tab. Checkboxes are only to help with
+            tracking games.
+            @for (courtMatchups of matchups(); track courtMatchups.courtIndex) {
+                <h1>Court {{ courtMatchups.courtIndex }}</h1>
+                @for (courtMatchup of courtMatchups.matchups; track courtMatchup) {
+                    <div>
+                        <mat-checkbox>{{ courtMatchup }}</mat-checkbox>
+                    </div>
+                } @empty {
+                    There are no items.
+                }
             } @empty {
                 There are no items.
             }
-        } @empty {
-            There are no items.
-        }
+        </div>
     </mat-expansion-panel>
 </mat-accordion>
