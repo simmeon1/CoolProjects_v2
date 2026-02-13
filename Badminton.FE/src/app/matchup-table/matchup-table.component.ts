@@ -44,6 +44,8 @@ export class MatchupTable {
         transform: this.mapResponse
     });
 
+    public selectedRow = signal<PlayerRow | undefined>(undefined);
+
     public minGames = input.required<number>();
     public courtCount = input.required<number>();
     public readonly displayedColumns: string[] = [
@@ -79,38 +81,42 @@ export class MatchupTable {
     });
 
     private mapResponse(r: Response): PlayerRow[] {
-        const getMatchupsTexts = (matchups: Matchup[], name: string) => {
-            matchups = matchups.filter(m =>
-                [m.pairing1.player1, m.pairing1.player2, m.pairing2.player1, m.pairing2.player2].includes(name)
-            );
-
-            const result: string[] = [];
-            for (const m of matchups) {
-                const pairs = [m.pairing1, m.pairing2].sort((p1, p2) => {
-                    const pairIncludesPlayer = (p: Pairing) => [p.player1, p.player2].includes(name) ? 1 : 0
-                    return pairIncludesPlayer(p2) - pairIncludesPlayer(p1);
-                })
-
-                const getPairingText = (p: Pairing, includeFirst: boolean) => {
-                    const players = [p.player1, p.player2].sort((p1, p2) => {
-                        const isPlayer = (p: string) => p === name ? 1 : 0
-                        return isPlayer(p2) - isPlayer(p1);
-                    })
-                    return includeFirst ? `${players[0]}-${players[1]}` : players[1];
-                }
-                result.push(`${getPairingText(pairs[0], false)} v. ${getPairingText(pairs[1], true)}`)
-            }
-            return result.join('\n');
-        }
 
         const rows: PlayerRow[] = [];
         for (const [courtIndex, matchupCollection] of Object.entries(r)) {
             for (const [index, name] of Object.entries(matchupCollection.players)) {
+                const playerMatchups = matchupCollection.matchups.filter(m =>
+                    [m.pairing1.player1, m.pairing1.player2, m.pairing2.player1, m.pairing2.player2].includes(name)
+                );
+                const pairIncludesPlayer = (p: Pairing) => [p.player1, p.player2].includes(name) ? 1 : 0
+                const getMatchupsTexts = (matchups: Matchup[]) => {
+                    const result: string[] = [];
+                    for (const m of matchups) {
+                        const pairs = [m.pairing1, m.pairing2].sort((p1, p2) => {
+                            return pairIncludesPlayer(p2) - pairIncludesPlayer(p1);
+                        })
+                        const getPairingText = (p: Pairing, includeFirst: boolean) => {
+                            const players = [p.player1, p.player2].sort((p1, p2) => {
+                                const isPlayer = (p: string) => p === name ? 1 : 0
+                                return isPlayer(p2) - isPlayer(p1);
+                            })
+                            return includeFirst ? `${players[0]}-${players[1]}` : players[1];
+                        }
+                        result.push(`${getPairingText(pairs[0], false)} v. ${getPairingText(pairs[1], true)}`)
+                    }
+                    return result.join('\n');
+                }
+
                 rows.push({
                     courtIndex,
                     playerIndex: (parseInt(index) + 1).toString(),
                     name,
-                    matchups: getMatchupsTexts(matchupCollection.matchups, name)
+                    partners: playerMatchups
+                        .flatMap(m => [m.pairing1, m.pairing2])
+                        .filter(p => pairIncludesPlayer(p))
+                        .flatMap(p => [p.player1, p.player2])
+                        .filter(p => p !== name),
+                    matchups: getMatchupsTexts(playerMatchups)
                 })
             }
         }
@@ -131,11 +137,20 @@ export class MatchupTable {
     public trackByName(index: number, item: PlayerRow): string {
         return item.name;
     }
+
+    public selectRow(row: PlayerRow) {
+        this.selectedRow.update((r) => r !== row ? row : undefined);
+    }
+
+    public isPartnerOfSelected(name: string) {
+        return this.selectedRow()?.partners.includes(name);
+    }
 }
 
 interface PlayerRow {
     courtIndex: string
     playerIndex: string
     name: string
+    partners: string[]
     matchups: string
 }

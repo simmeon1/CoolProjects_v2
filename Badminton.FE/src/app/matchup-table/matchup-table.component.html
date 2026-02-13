@@ -35,6 +35,11 @@
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row [class.even-court]="row.courtIndex % 2 === 0"
-             *matRowDef="let row; columns: displayedColumns;" cdkDrag [cdkDragData]="row"></mat-row>
+    <mat-row (click)="selectRow(row)"
+             *matRowDef="let row; columns: displayedColumns;" cdkDrag [cdkDragData]="row"
+             [class.selected-row]="row === selectedRow()"
+             [class.even-court]="row.courtIndex % 2 === 0"
+             [class.partner-of-selected]="isPartnerOfSelected(row.name)"
+    >
+    </mat-row>
 </mat-table>
