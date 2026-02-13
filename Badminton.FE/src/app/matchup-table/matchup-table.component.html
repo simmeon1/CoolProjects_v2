@@ -1,13 +1,13 @@
 <mat-tab-group>
     <mat-tab label="Players">
-        Table usage insturctions:
+        Table usage instructions:
         <ul>
             <li>Populate form above and hit submit to repopulate table.</li>
             <li>Drag and drop players using the left most cell. Indexes and matchups will get updated.</li>
             <li>Click on player to highlight/unhighlight them along with the partners they will play with.</li>
             <li>Even-numbered courts have a darker shade.</li>
         </ul>
-        <mat-table #table [dataSource]="state()" cdkDropList
+        <mat-table #table [dataSource]="playerRowsDatasource()" cdkDropList
                    (cdkDropListDropped)="drop(
                 table,
                 $event.item.data.name,
@@ -54,10 +54,18 @@
         </mat-table>
     </mat-tab>
     <mat-tab label="Matches">
-        <!--        @for (item of state(); track item.name) {-->
-        <!--            <li>{{ item.name }}</li>-->
-        <!--        } @empty {-->
-        <!--            <li>There are no items.</li>-->
-        <!--        }-->
+        Instructions: This is a reflection of the table state in the Players tab.
+        @for (courtMatchups of matchups(); track courtMatchups.courtIndex) {
+            <h1>Court {{ courtMatchups.courtIndex }}</h1>
+            @for (courtMatchup of courtMatchups.matchups; track courtMatchup) {
+                <div>
+                    <mat-checkbox>{{ courtMatchup }}</mat-checkbox>
+                </div>
+            } @empty {
+                There are no items.
+            }
+        } @empty {
+            There are no items.
+        }
     </mat-tab>
 </mat-tab-group>

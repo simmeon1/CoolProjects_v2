@@ -16,6 +16,7 @@ import {CdkDrag, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk
 import {MatIcon} from "@angular/material/icon";
 import {HttpParams, httpResource} from "@angular/common/http";
 import {MatTab, MatTabGroup} from "@angular/material/tabs";
+import {MatCheckbox} from "@angular/material/checkbox";
 
 @Component({
     selector: 'matchup-table',
@@ -35,7 +36,8 @@ import {MatTab, MatTabGroup} from "@angular/material/tabs";
         MatRowDef,
         CdkDragHandle,
         MatTabGroup,
-        MatTab
+        MatTab,
+        MatCheckbox
     ],
     templateUrl: './matchup-table.component.html',
     styleUrl: './matchup-table.component.scss',
@@ -43,14 +45,12 @@ import {MatTab, MatTabGroup} from "@angular/material/tabs";
 })
 
 export class MatchupTable {
-    public readonly inputRows = input.required<PlayerRow[], Response>({
-        transform: this.mapResponse
-    });
+    public readonly inputRows = input.required<Response>();
 
     public readonly selectedIndex = signal<number | undefined>(undefined);
     private readonly selectedRow = computed(() => {
         const selectedIndex = this.selectedIndex();
-        return selectedIndex === undefined ? undefined : this.state()[selectedIndex];
+        return selectedIndex === undefined ? undefined : this.playerRowsDatasource()[selectedIndex];
     });
 
     public readonly minGames = input.required<number>();
@@ -63,9 +63,9 @@ export class MatchupTable {
         'matchups',
     ];
 
-    private readonly updatedDatasource = signal<PlayerRow[] | undefined>(undefined);
+    private readonly updatedPlayerRowsDatasource = signal<PlayerRow[] | undefined>(undefined);
     private httpResourceRef = httpResource<Response>(() => {
-        const updatedDatasource = this.updatedDatasource();
+        const updatedDatasource = this.updatedPlayerRowsDatasource();
         if (!updatedDatasource) {
             return undefined;
         }
@@ -79,12 +79,38 @@ export class MatchupTable {
         return `http://localhost:5287/api/?${params.toString()}`;
     });
 
-    public readonly state = computed((): PlayerRow[] => {
-        const updatedDatasource = this.updatedDatasource();
-        if (!updatedDatasource) {
+    public readonly state = computed(() => {
+        if (!this.updatedPlayerRowsDatasource()) {
             return this.inputRows();
         }
-        return this.httpResourceRef.hasValue() ? this.mapResponse(this.httpResourceRef.value()) : updatedDatasource;
+        return this.httpResourceRef.value();
+    });
+
+    public readonly playerRowsDatasource = computed((): PlayerRow[] => {
+        const updatedDatasource = this.updatedPlayerRowsDatasource();
+        if (!updatedDatasource) {
+            return this.mapResponse(this.inputRows());
+        }
+        const state = this.state();
+        return state ? this.mapResponse(state) : updatedDatasource;
+    });
+
+    public readonly matchups = computed((): MatchupText[] => {
+        const result: MatchupText[] = [];
+        const state = this.state();
+        if (!state) {
+            return [];
+        }
+        for (const [courtIndex, matchupCollection] of Object.entries(state)) {
+            result.push({
+                courtIndex,
+                matchups: matchupCollection.matchups.map(m => {
+                    const getPairingText = (p: Pairing) => `${p.player1}-${p.player2}`
+                    return `${getPairingText(m.pairing1)} v. ${getPairingText(m.pairing2)}`
+                })
+            });
+        }
+        return result;
     });
 
     private mapResponse(r: Response): PlayerRow[] {
@@ -140,7 +166,7 @@ export class MatchupTable {
         if (this.selectedIndex() !== undefined) {
             this.selectedIndex.set(currentIndex);
         }
-        this.updatedDatasource.set(dataSource);
+        this.updatedPlayerRowsDatasource.set(dataSource);
     }
 
     public trackByName(index: number, item: PlayerRow): string {
@@ -162,4 +188,9 @@ interface PlayerRow {
     name: string
     partners: string[]
     matchups: string
+}
+
+interface MatchupText {
+    courtIndex: string
+    matchups: string[]
 }
