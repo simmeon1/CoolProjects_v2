@@ -35,9 +35,9 @@
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row (click)="selectRow(row)"
-             *matRowDef="let row; columns: displayedColumns;" cdkDrag [cdkDragData]="row"
-             [class.selected-row]="row === selectedRow()"
+    <mat-row (click)="selectIndex(i)"
+             *matRowDef="let row; columns: displayedColumns; let i = index" cdkDrag [cdkDragData]="row"
+             [class.selected-row]="i === selectedIndex()"
              [class.even-court]="row.courtIndex % 2 === 0"
              [class.partner-of-selected]="isPartnerOfSelected(row.name)"
     >

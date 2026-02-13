@@ -44,9 +44,15 @@ Charlie
 Delta
 Echo
 Foxtrot
-Golf`,
+Golf
+Hotel
+India
+Juliett
+Kilo
+Lima
+Mike`,
             minGames: 4,
-            courtCount: 1,
+            courtCount: 2,
             shuffle: false
         }), (schemaPath) => {
             required(schemaPath.names);

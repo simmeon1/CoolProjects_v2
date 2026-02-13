@@ -40,14 +40,18 @@ import {HttpParams, httpResource} from "@angular/common/http";
 })
 
 export class MatchupTable {
-    public inputRows = input.required<PlayerRow[], Response>({
+    public readonly inputRows = input.required<PlayerRow[], Response>({
         transform: this.mapResponse
     });
 
-    public selectedRow = signal<PlayerRow | undefined>(undefined);
+    public readonly selectedIndex = signal<number | undefined>(undefined);
+    private readonly selectedRow = computed(() => {
+        const selectedIndex = this.selectedIndex();
+        return selectedIndex === undefined ? undefined : this.state()[selectedIndex];
+    });
 
-    public minGames = input.required<number>();
-    public courtCount = input.required<number>();
+    public readonly minGames = input.required<number>();
+    public readonly courtCount = input.required<number>();
     public readonly displayedColumns: string[] = [
         'position',
         'courtIndex',
@@ -81,7 +85,6 @@ export class MatchupTable {
     });
 
     private mapResponse(r: Response): PlayerRow[] {
-
         const rows: PlayerRow[] = [];
         for (const [courtIndex, matchupCollection] of Object.entries(r)) {
             for (const [index, name] of Object.entries(matchupCollection.players)) {
@@ -131,6 +134,9 @@ export class MatchupTable {
             return;
         }
         moveItemInArray(dataSource, previousIndex, currentIndex);
+        if (this.selectedIndex() !== undefined) {
+            this.selectedIndex.set(currentIndex);
+        }
         this.updatedDatasource.set(dataSource);
     }
 
@@ -138,8 +144,8 @@ export class MatchupTable {
         return item.name;
     }
 
-    public selectRow(row: PlayerRow) {
-        this.selectedRow.update((r) => r !== row ? row : undefined);
+    public selectIndex(index: number) {
+        this.selectedIndex.update((i) => i !== index ? index : undefined);
     }
 
     public isPartnerOfSelected(name: string) {
