@@ -127,7 +127,7 @@ export class MatchupTable {
             }
             result.push(`${getPairingText(pairs[0], false)} v. ${getPairingText(pairs[1], true)}`)
         }
-        return result;
+        return result.join('\n');
     }
 }
 
