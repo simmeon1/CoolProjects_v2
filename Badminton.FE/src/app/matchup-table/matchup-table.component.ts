@@ -80,6 +80,10 @@ export class MatchupTable {
 
     private mapResponse(r: Response): PlayerRow[] {
         const getMatchupsTexts = (matchups: Matchup[], name: string) => {
+            matchups = matchups.filter(m =>
+                [m.pairing1.player1, m.pairing1.player2, m.pairing2.player1, m.pairing2.player2].includes(name)
+            );
+
             const result: string[] = [];
             for (const m of matchups) {
                 const pairs = [m.pairing1, m.pairing2].sort((p1, p2) => {
@@ -98,7 +102,7 @@ export class MatchupTable {
             }
             return result.join('\n');
         }
-        
+
         const rows: PlayerRow[] = [];
         for (const [courtIndex, matchupCollection] of Object.entries(r)) {
             for (const [index, name] of Object.entries(matchupCollection.players)) {
@@ -106,10 +110,7 @@ export class MatchupTable {
                     courtIndex,
                     playerIndex: (parseInt(index) + 1).toString(),
                     name,
-                    matchups: getMatchupsTexts(matchupCollection.matchups.filter(m =>
-                            [m.pairing1.player1, m.pairing1.player2, m.pairing2.player1, m.pairing2.player2].includes(name)
-                        ), name
-                    )
+                    matchups: getMatchupsTexts(matchupCollection.matchups, name)
                 })
             }
         }
