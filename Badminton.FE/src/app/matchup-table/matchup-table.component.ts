@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, input, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, input} from '@angular/core';
 import {Matchup, Response} from "../app.component";
 import {
     MatCell,
@@ -14,7 +14,9 @@ import {
 } from "@angular/material/table";
 import {CdkDrag, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {MatIcon} from "@angular/material/icon";
-import {HttpParams, httpResource} from "@angular/common/http";
+import {toObservable, toSignal} from "@angular/core/rxjs-interop";
+import {concat, first, map, of, Subject, switchMap} from "rxjs";
+import {HttpClient, HttpParams} from "@angular/common/http";
 
 @Component({
     selector: 'matchup-table',
@@ -52,34 +54,21 @@ export class MatchupTable {
         'name'
     ];
 
-    private readonly updatedDatasource = signal<PlayerRow[] | undefined>(undefined);
-    private httpResourceRef = httpResource<Response>(() => {
-        const updatedDatasource = this.updatedDatasource();
-        if (!updatedDatasource) {
-            return undefined;
-        }
-        const params = new HttpParams({
-            fromObject: {
-                names: updatedDatasource.map(r => r.name),
-                minGames: this.minGames(),
-                courtCount: this.courtCount()
-            }
-        });
-        return `http://localhost:5287/api/?${params.toString()}`;
-    });
+    private readonly updatedDatasource$: Subject<PlayerRow[]> = new Subject<PlayerRow[]>();
+    public readonly state = toSignal(
+        concat(
+            toObservable(this.inputRows).pipe(first()),
+            this.updatedDatasource$.pipe(
+                switchMap((datasource) => concat(
+                    of(datasource),
+                    this.getObs(datasource)
+                ))
+            )
+        ), {initialValue: []}
+    );
 
-    public readonly state = computed((): PlayerRow[] => {
-        const updatedDatasource = this.updatedDatasource();
-        if (!updatedDatasource) {
-            return this.inputRows();
-        }
-        const resourceValue = this.httpResourceRef.value();
-        if (resourceValue) {
-            return this.mapResponse(resourceValue);
-        } else {
-            return updatedDatasource;
-        }
-    });
+    public constructor(private http: HttpClient) {
+    }
 
     private mapResponse(r: Response): PlayerRow[] {
         const rows: PlayerRow[] = [];
@@ -104,11 +93,25 @@ export class MatchupTable {
         const names = getNames();
         const previousIndex = names.findIndex(n => n === movedName);
         moveItemInArray(dataSource, previousIndex, currentIndex);
-        this.updatedDatasource.set(dataSource);
+        this.updatedDatasource$.next(dataSource);
     }
 
     public trackByName(index: number, item: PlayerRow): string {
         return item.name;
+    }
+
+    private getObs(datasource: PlayerRow[]) {
+        const params = new HttpParams({
+            fromObject: {
+                names: datasource.map(r => r.name),
+                minGames: this.minGames(),
+                courtCount: this.courtCount()
+            }
+        });
+
+        return this.http.get<Response>(`http://localhost:5287/api/`, {params}).pipe(
+            map(res => this.mapResponse(res)),
+        );
     }
 }
 
