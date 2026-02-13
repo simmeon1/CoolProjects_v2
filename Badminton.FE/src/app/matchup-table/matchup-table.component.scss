@@ -53,6 +53,24 @@
   cursor: move;
 }
 
-.mat-column-position, .mat-column-courtIndex, .mat-column-playerIndex, .mat-column-name {
-  flex: 0 0 80px
+.mat-mdc-cell, .mat-mdc-header-cell {
+  padding: 0 4px
 }
+
+.mat-column-position {
+  padding-left: 12px;
+  flex: 0 1 50px
+}
+
+.mat-column-courtIndex {
+  flex: 0 1 60px
+}
+
+.mat-column-playerIndex {
+  flex: 0 1 40px
+}
+
+.mat-column-name {
+  flex: 0 1 70px
+}
+

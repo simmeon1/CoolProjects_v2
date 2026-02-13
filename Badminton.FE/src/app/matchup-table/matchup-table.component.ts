@@ -118,14 +118,14 @@ export class MatchupTable {
                 return pairIncludesPlayer(p2) - pairIncludesPlayer(p1);
             })
 
-            const getPairingText = (p: Pairing) => {
+            const getPairingText = (p: Pairing, includeFirst: boolean) => {
                 const players = [p.player1, p.player2].sort((p1, p2) => {
                     const isPlayer = (p: string) => p === row.name ? 1 : 0
                     return isPlayer(p2) - isPlayer(p1);
                 })
-                return players[0] + '-' + players[1];
+                return includeFirst ? `${players[0]}-${players[1]}` : players[1];
             }
-            result.push(`${getPairingText(pairs[0])} v. ${getPairingText(pairs[1])}`)
+            result.push(`${getPairingText(pairs[0], false)} v. ${getPairingText(pairs[1], true)}`)
         }
         return result;
     }
