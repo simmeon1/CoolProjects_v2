@@ -1,6 +1,6 @@
-<mat-table [dataSource]="state()" cdkDropList
+<mat-table #table [dataSource]="state()" cdkDropList
            (cdkDropListDropped)="drop(
-                state(),
+                table,
                 $event.item.data.name,
                 $event.currentIndex
            )"

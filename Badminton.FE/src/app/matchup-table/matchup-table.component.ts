@@ -15,6 +15,8 @@ import {
 import {CdkDrag, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {MatIcon} from "@angular/material/icon";
 import {HttpParams, httpResource} from "@angular/common/http";
+import {toSignal} from "@angular/core/rxjs-interop";
+import {of} from "rxjs";
 
 @Component({
     selector: 'matchup-table',
@@ -52,11 +54,14 @@ export class MatchupTable {
         'name'
     ];
 
+    public constructor() {
+        let x = toSignal(of(1));
+    }
+
     private readonly reorderedNames = signal<string[]>([]);
     private httpResourceRef = httpResource<Response>(() => {
         const names = this.reorderedNames();
         if (names.length === 0) return undefined;
-
         const params = new HttpParams({
             fromObject: {
                 names,
@@ -92,11 +97,14 @@ export class MatchupTable {
         return rows;
     }
 
-    public drop(rows: PlayerRow[], movedName: string, currentIndex: number) {
-        const names = rows.map(r => r.name);
+    public drop(table: MatTable<PlayerRow>, movedName: string, currentIndex: number) {
+        const dataSource = table.dataSource as PlayerRow[];
+        const getNames = () => dataSource.map(r => r.name);
+        const names = getNames();
         const previousIndex = names.findIndex(n => n === movedName);
-        moveItemInArray(names, previousIndex, currentIndex);
-        this.reorderedNames.set(names);
+        moveItemInArray(dataSource, previousIndex, currentIndex);
+        // this.reorderedNames.set(getNames());
+        table.renderRows();
     }
 }
 
