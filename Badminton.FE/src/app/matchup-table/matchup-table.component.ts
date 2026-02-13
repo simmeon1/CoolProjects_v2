@@ -79,6 +79,26 @@ export class MatchupTable {
     });
 
     private mapResponse(r: Response): PlayerRow[] {
+        const getMatchupsTexts = (matchups: Matchup[], name: string) => {
+            const result: string[] = [];
+            for (const m of matchups) {
+                const pairs = [m.pairing1, m.pairing2].sort((p1, p2) => {
+                    const pairIncludesPlayer = (p: Pairing) => [p.player1, p.player2].includes(name) ? 1 : 0
+                    return pairIncludesPlayer(p2) - pairIncludesPlayer(p1);
+                })
+
+                const getPairingText = (p: Pairing, includeFirst: boolean) => {
+                    const players = [p.player1, p.player2].sort((p1, p2) => {
+                        const isPlayer = (p: string) => p === name ? 1 : 0
+                        return isPlayer(p2) - isPlayer(p1);
+                    })
+                    return includeFirst ? `${players[0]}-${players[1]}` : players[1];
+                }
+                result.push(`${getPairingText(pairs[0], false)} v. ${getPairingText(pairs[1], true)}`)
+            }
+            return result.join('\n');
+        }
+        
         const rows: PlayerRow[] = [];
         for (const [courtIndex, matchupCollection] of Object.entries(r)) {
             for (const [index, name] of Object.entries(matchupCollection.players)) {
@@ -86,8 +106,9 @@ export class MatchupTable {
                     courtIndex,
                     playerIndex: (parseInt(index) + 1).toString(),
                     name,
-                    matchups: matchupCollection.matchups.filter(m =>
-                        [m.pairing1.player1, m.pairing1.player2, m.pairing2.player1, m.pairing2.player2].includes(name)
+                    matchups: getMatchupsTexts(matchupCollection.matchups.filter(m =>
+                            [m.pairing1.player1, m.pairing1.player2, m.pairing2.player1, m.pairing2.player2].includes(name)
+                        ), name
                     )
                 })
             }
@@ -109,31 +130,11 @@ export class MatchupTable {
     public trackByName(index: number, item: PlayerRow): string {
         return item.name;
     }
-
-    public getMatchupsTexts(row: PlayerRow) {
-        const result: string[] = [];
-        for (const m of row.matchups) {
-            const pairs = [m.pairing1, m.pairing2].sort((p1, p2) => {
-                const pairIncludesPlayer = (p: Pairing) => [p.player1, p.player2].includes(row.name) ? 1 : 0
-                return pairIncludesPlayer(p2) - pairIncludesPlayer(p1);
-            })
-
-            const getPairingText = (p: Pairing, includeFirst: boolean) => {
-                const players = [p.player1, p.player2].sort((p1, p2) => {
-                    const isPlayer = (p: string) => p === row.name ? 1 : 0
-                    return isPlayer(p2) - isPlayer(p1);
-                })
-                return includeFirst ? `${players[0]}-${players[1]}` : players[1];
-            }
-            result.push(`${getPairingText(pairs[0], false)} v. ${getPairingText(pairs[1], true)}`)
-        }
-        return result.join('\n');
-    }
 }
 
 interface PlayerRow {
     courtIndex: string
     playerIndex: string
     name: string
-    matchups: Matchup[]
+    matchups: string
 }

@@ -31,7 +31,7 @@
 
     <ng-container matColumnDef="matchups">
         <mat-header-cell *matHeaderCellDef>Matchups</mat-header-cell>
-        <mat-cell *matCellDef="let element">{{ getMatchupsTexts(element) }}</mat-cell>
+        <mat-cell *matCellDef="let element">{{ element.matchups }}</mat-cell>
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
