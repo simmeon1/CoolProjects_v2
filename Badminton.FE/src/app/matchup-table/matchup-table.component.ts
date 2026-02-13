@@ -110,13 +110,24 @@ export class MatchupTable {
         return item.name;
     }
 
-    public getMatchupsText(row: PlayerRow) {
+    public getMatchupsTexts(row: PlayerRow) {
         const result: string[] = [];
-        const getPairingText = (p: Pairing) => p.player1 + '-' + p.player2
         for (const m of row.matchups) {
-            result.push(`${getPairingText(m.pairing1)} v ${getPairingText(m.pairing2)}`)
+            const pairs = [m.pairing1, m.pairing2].sort((p1, p2) => {
+                const pairIncludesPlayer = (p: Pairing) => [p.player1, p.player2].includes(row.name) ? 1 : 0
+                return pairIncludesPlayer(p2) - pairIncludesPlayer(p1);
+            })
+
+            const getPairingText = (p: Pairing) => {
+                const players = [p.player1, p.player2].sort((p1, p2) => {
+                    const isPlayer = (p: string) => p === row.name ? 1 : 0
+                    return isPlayer(p2) - isPlayer(p1);
+                })
+                return players[0] + '-' + players[1];
+            }
+            result.push(`${getPairingText(pairs[0])} v. ${getPairingText(pairs[1])}`)
         }
-        return result.join('\n');
+        return result;
     }
 }
 

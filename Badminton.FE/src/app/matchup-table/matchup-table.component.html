@@ -31,7 +31,13 @@
 
     <ng-container matColumnDef="matchups">
         <mat-header-cell *matHeaderCellDef>Matchups</mat-header-cell>
-        <mat-cell *matCellDef="let element"> {{ getMatchupsText(element) }}</mat-cell>
+        <mat-cell *matCellDef="let element">
+            <div>
+                @for (text of getMatchupsTexts(element); track text) {
+                    <div>{{ text }}</div>
+                }
+            </div>
+        </mat-cell>
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
