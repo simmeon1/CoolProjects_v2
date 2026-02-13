@@ -73,12 +73,7 @@ export class MatchupTable {
         if (!updatedDatasource) {
             return this.inputRows();
         }
-        const resourceValue = this.httpResourceRef.value();
-        if (resourceValue) {
-            return this.mapResponse(resourceValue);
-        } else {
-            return updatedDatasource;
-        }
+        return this.httpResourceRef.hasValue() ? this.mapResponse(this.httpResourceRef.value()) : updatedDatasource;
     });
 
     private mapResponse(r: Response): PlayerRow[] {
