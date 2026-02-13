@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, signal} from '@angular/core';
 import {HttpParams, httpResource} from "@angular/common/http";
 import {MatFormField, MatInput, MatLabel} from "@angular/material/input";
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
@@ -40,6 +40,7 @@ export class App {
         });
         return `http://localhost:5287/api/?${params.toString()}`;
     });
+    public readonly response = computed(() => this.state.value());
     public readonly form = form(signal<Form>({
             names: `Alfa
 Bravo

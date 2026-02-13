@@ -1,52 +1,71 @@
-Table usage instructions:
-<ul>
-    <li>Populate form above and hit submit to repopulate table.</li>
-    <li>Drag and drop players using the left most cell. Indexes and matchups will get updated.</li>
-    <li>Click on player to highlight/unhighlight them along with the partners they will play with.</li>
-    <li>Even-numbered courts have a darker shade.</li>
-</ul>
-<mat-table #table [dataSource]="playerRowsDatasource()" cdkDropList
-           (cdkDropListDropped)="drop(
+<mat-tab-group>
+    <mat-tab label="Players">
+        Table usage instructions:
+        <ul>
+            <li>Populate form above and hit submit to repopulate table.</li>
+            <li>Drag and drop players using the left most cell. Indexes and matchups will get updated.</li>
+            <li>Click on player to highlight/unhighlight them along with the partners they will play with.</li>
+            <li>Even-numbered courts have a darker shade.</li>
+        </ul>
+        <mat-table #table [dataSource]="playerRowsDatasource()" cdkDropList
+                   (cdkDropListDropped)="drop(
                 table,
                 $event.item.data.name,
                 $event.currentIndex
            )"
-           cdkDropListData="dataSource"
-           [trackBy]="trackByName"
->
-    <ng-container matColumnDef="position" sticky>
-        <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell class="handle" cdkDragHandle *matCellDef="let element">
-            <mat-icon>reorder</mat-icon>
-        </mat-cell>
-    </ng-container>
+                   cdkDropListData="dataSource"
+                   [trackBy]="trackByName"
+        >
+            <ng-container matColumnDef="position" sticky>
+                <mat-header-cell *matHeaderCellDef></mat-header-cell>
+                <mat-cell class="handle" cdkDragHandle *matCellDef="let element">
+                    <mat-icon>reorder</mat-icon>
+                </mat-cell>
+            </ng-container>
 
-    <ng-container matColumnDef="courtIndex">
-        <mat-header-cell *matHeaderCellDef>Court</mat-header-cell>
-        <mat-cell *matCellDef="let element"> {{ element.courtIndex }}</mat-cell>
-    </ng-container>
+            <ng-container matColumnDef="courtIndex">
+                <mat-header-cell *matHeaderCellDef>Court</mat-header-cell>
+                <mat-cell *matCellDef="let element"> {{ element.courtIndex }}</mat-cell>
+            </ng-container>
 
-    <ng-container matColumnDef="playerIndex">
-        <mat-header-cell *matHeaderCellDef>No.</mat-header-cell>
-        <mat-cell *matCellDef="let element"> {{ element.playerIndex }}</mat-cell>
-    </ng-container>
+            <ng-container matColumnDef="playerIndex">
+                <mat-header-cell *matHeaderCellDef>No.</mat-header-cell>
+                <mat-cell *matCellDef="let element"> {{ element.playerIndex }}</mat-cell>
+            </ng-container>
 
-    <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
-        <mat-cell *matCellDef="let element"> {{ element.name }}</mat-cell>
-    </ng-container>
+            <ng-container matColumnDef="name">
+                <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+                <mat-cell *matCellDef="let element"> {{ element.name }}</mat-cell>
+            </ng-container>
 
-    <ng-container matColumnDef="matchups">
-        <mat-header-cell *matHeaderCellDef>Matchups</mat-header-cell>
-        <mat-cell *matCellDef="let element">{{ element.matchups }}</mat-cell>
-    </ng-container>
+            <ng-container matColumnDef="matchups">
+                <mat-header-cell *matHeaderCellDef>Matchups</mat-header-cell>
+                <mat-cell *matCellDef="let element">{{ element.matchups }}</mat-cell>
+            </ng-container>
 
-    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row (click)="selectIndex(i)"
-             *matRowDef="let row; columns: displayedColumns; let i = index" cdkDrag [cdkDragData]="row"
-             [class.selected-row]="i === selectedIndex()"
-             [class.even-court]="row.courtIndex % 2 === 0"
-             [class.partner-of-selected]="isPartnerOfSelected(row.name)"
-    >
-    </mat-row>
-</mat-table>
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <mat-row (click)="selectIndex(i)"
+                     *matRowDef="let row; columns: displayedColumns; let i = index" cdkDrag [cdkDragData]="row"
+                     [class.selected-row]="i === selectedIndex()"
+                     [class.even-court]="row.courtIndex % 2 === 0"
+                     [class.partner-of-selected]="isPartnerOfSelected(row.name)"
+            >
+            </mat-row>
+        </mat-table>
+    </mat-tab>
+    <mat-tab label="Matches">
+        Instructions: This is a reflection of the table state in the Players tab.
+        @for (courtMatchups of matchups(); track courtMatchups.courtIndex) {
+            <h1>Court {{ courtMatchups.courtIndex }}</h1>
+            @for (courtMatchup of courtMatchups.matchups; track courtMatchup) {
+                <div>
+                    <mat-checkbox>{{ courtMatchup }}</mat-checkbox>
+                </div>
+            } @empty {
+                There are no items.
+            }
+        } @empty {
+            There are no items.
+        }
+    </mat-tab>
+</mat-tab-group>

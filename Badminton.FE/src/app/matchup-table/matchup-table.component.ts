@@ -15,6 +15,8 @@ import {
 import {CdkDrag, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {MatIcon} from "@angular/material/icon";
 import {HttpParams, httpResource} from "@angular/common/http";
+import {MatCheckbox} from "@angular/material/checkbox";
+import {MatTab, MatTabGroup} from "@angular/material/tabs";
 
 @Component({
     selector: 'matchup-table',
@@ -32,7 +34,10 @@ import {HttpParams, httpResource} from "@angular/common/http";
         MatCellDef,
         MatHeaderRowDef,
         MatRowDef,
-        CdkDragHandle
+        CdkDragHandle,
+        MatCheckbox,
+        MatTab,
+        MatTabGroup
     ],
     templateUrl: './matchup-table.component.html',
     styleUrl: './matchup-table.component.scss',
@@ -40,8 +45,7 @@ import {HttpParams, httpResource} from "@angular/common/http";
 })
 
 export class MatchupTable {
-    public readonly inputRows = input.required<Response>();
-
+    public readonly response = input.required<Response>();
     public readonly selectedIndex = signal<number | undefined>(undefined);
     private readonly selectedRow = computed(() => {
         const selectedIndex = this.selectedIndex();
@@ -76,7 +80,7 @@ export class MatchupTable {
 
     public readonly state = computed(() => {
         if (!this.updatedPlayerRowsDatasource()) {
-            return this.inputRows();
+            return this.response();
         }
         return this.httpResourceRef.value();
     });
@@ -84,30 +88,12 @@ export class MatchupTable {
     public readonly playerRowsDatasource = computed((): PlayerRow[] => {
         const updatedDatasource = this.updatedPlayerRowsDatasource();
         if (!updatedDatasource) {
-            return this.mapResponse(this.inputRows());
+            return this.mapResponse(this.response());
         }
         const state = this.state();
         return state ? this.mapResponse(state) : updatedDatasource;
     });
-
-    public readonly matchups = computed((): MatchupText[] => {
-        const result: MatchupText[] = [];
-        const state = this.state();
-        if (!state) {
-            return [];
-        }
-        for (const [courtIndex, matchupCollection] of Object.entries(state)) {
-            result.push({
-                courtIndex,
-                matchups: matchupCollection.matchups.map(m => {
-                    const getPairingText = (p: Pairing) => `${p.player1}-${p.player2}`
-                    return `${getPairingText(m.pairing1)} v. ${getPairingText(m.pairing2)}`
-                })
-            });
-        }
-        return result;
-    });
-
+    
     private mapResponse(r: Response): PlayerRow[] {
         const rows: PlayerRow[] = [];
         for (const [courtIndex, matchupCollection] of Object.entries(r)) {
@@ -183,9 +169,4 @@ interface PlayerRow {
     name: string
     partners: string[]
     matchups: string
-}
-
-interface MatchupText {
-    courtIndex: string
-    matchups: string[]
 }
