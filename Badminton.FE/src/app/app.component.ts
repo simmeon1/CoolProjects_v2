@@ -7,6 +7,7 @@ import {MatCheckbox} from "@angular/material/checkbox";
 import {MatButton} from "@angular/material/button";
 import shuffle from "knuth-shuffle-seeded";
 import {MatchupTable} from "./matchup-table/matchup-table.component";
+import {MatTab, MatTabGroup} from "@angular/material/tabs";
 
 @Component({
     selector: 'app-root',
@@ -18,7 +19,9 @@ import {MatchupTable} from "./matchup-table/matchup-table.component";
         MatCheckbox,
         MatButton,
         FormField,
-        MatchupTable
+        MatchupTable,
+        MatTabGroup,
+        MatTab
     ],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
@@ -65,6 +68,7 @@ Mike`,
         }
     );
     private readonly fetchWithParams = signal<Params>(this.getParamsFromForm());
+    public readonly selectedTab = signal<number>(0);
 
     private getParamsFromForm(): Params {
         return {
@@ -81,6 +85,7 @@ Mike`,
             shuffle(p.names);
         }
         this.fetchWithParams.set(p);
+        this.selectedTab.set(1);
     }
 }
 

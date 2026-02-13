@@ -1,34 +1,43 @@
-<form novalidate (submit)="onSubmit($event)">
-    <div class="form-wrapper">
-        <div>
-            <mat-form-field>
-                <mat-label>Add players, one per line</mat-label>
-                <textarea matInput cdkTextareaAutosize [formField]="form.names"></textarea>
-            </mat-form-field>
-        </div>
-        <div>
-            <mat-form-field>
-                <mat-label>Minimum games each?</mat-label>
-                <input type="number" matInput [formField]="form.minGames">
-            </mat-form-field>
-        </div>
-        <div>
-            <mat-form-field>
-                <mat-label>How many courts?</mat-label>
-                <input type="number" matInput [formField]="form.courtCount">
-            </mat-form-field>
-        </div>
-        <div>
-            <mat-checkbox [formField]="form.shuffle">Shuffle names</mat-checkbox>
-        </div>
-        <button matButton="filled" type="submit" [disabled]="form().invalid() || state.isLoading()">Submit</button>
-    </div>
-</form>
-@if (state.hasValue()) {
-    <matchup-table [inputRows]="state.value()" [minGames]="form.minGames().value()"
-                   [courtCount]="form.courtCount().value()"></matchup-table>
-} @else if (state.error()) {
-    Something went wrong. Is the form valid?
-} @else if (state.isLoading()) {
-    Loading...
-}
+<mat-tab-group [selectedIndex]="selectedTab()" (selectedIndexChange)="selectedTab.set($event)">
+    <mat-tab label="Form">
+        <form novalidate (submit)="onSubmit($event)">
+            <div class="form-wrapper">
+                <div>
+                    <mat-form-field>
+                        <mat-label>Add players, one per line</mat-label>
+                        <textarea matInput cdkTextareaAutosize [formField]="form.names"></textarea>
+                    </mat-form-field>
+                </div>
+                <div>
+                    <mat-form-field>
+                        <mat-label>Minimum games each?</mat-label>
+                        <input type="number" matInput [formField]="form.minGames">
+                    </mat-form-field>
+                </div>
+                <div>
+                    <mat-form-field>
+                        <mat-label>How many courts?</mat-label>
+                        <input type="number" matInput [formField]="form.courtCount">
+                    </mat-form-field>
+                </div>
+                <div>
+                    <mat-checkbox [formField]="form.shuffle">Shuffle names</mat-checkbox>
+                </div>
+                <button matButton="filled" type="submit" [disabled]="form().invalid() || state.isLoading()">Submit
+                </button>
+            </div>
+        </form>
+    </mat-tab>
+    <mat-tab label="Players">
+        @if (state.hasValue()) {
+            <matchup-table [inputRows]="state.value()" [minGames]="form.minGames().value()"
+                           [courtCount]="form.courtCount().value()"></matchup-table>
+        } @else if (state.error()) {
+            Something went wrong. Is the form valid?
+        } @else if (state.isLoading()) {
+            Loading...
+        } @else if (state.isLoading()) {
+            Submit the form to get result.
+        }
+    </mat-tab>
+</mat-tab-group>

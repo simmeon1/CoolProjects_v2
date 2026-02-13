@@ -15,8 +15,6 @@ import {
 import {CdkDrag, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {MatIcon} from "@angular/material/icon";
 import {HttpParams, httpResource} from "@angular/common/http";
-import {MatTab, MatTabGroup} from "@angular/material/tabs";
-import {MatCheckbox} from "@angular/material/checkbox";
 
 @Component({
     selector: 'matchup-table',
@@ -34,10 +32,7 @@ import {MatCheckbox} from "@angular/material/checkbox";
         MatCellDef,
         MatHeaderRowDef,
         MatRowDef,
-        CdkDragHandle,
-        MatTabGroup,
-        MatTab,
-        MatCheckbox
+        CdkDragHandle
     ],
     templateUrl: './matchup-table.component.html',
     styleUrl: './matchup-table.component.scss',
