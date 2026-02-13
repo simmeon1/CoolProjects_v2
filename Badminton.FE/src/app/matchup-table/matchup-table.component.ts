@@ -96,9 +96,11 @@ export class MatchupTable {
 
     public drop(table: MatTable<PlayerRow>, movedName: string, currentIndex: number) {
         const dataSource = [...(table.dataSource as PlayerRow[])];
-        const getNames = () => dataSource.map(r => r.name);
-        const names = getNames();
+        const names = dataSource.map(r => r.name);
         const previousIndex = names.findIndex(n => n === movedName);
+        if (previousIndex === currentIndex) {
+            return;
+        }
         moveItemInArray(dataSource, previousIndex, currentIndex);
         this.updatedDatasource.set(dataSource);
     }
