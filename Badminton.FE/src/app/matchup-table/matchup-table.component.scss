@@ -52,3 +52,7 @@
 .handle {
   cursor: move;
 }
+
+.mat-column-position, .mat-column-courtIndex, .mat-column-playerIndex, .mat-column-name {
+  flex: 0 0 80px
+}
