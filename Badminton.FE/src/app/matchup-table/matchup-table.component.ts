@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, computed, input, signal} from '@angular/core';
-import {Matchup, Response} from "../app.component";
+import {Matchup, Pairing, Response} from "../app.component";
 import {
     MatCell,
     MatCellDef,
@@ -50,7 +50,8 @@ export class MatchupTable {
         'position',
         'courtIndex',
         'playerIndex',
-        'name'
+        'name',
+        'matchups',
     ];
 
     private readonly updatedDatasource = signal<PlayerRow[] | undefined>(undefined);
@@ -107,6 +108,15 @@ export class MatchupTable {
 
     public trackByName(index: number, item: PlayerRow): string {
         return item.name;
+    }
+
+    public getMatchupsText(row: PlayerRow) {
+        const result: string[] = [];
+        const getPairingText = (p: Pairing) => p.player1 + '-' + p.player2
+        for (const m of row.matchups) {
+            result.push(`${getPairingText(m.pairing1)} v ${getPairingText(m.pairing2)}`)
+        }
+        return result.join('\n');
     }
 }
 
