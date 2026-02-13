@@ -12,7 +12,7 @@ import {
     MatRowDef,
     MatTable
 } from "@angular/material/table";
-import {CdkDrag, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
+import {CdkDrag, CdkDragHandle, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {MatIcon} from "@angular/material/icon";
 import {HttpParams, httpResource} from "@angular/common/http";
 
@@ -31,7 +31,8 @@ import {HttpParams, httpResource} from "@angular/common/http";
         MatHeaderCellDef,
         MatCellDef,
         MatHeaderRowDef,
-        MatRowDef
+        MatRowDef,
+        CdkDragHandle
     ],
     templateUrl: './matchup-table.component.html',
     styleUrl: './matchup-table.component.scss',

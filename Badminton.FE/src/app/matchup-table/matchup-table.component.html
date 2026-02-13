@@ -9,7 +9,7 @@
 >
     <ng-container matColumnDef="position" sticky>
         <mat-header-cell *matHeaderCellDef>Drag to reorder</mat-header-cell>
-        <mat-cell *matCellDef="let element">
+        <mat-cell class="handle" cdkDragHandle *matCellDef="let element">
             <mat-icon class="example-drag-cursor">reorder</mat-icon>
         </mat-cell>
     </ng-container>
