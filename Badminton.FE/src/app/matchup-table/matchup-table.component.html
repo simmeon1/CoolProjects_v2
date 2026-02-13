@@ -1,3 +1,10 @@
+Table usage insturctions:
+<ul>
+    <li>Populate form above and hit submit to repopulate table.</li>
+    <li>Drag and drop players using the left most cell. Indexes and matchups will get updated.</li>
+    <li>Click on player to highlight/unhighlight them along with the partners they will play with.</li>
+    <li>Even-numbered courts have a darker shade.</li>
+</ul>
 <mat-table #table [dataSource]="state()" cdkDropList
            (cdkDropListDropped)="drop(
                 table,
