@@ -1,4 +1,4 @@
-.example-list {
+.mat-mdc-table {
   //width: 500px;
   //max-width: 100%;
   //border: solid 1px #ccc;
@@ -9,7 +9,7 @@
   overflow: hidden;
 }
 
-.example-box {
+.mat-mdc-row {
   //padding: 20px 10px;
   //border-bottom: solid 1px #ccc;
   color: rgba(0, 0, 0, 0.87);
@@ -41,11 +41,11 @@
   transition: transform 100ms cubic-bezier(0, 0, 0.2, 1);
 }
 
-.example-box:last-child {
+.mat-mdc-row:last-child {
   border: none;
 }
 
-.example-list.cdk-drop-list-dragging .example-box:not(.cdk-drag-placeholder) {
+.mat-mdc-table.cdk-drop-list-dragging .mat-mdc-row:not(.cdk-drag-placeholder) {
   transition: transform 100ms cubic-bezier(0, 0, 0.2, 1);
 }
 
