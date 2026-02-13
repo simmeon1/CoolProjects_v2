@@ -4,7 +4,9 @@
                 $event.item.data.name,
                 $event.currentIndex
            )"
-           cdkDropListData="dataSource">
+           cdkDropListData="dataSource"
+           [trackBy]="trackByName"
+>
     <ng-container matColumnDef="position" sticky>
         <mat-header-cell *matHeaderCellDef>Drag to reorder</mat-header-cell>
         <mat-cell *matCellDef="let element">

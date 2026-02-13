@@ -15,8 +15,6 @@ import {
 import {CdkDrag, CdkDropList, moveItemInArray} from "@angular/cdk/drag-drop";
 import {MatIcon} from "@angular/material/icon";
 import {HttpParams, httpResource} from "@angular/common/http";
-import {toSignal} from "@angular/core/rxjs-interop";
-import {of} from "rxjs";
 
 @Component({
     selector: 'matchup-table',
@@ -54,17 +52,15 @@ export class MatchupTable {
         'name'
     ];
 
-    public constructor() {
-        let x = toSignal(of(1));
-    }
-
-    private readonly reorderedNames = signal<string[]>([]);
+    private readonly updatedDatasource = signal<PlayerRow[] | undefined>(undefined);
     private httpResourceRef = httpResource<Response>(() => {
-        const names = this.reorderedNames();
-        if (names.length === 0) return undefined;
+        const updatedDatasource = this.updatedDatasource();
+        if (!updatedDatasource) {
+            return undefined;
+        }
         const params = new HttpParams({
             fromObject: {
-                names,
+                names: updatedDatasource.map(r => r.name),
                 minGames: this.minGames(),
                 courtCount: this.courtCount()
             }
@@ -73,11 +69,16 @@ export class MatchupTable {
     });
 
     public readonly state = computed((): PlayerRow[] => {
+        const updatedDatasource = this.updatedDatasource();
+        if (!updatedDatasource) {
+            return this.inputRows();
+        }
         const resourceValue = this.httpResourceRef.value();
         if (resourceValue) {
             return this.mapResponse(resourceValue);
+        } else {
+            return updatedDatasource;
         }
-        return this.inputRows();
     });
 
     private mapResponse(r: Response): PlayerRow[] {
@@ -98,13 +99,16 @@ export class MatchupTable {
     }
 
     public drop(table: MatTable<PlayerRow>, movedName: string, currentIndex: number) {
-        const dataSource = table.dataSource as PlayerRow[];
+        const dataSource = [...(table.dataSource as PlayerRow[])];
         const getNames = () => dataSource.map(r => r.name);
         const names = getNames();
         const previousIndex = names.findIndex(n => n === movedName);
         moveItemInArray(dataSource, previousIndex, currentIndex);
-        // this.reorderedNames.set(getNames());
-        table.renderRows();
+        this.updatedDatasource.set(dataSource);
+    }
+
+    public trackByName(index: number, item: PlayerRow): string {
+        return item.name;
     }
 }
 
