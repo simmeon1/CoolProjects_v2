@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -122,18 +123,28 @@ public class GoogleFlightsWorker
     )
     {
         var results = new List<Journey>();
-        var flights = c.driver.FindElements(ByCssSelector("[role='tabpanel']"))
-            .SelectMany(p => p.FindElements(ByCssSelector("li")));
+        var flights = FindElements("[role='tabpanel'] li").Select(f => f.GetAttribute("innerText")).ToList();
 
         foreach (var flight in flights)
         {
-            var text = flight.GetAttribute("innerText");
-            if (text == null)
+            if (flight == null)
             {
                 c.logger.Log("Missing text for flight. Continuing.");
                 continue;
             }
-            var flightText = text.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+            var flightText = flight.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+            if (flightText.Length == 1)
+            {
+                if (flightText[0] == "View more flights")
+                {
+                    c.logger.Log("View more flights not pressed. Continuing.");
+                }
+                else
+                {
+                    c.logger.Log("Flight is one giant string, possibly duplicate. Continuing.");
+                }
+                continue;
+            }
             if (!flightText[6].Trim().Equals("Nonstop"))
             {
                 c.logger.Log("Flight is not nonstop. Continuing.");
@@ -200,13 +211,13 @@ public class GoogleFlightsWorker
 
     private void WaitForProgressBarToBeGone()
     {
-        var loadingBar = FindElement("[data-buffervalue='1']");
+        var loadingBar = c.wait.Until(_ => FindElementSafe("[data-buffervalue='1']"), [], 3);
         try
         {
-            c.wait.Until(_ => loadingBar.GetAttribute("aria-hidden") == null, 5);
+            c.wait.Until(_ => loadingBar.GetAttribute("aria-hidden") == null);
             c.wait.Until(_ => loadingBar.GetAttribute("aria-hidden") != null);
         }
-        catch (Exception)
+        catch (WebDriverTimeoutException)
         {
             //loaded
         }
@@ -214,21 +225,53 @@ public class GoogleFlightsWorker
 
     private IWebElement FindElement(string cssSelectorToFind)
     {
-        return c.driver.FindElement(ByCssSelector(cssSelectorToFind));
+        return FindElement(c.driver, cssSelectorToFind);
+    }
+
+    private IWebElement? FindElementSafe(string cssSelectorToFind)
+    {
+        return FindElements(c.driver, cssSelectorToFind).FirstOrDefault();
+    }
+
+    private ReadOnlyCollection<IWebElement> FindElements(string cssSelectorToFind)
+    {
+        return FindElements(c.driver, cssSelectorToFind);
+    }
+
+    private IWebElement FindElement(ISearchContext context, string cssSelectorToFind)
+    {
+        return context.FindElement(ByCssSelector(cssSelectorToFind));
+    }
+
+    private ReadOnlyCollection<IWebElement> FindElements(ISearchContext context, string cssSelectorToFind)
+    {
+        return context.FindElements(ByCssSelector(cssSelectorToFind));
+    }
+
+    private void ClickElement(string cssSelector)
+    {
+        FindElement(cssSelector).Click();
+    }
+
+    private void SendKeysToElement(string cssSelector, bool doClearFirst, string keys)
+    {
+        var el = FindElement(cssSelector);
+        if (doClearFirst)
+        {
+            el.Clear();
+        }
+        el.SendKeys(keys);
     }
 
     private void SetStopsToNone()
     {
-        c.driver.FindElementAndClickIt(ByCssSelector("[aria-label='Stops, Not selected']"));
-        Sleep(500);
-        var el = FindElement("div[aria-label*='Stops']");
-        var p = ByCssSelector("input");
-        p.Container = el;
-        p.Index = 1;
-        c.driver.FindElementAndClickIt(p);
-        Sleep();
+        ClickElement("[aria-label='Stops, Not selected']");
+        var options = FindElements("div[aria-label*='Stops'] > div input");
+        var nonStopOption = options[1];
+        nonStopOption.Click();
 
-        c.driver.FindElementAndClickIt(ByCssSelector("[data-filtertype*='10'] [aria-label*='Close dialog']"));
+        var closeDialog = c.wait.Until(_ => FindElementSafe("[data-filtertype*='10'] [aria-label*='Close dialog']"));
+        closeDialog.Click();
         stopsSet = true;
         WaitForProgressBarToBeGone();
     }
@@ -236,25 +279,21 @@ public class GoogleFlightsWorker
     private void PopulateSearchField(IEnumerable<string> locations, string keyword)
     {
         var keywordLower = keyword.ToLower();
+        var cssSelectorToFind = $"[aria-label*='Enter your {keywordLower}'] [aria-label*='Done']";
 
-        c.driver.FindElementAndClickIt(
-            ByCssSelector($"[data-placeholder*='Where {(keyword == "Origin" ? "from" : "to")}'] input")
-        );
-        Sleep();
+        ClickElement($"[data-placeholder*='Where {(keyword == "Origin" ? "from" : "to")}'] input");
 
-        var checkmarkDoneButtonParam =
-            ByCssSelector($"[aria-label*='Enter your {keywordLower}'] [aria-label*='Done']");
-        var el = c.driver.FindElement(checkmarkDoneButtonParam);
-        el = (IWebElement) c.ExecuteScript("return arguments[0].parentElement.parentElement", el);
-        var displayStyle = (string) c.ExecuteScript("return arguments[0].style.display", el);
+        var el = c.wait.Until(_ => FindElementSafe(cssSelectorToFind));
+        var parent = (IWebElement) c.jsExecutor.ExecuteScript("return arguments[0].parentElement.parentElement", el);
+        var displayStyle = (string) c.jsExecutor.ExecuteScript("return arguments[0].style.display", parent);
         if (displayStyle == "none")
         {
-            c.driver.FindElementAndClickIt(ByCssSelector($"[aria-label='{keyword}, Select multiple airports']"));
+            ClickElement($"[aria-label='{keyword}, Select multiple airports']");
         }
         else
         {
-            c.driver.FindElementAndSendKeysToIt(
-                ByCssSelector($"[aria-label*='Enter your {keywordLower}'] input"),
+            SendKeysToElement(
+                $"[aria-label*='Enter your {keywordLower}'] input",
                 true,
                 Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace +
                 Keys.Backspace + Keys.Backspace
@@ -263,8 +302,8 @@ public class GoogleFlightsWorker
 
         while (c.driver.FindElements(ByCssSelector("div[data-code]")).Any(x => x.Displayed))
         {
-            c.driver.FindElementAndSendKeysToIt(
-                ByCssSelector($"[aria-label*='Enter your {keywordLower}'] input"),
+            SendKeysToElement(
+                $"[aria-label*='Enter your {keywordLower}'] input",
                 false,
                 Keys.Backspace
             );
@@ -272,44 +311,48 @@ public class GoogleFlightsWorker
 
         foreach (var location in locations)
         {
-            c.driver.FindElementAndSendKeysToIt(
-                ByCssSelector($"[aria-label*='Enter your {keywordLower}'] input"),
+            SendKeysToElement(
+                $"[aria-label*='Enter your {keywordLower}'] input",
                 false,
                 location
             );
 
-            c.driver.FindElementAndClickIt(ByCssSelector($"[data-code='{location}'] input"));
-            Sleep();
+            while (true)
+            {
+                var place = c.wait.Until(_ => FindElementSafe($"[data-code='{location}'] input"));
+                try
+                {
+                    place.Click();
+                    break;
+                }
+                catch (ElementNotInteractableException ex)
+                {
+                    // try again
+                }
+            }
         }
-
-        c.driver.FindElementAndClickIt(checkmarkDoneButtonParam);
-
-        Sleep();
+        ClickElement(cssSelectorToFind);
     }
 
     private void PopulateDateAndHitDone(DateTime date)
     {
         const string format = "ddd, MMM dd";
 
-        c.driver.FindElementAndClickIt(ByCssSelector("[aria-label='Departure']"));
+        ClickElement("[aria-label='Departure']");
 
         Sleep();
 
-        c.driver.FindElementAndSendKeysToIt(
-            ByCssSelector("[data-same-day-selection] [aria-label='Departure']"),
+        SendKeysToElement(
+            "[data-same-day-selection] [aria-label='Departure']",
             false,
             date.ToString(format) + Keys.Return
         );
 
-        c.driver.FindElementAndClickIt(
-            ByCssSelector("[aria-label^='Done. Search for one-way flights']")
-        );
+        ClickElement("[aria-label^='Done. Search for one-way flights']");
 
         if (!stopsSet)
         {
-            c.driver.FindElementAndClickIt(
-                ByCssSelector("[aria-label='Search']")
-            );
+            ClickElement("[aria-label='Search']");
         }
 
         WaitForProgressBarToBeGone();
@@ -317,29 +360,20 @@ public class GoogleFlightsWorker
 
     private void Sleep(int milliseconds = 200)
     {
-        c.Sleep(milliseconds);
+        c.delayer.Sleep(milliseconds);
     }
-    
+
     private void SetUpSearch()
     {
-        c.NavigateToUrl("https://www.google.com/travel/flights?curr=GBP");
+        c.driver.Navigate().GoToUrl("https://www.google.com/travel/flights?curr=GBP");
         try
         {
-            c.driver.FindElementAndClickIt(
-                new FindElementParameters
-                {
-                    BySelector = ByCssSelector("button"),
-                    Matcher = x =>
-                    {
-                        var innerText = x.GetAttribute("innerText");
-                        return !innerText.IsNullOrEmpty() && innerText.Equals("Reject all");
-                    }
-                }
-            );
+            var rejectAll = c.wait.Until(_ => FindElement("[aria-label='Reject all']"));
+            rejectAll.Click();
         }
-        catch (Exception)
+        catch (WebDriverTimeoutException e)
         {
-            //Doesn't show
+            // didnt show
         }
 
         SetToOneWayTrip();
@@ -349,10 +383,10 @@ public class GoogleFlightsWorker
     {
         var param = ByCssSelector("[aria-label*='Change ticket type']");
         var el = c.driver.FindElement(param);
-        var parentEl = (IWebElement) c.ExecuteScript("return arguments[0].parentElement", el);
+        var parentEl = (IWebElement) c.jsExecutor.ExecuteScript("return arguments[0].parentElement", el);
         parentEl.Click();
 
-        c.driver.FindElementAndClickIt(ByCssSelector("[aria-label*='Select your ticket type'] [data-value='2']"));
+        ClickElement("[aria-label*='Select your ticket type'] [data-value='2']");
     }
 }
 

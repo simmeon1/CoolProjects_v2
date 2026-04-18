@@ -66,7 +66,7 @@ public class EuropeFilterer : IAirportFilterer
     public bool AirportMeetsCondition(Airport airport)
     {
         var country = airport.Country;
-        for (int i = 0; i < Countries.Length; i++)
+        for (var i = 0; i < Countries.Length; i++)
         {
             if (country.Contains(Countries[i]))
             {
