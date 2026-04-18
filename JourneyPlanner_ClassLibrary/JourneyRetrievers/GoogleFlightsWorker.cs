@@ -8,6 +8,7 @@ using Common_ClassLibrary;
 using JourneyPlanner_ClassLibrary.Classes;
 using JourneyPlanner_ClassLibrary.Workers;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 
 namespace JourneyPlanner_ClassLibrary.JourneyRetrievers;
 
@@ -124,22 +125,11 @@ public class GoogleFlightsWorker
     )
     {
         var results = new List<Journey>();
-        List<string[]> flights;
-        while (true)
-        {
-            try
-            {
-                flights = FindElements("[role='tabpanel'] li")
-                    .Select(f => (f.GetAttribute("innerText") ?? "").Split("\n", StringSplitOptions.RemoveEmptyEntries))
-                    .Where(f => f.Length > 1) // Every flight looks duplicated
-                    .ToList();
-                break;
-            }
-            catch (StaleElementReferenceException)
-            {
-                // retry
-            }
-        }
+        var flights = DoUntil(() => FindElements("[role='tabpanel'] li")
+            .Select(f => (f.GetAttribute("innerText") ?? "").Split("\n", StringSplitOptions.RemoveEmptyEntries))
+            .Where(f => f.Length > 1) // Every flight looks duplicated
+            .ToList()
+        );
 
         foreach (var flight in flights)
         {
@@ -212,9 +202,9 @@ public class GoogleFlightsWorker
             c.wait.Until(_ => loadingBar.GetAttribute("aria-hidden") == null);
             c.wait.Until(_ => loadingBar.GetAttribute("aria-hidden") != null);
         }
-        catch (WebDriverTimeoutException)
+        catch (WebDriverTimeoutException e)
         {
-            //loaded
+            // loaded
         }
     }
 
@@ -245,58 +235,35 @@ public class GoogleFlightsWorker
 
     private void ClickElement(string cssSelector)
     {
-        c.wait.Until(_ =>
+        DoUntil(() =>
             {
-                var el = FindElementSafe(cssSelector);
-                if (el is null)
-                {
-                    return false;
-                }
-                try
-                {
-                    el.Click();
-                    return true;
-                }
-                catch (ElementNotInteractableException)
-                {
-                    return false;
-                }
-                catch (StaleElementReferenceException)
-                {
-                    return false;
-                }
+                var el = FindElement(cssSelector);
+                el.Click();
+                return true;
             }
         );
     }
 
-    private void SendKeysToElement(string cssSelector, bool doClearFirst, string keys)
+    private void SendKeysToElement(string cssSelector, string keys)
     {
-        c.wait.Until(_ =>
+        DoUntil(() =>
             {
-                var el = FindElementSafe(cssSelector);
-                if (el is null)
-                {
-                    return false;
-                }
-                try
-                {
-                    if (doClearFirst)
-                    {
-                        el.Clear();
-                    }
-                    el.SendKeys(keys);
-                    return true;
-                }
-                catch (ElementNotInteractableException)
-                {
-                    return false;
-                }
-                catch (StaleElementReferenceException)
-                {
-                    return false;
-                }
+                var el = FindElement(cssSelector);
+                el.SendKeys(keys);
+                return true;
             }
         );
+    }
+
+    private TResult DoUntil<TResult>(Func<TResult?> condition)
+    {
+        var wait = new WebDriverWait(c.driver, TimeSpan.FromSeconds(10));
+        wait.IgnoreExceptionTypes(
+            typeof(NoSuchElementException),
+            typeof(StaleElementReferenceException),
+            typeof(ElementNotInteractableException)
+        );
+        return wait.Until(_ => condition());
     }
 
     private void SetStopsToNone()
@@ -324,9 +291,7 @@ public class GoogleFlightsWorker
         }
         else
         {
-            while (true)
-            {
-                try
+            DoUntil(() =>
                 {
                     var chips = FindElements(
                         $"[aria-label*='Enter your {keywordLower}'] div[role='listbox'] [aria-label='Remove']"
@@ -335,24 +300,15 @@ public class GoogleFlightsWorker
                     {
                         chip.Click();
                     }
-                    break;
+                    return true;
                 }
-                catch (ElementNotInteractableException)
-                {
-                    // retry   
-                }
-                catch (StaleElementReferenceException)
-                {
-                    // retry
-                }
-            }
+            );
         }
 
         while (c.driver.FindElements(ByCssSelector("div[data-code]")).Any(x => x.Displayed))
         {
             SendKeysToElement(
                 $"[aria-label*='Enter your {keywordLower}'] input",
-                false,
                 Keys.Backspace
             );
         }
@@ -361,7 +317,6 @@ public class GoogleFlightsWorker
         {
             SendKeysToElement(
                 $"[aria-label*='Enter your {keywordLower}'] input",
-                false,
                 location
             );
             ClickElement($"[data-code='{location}'] input");
@@ -377,7 +332,6 @@ public class GoogleFlightsWorker
 
         SendKeysToElement(
             "[data-same-day-selection] [aria-label='Departure']",
-            false,
             date.ToString(format) + Keys.Return
         );
 
@@ -400,7 +354,10 @@ public class GoogleFlightsWorker
         }
         catch (WebDriverTimeoutException e)
         {
-            // didnt show
+            if (e.InnerException is not NoSuchElementException)
+            {
+                throw;
+            }
         }
 
         SetToOneWayTrip();
