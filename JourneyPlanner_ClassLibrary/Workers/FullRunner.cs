@@ -60,7 +60,6 @@ public class FullRunner
             logger,
             wait,
             delayer,
-            http,
             jsExecutor
         );
 
