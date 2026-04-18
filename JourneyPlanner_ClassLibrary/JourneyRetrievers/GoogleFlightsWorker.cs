@@ -37,7 +37,8 @@ public class GoogleFlightsWorker
         catch (Exception ex)
         {
             throw new GoogleFlightsWorkerException(
-                new JourneyCollection(results.OrderBy(j => j.ToString()).ToList())
+                new JourneyCollection(results.OrderBy(j => j.ToString()).ToList()),
+                ex
             );
         }
     }
@@ -266,18 +267,42 @@ public class GoogleFlightsWorker
                 {
                     return false;
                 }
+                catch (StaleElementReferenceException)
+                {
+                    return false;
+                }
             }
         );
     }
 
     private void SendKeysToElement(string cssSelector, bool doClearFirst, string keys)
     {
-        var el = FindElement(cssSelector);
-        if (doClearFirst)
-        {
-            el.Clear();
-        }
-        el.SendKeys(keys);
+        c.wait.Until(_ =>
+            {
+                var el = FindElementSafe(cssSelector);
+                if (el is null)
+                {
+                    return false;
+                }
+                try
+                {
+                    if (doClearFirst)
+                    {
+                        el.Clear();
+                    }
+                    el.SendKeys(keys);
+                    return true;
+                }
+                catch (ElementNotInteractableException)
+                {
+                    return false;
+                }
+                catch (StaleElementReferenceException)
+                {
+                    return false;
+                }
+            }
+        );
     }
 
     private void SetStopsToNone()
@@ -305,6 +330,14 @@ public class GoogleFlightsWorker
         }
         else
         {
+            var chips = FindElements(
+                $"[aria-label*='Enter your {keywordLower}'] div[role='listbox'] [aria-label='Remove']"
+            );
+            foreach (var chip in chips)
+            {
+                chip.Click();
+            }
+
             SendKeysToElement(
                 $"[aria-label*='Enter your {keywordLower}'] input",
                 true,
@@ -382,7 +415,10 @@ public class GoogleFlightsWorker
 
 public class GoogleFlightsWorkerException : Exception
 {
-    public GoogleFlightsWorkerException(JourneyCollection results)
+    public GoogleFlightsWorkerException(JourneyCollection results, Exception innerEx) : base(
+        "GoogleFlightsWorkerException",
+        innerEx
+    )
     {
         Results = results;
     }
