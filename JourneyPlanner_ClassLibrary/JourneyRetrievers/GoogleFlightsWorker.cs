@@ -124,34 +124,31 @@ public class GoogleFlightsWorker
     )
     {
         var results = new List<Journey>();
-        var flights = FindElements("[role='tabpanel'] li").Select(f => f.GetAttribute("innerText")).ToList();
+        List<string[]> flights;
+        while (true)
+        {
+            try
+            {
+                flights = FindElements("[role='tabpanel'] li")
+                    .Select(f => (f.GetAttribute("innerText") ?? "").Split("\n", StringSplitOptions.RemoveEmptyEntries))
+                    .Where(f => f.Length > 1) // Every flight looks duplicated
+                    .ToList();
+                break;
+            }
+            catch (StaleElementReferenceException)
+            {
+                // retry
+            }
+        }
 
         foreach (var flight in flights)
         {
-            if (flight == null)
-            {
-                c.logger.Log("Missing text for flight. Continuing.");
-                continue;
-            }
-            var flightText = flight.Split("\n", StringSplitOptions.RemoveEmptyEntries);
-            if (flightText.Length == 1)
-            {
-                if (flightText[0] == "View more flights")
-                {
-                    c.logger.Log("View more flights not pressed. Continuing.");
-                }
-                else
-                {
-                    c.logger.Log("Flight is one giant string, possibly duplicate. Continuing.");
-                }
-                continue;
-            }
-            if (!flightText[6].Trim().Equals("Nonstop"))
+            if (!flight[6].Trim().Equals("Nonstop"))
             {
                 c.logger.Log("Flight is not nonstop. Continuing.");
                 continue;
             }
-            var item = GetJourneyFromText(date, flightText);
+            var item = GetJourneyFromText(date, flight);
             if (remainingPathsSet.Contains(item.Path) && !collectedFlightsSet.Contains(item.ToString()))
             {
                 results.Add(item);
@@ -159,6 +156,7 @@ public class GoogleFlightsWorker
             }
         }
 
+        c.logger.Log($"Page has {flights.Count} flights, only {results.Count} are relevant.");
         return results;
     }
 
@@ -188,11 +186,7 @@ public class GoogleFlightsWorker
         var pathMatch = Regex.Match(flightText[5].Trim(), @"(\w+)\W+(\w+)");
         var pathText = $"{pathMatch.Groups[1].Value}-{pathMatch.Groups[2].Value}";
         var costText = Regex.Replace(flightText[^1], "\\D", "").Trim();
-        var success = double.TryParse(costText, out var cost);
-        if (!success)
-        {
-            c.logger.Log("Could not get cost for flight.");
-        }
+        double.TryParse(costText, out var cost);
         Journey item = new (
             DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {departingText}"),
             DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {arrivingText}").AddDays(arrivesAfterDays),
@@ -330,20 +324,28 @@ public class GoogleFlightsWorker
         }
         else
         {
-            var chips = FindElements(
-                $"[aria-label*='Enter your {keywordLower}'] div[role='listbox'] [aria-label='Remove']"
-            );
-            foreach (var chip in chips)
+            while (true)
             {
-                chip.Click();
+                try
+                {
+                    var chips = FindElements(
+                        $"[aria-label*='Enter your {keywordLower}'] div[role='listbox'] [aria-label='Remove']"
+                    );
+                    foreach (var chip in chips)
+                    {
+                        chip.Click();
+                    }
+                    break;
+                }
+                catch (ElementNotInteractableException)
+                {
+                    // retry   
+                }
+                catch (StaleElementReferenceException)
+                {
+                    // retry
+                }
             }
-
-            SendKeysToElement(
-                $"[aria-label*='Enter your {keywordLower}'] input",
-                true,
-                Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace + Keys.Backspace +
-                Keys.Backspace + Keys.Backspace
-            );
         }
 
         while (c.driver.FindElements(ByCssSelector("div[data-code]")).Any(x => x.Displayed))

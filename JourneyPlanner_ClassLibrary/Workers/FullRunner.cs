@@ -128,6 +128,7 @@ public class FullRunner
             ).DeserializeObject<JourneyCollectorResults>();
             if (x.Origins.SequenceEqual(p.Origins) && x.Destinations.SequenceEqual(p.Destinations))
             {
+                components.logger.Log($"Retrying last. Existing {results.JourneyCollection.Journeys.Count} journeys");
                 results = x;
             }
         }
