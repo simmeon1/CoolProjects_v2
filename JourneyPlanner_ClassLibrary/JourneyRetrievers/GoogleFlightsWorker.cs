@@ -250,7 +250,24 @@ public class GoogleFlightsWorker
 
     private void ClickElement(string cssSelector)
     {
-        FindElement(cssSelector).Click();
+        c.wait.Until(_ =>
+            {
+                var el = FindElementSafe(cssSelector);
+                if (el is null)
+                {
+                    return false;
+                }
+                try
+                {
+                    el.Click();
+                    return true;
+                }
+                catch (ElementNotInteractableException)
+                {
+                    return false;
+                }
+            }
+        );
     }
 
     private void SendKeysToElement(string cssSelector, bool doClearFirst, string keys)
@@ -266,12 +283,8 @@ public class GoogleFlightsWorker
     private void SetStopsToNone()
     {
         ClickElement("[aria-label='Stops, Not selected']");
-        var options = FindElements("div[aria-label*='Stops'] > div input");
-        var nonStopOption = options[1];
-        nonStopOption.Click();
-
-        var closeDialog = c.wait.Until(_ => FindElementSafe("[data-filtertype*='10'] [aria-label*='Close dialog']"));
-        closeDialog.Click();
+        ClickElement("div[aria-label*='Stops'] > div:nth-child(2) input");
+        ClickElement("[data-filtertype*='10'] [aria-label*='Close dialog']");
         stopsSet = true;
         WaitForProgressBarToBeGone();
     }
@@ -316,20 +329,7 @@ public class GoogleFlightsWorker
                 false,
                 location
             );
-
-            while (true)
-            {
-                var place = c.wait.Until(_ => FindElementSafe($"[data-code='{location}'] input"));
-                try
-                {
-                    place.Click();
-                    break;
-                }
-                catch (ElementNotInteractableException ex)
-                {
-                    // try again
-                }
-            }
+            ClickElement($"[data-code='{location}'] input");
         }
         ClickElement(cssSelectorToFind);
     }
@@ -339,8 +339,6 @@ public class GoogleFlightsWorker
         const string format = "ddd, MMM dd";
 
         ClickElement("[aria-label='Departure']");
-
-        Sleep();
 
         SendKeysToElement(
             "[data-same-day-selection] [aria-label='Departure']",
@@ -358,18 +356,12 @@ public class GoogleFlightsWorker
         WaitForProgressBarToBeGone();
     }
 
-    private void Sleep(int milliseconds = 200)
-    {
-        c.delayer.Sleep(milliseconds);
-    }
-
     private void SetUpSearch()
     {
         c.driver.Navigate().GoToUrl("https://www.google.com/travel/flights?curr=GBP");
         try
         {
-            var rejectAll = c.wait.Until(_ => FindElement("[aria-label='Reject all']"));
-            rejectAll.Click();
+            ClickElement("[aria-label='Reject all']");
         }
         catch (WebDriverTimeoutException e)
         {
@@ -381,11 +373,9 @@ public class GoogleFlightsWorker
 
     private void SetToOneWayTrip()
     {
-        var param = ByCssSelector("[aria-label*='Change ticket type']");
-        var el = c.driver.FindElement(param);
+        var el = FindElement("[aria-label*='Change ticket type']");
         var parentEl = (IWebElement) c.jsExecutor.ExecuteScript("return arguments[0].parentElement", el);
         parentEl.Click();
-
         ClickElement("[aria-label*='Select your ticket type'] [data-value='2']");
     }
 }

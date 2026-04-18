@@ -73,13 +73,17 @@ internal class Program
         }
         finally
         {
-            // if (success || parameters.Headless)
-            // {
-            //     driver.Quit();
-            // }
-            Console.WriteLine("Run finished. Press any key to continue");
-            Console.ReadKey();
-            driver.Quit();
+            if (success || parameters.Headless)
+            {
+                driver.Quit();
+                Console.WriteLine("Run finished.");
+            }
+            else
+            {
+                Console.WriteLine("Run failed. Press any key to close browser.");
+                Console.ReadKey();
+                driver.Quit();
+            }
         }
     }
 }
