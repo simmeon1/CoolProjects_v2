@@ -8,59 +8,71 @@ namespace JourneyPlanner_ClassLibrary.AirportFilterers;
 /// </summary>
 public class EuropeFilterer : IAirportFilterer
 {
+    private static readonly string[] Countries =
+    [
+        "Albania",
+        "Armenia",
+        "Austria",
+        "Azerbaijan",
+        "Belarus",
+        "Belgium",
+        "Bosnia & Herzegovina",
+        "Bulgaria",
+        "Croatia",
+        "Cyprus",
+        "Czechia",
+        "Denmark",
+        "Estonia",
+        "Faroe Islands",
+        "Finland",
+        "France",
+        "Georgia",
+        "Germany",
+        "Gibraltar",
+        "Greece",
+        "Guernsey",
+        "Hungary",
+        "Iceland",
+        "Ireland",
+        "Isle of Man",
+        "Italy",
+        "Jersey",
+        "Kazakhstan",
+        "Kosovo",
+        "Latvia",
+        "Lithuania",
+        "Luxembourg",
+        "Malta",
+        "Moldova",
+        "Monaco",
+        "Montenegro",
+        "Netherlands",
+        "Norway",
+        "Poland",
+        "Portugal",
+        "Republic of North Macedonia",
+        "Romania",
+        "Russia",
+        "Serbia",
+        "Slovakia",
+        "Slovenia",
+        "Spain",
+        "Sweden",
+        "Switzerland",
+        "Turkey",
+        "United Kingdom"
+    ];
+
     public bool AirportMeetsCondition(Airport airport)
     {
         var country = airport.Country;
-        return country.Contains("Albania") ||
-            country.Contains("Armenia") ||
-            country.Contains("Austria") ||
-            country.Contains("Azerbaijan") ||
-            country.Contains("Belarus") ||
-            country.Contains("Belgium") ||
-            country.Contains("Bosnia & Herzegovina") ||
-            country.Contains("Bulgaria") ||
-            country.Contains("Croatia") ||
-            country.Contains("Cyprus") ||
-            country.Contains("Czechia") ||
-            country.Contains("Denmark") ||
-            country.Contains("Estonia") ||
-            country.Contains("Faroe Islands") ||
-            country.Contains("Finland") ||
-            country.Contains("France") ||
-            country.Contains("Georgia") ||
-            country.Contains("Germany") ||
-            country.Contains("Gibraltar") ||
-            country.Contains("Greece") ||
-            country.Contains("Guernsey") ||
-            country.Contains("Hungary") ||
-            country.Contains("Iceland") ||
-            country.Contains("Ireland") ||
-            country.Contains("Isle of Man") ||
-            country.Contains("Italy") ||
-            country.Contains("Jersey") ||
-            country.Contains("Kazakhstan") ||
-            country.Contains("Kosovo") ||
-            country.Contains("Latvia") ||
-            country.Contains("Lithuania") ||
-            country.Contains("Luxembourg") ||
-            country.Contains("Malta") ||
-            country.Contains("Moldova") ||
-            country.Contains("Monaco") ||
-            country.Contains("Montenegro") ||
-            country.Contains("Netherlands") ||
-            country.Contains("Norway") ||
-            country.Contains("Poland") ||
-            country.Contains("Portugal") ||
-            country.Contains("Republic of North Macedonia") ||
-            country.Contains("Romania") ||
-            country.Contains("Russia") ||
-            country.Contains("Serbia") ||
-            country.Contains("Slovakia") ||
-            country.Contains("Slovenia") ||
-            country.Contains("Spain") ||
-            country.Contains("Sweden") ||
-            country.Contains("Switzerland") ||
-            country.Contains("Turkey") ||
-            country.Contains("United Kingdom");
+        for (int i = 0; i < Countries.Length; i++)
+        {
+            if (country.Contains(Countries[i]))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
