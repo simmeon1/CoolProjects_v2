@@ -8,6 +8,5 @@ public record JourneyRetrieverComponents(
     IWebDriver driver,
     ILogger logger,
     IWebDriverWaitProvider wait,
-    IDelayer delayer,
     IJavaScriptExecutor jsExecutor
 );

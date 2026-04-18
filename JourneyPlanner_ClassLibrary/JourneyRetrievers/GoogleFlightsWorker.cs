@@ -372,15 +372,10 @@ public class GoogleFlightsWorker
     }
 }
 
-public class GoogleFlightsWorkerException : Exception
+public class GoogleFlightsWorkerException(JourneyCollection results, Exception innerEx) : Exception(
+    "GoogleFlightsWorkerException",
+    innerEx
+)
 {
-    public GoogleFlightsWorkerException(JourneyCollection results, Exception innerEx) : base(
-        "GoogleFlightsWorkerException",
-        innerEx
-    )
-    {
-        Results = results;
-    }
-
-    public JourneyCollection Results { get; }
+    public JourneyCollection Results { get; } = results;
 }

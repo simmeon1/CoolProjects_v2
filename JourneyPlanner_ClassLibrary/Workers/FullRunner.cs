@@ -17,10 +17,8 @@ public class FullRunner
     private readonly IFlightConnectionsDotComWorkerAirportCollector airportCollector;
     private readonly IFlightConnectionsDotComWorkerAirportPopulator airportPopulator;
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly IDelayer delayer;
     private readonly IWebDriver driver;
     private readonly IFileIO fileIo;
-    private readonly IHttpClient http;
     private readonly IJavaScriptExecutor jsExecutor;
     private readonly ILogger logger;
     private readonly IExcelPrinter printer;
@@ -30,8 +28,6 @@ public class FullRunner
         IWebDriver driver,
         ILogger logger,
         IWebDriverWaitProvider wait,
-        IDelayer delayer,
-        IHttpClient http,
         IJavaScriptExecutor jsExecutor,
         IFileIO fileIo,
         IDateTimeProvider dateTimeProvider,
@@ -43,8 +39,6 @@ public class FullRunner
         this.driver = driver;
         this.logger = logger;
         this.wait = wait;
-        this.delayer = delayer;
-        this.http = http;
         this.jsExecutor = jsExecutor;
         this.fileIo = fileIo;
         this.printer = printer;
@@ -59,7 +53,6 @@ public class FullRunner
             driver,
             logger,
             wait,
-            delayer,
             jsExecutor
         );
 

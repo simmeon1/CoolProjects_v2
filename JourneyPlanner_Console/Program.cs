@@ -50,8 +50,6 @@ internal class Program
             driver,
             logger,
             webDriverWait,
-            new RealDelayer(),
-            httpClient,
             driver,
             fileIo: fileIo,
             dateTimeProvider: new RealDateTimeProvider(),
