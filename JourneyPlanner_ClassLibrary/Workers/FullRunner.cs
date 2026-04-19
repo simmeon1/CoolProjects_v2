@@ -22,12 +22,10 @@ public class FullRunner
     private readonly IJavaScriptExecutor jsExecutor;
     private readonly ILogger logger;
     private readonly IExcelPrinter printer;
-    private readonly IWebDriverWaitProvider wait;
 
     public FullRunner(
         IWebDriver driver,
         ILogger logger,
-        IWebDriverWaitProvider wait,
         IJavaScriptExecutor jsExecutor,
         IFileIO fileIo,
         IDateTimeProvider dateTimeProvider,
@@ -38,7 +36,6 @@ public class FullRunner
     {
         this.driver = driver;
         this.logger = logger;
-        this.wait = wait;
         this.jsExecutor = jsExecutor;
         this.fileIo = fileIo;
         this.printer = printer;

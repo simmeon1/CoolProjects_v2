@@ -49,7 +49,6 @@ internal class Program
         FullRunner runner = new (
             driver,
             logger,
-            webDriverWait,
             driver,
             fileIo: fileIo,
             dateTimeProvider: new RealDateTimeProvider(),
