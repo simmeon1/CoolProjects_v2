@@ -196,11 +196,11 @@ public class GoogleFlightsWorker
 
     private void WaitForProgressBarToBeGone()
     {
-        var loadingBar = c.wait.Until(_ => FindElementSafe("[data-buffervalue='1']"), [], 3);
+        var loadingBar = DoUntil(() => FindElement("[data-buffervalue='1']"), 3);
         try
         {
-            c.wait.Until(_ => loadingBar.GetAttribute("aria-hidden") == null);
-            c.wait.Until(_ => loadingBar.GetAttribute("aria-hidden") != null);
+            DoUntil(() => loadingBar.GetAttribute("aria-hidden") == null);
+            DoUntil(() => loadingBar.GetAttribute("aria-hidden") != null);
         }
         catch (WebDriverTimeoutException e)
         {
@@ -212,12 +212,7 @@ public class GoogleFlightsWorker
     {
         return FindElement(c.driver, cssSelectorToFind);
     }
-
-    private IWebElement? FindElementSafe(string cssSelectorToFind)
-    {
-        return FindElements(c.driver, cssSelectorToFind).FirstOrDefault();
-    }
-
+    
     private ReadOnlyCollection<IWebElement> FindElements(string cssSelectorToFind)
     {
         return FindElements(c.driver, cssSelectorToFind);
@@ -255,14 +250,15 @@ public class GoogleFlightsWorker
         );
     }
 
-    private TResult DoUntil<TResult>(Func<TResult?> condition)
+    private TResult DoUntil<TResult>(Func<TResult?> condition, int seconds = 10)
     {
-        var wait = new WebDriverWait(c.driver, TimeSpan.FromSeconds(10));
+        var wait = new WebDriverWait(c.driver, TimeSpan.FromSeconds(seconds));
         wait.IgnoreExceptionTypes(
             typeof(NoSuchElementException),
             typeof(StaleElementReferenceException),
             typeof(ElementNotInteractableException)
         );
+        wait.PollingInterval = TimeSpan.FromMilliseconds(100);
         return wait.Until(_ => condition());
     }
 
@@ -282,7 +278,7 @@ public class GoogleFlightsWorker
 
         ClickElement($"[data-placeholder*='Where {(keyword == "Origin" ? "from" : "to")}'] input");
 
-        var el = c.wait.Until(_ => FindElementSafe(cssSelectorToFind));
+        var el = DoUntil(() => FindElement(cssSelectorToFind));
         var parent = (IWebElement) c.jsExecutor.ExecuteScript("return arguments[0].parentElement.parentElement", el);
         var displayStyle = (string) c.jsExecutor.ExecuteScript("return arguments[0].style.display", parent);
         if (displayStyle == "none")
