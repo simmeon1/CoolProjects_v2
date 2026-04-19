@@ -12,15 +12,9 @@ using OpenQA.Selenium.Support.UI;
 
 namespace JourneyPlanner_ClassLibrary.JourneyRetrievers;
 
-public class GoogleFlightsWorker
+public class GoogleFlightsWorker(JourneyRetrieverComponents c)
 {
-    private readonly JourneyRetrieverComponents c;
     private bool stopsSet;
-
-    public GoogleFlightsWorker(JourneyRetrieverComponents c)
-    {
-        this.c = c;
-    }
 
     public void Initialise()
     {
@@ -210,22 +204,12 @@ public class GoogleFlightsWorker
 
     private IWebElement FindElement(string cssSelectorToFind)
     {
-        return FindElement(c.driver, cssSelectorToFind);
+        return c.driver.FindElement(ByCssSelector(cssSelectorToFind));
     }
-    
+
     private ReadOnlyCollection<IWebElement> FindElements(string cssSelectorToFind)
     {
-        return FindElements(c.driver, cssSelectorToFind);
-    }
-
-    private IWebElement FindElement(ISearchContext context, string cssSelectorToFind)
-    {
-        return context.FindElement(ByCssSelector(cssSelectorToFind));
-    }
-
-    private ReadOnlyCollection<IWebElement> FindElements(ISearchContext context, string cssSelectorToFind)
-    {
-        return context.FindElements(ByCssSelector(cssSelectorToFind));
+        return c.driver.FindElements(ByCssSelector(cssSelectorToFind));
     }
 
     private void ClickElement(string cssSelector)
@@ -301,7 +285,7 @@ public class GoogleFlightsWorker
             );
         }
 
-        while (c.driver.FindElements(ByCssSelector("div[data-code]")).Any(x => x.Displayed))
+        while (FindElements("div[data-code]").Any(x => x.Displayed))
         {
             SendKeysToElement(
                 $"[aria-label*='Enter your {keywordLower}'] input",
@@ -337,7 +321,6 @@ public class GoogleFlightsWorker
         {
             ClickElement("[aria-label='Search']");
         }
-
         WaitForProgressBarToBeGone();
     }
 
@@ -355,15 +338,19 @@ public class GoogleFlightsWorker
                 throw;
             }
         }
-
         SetToOneWayTrip();
     }
 
     private void SetToOneWayTrip()
     {
-        var el = FindElement("[aria-label*='Change ticket type']");
-        var parentEl = (IWebElement) c.jsExecutor.ExecuteScript("return arguments[0].parentElement", el);
-        parentEl.Click();
+        DoUntil(() =>
+            {
+                var el = FindElement("[aria-label*='Change ticket type']");
+                var parentEl = (IWebElement) c.jsExecutor.ExecuteScript("return arguments[0].parentElement", el);
+                parentEl.Click();
+                return true;
+            }
+        );
         ClickElement("[aria-label*='Select your ticket type'] [data-value='2']");
     }
 }
