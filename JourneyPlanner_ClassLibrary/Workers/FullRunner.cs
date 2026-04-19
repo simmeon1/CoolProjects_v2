@@ -49,12 +49,7 @@ public class FullRunner
 
     public async Task DoRun(Parameters p)
     {
-        var components = new JourneyRetrieverComponents(
-            driver,
-            logger,
-            wait,
-            jsExecutor
-        );
+        var components = new JourneyRetrieverComponents(driver, logger, jsExecutor);
 
         var runSummary =
             $"{p.Origins.ConcatenateListOfStringsToCommaAndSpaceString()} - {p.Destinations.ConcatenateListOfStringsToCommaAndSpaceString()}";
