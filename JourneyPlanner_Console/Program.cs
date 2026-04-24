@@ -31,7 +31,7 @@ internal class Program
 
         var fileIo = new RealFileIO();
         var savePath = parameters.FileSavePath;
-        await ChromeDriverService.GetLatestChromeDriver(logger, httpClient, savePath, fileIo);
+        await ChromeDriverService.GetLatestChromeDriver(logger, httpClient, savePath, fileIo, parameters.ChromeVersion);
 
         ChromeOptions chromeOptions = new ();
         chromeOptions.AddArgument("--log-level=3");
