@@ -119,10 +119,14 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
     )
     {
         var results = new List<Journey>();
-        var flights = DoUntil(() => FindElements("[role='tabpanel'] li")
-            .Select(f => (f.GetAttribute("innerText") ?? "").Split("\n", StringSplitOptions.RemoveEmptyEntries))
-            .Where(f => f.Length > 1) // Every flight looks duplicated
-            .ToList()
+        var flights = DoUntil(() =>
+            FindElements("[role='tabpanel']:not([style]) li") // duplicate tabpanel that has displayed: none
+                .Select(f => f.GetAttribute("innerText")!.Split(
+                        "\r\n",
+                        StringSplitOptions.RemoveEmptyEntries
+                    )
+                )
+                .ToList()
         );
 
         foreach (var flight in flights)
@@ -142,6 +146,11 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
 
         c.logger.Log($"Page has {flights.Count} flights, only {results.Count} are relevant.");
         return results;
+    }
+
+    private static string TrimCostText(string[] flightText)
+    {
+        return Regex.Replace(flightText[8], "\\D", "").Trim();
     }
 
     private static By ByCssSelector(string cssSelectorToFind)
@@ -169,8 +178,12 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
 
         var pathMatch = Regex.Match(flightText[5].Trim(), @"(\w+)\W+(\w+)");
         var pathText = $"{pathMatch.Groups[1].Value}-{pathMatch.Groups[2].Value}";
-        var costText = Regex.Replace(flightText[^1], "\\D", "").Trim();
-        double.TryParse(costText, out var cost);
+        var costText = TrimCostText(flightText);
+        var success = double.TryParse(costText, out var cost);
+        if (!success)
+        {
+            c.logger.Log(string.Join(", ", flightText) + " has 0 cost.");
+        }
         Journey item = new (
             DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {departingText}"),
             DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {arrivingText}").AddDays(arrivesAfterDays),
@@ -285,20 +298,15 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
             );
         }
 
+        var cssSelector = $"[aria-label*='Enter your {keywordLower}'] input";
         while (FindElements("div[data-code]").Any(x => x.Displayed))
         {
-            SendKeysToElement(
-                $"[aria-label*='Enter your {keywordLower}'] input",
-                Keys.Backspace
-            );
+            SendKeysToElement(cssSelector, Keys.Backspace);
         }
 
         foreach (var location in locations)
         {
-            SendKeysToElement(
-                $"[aria-label*='Enter your {keywordLower}'] input",
-                location
-            );
+            SendKeysToElement(cssSelector, location);
             ClickElement($"[data-code='{location}'] input");
         }
         ClickElement(cssSelectorToFind);
