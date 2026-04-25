@@ -7,6 +7,7 @@ using JourneyPlanner_ClassLibrary.Classes;
 using JourneyPlanner_ClassLibrary.FlightConnectionsDotCom;
 using JourneyPlanner_ClassLibrary.Workers;
 using OpenQA.Selenium.Chrome;
+using SeleniumUndetectedChromeDriver;
 using ChromeDriverService = Common_ClassLibrary.ChromeDriverService;
 
 namespace JourneyPlanner_Console;
@@ -40,7 +41,11 @@ internal class Program
         {
             chromeOptions.AddArgument("headless");
         }
-        ChromeDriver driver = new ($"{savePath}\\chromeDriverFolder\\chromedriver-win64", chromeOptions);
+        
+        var driver = UndetectedChromeDriver.Create(
+            driverExecutablePath: $"{savePath}\\chromeDriverFolder\\chromedriver-win64\\chromedriver.exe",
+            options: chromeOptions
+        );
         driver.Manage().Window.Maximize();
 
         RealWebDriverWaitProvider webDriverWait = new (driver);

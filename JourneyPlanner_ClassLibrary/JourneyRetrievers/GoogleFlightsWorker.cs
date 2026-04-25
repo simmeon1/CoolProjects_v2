@@ -253,7 +253,8 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
         wait.IgnoreExceptionTypes(
             typeof(NoSuchElementException),
             typeof(StaleElementReferenceException),
-            typeof(ElementNotInteractableException)
+            typeof(ElementNotInteractableException),
+            typeof(ElementClickInterceptedException)
         );
         wait.PollingInterval = TimeSpan.FromMilliseconds(100);
         return wait.Until(_ => condition());
