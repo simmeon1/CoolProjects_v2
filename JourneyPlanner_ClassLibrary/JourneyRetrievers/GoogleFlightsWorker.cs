@@ -253,8 +253,7 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
         wait.IgnoreExceptionTypes(
             typeof(NoSuchElementException),
             typeof(StaleElementReferenceException),
-            typeof(ElementNotInteractableException),
-            typeof(ElementClickInterceptedException)
+            typeof(ElementNotInteractableException)
         );
         wait.PollingInterval = TimeSpan.FromMilliseconds(100);
         return wait.Until(_ => condition());
@@ -316,8 +315,23 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
     private void PopulateDateAndHitDone(DateTime date)
     {
         const string format = "ddd, MMM dd";
-
-        ClickElement("[aria-label='Departure']");
+        
+        while (true)
+        {
+            try
+            {
+                ClickElement("[data-state] [aria-label='Departure']");
+                break;
+            }
+            catch (WebDriverTimeoutException ex)
+            {
+                if (ex.InnerException is not ElementClickInterceptedException)
+                {
+                    throw;
+                }
+                c.logger.Log("Click intercepted. Retrying.");
+            }
+        }
 
         SendKeysToElement(
             "[data-same-day-selection] [aria-label='Departure']",
