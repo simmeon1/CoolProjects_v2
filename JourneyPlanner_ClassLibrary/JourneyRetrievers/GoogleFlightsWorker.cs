@@ -126,13 +126,10 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
                 var els = FindElements("[role='tabpanel']:not([style]) li");
                 if (els.Count > 0)
                 {
-                    var first = els.First();
-                    var attribute = first.GetAttribute("alreadyChecked");
-                    if (attribute == "true")
-                    {
-                        throw new StaleElementReferenceException("Flights are from previous search");
-                    }
-                    c.jsExecutor.ExecuteScript("return arguments[0].setAttribute('alreadyChecked', 'true')", first);
+                    c.jsExecutor.ExecuteScript(
+                        "return arguments[0].setAttribute('alreadyChecked', 'true')",
+                        els.First()
+                    );
                 }
                 else
                 {
@@ -291,7 +288,7 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
         ClickElement("div[aria-label*='Stops'] > div:nth-child(2) input");
         ClickElement("[data-filtertype*='10'] [aria-label*='Close dialog']");
         stopsSet = true;
-        WaitForNewPolite();
+        WaitForNewResults();
     }
 
     private void PopulateSearchField(IEnumerable<string> locations, string keyword)
@@ -380,15 +377,20 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
         }
         else
         {
-            WaitForNewPolite();
+            WaitForNewResults();
         }
     }
 
-    private bool WaitForNewPolite()
+    private bool WaitForNewResults()
     {
         return DoUntil(
             () =>
             {
+                if (FindElements("[alreadyChecked='true']").Count > 0)
+                {
+                    // c.logger.Log("Has already checked.");
+                    return false;
+                }
                 var main = FindElement("[role='main']");
                 var banner = FindElement(PoliteCssSelector, main);
                 ChangePoliteToImpolite(banner);
