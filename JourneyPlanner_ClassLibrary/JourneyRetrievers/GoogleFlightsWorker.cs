@@ -120,18 +120,50 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
     )
     {
         var results = new List<Journey>();
-        var flights = DoUntil(() =>
-            FindElements("[role='tabpanel']:not([style]) li") // duplicate tabpanel that has displayed: none
-                .Select(f => f.GetAttribute("innerText")!.Split(
-                        "\r\n",
-                        StringSplitOptions.RemoveEmptyEntries
+        var flights = DoUntil(
+            () =>
+            {
+                var els = FindElements("[role='tabpanel']:not([style]) li");
+                if (els.Count > 0)
+                {
+                    var first = els.First();
+                    var attribute = first.GetAttribute("alreadyChecked");
+                    if (attribute == "true")
+                    {
+                        throw new StaleElementReferenceException("Flights are from previous search");
+                    }
+                    c.jsExecutor.ExecuteScript("return arguments[0].setAttribute('alreadyChecked', 'true')", first);
+                }
+                else
+                {
+                    // Check for reload
+                    var button = FindElements("button").FirstOrDefault(x => x.Text == "Reload");
+                    if (button != null)
+                    {
+                        button.Click();
+                        throw new NoSuchElementException("No flights due to reload button");
+                    }
+                }
+                return els // duplicate tabpanel that has displayed: none
+                    .Select(f => f.GetAttribute("innerText")!.Split(
+                            "\r\n",
+                            StringSplitOptions.RemoveEmptyEntries
+                        )
                     )
-                )
-                .ToList()
+                    .ToList();
+            },
+            30
         );
 
-        foreach (var flight in flights)
+
+        for (var i = 0; i < flights.Count; i++)
         {
+            var flight = flights[i];
+            // Log for help with diagnosis
+            if (i == 0)
+            {
+                c.logger.Log("First flight on page is " + GetFlightTextFromArray(flight));
+            }
             if (!flight[6].Trim().Equals("Nonstop"))
             {
                 c.logger.Log("Flight is not nonstop. Continuing.");
@@ -184,7 +216,7 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
         var success = double.TryParse(costText, out var cost);
         if (!success)
         {
-            c.logger.Log(string.Join(", ", flightText) + " has 0 cost.");
+            c.logger.Log(GetFlightTextFromArray(flightText) + " has 0 cost.");
         }
         Journey item = new (
             DateTime.Parse($"{date.Day}-{date.Month}-{date.Year} {departingText}"),
@@ -195,6 +227,11 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
             cost
         );
         return item;
+    }
+
+    private static string GetFlightTextFromArray(string[] flightText)
+    {
+        return string.Join(", ", flightText);
     }
 
     private static int ParseTimeUnit(string durationText, string unitType)
@@ -349,13 +386,15 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
 
     private bool WaitForNewPolite()
     {
-        return DoUntil(() =>
+        return DoUntil(
+            () =>
             {
                 var main = FindElement("[role='main']");
                 var banner = FindElement(PoliteCssSelector, main);
                 ChangePoliteToImpolite(banner);
                 return true;
-            }
+            },
+            30
         );
     }
 
