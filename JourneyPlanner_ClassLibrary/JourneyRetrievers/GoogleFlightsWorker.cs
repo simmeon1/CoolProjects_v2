@@ -15,6 +15,7 @@ namespace JourneyPlanner_ClassLibrary.JourneyRetrievers;
 public class GoogleFlightsWorker(JourneyRetrieverComponents c)
 {
     private bool stopsSet;
+    private const string PoliteCssSelector = "div[aria-live='polite']";
 
     public void Initialise()
     {
@@ -150,7 +151,8 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
 
     private static string TrimCostText(string[] flightText)
     {
-        return Regex.Replace(flightText[8], "\\D", "").Trim();
+        var cost = flightText.FirstOrDefault(t => t.Trim().StartsWith("£")) ?? "";
+        return Regex.Replace(cost, "\\D", "").Trim();
     }
 
     private static By ByCssSelector(string cssSelectorToFind)
@@ -201,23 +203,10 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
         return regexMatches.Any() ? int.Parse(regexMatches[0].Groups[1].Value) : 0;
     }
 
-    private void WaitForProgressBarToBeGone()
+    private IWebElement FindElement(string cssSelectorToFind, ISearchContext? parentEl = null)
     {
-        var loadingBar = DoUntil(() => FindElement("[data-buffervalue='1']"), 3);
-        try
-        {
-            DoUntil(() => loadingBar.GetAttribute("aria-hidden") == null);
-            DoUntil(() => loadingBar.GetAttribute("aria-hidden") != null);
-        }
-        catch (WebDriverTimeoutException e)
-        {
-            // loaded
-        }
-    }
-
-    private IWebElement FindElement(string cssSelectorToFind)
-    {
-        return c.driver.FindElement(ByCssSelector(cssSelectorToFind));
+        var searchContext = parentEl ?? c.driver;
+        return searchContext.FindElement(ByCssSelector(cssSelectorToFind));
     }
 
     private ReadOnlyCollection<IWebElement> FindElements(string cssSelectorToFind)
@@ -265,7 +254,7 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
         ClickElement("div[aria-label*='Stops'] > div:nth-child(2) input");
         ClickElement("[data-filtertype*='10'] [aria-label*='Close dialog']");
         stopsSet = true;
-        WaitForProgressBarToBeGone();
+        WaitForNewPolite();
     }
 
     private void PopulateSearchField(IEnumerable<string> locations, string keyword)
@@ -315,7 +304,7 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
     private void PopulateDateAndHitDone(DateTime date)
     {
         const string format = "ddd, MMM dd";
-        
+
         while (true)
         {
             try
@@ -343,8 +332,36 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
         if (!stopsSet)
         {
             ClickElement("[aria-label='Search']");
+            // If polite is visible, results should be loaded.
+            DoUntil(() =>
+                {
+                    var banner = FindElement(PoliteCssSelector);
+                    ChangePoliteToImpolite(banner);
+                    return true;
+                }
+            );
         }
-        WaitForProgressBarToBeGone();
+        else
+        {
+            WaitForNewPolite();
+        }
+    }
+
+    private bool WaitForNewPolite()
+    {
+        return DoUntil(() =>
+            {
+                var main = FindElement("[role='main']");
+                var banner = FindElement(PoliteCssSelector, main);
+                ChangePoliteToImpolite(banner);
+                return true;
+            }
+        );
+    }
+
+    private void ChangePoliteToImpolite(IWebElement banner)
+    {
+        c.jsExecutor.ExecuteScript("return arguments[0].setAttribute('aria-live', 'impolite')", banner);
     }
 
     private void SetUpSearch()
