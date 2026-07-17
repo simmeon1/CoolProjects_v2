@@ -119,6 +119,7 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
         HashSet<string> remainingPathsSet
     )
     {
+        var formattedDate = date.ToString("dddd, MMMM d");
         var results = new List<Journey>();
         var flights = DoUntil(
             () =>
@@ -126,10 +127,11 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
                 var els = FindElements("[role='tabpanel']:not([style]) li");
                 if (els.Count > 0)
                 {
-                    c.jsExecutor.ExecuteScript(
-                        "return arguments[0].setAttribute('alreadyChecked', 'true')",
-                        els.First()
-                    );
+                    var attr = FindElement("span[aria-label]", els.First()).GetAttribute("aria-label") ?? "";
+                    if (!attr.Contains(formattedDate))
+                    {
+                        throw new StaleElementReferenceException("Old results");
+                    }
                 }
                 else
                 {
@@ -386,11 +388,6 @@ public class GoogleFlightsWorker(JourneyRetrieverComponents c)
         return DoUntil(
             () =>
             {
-                if (FindElements("[alreadyChecked='true']").Count > 0)
-                {
-                    // c.logger.Log("Has already checked.");
-                    return false;
-                }
                 var main = FindElement("[role='main']");
                 var banner = FindElement(PoliteCssSelector, main);
                 ChangePoliteToImpolite(banner);
